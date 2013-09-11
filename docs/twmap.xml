@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customMapSource>
+	<name>TWMAP</name>
+	<minZoom>10</minZoom>
+	<maxZoom>16</maxZoom>
+	<tileType>png</tileType>
+	<tileUpdate>IfNoneMatch</tileUpdate>
+	<url>http://rs.happyman.idv.tw/map/tw25k2001/zxy/{$z}_{$x}_{$y}.png</url>
+	<backgroundColor>#000000</backgroundColor>
+</customMapSource>
+<!-- this is for MOBAC -->
