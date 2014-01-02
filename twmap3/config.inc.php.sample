@@ -1,0 +1,17 @@
+<?php
+// site url: 還沒用到
+$site_url = "http://map.happyman.idv.tw";
+
+// 地圖瀏覽器的 url prefix
+$site_html_root = "/~happyman/twmap3/";
+// 地圖產生器 url prefix
+$site_twmap_html_root = "/twmap/";
+// 
+
+$CONFIG['getkmlfrombounds_url'] = $site_twmap_html_root ."api/getkmlfrombounds.php";
+$CONFIG['geocodercache_url'] = $site_twmap_html_root ."api/geocoder.php";
+$CONFIG['pointdata_url'] = $site_html_root . "data/ajaxCRUD/pointdata2.php";
+// 資料庫連線參數
+$CONFIG['db'] = array('host'=> 'localhost', 'db' => 'twmap', 'user'=> 'user', 'pass' => 'password');
+// admin user 的 email 登入地圖產生器的帳號
+$CONFIG['admin'] = array("admin@user.com");
