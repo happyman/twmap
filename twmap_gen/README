@@ -15,4 +15,9 @@ aped (ajax push engine) 在 6969
 
 圖資
  * 經建一版 
+   http://cht.tw/h/ywpve STB.tar.aa
+   http://cht.tw/h/k6w24 STB.tar.ab
+   http://cht.tw/h/l5d35 STB.tar.ac
+   cat STB.tar.aa  STB.tar.ab  STB.tar.ac |tar xvf -
+
  * 經建三版 來自 sinica, 程式會自己產生 cache
