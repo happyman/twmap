@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>地圖產生器v{$twmap_gen_version}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+		<meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT" />
+		<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta name="keywords" content="地圖產生器,台灣地圖,登山" />
+		<script type="text/javascript" src="js/jquery-1.4.4.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.7.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery.blockUI.js"></script>
+		<script type="text/javascript" src="js/jquery.panFullSize.js"></script>
+
+
+		<link type="text/css" href="css/south-street/jquery-ui-1.8.7.custom.css" rel="Stylesheet" />  
+		<link type="text/css" href="css/tipTip.css" rel="Stylesheet" /> 
+		<style type="text/css" title="currentStyle">
+			@import "css/dataTables.css";
+		</style>
+
+		<style type="text/css">
+			{ font-family: Verdana; font-size: 1em; }
+			label { width: 10em; float: left; }
+			label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }
+			p { clear: both; }
+			.submit { margin-left: 12em; }
+			em { font-weight: bold; padding-right: 1em; vertical-align: top; }
+			#info {
+				display: block;
+				position: absolute;
+				top: 10px;
+				background-color: white;
+				font-size: 25px;
+				z-index: 50;
+				opacity:0.70;
+				-moz-opacity:0.70;
+				filter:alpha(opacity=70);
+				cursor: hand;
+			}
+			#bigbox2 {
+				position: absolute;
+				display: block;
+				height: 100%;
+				width: 100%;
+				border:0px solid #000;
+				margin: 0 auto;
+				cursor: move;
+				word-wrap: break-word
+			}
+			#marker {
+				position: absolute;
+				display: none;
+				z-index: 50;
+			}
+			body {
+				width: 100%;
+				margin:  0 0 0 1px;
+			}
+
+
+		</style>
+	</head>
+
+	<body>
+		<div id="info">
+			點兩下出座標 <span id="loc_on_map">左上座標: {$map.locX},{$map.locY}</span><br>
+		</div>
+		<div id="bigbox2">
+			<img src="{$img_src}" id="imagePan" {$img_size} />
+			<span id="marker"><img src="imgs/catfoot.png"></span>
+		</div>
+		<script>
+			var startx = {$map.locX};
+			var starty = {$map.locY};
+			var lastpos = [];
+			var marker_moved = 0;
+
+			$.blockUI({ css: { 
+					border: 'none', 
+					padding: '15px', 
+					backgroundColor: '#000', 
+					'-webkit-border-radius': '10px', 
+					'-moz-border-radius': '10px', 
+					opacity: .5, 
+					color: '#fff' 
+			}, message: '<img src="imgs/loading.gif" /><h1>大圖載入中,請等一下</h1>' }); 
+
+
+			$(document).ready(function () {
+				var $pic = $("#imagePan");
+				// 
+				$pic.load(function() {
+					$.unblockUI();
+				});
+				panImage();
+				$newpic = $("#panimagePan");
+
+				$newpic.dblclick(function(e) {
+					var x = e.pageX - this.offsetLeft;
+					var y = e.pageY - this.offsetTop;
+
+					var pos = $newpic.css("backgroundPosition").split(/\s+/);
+					//	console.log(pos);
+					// 相對 px 
+					lastpos[0] = parseInt(pos[0]);
+					lastpos[1] = parseInt(pos[1]);
+					var rx = x - parseInt(pos[0]); 
+					var ry = y - parseInt(pos[1]);
+					placeMarker(e.pageX, e.pageY);
+					// 相對 座標
+					var locx = Math.round(startx + rx/315*1000);
+					var locy = Math.round(starty - ry/315*1000);
+					// $('#loc_on_map').html(x + "," + y + " +rx="+ rx +', '+ ry + ",pic:"+ $pic.width() +","+ $pic.height());
+					$('#loc_on_map').html("標定座標: " +locx + "," + locy);
+					marker_moved = 1;
+
+				});
+
+
+				$(window).resize(function() {
+					panImage();
+				});
+				$(document).mouseup(function() {
+					if (marker_moved == 0 ) return;
+					// 1. 目前的 background pos offset
+					var pos = $newpic.css("backgroundPosition").split(/\s+/);
+					var posx = parseInt(pos[0]); 
+					var posy = parseInt(pos[1]);
+					// 2. 舊的 pos  lastpos
+					// 3. 舊的 marker 座標
+					var mx = parseInt($('#marker').css('left'));
+					var my = parseInt($('#marker').css('top'));
+
+					var newmx = mx - lastpos[0] + posx;
+					var newmy = my - lastpos[1] + posy;
+					// console.log("newpos"+ posx +"," + posy + " oldpos:"+ lastpos[0] + "," + lastpos[1] + "marker:" + mx + "," + my + " newmx" + newmx + "," + newmy);
+					$('#marker').css('left', newmx + "px" );
+					$('#marker').css('top', newmy  + "px" );
+					lastpos = [ posx , posy ];
+				}); 
+
+				function panImage() {
+					var x = $('#bigbox2').innerWidth();
+					var y = $('#bigbox2').innerHeight();
+					if (x > $pic.width()) {
+						x = $pic.width();
+
+						$('#bigbox2').css('width', (x).toString() + "px");
+					}
+					if (y > $pic.height()) y = $pic.height();
+					// alert(x + ","+ y);
+					$pic.panFullSize(x,y);
+
+				}
+				function placeMarker(x,y) {
+					$('#marker').show();
+					$('#marker').css('left', x-35 + "px");
+					$('#marker').css('top', y-40 + "px");
+
+				}
+				/*
+				$("a#sw_normal").toggle(
+				function() {
+					$pic.normalView();
+					$("a#sw_normal").html('座標檢視');
+					$('#marker').hide();
+
+				} , 
+				function() { 
+					panImage();
+					$("a#sw_normal").html('切換原圖');
+					$('#marker').show();
+
+				});
+				*/
+
+
+			});
+		</script>
+	</body>
+</html>

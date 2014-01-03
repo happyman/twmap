@@ -1,0 +1,17 @@
+
+<table id="bigbox"  style="white-space:nowrap; overflow:visible;">
+	<tr><td width=450 valign="top" align="left">
+			<h2>本圖空間回收, 需要請重新產生</h2>
+	<tr><td width=450 valign="top" align="left">
+			<ul>
+				<li>本圖標題: <button class="ui-state-default">{$map.title}</button>
+				{if $gpx_link}
+				<li>下載GPX: <a href='{$gpx_link}'>{$gpx_link}</a>
+				{/if}
+				<li>左上角座標 X={$map.locX},Y={$map.locY}
+				<li>延伸東方 {$map.shiftX} 與 南方 {$map.shiftY} 公里
+				<li>共需要 {$map.pages} 張 A4 列印
+				<li>產生日期: {$map.cdate}
+			</ul>
+	</td></tr>
+</table>

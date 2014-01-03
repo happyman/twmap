@@ -1,0 +1,170 @@
+<script src='http://connect.facebook.net/en_US/all.js'></script>
+<script src='/~happyman/twmap3/js/proj4js-combined.js'></script>
+<script src='/~happyman/twmap3/js/functions.js'></script>
+<table id="bigbox">
+	<tr><td width=400 valign="top" align="left">
+			<ul>
+				<li>標題: <b class="ui-state-default">{$map.title}</b>
+				{if $map.keepon_id}
+				<li>紀錄: <a href='http://www.keepon.com.tw/DocumentHandler.ashx?id={$map.keepon_id}' target=_blank><img src='http://www.keepon.com.tw/images/logo.jpg' height='35px' border=0></a>
+				{/if}
+				<li>本頁<a href='{$links.page}'>連結</a> (張貼參考請使用下列 URL):
+				<ul><li><span class="copy">{$links.page}</span>
+					<li><img src="icons/facebook_share_icon.gif" class="fbshare" tile="分享到 facebook"> share to facebook<br/>
+			</ul>
+				{if $html_head == 1}
+				<!-- AddThis Button BEGIN -->
+				<li><div class="addthis_toolbox addthis_default_style ">分享
+					<a class="addthis_button_facebook"></a>
+					<a class="addthis_button_plurk"></a>
+					<a class="addthis_button_twitter"></a>
+					<a class="addthis_button_google"></a>
+					<a class="addthis_button_compact"></a>
+					<a class="addthis_counter addthis_bubble_style"></a>
+				</div>
+				<script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4ef97c3d467e0504"></script>
+				<!-- AddThis Button END -->
+				{/if}
+				<li>本圖左上角座標 X={$map.locX},Y={$map.locY}
+				<li>延伸 東方 {$map.shiftX} 與 南方 {$map.shiftY} 公里
+				<li id="calc"></li>
+				<li>共需要 {$map.pageX * $map.pageY} 張 A4 列印
+				<li>產生日期: {$map.cdate}
+				{if $links.pdf}
+				<li><img src='imgs/pdf_icon.png' border=0/><a href="{$links.pdf}" class='showtip' title='下載可列印 pdf' target=_blank>下載列印 pdf</a>
+					   <ul>
+							           <li><span class="copy">{$links.pdf}</span>
+												         </ul>
+				{else}
+				<li><a href="{$links.zip}" class='showtip' title='一次下載全部圖檔' target=_blank><img src='imgs/zip_icon.png' border=0/>打包下載</a>
+				{if isset($links.gpx) }
+				<li><a href='{$links.gpx}' target=_blank class="showtip" title='下載至 gps 裝置'><img src='imgs/icon-gpx.png' border=0/>下載 GPS 檔 </a>
+						<ul>
+							<li><span class="copy">{$links.gpx}</span>
+						</ul>
+				{/if}
+				<li><a href="{$links.download_link}" target=_blank>下載連結清單</a>
+				<ul>
+					{foreach $links.simgs item=simg}
+					<li><span class="copy">{$simg}</span>
+					{/foreach}
+				</ul>
+				<li><img src='imgs/linux_icon.png' width=32 class='showtip' title='Linux 操作步驟'/>Linux 列印步驟:<button id="linuxCtl" >展開</button>
+				<div id=linux>
+					<ul>
+						<li>下載: <br>
+						<span class="copy">
+wget "{$links.download_link}" -O - | wget -i -
+					</span>
+						<li>列印: <br>
+						<span class="copy_area">
+for i in `ls -1 *.png`; 
+do
+	cat $i | pngtopnm | pnmtops -width 8.263 -height 11.69 -imagewidth 8.263 -imageheight 11.69 | lpr;
+done
+					</span>
+					</ul>
+				</div>
+				{/if}
+				<li><a href="browseImage.php?mid={$map.mid}" id="fullmaplink" target=_blank class='showtip pirobox_gall2'   rel="iframe-full-full" title='若A4不是您適合的列印尺寸,請下載本圖裁切輸出' ><img src='imgs/icon-map.png' border=0 />大圖連結</a> [<a href="{$links.fullmap}" target=_blank>直接下載</a>]
+				<ul>
+					<li><span class="copy">{$links.fullmap}</span>
+				</ul>
+
+
+				{if isset($links.kmz) }
+				<li><img src='imgs/earth_icon.png'  class="showtip" title="可用於 google earth 呈現或者 GPS 裝置" /> Google Earth 套圖
+				<ul> <li><a href="{$links.kmz}"  target="_blank" >KMZ 下載 (分小圖,適用於 GPSr 的 Custom Map)</a> </ul>
+					{/if}
+					<!--
+					<li><img src='imgs/oruxmap_icon.png' class="showtip" title="Android 軟體" />Oruxmap 離線地圖
+					<ul> <li> <a href="orux.php?mid={$map.mid}">7z 下載 (可使用於 Oruxmap 手機軟體)</a> </ul>
+					-->
+			</ul><!-- 總 -->
+			</td>
+			<td valign="top" align="right" height="800">
+				 {if isset($links.pdf) }
+				 <iframe src="http://docs.google.com/viewer?url={$links.pdf|urlencode}&embedded=true" width="512" style="border: none;" height="800"></iframe>
+				 {else}
+				 {html_table loop=$imgdata cols=$map.pageX table_attr='style="border: 0px; border-spacing: 0px;padding-top: 95px" width=512' }  
+				 {/if}
+			</td>
+		</tr>
+	</table>
+	<script>
+		$(document).ready(function() {
+
+			// proj 出座標
+			var tl = twd672lonlat( {$map.locX}, {$map.locY} , {$map.ph} );
+			var tr = twd672lonlat( {$map.locX} + {$map.shiftX} * 1000 , {$map.locY} , {$map.ph} );
+			var br = twd672lonlat( {$map.locX} + {$map.shiftX} * 1000 , {$map.locY} - {$map.shiftY} *1000 , {$map.ph} );
+			var bl = twd672lonlat( {$map.locX} , {$map.locY} - {$map.shiftY} *1000 , {$map.ph} );
+			$("#calc").html( "四邊經緯度 TL:TR:BL:BR: <span class='copy'> "+tl.x.toFixed(6) + "," + tl.y.toFixed(6) + ":" +
+			tr.x.toFixed(6) + "," + tr.y.toFixed(6) + ":" + bl.x.toFixed(6) + "," + bl.y.toFixed(6) + ":" 
+			+ br.x.toFixed(6) + "," + br.y.toFixed(6) + '</span>');
+
+
+			{literal}
+			$('#bigbox').css({"table-layout":"fixed", "width":"100%", 
+				"border":"1px solid #000", "white-space": "nowrap","overflow": "visible"});
+			$('#bigbox2').css({"table-layout":"fixed", "width":"100%", 
+				"border":"1px solid #000", "word-wrap":"break-word"});
+			$('#bigbox2').hide();
+			$('#linux').hide();
+			$('#linuxCtl').click(function() {
+				$('#linux').toggle('slow');
+				/*
+				if ($(this).html() == 'Hide') {
+					$('#linux').hide();
+					$(this).html('Show');
+				}
+				else {
+					$('#linux').show();
+					$(this).html('Hide');
+				}
+				*/
+			});
+
+			$('.fbshare').click(function() {
+				{/literal}
+				window.open("https://www.facebook.com/sharer/sharer.php?" +
+				"u=" + encodeURIComponent("{$links.page}") +
+				"&t=" + encodeURIComponent("地圖連結分享"));
+
+				return false;
+			});
+			{literal}
+			$('.copy').editable('dummy.php', {
+				tooltip: '點兩下 + Ctrl-C 大法',
+				event: 'dblclick',
+				select: true,
+				submit: '關閉' } );
+			// 清楚一點吧
+			$('.copy').css('cursor', 'pointer');
+			$('.copy').addClass('showtip');
+			$('.copy_area').css('cursor', 'pointer');
+			$('.copy').addClass('showtip');
+
+			$('.copy_area').editable('dummy.php', {
+				tooltip: '點兩下 + Ctrl-C 大法',
+				event: 'dblclick',
+				height: '80px',
+				width: '500px',
+				select: true,
+				type: 'textarea',
+				submit: '關閉' } );
+
+			$(".showtip").tipTip();
+
+			$.piroBox_ext({
+				piro_speed :900,
+				bg_alpha : 0.5,
+				piro_scroll : true,
+				piro_drag :false,
+				piro_nav_pos: 'top'
+			});
+		});
+
+	</script>
+
+	{/literal}

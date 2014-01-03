@@ -1,0 +1,86 @@
+<?php
+// $Id$
+define('__ROOT__', dirname(__FILE__). "/");
+require_once(__ROOT__. "lib/rangelib.php");
+require_once(__ROOT__."lib/STB.inc.php");
+require_once(__ROOT__."lib/svglib.php");
+
+$out_root = "/srv/www/htdocs/map/out";
+$out_html_root = "/map/out";
+$site_url = "http://map.happyman.idv.tw";
+$site_html_root = "/twmap";
+
+$stbpath = "/home/happyman/stb";
+$tilepath = "/mnt/twmapcache/tw25k2001";
+if (!file_exists($tilepath."/16")) {
+	die("image dir not ready");
+}
+$tmppath = "/mnt/twmapcache/tmp"; 
+$twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
+
+$TWMAP3URL = "/~happyman/twmap3/index.php";
+$BETA = 0; // beta for debug output
+$ERROROUT = "ajax";
+
+$stitch['A4']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
+$stitch['A4']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
+$stitch['A4R']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
+$stitch['A4R']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
+$tiles['A4'] = array('x'=>5, 'y'=>7);
+$tiles['A4R'] = array('x'=>7, 'y'=>5);
+$pixels['A4'] = array("x"=>1492, "y"=>2110);
+$pixels['A4R'] = array("x"=>2110, "y"=>1492);
+
+$fuzzy = 20;
+
+/* DB 設定寫在這裡 */
+$db_user = "twmap";
+$db_pass = "password";
+$db_name = "twmap";
+
+// 需要申請一把 xuite / facebook 的 api key
+// api.xuite.net
+require_once(__ROOT__."lib/twmapdb.inc.php");
+/* login */
+if (php_sapi_name() != "cli") {
+
+	require_once(__ROOT__."lib/xuite.php");
+	require_once(__ROOT__."lib/fb/facebook.php");
+	require_once(__ROOT__."lib/openid.php");
+	// here
+	$fb_appid = '';
+	$facebook = new Facebook(array(
+				'appId'  => $fb_appid,
+	// here
+				'secret' => '',
+				'cookie' => false,
+				));
+	// here
+	$xuite = new xuiteAuth(array(
+				'api_key' => '',
+				'secret' => ''));
+
+	/* template */
+	require_once(__ROOT__."lib/twmapdb.inc.php");
+	require_once(__ROOT__."lib/smarty/Smarty.class.php");
+
+	$smarty = new Smarty();
+	$smarty->setTemplateDir(__ROOT__.'pages');
+	$smarty->setCompileDir($tmppath .'/smarty/tcache');
+	$smarty->setCacheDir($tmppath.'/smarty/cache');
+	$smarty->setConfigDir($tmppath'/smarty/configs');
+
+	$smarty->assign("twmap_gen_version", $twmap_gen_version);
+	$smarty->assign("browser_url", $TWMAP3URL );
+	$smarty->assign("fb_appid", $fb_appid );
+
+}
+else {
+	require_once __ROOT__."lib/ape/ApeAbstractConnection.php";
+	require_once __ROOT__."lib/ape/ApeClient.php";
+	require_once __ROOT__."lib/ape/ApeCurlConnection.php";
+	require_once __ROOT__."lib/ape/ApeException.php";
+	require_once __ROOT__."lib/ape/ApeRequest.php";
+	require_once __ROOT__."lib/ape/ApeResponse.php";
+
+}

@@ -1,0 +1,18 @@
+地圖產生器 v2.61 now open source
+
+需要 web server + php + mysql
+
+套件:  php5-zlib, curl, gpsbabel, inkscape, zip, wget, proj, imagemagick
+
+登入需要
+ * facebook api key
+ * xuite api key
+
+需要
+
+memcached 在 11211 port 上
+aped (ajax push engine) 在 6969
+
+圖資
+ * 經建一版 
+ * 經建三版 來自 sinica, 程式會自己產生 cache

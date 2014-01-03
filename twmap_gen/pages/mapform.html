@@ -1,0 +1,140 @@
+<div id=mainform>
+	<FORM name=mapform id=mapform method=post enctype="multipart/form-data"  action="backend_make.php">
+		<table id="makemaptable">
+			  <tr class="normal_note" ><td>說明</td>
+					<td> <ol>
+							<li> <img src="icons/up_arrow.gif"> 「瀏覽」的方式,滑鼠左鍵選取範圍,再按右上角 <img src="icons/map_make.png" alt="產生" /> 傳送參數.
+							<li> 輸入 TWD67 座標邊界產生 / 上傳行跡檔(gdb 或 gpx 檔) 產生 <span id="switch_bt1" class="ui-state-default ui-corner-all hp">切換</a>
+							<li> 按照 <span class="step">1</span> <span class="step">2</span> <span class="step">3</span> .. 順序輸入產生
+							  </ol>
+				</td></tr>
+
+			<tr>
+				<td><img src=imgs/angel.gif></img></td>
+				<td>請為你的地圖留下簡短敘述<br>
+					<input type=text size=50 name='title' class="required" minlength="2"></input><span class="step" id="step_title">1</span>
+				</td>
+			</tr>
+			<tr class='method'><td>方式</td>
+				<td>
+					<button class="ui-state-default ui-corner-all hp" type=button name=bt1 id=bt1>輸入座標產生</button> <img src="icons/arrow_left_24x24.gif"/>點左側按鈕切換
+				</td>
+			</tr>
+			<tbody class="gpx_mode">
+				<tr><td>說明</td>
+					<td>輸入gps航跡檔產生與航跡結合的地圖,限台澎範圍</td>
+				</tr>
+				<tr><td>航跡</td>
+					<td>請上傳 gdb 或 gpx 檔<br>
+						<input type=file name="gpxfile" size=40><span class="step" id="step_upload">2</span>
+					</td>
+				</tr>
+				<tr><td>標記</td>
+					<td>
+						<label><input type="checkbox" name="trk_label" value="1">航跡標記</label>
+						<label><input type="radio" name="wpt_label" checked value="1">航點標記:另建索引</label>
+						<label><input type="radio" name="wpt_label" value="2">航點標記:在旁邊</label>
+						<span class="step" id="step_marker_type">3</span>
+					</td>
+				</tr>
+			</tbody>
+			<tbody class="gpx_recreate_mode">
+				<tr><td>航跡</td>
+					<td>已存在 gpx 檔<input type=text name="gpxfilename" size=40 readonly>
+						<br>
+						<input type=hidden name="gpxmid">
+					</td>
+				</tr>
+				<tr><td>標記</td>
+					<td>
+						<label><input type="checkbox" name="trk_label" value="1">航跡標記</label>
+						<label><input type="radio" name="wpt_label" checked value="1">航點標
+							記:另建索引</label>
+						<label><input type="radio" name="wpt_label" value="2">航點標記:在旁邊</label>
+						<span class="step" id="step_marker_type2">2</span>
+					</td>
+				</tr>
+			</tbody>
+			<tbody class="normal_mode">
+				<tr><td>X</td>
+					<td><input type=text size=3 name='startx' class="required" minlength="3" ></input>000 如 246 (149-351)
+						(左上角座標的 X 軸)
+					<span class="step" id="step_x">2</span>
+				</tr></td>
+				<tr><td>Y</td>
+					<td><input type=text size=4 name='starty' class="required" minlength="4"></input>000 如 2578 (2424-2800)
+						(左上角座標的 Y 軸)
+					<span class="step" id="step_y">3</span>
+				</td></tr>
+				<tr><td>n x m</td><td>
+						<button class="ui-state-default ui-corner-all hp" type=button name=bt id=bt >A 4</button>
+						<span id="a4" name="a4">
+							<select name=aashiftx>
+								{html_options values=$aashiftx output=$aashiftx selected="7"}
+							</select> X
+							<select name=aashifty>
+								{html_options values=$aashifty output=$aashifty selected="5"}
+							</select>
+							A4 直式 如 5x7 格
+						</span>
+						<span id="all" name="all" style=display:none>
+							<select name=anyshiftx>
+								{html_options values=$anyshiftx output=$anyshiftx selected="1"}
+							</select> X
+							<select name=anyshifty>
+								{html_options values=$anyshifty output=$anyshifty selected="1"}
+							</select>
+							如 10x8 格
+						</span>
+						<span id="a4r" name="a4r" style="display:none">
+							<select name=aarshiftx>
+								{html_options values=$aarshiftx output=$aarshiftx selected="7"}
+							</select> X
+							<select name=aarshifty>
+								{html_options values=$aarshifty output=$aarshifty selected="5"}
+							</select>
+							A4 橫式 如 7x5 格
+						</span>
+					<span class="step" id="step_bound">4</span>
+				</td></tr>
+				<tr><td>地點</td>
+					<td><select name=ph>
+							<option value=0 selected>台灣</option>
+							<option value=1>澎湖</option>
+						</select>
+						只有三版有澎湖範圍
+
+					<span class="step" id="step_area">5</span>
+				</td></tr>
+			</tbody>
+			<tr><td>版本</td>
+				<td><select name="version">
+						<option value=3 selected>經建三版</option>
+						<option value=1>經建一版</option>
+					</select>  
+					<span class="step" id="step_version">6</span>
+			</td></tr>
+			<tr><td></td>
+				<td>輸出格式 A4 或 A4R, 程式會以節省紙張為原則. <button class="ui-state-default ui-corner-all hp" type=button name="create" id="create">產生</button>
+					<button class="ui-state-default ui-corner-all hp" type=button name="create2" id="create2">上傳產生 </button>
+					<button class="ui-state-default ui-corner-all hp" type=button name="create3" id="create3">重新產生 </button>
+					<span class="step" id="step_go">7</span>
+					<input type=hidden name=kiss value="2">
+					<input type=hidden name=gps value="0">
+					<input type=hidden name=formid id="formid" value="{$formid}">
+				</td>
+			</tr>
+			<tr><td><td><a class="ui-state-default ui-corner-all" href="main.php">清空重來</a>
+					</tr>
+		</table>
+	</FORM>
+</div>
+<div id="dialog-message" title="傳送參數完成"> 
+	請將此圖加上敘述
+</div>
+<!-- facebook 留言板 -->
+<p>
+<div style="width:550px;">
+	<img src='imgs/discuss_icon.png'/>
+	<a href='https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168?fref=ts' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a> 
+</div>

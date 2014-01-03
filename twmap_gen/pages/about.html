@@ -1,0 +1,116 @@
+<b>地圖產生器</b>-第 {$twmap_gen_version} 版
+<p>自 2010/11/21 起系統共產生了 {$created} 張地圖, 尚存在 {$total_maps} 張地圖, 使用空間 {$size} <br>
+登入使用者 {$all_users} 位, 有產生地圖 {$active_users} 位,平均每人產生 {$avg_maps} 張地圖
+<p><img src='imgs/discuss_icon.png'/>
+<a href='https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a>
+<p>
+
+<b>使用方式</b>
+<ol>
+	<li>找出座標: 使用<b>瀏覽</b>功能選取此行要走的範圍
+	<li>給予左上角座標, 往右,往下範圍,
+	<li>加上敘述描述 產生地圖. 
+</ol>
+<p>
+<b>列印方法:</b>
+<ul>
+	<li>將 pdf 檔列印出來
+	<li>將圖檔列印出來
+	<!--<li><a href=http://catleg.org/index.php/CatLeg/MapPrintHowto>如何列印已經產生的地圖?</a>-->
+</ul>
+<b>剪貼:</b>
+<ul>
+	<li><a href="http://peter821231.blogspot.tw/2013/06/v247.html?spref=fb">澎澎的Blog 介紹文</a>
+	<li><a href="http://www.tpshanshui.com.tw/mapfinder.htm">台北山水</a>介紹文章,謝謝囉!
+	<li><a href="http://blog.yam.com/amimitea/article/48657866">地圖產生器v2.44的使用方式</a>
+</ul>
+<p>
+我認為這套地圖應該是屬於大家的, 因為地理資訊自由</a>.
+<p>
+登山前能夠免於奔波,到處去印地圖,花多一點時間去準備規劃登山行程不是更好!
+<p>
+山越爬越有意思, 還都得歸功這套圖的幫忙. 大家不妨多利用!
+
+<p>
+<button id=changelogctl class="ui-state-default ui-corner-all hp">檢視更新紀錄</button>
+<div id="changelog">
+<pre> 
+2013/10/25 地圖瀏覽器 v3.74 不同點位選擇 一等/二等/三等/森林點/百岳
+2013/09/14 地圖產生器 v2.61 出圖加上 progress bar. 使用 server push 實作
+2013/09/12 地圖產生器 v2.6 更新 tile 切割方法修正歪斜問題. list 改 ajax pager, 取消 oruxmaps 輸出
+2013/09/08 地圖瀏覽器 v3.73 加上TWD67 Grid, 增加右鍵看座標(取消游標位置顯示), 更新操作 UI, 感謝 MillerLiu 的建議.
+2013/09/04 地圖瀏覽器 v3.72 將國土測量中心的透明道路圖層也加入. 可以在右上角選擇是否顯示
+2013/09/02 地圖瀏覽器 v3.71 福衛二號換成"通用版電子地圖正射影像" http://maps.nlsc.gov.tw/
+2013/08/28 地圖瀏覽器 v3.7 改進搜尋框加上 geocoding 及顯示 name 圖層,不知道山名也可以找(台北101,義大世界等地標)
+2013/08/22 地圖產生器 v2.52 加上 oruxmaps 的地圖輸出
+2013/08/22 地圖產生器 v2.53 oruxmaps 改成 7z 壓縮,加上地圖座標系統.
+2013/06/27 地圖產生器 v2.51 加大四周 label (Milller建議)
+2013/06/27 地圖產生器 v2.5 輸出小圖採用 pdf, A4 輸出改成 5x7 
+2013/05/13 地圖產生器 v2.47 改進使用動線, login page 及加上 tips
+2013/05/13 地圖瀏覽器 v3.64 fix geolocation 及記住上次位置(威龍)
+2012/05/24 地圖瀏覽器 v3.62 加上 geolocation 以及版面校調 for mobile
+2012/05/17 地圖產生器 v2.46 加上 gpx 的 expire (回收空間)及重新產生功能. 加強 mapform 及 list 的操作動線, 更新 icon, gpx 呼叫地圖瀏覽器來預覽 
+2012/04/26 地圖瀏覽器 v3.6 加上 kml_layer 的顯示 geoxml powered, 使用 idle listener 以及 layer 切換功能
+2012/04/20 地圖瀏覽器 v3.5 加上到座標功能, 提供permLink
+2012/04/07 地圖產生器 v2.45 改進v2.33版本 4cm 方格, 加上 keepon 使用的 api: 21cm:2480px@300dpi: 1cm:284.4px  
+2012/01/15 地圖產生器 v2.44 改進 login,show 的流程,使用 smarty, 加上單一大圖瀏覽功能(panFullSize), 切割圖預覽(piroView), 連結複製(jqeditable)
+2012/01/15 地圖瀏覽器 v3.4 加上標題,更換 theme
+2012/01/05 地圖產生器 v2.43 圖檔超過 100G, 清除舊檔案功能, 新 gpx 索引加上座標 謝謝阿超 feedback 
+2011/12/28 地圖產生器 v2.42 bugfix, gpx 單一行跡支援.
+2011/12/18 地圖產生器 v2.41 航跡輸入 auto fit a4
+2011/12/15 地圖產生器 v2.4 可以結合 gpx/gdb 行跡檔輸出, 輸出結構稍作修改 uid/mid/files, 行跡併入kml.
+2011/09/27 地圖產生器 v2.33 讓輸出最接近 4cm 方格, A4 image 輸出 1492x2210 px, 修正 UI css 讓 UI 的 tab 顯示空間更多
+2011/09/20 地圖瀏覽器 v3.3, 加上 marker icon, spiderfy markers, 點位整理功能, 點位自動完成修正.
+2011/08/05 地圖瀏覽器 v3.2, 加上一版底圖及澎湖選取功能
+2011/08/05 地圖產生器 v2.32, 支援澎湖產生功能. TWD67-97轉換改用七參數法.修正邊界-超出圖資範圍 -- cache file 不存在,修正顯示超過10張圖的 index 排序不正確問題.
+2011/08/04 地圖產生器 v2.31, 修改支援同一範圍不同版本的產生. 圖檔格式多 -v1 or -v3 來識別.
+2011/02/24 地圖產生器 v2.3, 小修改外部連結部份, 強迫帶 info 以利張貼, 內部呈現 預設顯示最新地圖
+2011/02/23 地圖產生器 v2.29 , 新增熱門地圖及最新地圖列表, 小修改 UI
+2011/02/17 地圖產生器 v2.28 , 新增原圖產生 KMZ 檔案功能 - 迪西, Jing Geocacher, 小花建議, 改進參數傳替的 location, 修正 expire 過得圖檔計算
+2011/02/16 地圖產生器 v2.26, 新增 xuite oauth2 認證,修正預設地圖 30 張
+2011/02/11 地圖產生器 v2.25, 空間滿, 嘗試處理空間問題: 作法是 expire 地圖圖檔但留下 meta data, 測試中
+2011/01/21 地圖產生器 v2.24 , 新增打包下載功能 -- leo 建議
+2011/01/11 地圖產生器 v2.23, 修正 tagimage 造成的色差,謝謝 Jesse Wang 回報
+2010/12/28 地圖產生器 v2.22, 新增產生 A4 landscape --黃正光建議.自動判斷,如果 A4 橫印較省紙則使用,否則都是 A4 直印.
+2010/12/27 地圖瀏覽器 v3.1 projection 改成 proj4js. 顯示游標座標 -- Millerliu 建議
+2010/12/23 地圖產生器 v2.21 加上經建三版圖資, 來源 http://gissrv4.sinica.edu.tw/gis/twhgis.aspx. 縫圖使用 z=16 的 tiles
+2010/11/30 地圖產生器 v2.01 將 embed 進去
+2010/11/30 地圖瀏覽器 v3.0 誕生, tabs 改成中文
+2010/11/21 地圖產生器 v2.0 大改版 rewrite ui by jquery, and mysql backend, openid/facebook login support. too many updates
+
+2007/5/31 之前舊版的前端 user 產生一堆廢地圖又不刪除 只好限制每個人可以使用的數量
+2007/5/31 v1.73 add wget_copy for show.php
+2007/5/30 v1.72 fix colorgray() blue color replacement for 某些區塊(例如中央尖山) fix iframe in out/index.php
+2006/2/27 v1.71 out/index.php updated for better show
+2006/1/11 v1.7 add: google earth link to show.php
+2005/9/20 v1.62 add: out/show.php toolbar 連結
+2005/6/22 v1.61 fix: A4/ANY 切換的 web ui bug, 多謝劉兄來信.
+2005/6/3 v1.6 fix: A4/ANY 切換的 web ui bug, 多謝5月測試的兄弟.
+2005/3/25 v1.5 加上 flush() 使等待過程有東西可看
+2005/3/13 v1.4 改寫成 class 版本 (rewrite 一些 function)
+2005/3/1 v1.3 除掉座標的 bug addtagborder(), php 需要取商數要用 X div Y = (X - (X%Y))/Y 當然 Y 不為 0 的情況下.
+2004/4/26 v1.21 找到好軟體 irfanView
+2004/4/21 v1.2 四邊都有座標, 座標加在地圖外部, 剪裁邊多留格線 -- 文伶 建議
+2004/4/19 v1.1 加上切圖功能, 灰階化演算法. 剪裁邊. 加上 show.php 可顯示/刪除 圖形
+2004/4/10 v1.0 第一版可以抓出地圖, 加上座標, 需手動切圖 -- thanx to hsunwei
+2004/4/2 beta 存入 sorted index, 以加速搜尋.
+</pre>
+</div>
+<script>
+	var show=0;
+	$("#changelog").hide();
+	$(document).ready(function() {
+
+		$("#changelogctl").click(function(){
+			if (show==1) {
+				$("#changelog").hide();
+				show=0;
+				} else {
+				$("#changelog").show();
+				show=1;
+			}
+		});
+
+
+	});
+</script>
