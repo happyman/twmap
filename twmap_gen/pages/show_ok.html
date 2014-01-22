@@ -31,9 +31,10 @@
 				<li>共需要 {$map.pageX * $map.pageY} 張 A4 列印
 				<li>產生日期: {$map.cdate}
 				{if $links.pdf}
-				<li><img src='imgs/pdf_icon.png' border=0/><a href="{$links.pdf}" class='showtip' title='下載可列印 pdf' target=_blank>下載列印 pdf</a>
+				<li><img src='imgs/pdf_icon.png' border=0/><a href="{$links.pdf}" class='showtip' title='下載可列印 pdf' target=_blank>下載列印 pdf</a> 或 <a href="http://sync.hamicloud.net" target=_blank title="台灣版的 cloudbox"><img src='imgs/cb.png' border=0/></a><a href="cloudprint.php?mid={$map.mid}" target="print">產生雲端列印碼 去 7-11 列印</a>
 					   <ul>
 							           <li><span class="copy">{$links.pdf}</span>
+												 
 												         </ul>
 				{else}
 				<li><a href="{$links.zip}" class='showtip' title='一次下載全部圖檔' target=_blank><img src='imgs/zip_icon.png' border=0/>打包下載</a>

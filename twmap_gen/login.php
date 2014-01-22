@@ -146,7 +146,7 @@ default:
 	//echo "必須登入上述任一帳號才可使用";
 
 	$smarty->assign("loggedin", 0 );
-	$smarty->assign("login_xuite", $xuite->getLoginUrl());
+	$smarty->assign("login_xuite", $xuite->getLoginUrl($site_url . "/". $_SERVER['REQUEST_URI']));
 	$smarty->assign("login_fb",
 		$facebook->getLoginUrl(  array(
 			'canvas'    => 0,

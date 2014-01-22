@@ -8,6 +8,7 @@ class xuiteAuth {
 	var $api_key;
 	var $secret;
 	var $debug; 
+	var $curlinfo;
 	function __construct($o) {
 		$this->data = $_GET + $_POST;
 		$this->api_key = $o['api_key'];
@@ -62,25 +63,37 @@ class xuiteAuth {
 	function dump() {
 		print_r($this->data);
 	}
-	function request_curl($url, $method='GET', $params=array()) {
-		$params = http_build_query($params, '', '&');
-		$curl = curl_init($url . ($method == 'GET' && $params ? '?' . $params : ''));
+	function getMe() {
+		$url = $this->getAPIURL("xuite.my.private.getMe",array("auth"=>$this->data['access_token']));
+		return json_decode($this->request_curl($url),true);
+	}
+	function getVlog($id) {
+		$url = $this->getAPIURL("xuite.vlog.public.getVlog",array("vlog_id" => $id));
+		return json_decode($this->request_curl($url),true);
+
+	}
+	function request_curl($url, $method='GET', $params=array(), &$info="") {
+		$params_line = http_build_query($params, '', '&');
+		$curl = curl_init($url . ($method == 'GET' && $params_line ? '?' . $params_line : ''));
 		curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-		curl_setopt($curl, CURLOPT_HEADER, false);
+		//curl_setopt($curl, CURLOPT_HEADER, false);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Accept: application/xrds+xml, */*'));
-
-		//	if($this->verify_perr !== null) {
-		//		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $this->verify_peer);
-		//if($this->capath) {
-		//curl_setopt($curl, CURLOPT_CAPATH, $this->capath);
-		//}
-		//}
+		curl_setopt($curl, CURLOPT_DNS_USE_GLOBAL_CACHE, false );
+		curl_setopt($curl, CURLOPT_DNS_CACHE_TIMEOUT, 1 );
 
 		if ($method == 'POST') {
+			curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+			curl_setopt($curl, CURLOPT_POST, true);
+			curl_setopt($curl, CURLOPT_POSTFIELDS, $params_line);
+
+		} elseif ($method == 'POSTFILE') {
+			curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
 			curl_setopt($curl, CURLOPT_POST, true);
 			curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
+			curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+		} elseif ($method == "GETFILE") {
+			curl_setopt($curl,CURLOPT_FILE, $params['fd']);
 		} elseif ($method == 'HEAD') {
 			curl_setopt($curl, CURLOPT_HEADER, true);
 			curl_setopt($curl, CURLOPT_NOBODY, true);
@@ -96,25 +109,77 @@ class xuiteAuth {
 				$name = strtolower(trim(substr($header, 0, $pos)));
 				$headers[$name] = trim(substr($header, $pos+1));
 			}
-
-			# Updating claimed_id in case of redirections.
-			$effective_url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
 			return $headers;
 		}
 
 		if (curl_errno($curl)) {
 			throw new ErrorException(curl_error($curl), curl_errno($curl));
 		}
+		$info = curl_getinfo($curl);
 
 		return $response;
 	}
-	function getMe() {
-		$url = $this->getAPIURL("xuite.my.private.getMe",array("auth"=>$this->data['access_token']));
+	/**
+	 * getMetadata 
+	 * 取得 metadata 用來轉換 path => key
+	 * @param mixed $path 
+	 * @param mixed $type 
+	 * @access public
+	 * @return void
+	 */
+	function getMetadata($path, $type) {
+		$url = $this->getAPIURL("xuite.webhd.private.cloudbox.getMetadata", array("auth"=>$this->data['access_token'],"path"=>$path,"type"=>$type));
+		return json_decode($this->request_curl($url, "GET", array(), $this->curlinfo),true);
+	}
+	/**
+	 * mkdir_p 
+	 * 建立目錄
+	 * @param mixed $path 
+	 * @access public
+	 * @return void
+	 */
+	function mkdir_p($path) {
+		$url = $this->getAPIURL("xuite.webhd.private.cloudbox.mkdir_p",array("auth"=>$this->data['access_token'],"path"=>$path));
 		return json_decode($this->request_curl($url),true);
 	}
-	function getVlog($id) {
-		$url = $this->getAPIURL("xuite.vlog.public.getVlog",array("vlog_id" => $id));
+	/**
+	 * prepare_upload 
+	 * 上傳準備
+	 * @param mixed $parent_key 
+	 * @access public
+	 * @return void
+	 */
+	function prepare_upload($parent_key) {
+		$url =  $this->getAPIURL("xuite.webhd.prepare.cloudbox.putFile",array("auth" => $this->data['access_token'], "parent"=>$parent_key));
+		return json_decode($this->request_curl($url, "GET", array(), $this->curlinfo),true);
+	}
+	/**
+	 * upload 
+	 * 真正上傳, 將 prepare 結果 feed 進來
+	 * @param mixed $prepared 
+	 * @param mixed $file_path 
+	 * @access public
+	 * @return void
+	 */
+	function upload($prepared, $file_path) {
+		$result = $prepared['rsp'];
+		$params = array("api_key"=> $this->api_key, "api_otp" => $result['otp'], "auth_key" => $result['auth_key'], "checksum" => $result['checksum'],
+			"upload_file" => '@' . realpath($file_path));
+		$result = $this->request_curl($result['url2'], "POSTFILE", $params, $myinfo);
+		if ($myinfo[1]['http_code'] != 200 ) {
+			return array(false, $result, $myinfo);
+		}
+		return array(true,"ok",$myinfo);
+	}
+	/**
+	 * print_code_get 
+	 * 取得 ibon 列印碼
+	 * @param mixed $key 
+	 * @access public
+	 * @return void
+	 */
+	function print_code_get($key) {
+		$url =  $this->getAPIURL("xuite.webhd.private.cloudbox.printcode.get",array("auth" => $this->data['access_token'],"key"=>$key, "kiosk_type"=>'ibon'));
 		return json_decode($this->request_curl($url),true);
-
 	}
 }
