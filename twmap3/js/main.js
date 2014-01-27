@@ -120,6 +120,15 @@ var TaiwanMapOptions = {
 	name: "台灣",
 	alt: 'Taiwan TW67 Map'
 }
+var OSM_Options = {
+	getTileUrl: function(a, b) {
+		return "http://tile.openstreetmap.org/"+ b +"/" + a.x + "/" + a.y +".png";
+	},
+	tileSize: new google.maps.Size(256, 256),
+	maxZoom: 19,
+	name: "OSM",
+	alt: "Open Street Map"
+}
 var SunriverMapType = new google.maps.ImageMapType(SunriverMapOptions);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
 var OSM_GDEM_MapType = new google.maps.ImageMapType(OSM_GDEM_Options);
@@ -127,6 +136,7 @@ var OSM_GDEM_MapType = new google.maps.ImageMapType(OSM_GDEM_Options);
 var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_2011_MapOptions);
 var GoogleNameMapType =  new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType =  new google.maps.ImageMapType(NLSCNameOptions);
+var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
 var BackgroundMapType;
 var BackgroundMapOptions;
 var BackgroundMap = 0;
@@ -749,7 +759,7 @@ function initialize() {
 			style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
 			position: google.maps.ControlPosition.TOP_LEFT,
 			//	draggableCursor: 'url(img/A4-32x32.gif),default',
-			mapTypeIds: ['general2011','twmapv1', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE ]
+			mapTypeIds: ['general2011','twmapv1','osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE ]
 		}
 
 	};
@@ -766,6 +776,7 @@ function initialize() {
 	map.mapTypes.set('twmapv1', SunriverMapType);
 	map.mapTypes.set('taiwan', TaiwanMapType);
 	map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
+	map.mapTypes.set('osm', OSM_MapType);
 	// 前景免設
 	//map.mapTypes.set('googlename', GoogleNameMapType);
 	//map.mapTypes.set('nlscname', NLSCNameMapType);
