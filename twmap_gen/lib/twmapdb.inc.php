@@ -469,7 +469,7 @@ function stats() {
 	$total_maps = 0;
 	$maxmid = 0;
 	$db=get_conn();
-	$sql = "select * from `twmap`.`map` where flag <> 2";
+	$sql = "select size,mid from `twmap`.`map` where flag <> 2";
 	$rs = $db->GetAll($sql);
 	foreach($rs as $row) {
 		$size+=$row['size'];
