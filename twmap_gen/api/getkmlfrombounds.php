@@ -45,6 +45,7 @@ $data = map_overlap($bounds, $gpx, $maxkeys);
 $mids = array();
 $ret = array("add" => array(), "del" => array(), "all" => array(), "count"=> array("add" => 0 , "del" => 0 ));
 foreach($data as $map) {
+    if ($map['hide'] == 1) continue;
 	if (!in_array($map['mid'],$keys)) {
 
 		$content =  sprintf("<a href='%s%s/show.php?mid=%s&info=%s&version=%d' target=_twmap>%s<img src='img/map.gif' title='地圖產生器' border=0/></a>",$site_url,$site_html_root, $map['mid'], urlencode(sprintf("%dx%s-%dx%d",$map['locX'],$map['locY'],$map['shiftX'],$map['shiftY'])), $map['version'], $map['title']);

@@ -35,15 +35,9 @@
 					   <ul>
 							           <li><span class="copy">{$links.pdf}</span>
 												 
-												         </ul>
+						 </ul>
 				{else}
 				<li><a href="{$links.zip}" class='showtip' title='一次下載全部圖檔' target=_blank><img src='imgs/zip_icon.png' border=0/>打包下載</a>
-				{if isset($links.gpx) }
-				<li><a href='{$links.gpx}' target=_blank class="showtip" title='下載至 gps 裝置'><img src='imgs/icon-gpx.png' border=0/>下載 GPS 檔 </a>
-						<ul>
-							<li><span class="copy">{$links.gpx}</span>
-						</ul>
-				{/if}
 				<li><a href="{$links.download_link}" target=_blank>下載連結清單</a>
 				<ul>
 					{foreach $links.simgs item=simg}
@@ -67,6 +61,13 @@ done
 					</ul>
 				</div>
 				{/if}
+        {if $links.gpx}
+				<li><a href='{$links.gpx}' target=_blank class="showtip" title='下載至 gps 裝置'><img src='imgs/icon-gpx.png' border=0/>下載 GPS 檔 </a>
+				<ul>
+					<li><span class="copy">{$links.gpx}</span>
+				</ul>
+				{/if}
+
 				<li><a href="browseImage.php?mid={$map.mid}" id="fullmaplink" target=_blank class='showtip pirobox_gall2'   rel="iframe-full-full" title='若A4不是您適合的列印尺寸,請下載本圖裁切輸出' ><img src='imgs/icon-map.png' border=0 />大圖連結</a> [<a href="{$links.fullmap}" target=_blank>直接下載</a>]
 				<ul>
 					<li><span class="copy">{$links.fullmap}</span>

@@ -15,18 +15,25 @@ $map = map_get_single($mid);
 if ($map === false) 
 	ajaxerr("no such map");
 
-
 // 把地圖拿出來換成 kml
 $gpx = str_replace(".tag.png", ".gpx", $map['filename']);
 $cachefile = sprintf("/srv/www/htdocs/map/gpxtmp/%06d/%d/%s", $map['uid'], $map['mid'], basename(str_replace(".gpx", ".kml", $gpx)));
 if (file_exists($gpx)) {
-	//$cmd = sprintf("gpsbabel -i gpx -o kml,track=1,points=0,line_width=3,line_color=%s -f %s -F -", rand_abgr(), $gpx);
 	if (file_exists($cachefile) && filemtime($cachefile) >= filemtime($gpx)) {
 		readfile($cachefile);
 		exit;
 	}
-	$cmd = sprintf("mkdir -p %s; gpsbabel -i gpx -o kml,track=1,points=0,line_width=3,line_color=%s -f %s -F - | tee %s", dirname($cachefile), pick_color($mid), $gpx, $cachefile);
+	// 過濾掉 routes
+	$cmd = sprintf("gpsbabel -i gpx -f %s -x transform,wpt=rte -x duplicate,shortname,location,all -o gpx -F %s.in.GPX; ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -overwrite %s.GPX %s.in.GPX waypoints tracks",$gpx, $gpx,$gpx,$gpx);
+	exec($cmd,$out,$ret);
+	if ($ret == 0 )
+		$input_gpx = $gpx . ".GPX";
+	else
+		$input_gpx = $gpx;
+	$cmd = sprintf("mkdir -p %s; gpsbabel -i gpx -f %s -x nuketypes,routes -o kml,track=1,points=0,line_width=3,line_color=%s -F - | tee %s", dirname($cachefile),  $input_gpx, pick_color($mid), $cachefile);
 	passthru($cmd);
+	//@unlink($gpx. ".GPX");
+	//@unlink($gpx. ".in.GPX");
 } else  {
 	ajaxerr("no file");
 }
