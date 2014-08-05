@@ -123,6 +123,7 @@ var TaiwanMapOptions = {
 var OSM_Options = {
 	getTileUrl: function(a, b) {
 		return "http://tile.openstreetmap.org/"+ b +"/" + a.x + "/" + a.y +".png";
+		//return "http://tile.waymarkedtrails.org/hiking/"+ b + "/" + a.x + "/" + a.y +".png";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 19,
@@ -411,6 +412,13 @@ function locInfo(newpos) {
 		content += permLinkURL( encodeURIComponent(locInfo_name) );
 	content += "<br>經緯度: " + newpos.toUrlValue(5);
 	content += "<br>座標: " + comment + ""+  Math.round(p.x) + "," + Math.round(p.y);
+	if (admin_role == 1) {
+		if (locInfo_name == "我的位置")
+		content += "<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=1&x=" + newpos.lng().toFixed(5) + "&y="+  newpos.lat().toFixed(5) + "&form=add');return false\">新增</a>";
+		else
+		content += "<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=1&x=" + newpos.lng().toFixed(5) + "&y="+  newpos.lat().toFixed(5) + "&name="+ locInfo_name +"&form=add');return false\">新增</a>";
+
+	}
 	content += "</div>";
 	centerInfo.setContent(content);
 	centerMarker.setTitle("座標位置");

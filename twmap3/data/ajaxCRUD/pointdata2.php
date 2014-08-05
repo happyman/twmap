@@ -60,7 +60,8 @@ function tell_story($d,$p=array()){
 	if ($d['class'] > 1 && $d['class'] < 4 ) {
 		$a .= sprintf("%d-%d", $d['class'],$d['number']);
 	}
-	$a .= sprintf("<br>狀態: %s", $d['status']);
+	if (strstr($d['type'],'點'))
+		$a .= sprintf("<br>狀態: %s", $d['status']);
 	if (!empty($d['alias']))
 		$a .= sprintf("<br>別名: %s", $d['alias']);
 	if ($d['mt100']==1)

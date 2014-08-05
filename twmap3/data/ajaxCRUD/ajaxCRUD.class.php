@@ -619,6 +619,11 @@ class ajaxCRUD{
         if ($this->css){
         	echo "<link href=\"" . $this->ajaxcrud_root . "css/" . $this->css_file ."\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />\n";
         }
+				// happyman
+				if ($_GET['form'] == 'add'){
+					echo "<script>$(document).ready(function(){
+						$('#add_form_point').slideDown('slow');});</script>";
+				}
 
 		return true;
 	}

@@ -39,8 +39,11 @@ $ver = trim(file_get_contents("VERSION"));
 require_once("lib/functions.inc.php");
 if (is_admin())
 	echo "var admin_role = 1;\n";
-else
+else {
+	// prepare login
+	$_SESSION['redirto'] = $_SERVER["REQUEST_URI"];
 	echo "var admin_role = 0;\n";
+}
 printf("var getkmlfrombounds_url = '%s';\n",$CONFIG['getkmlfrombounds_url']);
 printf("var geocodercache_url = '%s';\n",$CONFIG['geocodercache_url']);
 printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
@@ -104,7 +107,7 @@ printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 			本程式功能
 			<ul>
 			<li>瀏覽台灣<a href="http://gissrv4.sinica.edu.tw/gis/twhgis.aspx" target="sinica">等高線地形圖</a>,以<a href="http://maps.nlsc.gov.tw/">衛星圖</a>套疊作為登山前參考
-			<li>選擇範圍以便使用<a href="/twmap/" target="twmap">地圖產生器</a>
+			<li>選擇範圍以便使用<a href="/twmap/" target="twmap">地圖產生器</a>,<a href="/twmap/login.php">登入</a>
 			<li>歡迎<a href="https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168" target="_blank">建議或討論</a>
 			</ul>
 			小秘訣

@@ -74,6 +74,13 @@ $tbl->displayAs("checked", "檢查");
 $tbl->defineCheckbox('checked','1','0');
 $tbl->defineCheckbox('mt100',1,0);
 
+if ($_GET['x'] && $_GET['y']) {
+	$tbl->setInitialAddFieldValue('x', $_GET['x']);
+	$tbl->setInitialAddFieldValue('y', $_GET['y']);
+	$tbl->displayAddFormTop();
+}
+if ($_GET['name'])
+	$tbl->setInitialAddFieldValue('name', $_GET['name']);
 $tbl->showTable();
 
 
