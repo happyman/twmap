@@ -158,10 +158,14 @@ function parse_url (str, component) {
 // proj function
 Proj4js.defs["EPSG:3828"] = "+title=二度分帶：TWD67 TM2 台灣 +proj=tmerc  +towgs84=-752,-358,-179,-.0000011698,.0000018398,.0000009822,.00002329 +lat_0=0 +lon_0=121 +x_0=250000 +y_0=0 +k=0.9999 +ellps=aust_SA  +units=公尺";
 Proj4js.defs["EPSG:3827"] = "+title=二度分帶：TWD67 TM2 澎湖 +proj=tmerc  +towgs84=-752,-358,-179,-.0000011698,.0000018398,.0000009822,.00002329 +lat_0=0 +lon_0=119 +x_0=250000 +y_0=0 +k=0.9999 +ellps=aust_SA  +units=公尺";
+Proj4js.defs["EPSG:3826"] = "+title=二度分帶：TWD97 TM2 台灣 +proj=tmerc  +lat_0=0 +lon_0=121 +k=0.9999 +x_0=250000 +y_0=0 +ellps=GRS80 +units=公尺 +no_defs"; 
+Proj4js.defs["EPSG:3825"] = "+title=二度分帶：TWD97 TM2 澎湖 +proj=tmerc  +lat_0=0 +lon_0=119 +k=0.9999 +x_0=250000 +y_0=0 +ellps=GRS80 +units=公尺 +no_defs"; 
 
 
 var EPSG3828 = new Proj4js.Proj('EPSG:3828');
 var EPSG3827 = new Proj4js.Proj('EPSG:3827');
+var EPSG3826 = new Proj4js.Proj('EPSG:3826');
+var EPSG3825 = new Proj4js.Proj('EPSG:3825');
 var WGS84 = new Proj4js.Proj('WGS84');
 
 function lonlat2twd67(x,y,ph) {
@@ -179,6 +183,15 @@ function twd672lonlat(x,y,ph) {
 		Proj4js.transform(EPSG3827,WGS84, p);
 	else
 		Proj4js.transform(EPSG3828,WGS84, p);
+	var result = {x: p.x, y: p.y};
+	return result;
+}
+function twd972lonlat(x,y,ph) {
+	var p = new Proj4js.Point(parseFloat(x), parseFloat(y));
+	if (ph==1)
+		Proj4js.transform(EPSG3825,WGS84, p);
+	else
+		Proj4js.transform(EPSG3826,WGS84, p);
 	var result = {x: p.x, y: p.y};
 	return result;
 }

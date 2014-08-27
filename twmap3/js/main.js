@@ -514,6 +514,7 @@ function showCenterMarker(name) {
 	var posxy1 = name.match(/^(\d+\.?\d+)\s+(\d+\.\d+)$/);
 	var postw67 = name.match(/^(\d+)\s*,\s*(\d+)$/);
 	var postw671 = name.match(/^(\d+)\s+(\d+)$/);
+	var postw97 = name.match(/^(\d+)\s*\/\s*(\d+)$/);
 	var loc;
 	var tmploc;
 	if (posxy) {
@@ -524,6 +525,8 @@ function showCenterMarker(name) {
 		tmploc = twd672lonlat(postw67[1],postw67[2],0);
 	} else if (postw671) {
 		tmploc = twd672lonlat(postw671[1],postw671[2],0);
+	} else if (postw97) {
+		tmploc = twd972lonlat(postw97[1],postw97[2],0);
 	} else {
 		// geocoding
 		$.blockUI({ message: "查詢中..." });
@@ -575,7 +578,7 @@ function showCenterMarker(name) {
 								} else {
 									$.unblockUI();
 									// alert("Geocode was not successful for the following reason: " + status);
-									alert("找不到喔! 請輸入 地址 或 座標格式 twd67 X,Y 如 310300,2703000 或者經緯度 lat,lon 24.430623,121.603503");
+									alert("找不到喔! 請輸入 地址 或 座標格式: 1. t67 X,Y 如 310300,2703000 2. t97 X/Y 或者 3. 含小數點經緯度 lat,lon 24.430623,121.603503");
 									return false;
 								}
 						});
@@ -1243,7 +1246,7 @@ function CurrentLocation(position) {
 
 function FeatureLocation() {
 	var feature = [ "三角錐山", "南二子山北峰", "敷島山", "大檜山", "武陵山", "佐久間山", 
-		"錐錐谷", "丹錐山", "霧頭山", "出雲山", "西巴杜蘭" ];
+		"錐錐谷", "丹錐山", "霧頭山", "出雲山", "西巴杜蘭", "公山", "大分山" ];
 	$("#tags").val(feature[Math.floor(Math.random() * feature.length)]);
 	$("#goto").trigger('click');
 
