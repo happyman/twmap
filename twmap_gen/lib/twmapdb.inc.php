@@ -669,7 +669,7 @@ function map_overlap($bounds, $gpx=1, $max=0){
 	//(R1.TL.x <= R2.BR.x) &&
 	//(R1.TL.y >= R2.BR.y) && 
 	$db=get_conn();
-	$sql = sprintf("SELECT * FROM `map` WHERE gpx=%d and ( locX < %s and locX+shiftX*1000 > %s and locY > %s  and locY-shiftY*1000 < %s)", $gpx, $bounds['brx'], $bounds['tlx'],$bounds['bry'],$bounds['tly']);
+	$sql = sprintf("SELECT * FROM `map` WHERE flag <> 2 and gpx=%d and ( locX < %s and locX+shiftX*1000 > %s and locY > %s  and locY-shiftY*1000 < %s)", $gpx, $bounds['brx'], $bounds['tlx'],$bounds['bry'],$bounds['tly']);
 
 	if ($max > 0 ) {
 		$sql .= " LIMIT $max";

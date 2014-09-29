@@ -1,6 +1,11 @@
 // $Id$
 var map;
 
+if (typeof console == "undefined") {
+	window.console = {
+		log: function () {}
+	};
+}
 // 邊框變數
 var miniX = 9999;
 var miniY = 0;
@@ -29,9 +34,12 @@ var got_geo = 0;
 // geocoding
 var geocoder;
 // var show_kml = (getParameterByName("kml")) ? 1: 0;
-var show_kml_layer = 0; // getParameterByName("show_kml_layer")?  getParameterByName("show_kml_layer") : 1;
+var show_kml_layer = 1; // getParameterByName("show_kml_layer")?  getParameterByName("show_kml_layer") : 1;
 var GPSLayer; // external kml layer
 var kmlArray = [];
+for(var i=13;i<=18;i++) {
+	kmlArray[i] = [];
+}
 var kmlArrayMax = 50;
 var SunriverMapOptions = {
 	getTileUrl_sunriver: function(coord, zoom) {
@@ -120,6 +128,17 @@ var TaiwanMapOptions = {
 	name: "台灣",
 	alt: 'Taiwan TW67 Map'
 }
+var TaiwanGpxMapOptions = {
+	getTileUrl: function(coord, zoom) {
+		//return "http://rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
+		return "http://rs.happyman.idv.tw/map/tw25k2001_gpx/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
+	},
+	tileSize: new google.maps.Size(256, 256),
+	maxZoom: 16,
+	minZoom: 10,
+	name: "台灣GPX",
+	alt: 'Taiwan TW67 Map with GPX'
+}
 var OSM_Options = {
 	getTileUrl: function(a, b) {
 		return "http://tile.openstreetmap.org/"+ b +"/" + a.x + "/" + a.y +".png";
@@ -132,6 +151,7 @@ var OSM_Options = {
 }
 var SunriverMapType = new google.maps.ImageMapType(SunriverMapOptions);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
+var TaiwanGpxMapType = new google.maps.ImageMapType(TaiwanGpxMapOptions);
 var OSM_GDEM_MapType = new google.maps.ImageMapType(OSM_GDEM_Options);
 //var Taiwan_Formosat_2011_MapType = new google.maps.ImageMapType(Taiwan_Formosat_2011_MapOptions);
 var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_2011_MapOptions);
@@ -287,19 +307,56 @@ function showGrid(loc) {
 		lonlat_range_getblock(minx,miny,maxx,maxy, ph);
 	}
 }
-
+function removeAllkmls(keep) {
+	keep = keep || 100;
+	for (var z=13; z<=18; z++) {
+		for(var key in kmlArray[z]) {
+			//kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+			if (z == keep ) continue;
+			kmlArray[z][key].removeDocument(kmlArray[z][key].docs[0]);
+			delete kmlArray[z][key];
+		}
+	}
+	$.unblockUI();
+	console.log("remove All KML " + keep );
+}
 var parsedkml = 0;
-function showInsideKML() {
+function showInsideKML(clear_pending) {
+	clear_pending = clear_pending || 0 ;
 	//alert("showInsideKML: "+tags_ready);
+	showInsideKML.drawing = showInsideKML.drawing || 0;
 	if (show_kml_layer != 1) return;
 	if (tags_ready == 0 ) return;
-	if (map.getZoom() < 13) {
+	var z = map.getZoom();
+	/*
+	if (zoom < 11) {
 		for(var key in kmlArray) {
-			kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+			//kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+			kmlArray[key].removeDocument(kmlArray[key].docs[0]);
 			delete kmlArray[key];
 		}
+	}
+		$.unblockUI();
+
 		return;
 	}
+	*/
+if (z < 13)  {
+  removeAllkmls();
+	return;
+}
+	if (clear_pending && showInsideKML.to_draw == 0 ) {
+		console.log("skip show KML");
+		return;
+	}
+	if (showInsideKML.drawing == 1 ) {
+		showInsideKML.to_draw = 1;
+		setTimeout(function() { showInsideKML(1)}, 1000);
+		console.log("pending call");
+		return;
+	}
+	showInsideKML.drawing = 1;
+
 	var parts = map.getBounds().toUrlValue(5).split(",").map(Number);
 	//console.log(parts);
 	var minX, minY, maxX, maxY;
@@ -325,12 +382,14 @@ function showInsideKML() {
 	var tl = lonlat2twd67(minX, maxY, ph);
 	var br = lonlat2twd67(maxX, minY, ph);
 	var keys = [];
-	for (var key in kmlArray) {
-		if (kmlArray.hasOwnProperty(key)) {
+	for (var key in kmlArray[z]) {
+		if (kmlArray[z].hasOwnProperty(key)) {
 			keys.push(key);
 		}
 	}
 	// todo: not yet support ph
+	$("#kml_sw").addClass("wait");
+	console.log("call getkmlfrom bounds");
 	$.ajax({
 			dataType: 'json',
 			url: getkmlfrombounds_url,
@@ -351,33 +410,46 @@ function showInsideKML() {
 				parsedkml = data.rsp.count['add'];
 				//alert(parsedkml);
 				if (parsedkml == 0 ) {
+				$("#kml_sw").removeClass("wait");
 					if (!ismakingmap)
 						$.unblockUI();
 				}
 
 				for(var key in data.rsp.add) {
-					if (!kmlArray[key]) {
+					if (!kmlArray[z][key]) {
 
-						kmlArray[key] = new geoXML3.parser(
+						kmlArray[z][key] = new geoXML3.parser(
 							{map:map, singleInfoWindow: true,
 								additional_marker_desc: data.rsp.add[key].desc,
 								additional_path_desc: data.rsp.add[key].desc,
 								zoom:false
 						});
-						kmlArray[key].parse(data.rsp.add[key].url + '&ts=' + (new Date()).getTime());
-						google.maps.event.addListener( kmlArray[key], 'parsed',  function() {
+						kmlArray[z][key].parse(data.rsp.add[key].url +'&zoom='+ map.getZoom() + '&ts=' + (new Date()).getTime());
+						google.maps.event.addListener( kmlArray[z][key], 'parsed',  function() {
 								parsedkml--;
+								//console.log("remain " + parsedkml + " kmls to add");
 								$.unblockUI();
+								if (parsedkml == 0 ) {
+										$("#kml_sw").removeClass("wait");
+								}
 						});
 
 					}
 
 				}
 				for(var key in data.rsp.del) {
-					if (kmlArray[key]) {
-						kmlArray[key].hideDocument(kmlArray[key].docs[0]);
-						delete kmlArray[key];
+					if (kmlArray[z][key]) {
+						//kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+					  kmlArray[z][key].removeDocument(kmlArray[z][key].docs[0]);
+						delete kmlArray[z][key];
 					}
+				}
+				// keep z, and clean other zoom level
+				removeAllkmls(z);
+				showInsideKML.drawing = 0;
+				if (clear_pending == 1) {
+					console.log("clear pending call");
+					showInsideKML.to_draw = 0;
 				}
 			}
 	});
@@ -792,8 +864,13 @@ function initialize() {
 	//map.mapTypes.set('googlename', GoogleNameMapType);
 	//map.mapTypes.set('nlscname', NLSCNameMapType);
 	// 背景層
-	BackgroundMapType = TaiwanMapType;
-	BackgroundMapOptions = TaiwanMapOptions;
+	// 經建三版
+	//BackgroundMapType = TaiwanMapType;
+	//BackgroundMapOptions = TaiwanMapOptions;
+	// 三版加底圖
+	BackgroundMapType = TaiwanGpxMapType;
+	BackgroundMapOptions = TaiwanGpxMapOptions;
+	
 	// 初始顯示哪張圖?
 	// map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
 	map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
@@ -932,8 +1009,13 @@ function initialize() {
 				$("#changemap").addClass("disable");
 				$("#changemap").text("經建一");
 			} else {
-				BackgroundMapType = TaiwanMapType;
-				BackgroundMapOptions = TaiwanMapOptions;
+				if (show_kml_layer == 1)  {
+					BackgroundMapType = TaiwanGpxMapType;
+					BackgroundMapOptions = TaiwanGpxMapOptions;
+			 } else {
+					BackgroundMapType = TaiwanMapType;
+					BackgroundMapOptions = TaiwanMapOptions;
+			 }
 				BackgroundMap = 0;
 				$("#changemap").removeClass("disable");
 				$("#changemap").text("經建三");
@@ -1012,24 +1094,32 @@ function initialize() {
 	});
 	$("#kml_sw").click(function() {
 			// 還在載入途中
-			if (parsedkml > 0 ){  return; }
+			if (parsedkml > 0 ){ console.log("still "+parsedkml+ " kmls to load"); return; }
+			var z = map.getZoom();
 			if (show_kml_layer == 1) {
-				$.blockUI({ message: "..." });
+				$.blockUI({ message: "移除 kml 圖層..." });
+				removeAllkmls();
+				/*
 				for (var key in kmlArray) {
-					kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+					//kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+					kmlArray[key].removeDocument(kmlArray[key].docs[0]);
 					delete kmlArray[key];
 				}
+				*/
 				show_kml_layer = 0;
 				$("#kml_sw").addClass("disable");
-				//alert($('#kml_sw').attr('class'));
 				$.unblockUI();
 			} else {
-				$.blockUI({ message: "載入中" });
+				$.blockUI({ message: "載入 kml 圖層中..." });
 				show_kml_layer = 1;
 				showInsideKML();
 				$("#kml_sw").removeClass("disable");
 			}
-			updateView("info_only");
+			if (BackgroundMap == 0 ) {
+			  $("#changemap").trigger('click');
+			  $("#changemap").trigger('click');
+			}
+			//updateView("info_only");
 	});
 	$("#label_sw").click(function() {
 			if (show_label == 1) {
@@ -1112,9 +1202,12 @@ function initialize() {
 
 
 
+	var map_is_ready = google.maps.event.addListener(
 	// 最後把中心點移動到有興趣的位置
 	// 改變預設
-	setTimeout(function() {
+	//setTimeout(function() {
+	map, "bounds_changed", function() {
+		  console.log("bounds_changed");
 			if (getParameterByName("show_label") && getParameterByName("show_label") == 0 ) { $("#label_sw").trigger('click'); }
 			//if (getParameterByName("show_marker") && getParameterByName("show_marker") == 0 ) { $("#marker_sw").trigger('click'); }
 			if (getParameterByName("show_marker")) { 
@@ -1126,7 +1219,7 @@ function initialize() {
 				$("#marker_sw_select").dropdownchecklist("refresh"); 
 				markerFilter(); 
 			}
-			if (getParameterByName("show_kml_layer") && getParameterByName("show_kml_layer") == 1 ) { $("#kml_sw").trigger('click'); }
+			if (getParameterByName("show_kml_layer") && getParameterByName("show_kml_layer") == 0 ) { $("#kml_sw").trigger('click'); }
 			if (getParameterByName("zoom")) { map.setZoom(parseInt(getParameterByName("zoom"))); }
 			if (getParameterByName("maptypeid")) { map.setMapTypeId(getParameterByName("maptypeid")); }
 			if (getParameterByName("roadmap")) { $("#changegname").val(getParameterByName("roadmap")); $("#changegname").change(); }
@@ -1200,8 +1293,11 @@ function initialize() {
 				map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(myCustomControlDiv);
 			} // is_mobile
 
-		},
-		500);
+			// remove 掉
+			google.maps.event.removeListener(map_is_ready);
+	});
+		//},
+	//	500);
 } // end of initialize
 function MyCustomControl(controlDiv, map) {
 	var control = this;    

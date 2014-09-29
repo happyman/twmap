@@ -177,6 +177,10 @@ color: #000000;
 	background-image: none;
 
 }
+.wait {
+	background-image: url("../img/loading20x20.gif");
+	background-repeat: no-repeat;
+}
 #moveBtn {
 	cursor:pointer;
 }

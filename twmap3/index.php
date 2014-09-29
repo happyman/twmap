@@ -25,7 +25,7 @@ $ver = trim(file_get_contents("VERSION"));
 		<script type='text/javascript' src='js/jquery.blockUI.js'></script>
 		<script type='text/javascript' src='js/jquery.meerkat.1.3.min.js'></script>
 	  <script type="text/javascript" src="js/jquery.cookie.js"></script>
-    <script type="text/javascript" src="js/geoxml3.js"></script>
+		<script type="text/javascript" src="js/geoxml3.js?v=<?=$ver?>"></script>
 		<script type="text/javascript" src="js/functions.js" charset="utf-8"></script>
 		<script type="text/javascript" src="js/jquery-autoGrowInput.js" charset="utf-8"></script>
 		<script type="text/javascript" src="js/ui.dropdownchecklist-1.4-min.js" charset="utf-8"></script>
@@ -76,7 +76,7 @@ printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 		  <form id="gotoform" name="gotoform">
 			<span id="about" title="關於" class="ui-state-default ui-corner-all" > 地圖瀏覽器 v<?=$ver?></span> <span id="search_text"><img src='img/loading20x20.gif' /></span> <input id="tags" type="text" class="ui-corner-all"  title="輸入山頭名稱或地標,或者座標" disabled>
 			<button type=button class="ui-state-default ui-corner-all" id="goto" title="搜尋並定位">到</button>
-			<button id="kml_sw" class="ui-state-default ui-corner-all disable" title="山友登山軌跡" type=button>行跡</button>
+			<button id="kml_sw" class="ui-state-default ui-corner-all" title="山友登山軌跡(支援z=13到18)" type=button>行跡</button>
 			<button id="label_sw" class="ui-state-default ui-corner-all" title="三角點名稱"  type=button>標籤</button>
 			<select id="marker_sw_select" multiple="multiple">
       <option selected="selected" value="a">全部</option>

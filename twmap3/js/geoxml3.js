@@ -105,6 +105,44 @@ geoXML3.parser = function (options) {
       geoXML3.fetchXML(url, function (responseXML) { render(responseXML, doc);})
   }
 
+var removeDocument = function (doc) {
+    
+    if (!doc) doc = docs[0];
+    
+    // Hide the map objects associated with a document
+    var i;
+    if (!!doc.markers) {
+      for (i = 0; i < doc.markers.length; i++) {
+        if(!!doc.markers[i].infoWindow) doc.markers[i].infoWindow.close();
+        //doc.markers[i].setVisible(false);
+        doc.markers[i].setMap(null);
+      }
+    }
+    if (!!doc.ggroundoverlays) {
+      for (i = 0; i < doc.ggroundoverlays.length; i++) {
+        //doc.ggroundoverlays[i].setOpacity(0);
+        doc.ggroundoverlays[i].setMap(null);
+      }
+    }
+    if (!!doc.gpolylines) {
+      for (i=0;i<doc.gpolylines.length;i++) {
+        if(!!doc.gpolylines[i].infoWindow) doc.gpolylines[i].infoWindow.close();
+        doc.gpolylines[i].setMap(null);
+      }
+    }
+    if (!!doc.gpolygons) {
+      for (i=0;i<doc.gpolygons.length;i++) {
+        if(!!doc.gpolygons[i].infoWindow) doc.gpolygons[i].infoWindow.close();
+        doc.gpolygons[i].setMap(null);
+      }
+    }
+    
+    //kmzMetaData[doc.baseUrl] = null;
+    //styles[doc.baseUrl] = null;
+    //docsByUrl[doc.baseUrl] = null;
+    doc = null;
+  };
+
   var hideDocument = function (doc) {
     if (!doc) doc = docs[0];
     // Hide the map objects associated with a document 
@@ -974,6 +1012,7 @@ var createPolygon = function(placemark, doc) {
     parse:          parse,
     parseKmlString: parseKmlString,
     hideDocument:   hideDocument,
+    removeDocument:   removeDocument,
     showDocument:   showDocument,
     processStyles:  processStyles, 
     createMarker:   createMarker,
