@@ -4,36 +4,33 @@ session_start();
 $ver = trim(file_get_contents("VERSION"));
 ?>
 <html>
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name = "viewport" content = "width=device-width">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name = "viewport" content = "width=device-width">
 
-		<title>地圖瀏覽器 v<?=$ver?></title>
-		<!-- <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />-->
-		<meta name="viewport" content="initial-scale=1.0, width=device-width" />
-		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-		<script type="text/javascript" src="js/keydragzoom-2.0.6.js"></script>
-		<script type="text/javascript" src="js/infobox.js"></script>
-		<script type="text/javascript" src='js/ExtDraggableObject.js'></script>
-		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
-		<script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
-		<script type="text/javascript" src="js/jsinclude.js"></script>
-		<script type="text/javascript" src="js/label.js?v=<?=$ver?>"></script>
-		<script type="text/javascript" src="js/oms.min.js"></script>
-		<script type='text/javascript' src='js/proj4js-combined.js'></script>
-		<script type='text/javascript' src='js/jquery.blockUI.js'></script>
-		<script type='text/javascript' src='js/jquery.meerkat.1.3.min.js'></script>
-	  <script type="text/javascript" src="js/jquery.cookie.js"></script>
-		<script type="text/javascript" src="js/geoxml3.js?v=<?=$ver?>"></script>
-		<script type="text/javascript" src="js/functions.js" charset="utf-8"></script>
-		<script type="text/javascript" src="js/jquery-autoGrowInput.js" charset="utf-8"></script>
-		<script type="text/javascript" src="js/ui.dropdownchecklist-1.4-min.js" charset="utf-8"></script>
-	  <script type="text/javascript" src="js/v3_ll_grat.js?v=<?=$ver?>"></script>
-
-
-		<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
-			<link rel="stylesheet" type="text/css" href="css/main.css?v=<?=$ver?>" />
+	<title>地圖瀏覽器 v<?=$ver?></title>
+	<meta name="viewport" content="initial-scale=1.0, width=device-width" />
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+	<script type="text/javascript" src="js/keydragzoom-2.0.6.js"></script>
+	<script type="text/javascript" src="js/infobox.js"></script>
+	<script type="text/javascript" src='js/ExtDraggableObject.js'></script>
+	<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="js/label.js?v=<?=$ver?>"></script>
+	<script type="text/javascript" src="js/oms.min.js"></script>
+	<script type='text/javascript' src='js/proj4js-combined.js'></script>
+	<script type='text/javascript' src='js/jquery.blockUI.js'></script>
+	<script type='text/javascript' src='js/jquery.meerkat.1.3.min.js'></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/geoxml3.js?v=<?=$ver?>"></script>
+	<script type="text/javascript" src="js/functions.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/jquery-autoGrowInput.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/jquery.geolocation.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/ui.dropdownchecklist-1.4-min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/v3_ll_grat.js?v=<?=$ver?>"></script>
+	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
+	<link rel="stylesheet" type="text/css" href="css/main.css?v=<?=$ver?>" />
 <script>
 <?php
 require_once("lib/functions.inc.php");
@@ -49,7 +46,6 @@ printf("var geocodercache_url = '%s';\n",$CONFIG['geocodercache_url']);
 printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 ?>
 </script>
-		<script type="text/javascript" src="js/main.js?ts=<?php echo time(); ?>" charset="utf-8"></script>
 	</head>
 	<body>
 		<div id="locContainer">
@@ -87,7 +83,6 @@ printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
       <option selected="selected" value="5">百岳</option>
 			<option selected="selected" value="6">其他</option>
 			</select>
-		<!--	<button id="marker_sw"class="ui-state-default ui-corner-all" title="三角點圖示" type=button>點位</button> -->
 			<button id="marker_reload"class="ui-state-default ui-corner-all" type=button>重載</button>
 			</form>
 		</div>
@@ -115,44 +110,42 @@ printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 			<li>按住 shift 可以框選縮放
 			<li>按右鍵可以顯示目前座標
 			<li>按左鍵可以選擇範圍
-			<li>搜尋框可打入山名,地標,座標 lon,lat 或 twd67 座標 x,y
+			<li>搜尋框可打入山名,地標,座標 lon,lat 或 twd67 / twd97 座標 x,y
 				<li>參考 <a href="http://blog.yam.com/amimitea/article/48657866" target="_blank">介紹文</a>
 			</ul>
 			Powered by <a href="https://developers.google.com/maps/documentation/javascript/reference?hl=zh-tw" target="_blank">Google Maps API</a>, 台灣經建版 25000:1 一版/三版, 國土測量中心地圖, coded by <a href="https://www.facebook.com/happyman.chiu" target="_blank">蚯蚓</a>,謝謝使用.
-<script>
-if (window.location.href != window.top.location.href) {
-	$('#openwin').html('<a href="http://map.happyman.idv.tw/~happyman/twmap3/" target=_top>獨立視窗</a>');
-}
-</script>
 		</div>
-<script type="text/javascript">
-
-
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-19949015-1']);
-_gaq.push(['_trackPageview']);
-
-$(function() {
-	// 初始
-	initialize();
-  $(window).resize(function() {
-		     resizeMap();
-	});
-	var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	$('input').autoGrowInput({
-		comfortZone: 20,
-			maxWidth: 2000
-	});
-});
-
-</script>
 <div id=meerkat>
 	<a href="#" class="close-meerkat">close</a>
 	<div class="meerkat-content">
 		Here we go :*
 	</div>
 </div>
+<script>
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-19949015-1']);
+	_gaq.push(['_trackPageview']);
+	// wait for google maps initialized
+	$(function() {
+	// 初始
+	$.getScript( "js/main.js?ts=<?php echo time();?>" ).done(function() {
+		initialize();
+		$(window).resize(function() {
+			resizeMap();
+		});
+		$('input').autoGrowInput({
+			comfortZone: 20,
+			maxWidth: 2000
+		});
+	});
+	var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	if (window.location.href != window.top.location.href) {
+		$('#openwin').html('<a href="http://map.happyman.idv.tw/~happyman/twmap3/" target=_top>獨立視窗</a>');
+	}
+});
+
+</script>
 	</body>
 </html>
