@@ -10,11 +10,15 @@ $out_html_root = "/map/out";
 $site_url = "http://map.happyman.idv.tw";
 $site_html_root = "/twmap";
 
+// 放一版的圖資目錄
 $stbpath = "/home/happyman/stb";
+// 放從 TMS 的圖磚
 $tilepath = "/mnt/twmapcache/tw25k2001";
-if (!file_exists($tilepath."/16")) {
-	die("image dir not ready");
-}
+// 放 1x1 的圖檔
+$tilecachepath = "/mnt/twmapcache/cache";
+//if (!file_exists($tilepath."/16")) {
+//	die("image dir not ready");
+//}
 $tmppath = "/mnt/twmapcache/tmp"; 
 $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 
