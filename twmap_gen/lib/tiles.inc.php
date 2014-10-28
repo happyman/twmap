@@ -19,8 +19,9 @@ require_once("proj_lib.php");
  * @access public
  * @return void
  */
-function img_from_tiles($base_dir, $x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpdir="/dev/shm", $warm = 0) {
-	$cache_dir = "/mnt/twmapcache/cache";
+function img_from_tiles($base_dir, $x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpdir="/dev/shm", $cache_dir="/mnt/twmapcache/cache", $warm = 0) {
+	
+	//$cache_dir = "/mnt/twmapcache/cache";
 	$montage_bin = "montage";
 	$cache_filename = "";
 	// 如果是 1x1
@@ -42,6 +43,7 @@ function img_from_tiles($base_dir, $x, $y, $shiftx, $shifty, $zoom, $ph=0, $debu
 	}
 	// 左上
 	$dir = $base_dir . "/". $zoom;
+	@mkdir($dir,0755,true);
 	// 右下
 	$x1 = $x + $shiftx * 1000;
 	$y1 = $y - $shifty * 1000;
@@ -74,8 +76,10 @@ function img_from_tiles($base_dir, $x, $y, $shiftx, $shifty, $zoom, $ph=0, $debu
 	for($j=$a[1];$j<=$b[1];$j++) {
 		for ($i=$a[0]; $i<=$b[0]; $i++) {
 			$imgname = sprintf("%d_%d.png",$i,$j);
-			if (!file_exists("$dir/$imgname"))
-				exec("wget -q -O /dev/null 'http://rs.happyman.idv.tw/map/tw25k2001/zxy/${zoom}_${i}_${j}.png'");
+			if (!file_exists("$dir/$imgname")) {
+				// create tile cache from Internet
+				exec(sprintf("wget -q -O %s 'http://rs.happyman.idv.tw/map/tw25k2001/zxy/${zoom}_${i}_${j}.png'","$dir/$imgname"));
+			}
 		}
 	}
 	$img = array();

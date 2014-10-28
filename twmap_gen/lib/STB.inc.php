@@ -84,7 +84,7 @@ Class STB {
 				return FALSE;
 			}
 			while($line=fgets($fp,128)) {
-				list($array[$i]['x'],$array[$i]['y'],$array[$i]['f'])=split(" ",trim($line),3);
+				list($array[$i]['x'],$array[$i]['y'],$array[$i]['f'])=preg_split("/\s+/",trim($line),3);
 				$i++;
 				// echo "$i =" . $this->x[$i-1][0] . "$line";
 			}
@@ -379,6 +379,14 @@ Class STB2 extends STB {
 			$this->err[] = "Sorry We Cannot create too big map";
 			return FALSE;
 		}
+			$this->stbdir = $basedir;
+			$this->startx = $startx;
+			$this->starty = $starty;
+			$this->shiftx = $sx;
+			$this->shifty = $sy;
+			$this->ph = $ph;
+			return TRUE;
+/*
 		if (is_dir( $basedir . "/". $this->zoom )) {
 			$this->stbdir = $basedir;
 			$this->startx = $startx;
@@ -393,11 +401,13 @@ Class STB2 extends STB {
 			$this->doLog($print_r($this->err, true));
 			return FALSE;
 		}
+*/
 	} 
 	// tag = 2 處理縮圖
 
 	function createpng($tag=0, $gray=0, $fuzzy=0, $x=1, $y=1, $debug_flag=0, $borders=array()) {
 		global $tmppath;
+		global $tilecachepath;
 		$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
 		if ($this->createfromim == 1 ) { // just load image from im or filename
 			$cim=$this->im;
@@ -407,7 +417,7 @@ Class STB2 extends STB {
 			for($j=$this->starty; $j>$this->starty-$this->shifty; $j--){
 				for($i=$this->startx; $i<$this->startx+$this->shiftx; $i++){
 					//error_log("call $i $j");
-					list ($status, $fname) =img_from_tiles($this->stbdir, $i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $tmppath);
+					list ($status, $fname) =img_from_tiles($this->stbdir, $i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $tmppath, $tilecachepath);
 					// 產生 progress
 					$this->doLog( "$pscount /  $pstotal");
 					$this->doLog( sprintf("ps%%+%d", 20 * $pscount/$pstotal));
