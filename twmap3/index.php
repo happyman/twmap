@@ -88,10 +88,13 @@ printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 		</div>
 		<div id="params"></div>
 		<button type="button" id="generate" name="generate" title="將參數傳送到地圖產生器" class="ui-state-default ui-corner-all" >產生</button>
-		<select title="切換 Grid" name="grid" id="changegrid" class="ui-corner-all"><option value="TWD67" selected >TWD67 Grid</option><option value="TWD67PH">TWD67澎</option><option value="WGS84">經緯度</option><option value="None">無Grid</option></select>
+		<select title="切換 Grid" name="grid" id="changegrid" class="ui-corner-all">
+		<option value="TWD67" selected >TWD67 Grid</option><option value="TWD67PH">TWD67澎</option><option value="WGS84">經緯度</option><option value="None">無Grid</option>
+		<option value="TWD67_EXT">TWD67 EXT</option>
+		</select>
 
 		<div id="inputtitleform" style="display:none">
-			請輸入地圖標題: <input id="inputtitle" type="text" />
+			請輸入地圖標題: <input id="inputtitle" type="text" size="2" />
 			<br>
 			<input type="button" id='inputtitlebtn' value="送出" />
 			<input type="button" id='inputtitlebtn2' value="取消" />

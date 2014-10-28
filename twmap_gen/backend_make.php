@@ -40,7 +40,7 @@ case '1':
 			unlink($tmp_file);
 			error_out("不支援的格式");
 		}
-	
+
 		// 如果原始檔案是特殊格式,則將檔名當作參數帶入
 		// twmap_294_2677_7_5_0.gpx 則讀出
 		if (preg_match("/^(\d+)x(\d+)-(\d+)x(\d+)-v\d([p]?)$/",$pa['filename'], $testnam)) {
@@ -86,28 +86,6 @@ case '2':
 	} else {
 		error_out("gpx 資訊有誤");
 	}
-	/*
-	$svg = new gpxsvg(array("gpx"=>$tmp_gpx, "width"=>1024,
-		"fit_a4" => 1,
-		"show_label_trk" => (isset($inp['trk_label']))? 1 : 0,
-		"show_label_wpt" => $inp['wpt_label']));
-	$ret = $svg->process();
-	msglog("svg get_bound processed");
-	if ($ret === false ) {
-		error_out("讀取 gpx 失敗". print_r($svg->_err, true));
-	}
-	$inp['startx'] = $svg->bound_twd67['tl'][0]/1000;
-	$inp['starty'] = $svg->bound_twd67['tl'][1]/1000;
-	$inp['shiftx'] = ($svg->bound_twd67['br'][0] - $svg->bound_twd67['tl'][0])/1000;
-	$inp['shifty'] = ($svg->bound_twd67['tl'][1] - $svg->bound_twd67['br'][1])/1000;
-	$inp['ph'] = $svg->bound_twd67['ph'];
-	unset($svg);
-
-	if ($row['locX'] != $inp['startx']*1000 || $row['locY'] != $inp['starty']*1000 ||
-		 $row['shiftX'] != $inp['shiftx'] || $row['shiftY'] !=  $inp['shifty'] )
-		 error_out("範圍錯誤,請調整 航點標記 再重新產生");
-	
-	 */
 			$inp['startx'] = $row['locX']/1000;
 			$inp['starty'] = $row['locY']/1000;
 			$inp['shiftx'] = $row['shiftX'];
@@ -120,13 +98,13 @@ case '2':
 default:
 	switch($inp['kiss']) {
 
-	case '2': 
+	case '2':
 		$inp['shiftx']=$inp['aashiftx'];
 		$inp['shifty']=$inp['aashifty'];
 		break;
 	case '3':
 		$inp['shiftx']=$inp['aarshiftx'];
-		$inp['shifty']=$inp['aairshifty'];
+		$inp['shifty']=$inp['aarshifty'];
 		break;
 	case '1':
 	default:
@@ -202,11 +180,13 @@ if ($inp['gps'] == 1 || $inp['gps'] == 2 ) {
 //error_out($outgpx);
 //unlink($outgpx);
 //error_out(print_r($inp, true));
-// 呼叫 cmd_line make, 他也需要 gpx aware 
+// 呼叫 cmd_line make, 他也需要 gpx aware
 // -l 傳入 email:formid 作為識別 channel 與 msg owner
 showmem("before call cmd_make.php");
-$cmd=sprintf("php cmd_make2.php -r %d:%d:%d:%d -O %s -v %d -t '%s' -i %s -p %d %s -l %s:%s",
-	$startx,$starty,$shiftx,$shifty,$outpath,$version,addslashes($title),$_SERVER['REMOTE_ADDR'],$ph,$svg_params,$_SESSION['mylogin']['email'],$inp['formid']);
+$cmd=sprintf("php cmd_make2.php -r %d:%d:%d:%d -O %s -v %d -t '%s' -i %s -p %d %s -l %s:%s %s %s",
+	$startx,$starty,$shiftx,$shifty,$outpath,$version,addslashes($title),$_SERVER['REMOTE_ADDR'],$ph,$svg_params,$_SESSION['mylogin']['email'],$inp['formid'],
+	 isset($inp['grid_100M'])?'-e':'',// 是否包含 100M grid
+	 isset($inp['inc_trace'])?'-G':''); // 是否包含已知 gps trace
 msglog($cmd);
 exec($cmd,$output,$ret);
 
@@ -224,7 +204,7 @@ if (map_full($_SESSION['uid'], $user['limit'], $recreate_flag)) {
 		@unlink($f);
 	}
 	error_out("已經達到數量限制".$user['limit']);
-}    
+}
 $type = determine_type($shiftx, $shifty);
 $outx = ceil($shiftx / $tiles[$type]['x']);
 $outy = ceil($shifty / $tiles[$type]['y']);

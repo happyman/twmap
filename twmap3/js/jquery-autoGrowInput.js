@@ -30,7 +30,6 @@
 					check = function() {
 
 						if (val === (val = input.val())) {return;}
-
 						// Enter new content into testSubject
 
 						var escaped = val.replace(/&/g, '&amp;').replace(/\s/g,'&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

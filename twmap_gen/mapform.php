@@ -45,7 +45,7 @@ $data = array();
 for($i=5; $i<=35; $i+=5) $data[] = $i;
 $smarty->assign("aarshifty", $data);
 $data = array();
-// 產生 unique form id 
+// 產生 unique form id
 $smarty->assign("formid", md5($_SESSION['mylogin']['email'] . uniqid(rand(), true)));
 
 echo $smarty->fetch('mapform.html');
@@ -55,7 +55,7 @@ echo $smarty->fetch('mapform.html');
 <script type="text/javascript">
 var called = 0;
 <?php
-// 自動填入參數 
+// 自動填入參數
 // 兩條路徑, 1: from main.php?GET
 //           2. from list.php SESSION
 if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
@@ -183,17 +183,17 @@ $('#create').click(function() {
 	}
 	$("#mapform select[name=anyshiftx]").attr("disabled", false);
 	$("#mapform select[name=anyshifty]").attr("disabled", false);
-	$.blockUI({ css: { 
-		border: 'none', 
-			padding: '15px', 
-			backgroundColor: '#000', 
-			'-webkit-border-radius': '10px', 
-			'-moz-border-radius': '10px', 
-			opacity: .5, 
-			color: '#fff' 
-	}, message: '<h1>讓我來慢慢產生,您去喝杯茶做做體操再回來!</h1>' }); 
+	$.blockUI({ css: {
+		border: 'none',
+			padding: '15px',
+			backgroundColor: '#000',
+			'-webkit-border-radius': '10px',
+			'-moz-border-radius': '10px',
+			opacity: .5,
+			color: '#fff'
+	}, message: '<h1>讓我來慢慢產生,您去喝杯茶做做體操再回來!</h1>' });
 
-	
+
 	globalxdr = $.post("backend_make.php", $("#mapform").serialize(),function(data){
 		$.unblockUI();
 		if (data.status == "ok") {
@@ -201,33 +201,33 @@ $('#create').click(function() {
 			var $tabs = $('#tabs').tabs();
 			$tabs.tabs('url',3,"show.php?tab=1&mid="+data.id);
 			$tabs.tabs('url',0, "mapform.php");
-			$tabs.tabs('select',3);   
+			$tabs.tabs('select',3);
 		}
 		else
 			alert("error: "+data.error);
 	},"json");
- 
+
 
 });
 $('#create2').click(function() {
 	//$("#mapform").attr('action', "backend_make.php");
-	if (!$('input:file').val()) { 
+	if (!$('input:file').val()) {
 		alert("請選擇檔案");
-		return false;	
+		return false;
 	}
 	if ($("#mapform input[name=title]").val().length < 2) {
 		alert("請輸入標題喔(多一點字)");
 		return false;
 	}
-	$.blockUI({ css: { 
-		border: 'none', 
-			padding: '15px', 
-			backgroundColor: '#000', 
-			'-webkit-border-radius': '10px', 
-			'-moz-border-radius': '10px', 
-			opacity: .5, 
-			color: '#fff' 
-	}, message: '<h1>讓我來慢慢產生,您去喝杯越南咖啡做做體操再回來!</h1>' }); 
+	$.blockUI({ css: {
+		border: 'none',
+			padding: '15px',
+			backgroundColor: '#000',
+			'-webkit-border-radius': '10px',
+			'-moz-border-radius': '10px',
+			opacity: .5,
+			color: '#fff'
+	}, message: '<h1>讓我來慢慢產生,您去喝杯越南咖啡做做體操再回來!</h1>' });
 
 	document.mapform.submit();
 });
@@ -237,15 +237,15 @@ $('#create3').click(function() {
 		alert("請輸入標題喔(多一點字)");
 		return false;
 	}
-	$.blockUI({ css: { 
-		border: 'none', 
-			padding: '15px', 
-			backgroundColor: '#000', 
-			'-webkit-border-radius': '10px', 
-			'-moz-border-radius': '10px', 
-			opacity: .5, 
-			color: '#fff' 
-	}, message: '<h1>讓我來慢慢產生,您去喝杯好了啦做做瑜伽再回來!</h1>' }); 
+	$.blockUI({ css: {
+		border: 'none',
+			padding: '15px',
+			backgroundColor: '#000',
+			'-webkit-border-radius': '10px',
+			'-moz-border-radius': '10px',
+			opacity: .5,
+			color: '#fff'
+	}, message: '<h1>讓我來慢慢產生,您去喝杯好了啦做做瑜伽再回來!</h1>' });
 
 	globalxdr = $.post("backend_make.php", $("#mapform").serialize(),function(data){
 		$.unblockUI();
@@ -254,7 +254,7 @@ $('#create3').click(function() {
 			var $tabs = $('#tabs').tabs();
 			$tabs.tabs('url',3,"show.php?tab=1&mid="+data.id);
 			$tabs.tabs('url',0, "mapform.php");
-			$tabs.tabs('select',3);   
+			$tabs.tabs('select',3);
 		}
 		else
 			alert("error: "+data.error);

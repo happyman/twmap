@@ -104,7 +104,7 @@ function merge3($tileX,$tileY,$imgs) {
 		}
 		// debug: echo "paste x=$locX y=$locY $imgs[$i]\n";
 		imageCopyMerge($im,$src,$locX,$locY,0,0,$xx,$yy,100);
-		$locX+=$xx; 
+		$locX+=$xx;
 	}
 	// imagePng($im,"$outfile.tmp.png");
 	imagedestroy($src);
@@ -163,11 +163,40 @@ function im_tagimage($fpath, $inp_startx, $inp_starty) {
 	for($i=315; $i<$h; $i+=315) {
 		$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white  -border 3  -geometry +%d+%d -composite ",$starty--,$w- $fontsize * 2.3,$i+1);
 	}
-	
+
 
 	$cmd=sprintf("convert %s %s %s",$fpath, implode("",$label),$fpath);
 	echo "$cmd\n";
 	// -compose bumpmap
+	exec($cmd,$out,$ret);
+	return ($ret==0)?true:false;
+
+}
+/**
+ * im_addgrid 加上 100M 的格線
+ * @param  [type]  $fpath  [description]
+ * @param  integer $step_m [description]
+ * @param  integer $ver    [description]
+ * @return [type]          [description]
+ */
+function im_addgrid($fpath, $step_m = 100, $ver=3) {
+	list ($w, $h) = getimagesize($fpath);
+	$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
+	$step = 315 / (1000 / $step_m );
+	for($i=0; $i<$w; $i+=$step) {
+			$poly[] = sprintf(" -draw 'line %d,%d %d,%d'", round($i),0 ,round($i),$h);
+	}
+	for($i=0; $i<$h; $i+=$step) {
+			$poly[] = sprintf(" -draw 'line %d,%d %d,%d'", 0,round($i), $w, round($i));
+	}
+	if ($ver == 3) {
+		// 因為格線會蓋掉 logo, 再蓋回去
+		$cmd = sprintf("convert %s -fill none -stroke black %s -alpha off - | composite -gravity northeast %s - png:%s", $fpath, implode("", $poly),$v3img, $fpath);
+	} else {
+		// TODO
+		$cmd = sprintf("convert %s -fill none -stroke black -alpha off %s png:%s", $fpath, implode("", $poly), $fpath);
+	}
+	echo "$cmd\n";
 	exec($cmd,$out,$ret);
 	return ($ret==0)?true:false;
 
@@ -202,7 +231,7 @@ function splitimage($im, $sizex, $sizey, $outfile, &$px, &$py, $fuzzy) {
 		for ($i=0; $i< $w - $fuzzy ; $i+= $sizex) {
 			$outfname= $outfile . "_" . $count .".png";
 			// overwrite   if (!file_exists($outfname)) {
-			$dst=cropimage($im,$i,$j,$sizex+$fuzzy,$sizey+$fuzzy);       
+			$dst=cropimage($im,$i,$j,$sizex+$fuzzy,$sizey+$fuzzy);
 			imagePNG($dst,$outfname);
 			imageDestroy($dst);
 			// overwrite    }
@@ -236,9 +265,9 @@ function colorgray($a) {
 
 	// to array
 	$swapto[0] = $white;
-	$swapto[1] = $white; 
+	$swapto[1] = $white;
 	$swapto[2] = $white;
-	$swapto[3] = $black; 
+	$swapto[3] = $black;
 
 	for($i=0; $i<count($colors); $i++) {
 		if ($a["red"] == $colors[$i]["red"] &&
@@ -246,7 +275,7 @@ function colorgray($a) {
 			$a["blue"] == $colors[$i]["blue"] ) return $swapto[$i];
 	}
 	return $gray;
-}   
+}
 
 
 function toprintable2($fname,$newname) {
@@ -257,7 +286,7 @@ function toprintable2($fname,$newname) {
 		$r = colorgray($arr);
 		imageColorSet($im, $i, $r["red"], $r["green"], $r["blue"]);
 	}
-	imagePNG($im,$newname); 
+	imagePNG($im,$newname);
 }
 function toprintable3($fname) {
 	$im=imageCreateFromPng($fname);
@@ -313,7 +342,7 @@ function im_simage_resize($type, $fpath, $outpath, $gravity="NorthWest" ) {
 }
 function im_addborder($fpath, $outpath, $type,  $overlap, $idxfile) {
         global $stitch;
-        if ($overlap['right'] == 1)  
+        if ($overlap['right'] == 1)
                 $param[] = sprintf(" -compose bumpmap -gravity East %s -composite ", $stitch[$type]['right']);
         if ($overlap['buttom'] == 1)
                 $param[] = sprintf(" -compose bumpmap -gravity South %s -composite ", $stitch[$type]['buttom']);
@@ -338,8 +367,8 @@ function grayscale(&$im) {
 	return $im;
 }
 /* 3x3 1  right button
-	 o o o  pp pp cp 0 1 2 
-	 o o o  pp pp cp 3 4 5 
+	 o o o  pp pp cp 0 1 2
+	 o o o  pp pp cp 3 4 5
 	 o o o  pc pc cc 6 7 8
 	 if x==$x cut right, y==$y cut button
  */
@@ -387,11 +416,11 @@ function tagYline($starty, $movY) {
 	imageDestroy($tag);
 	return $im;
 }
-/* 
+/*
 			22
 	 54 + x x x  + 54
-			22 
-		image add fuzzy 
+			22
+		image add fuzzy
 		加上黏貼/剪下邊
  */
 function addborder2($oim,$x,$y,$i, $imglib ) {
@@ -417,7 +446,7 @@ function addborder2($oim,$x,$y,$i, $imglib ) {
 
 	$rim = imagecreatefrompng($rightimg);
 	imageCopyMerge($newim, $rim, $width+1, 0, 0, 0, imagesX($rim), imagesY($rim), 100 );
-	imageDestroy($rim); 
+	imageDestroy($rim);
 
 	$bim = imagecreatefrompng($buttonimg);
 	imageCopyMerge($newim, $bim, 0, $height+1, 0, 0, imagesX($bim), imagesY($bim), 100 );
@@ -428,7 +457,7 @@ function addborder2($oim,$x,$y,$i, $imglib ) {
 	imageCopyMerge($newim, $idxim, $width+$rimx-98, $height+$bimy-98, 0, 0, imagesX($idxim), imagesY($idxim), 100);
 	imageDestroy($idxim);
 
-	// imagePNG($newim,$newname); 
+	// imagePNG($newim,$newname);
 	return $newim;
 }
 //  tag
@@ -501,10 +530,10 @@ function thumb($fname, $savefile ) {
 }
  */
 /**
- * determine_type 
- * 
- * @param mixed $x 
- * @param mixed $y 
+ * determine_type
+ *
+ * @param mixed $x
+ * @param mixed $y
  * @access public
  * @return void
  */
@@ -525,10 +554,10 @@ function determine_type($x, $y, $page46=0) {
 	return 'A4';
 }
 /**
- * resizeA4 
- * 強制 A4 大小 
- * @param mixed $fpath 
- * @param mixed $type 
+ * resizeA4
+ * 強制 A4 大小
+ * @param mixed $fpath
+ * @param mixed $type
  * @access public
  * @return void
  */

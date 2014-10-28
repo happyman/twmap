@@ -6,9 +6,9 @@ require_once("config.inc.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:s:dSl:");
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:");
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
-	echo "Usage: $argv[0] -r 236:2514:6:4 -O dir -v 1|3 -t title -i localhost\n";
+	echo "Usage: $argv[0] -r 236:2514:6:4 [-g gpx:0:0] [-G]-O dir [-e] -v 1|3 -t title -i localhost\n";
 	echo "       -r params: startx:starty:shiftx:shifty\n";
 	echo "       -O outdir: /home/map/out/000003\n";
 	echo "       -v 1|3: version of map,default 3\n";
@@ -17,6 +17,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -p 1|0: 1 if is pong-hu\n";
 	echo "       -g gpx_fpath:trk_label:wpt_label \n";
 	echo "       -d debug\n";
+	echo "       -e draw 100M grid\n";
 	echo "       -s 1-5: stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf. debug purpose\n";
 	echo "          1 is done then go to 2, 3 ..\n";
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
@@ -50,6 +51,8 @@ $outimage_orig=$outfile_prefix . ".orig.tag.png";
 $outimage_gray=$outfile_prefix . ".gray.png";
 $outtext=$outfile_prefix . ".txt";
 $outsvg = $outfile_prefix . ".svg";
+$outsvg_big = $outfile_prefix . ".svg2";
+$merged_gpx = $outfile_prefix. ".gpx2";
 $outpdf = $outfile_prefix . ".pdf";
 
 $stage = 1;
@@ -92,8 +95,8 @@ if ($jump <= $stage ) {
 
 	if (file_exists($outimage)) {
 	  cli_msglog("$outimage exists");
-		cli_error_out("已經產生過相同的地圖");
-		//echo "$outimage there";
+		cli_error_out("已經產生過相同的地圖 $outimage");
+		echo "$outimage there";
 		exit(0);
 	}
 
@@ -142,6 +145,70 @@ if ($jump <= $stage ) {
 	} else {
 		write_and_forget($im,$outimage);
 	}
+	// add to here
+	if (isset($opt['G'])) {
+		// 1. merge gpx
+		$bound = array('brx' => ($startx+$shiftx)*1000, 'bry'=>  ($starty-$shifty)*1000,  
+			           'tlx'=>  $startx * 1000, 'tly'=> $starty * 1000);
+		$data = map_overlap($bound, 1, 100);
+		foreach($data as $map) {
+       		$tmpgpx = str_replace(".tag.png",".gpx",$map['filename']);
+			if (file_exists($tmpgpx))
+				$cmd_tmp[]= sprintf(" -i gpx -f %s -x nuketypes,routes,waypoints -x simplify,crosstrack,error=0.001k -x interpolate,distance=0.095k  ",$tmpgpx);
+		}
+		$cmd = sprintf("gpsbabel %s -o kml -F %s ", implode(" ",$cmd_tmp), $merged_gpx);
+		// debug
+		file_put_contents("/tmp/testcmd_1",$cmd);
+		//
+	  	$retmsg = exec($cmd, $out, $ret);
+		if ($ret != 0 ) {
+		 	@unlink($outimage_orig);
+			@unlink($outimage);
+			cli_error_out("merge gpx fail:" . $retmsg);
+		}
+	
+		 
+		$param['gpx'] = $merged_gpx;
+		$param['show_label_trk'] = 0;
+		$param['show_label_wpt'] = 0;
+		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
+		$param['logotext'] = $title;
+		$param['bgimg'] = $outimage;
+		list($param['width'], $junk, $junk, $junk) = getimagesize($outimage);
+		// 怕檔案範圍太大,再 filter 一下
+		$svg = new gpxsvg($param);
+		list($x, $y, $x1, $y1) = $svg->get_bound($junk);
+		$tmp_bound = tempnam("/tmp","BOUND") . ".txt";
+		file_put_contents($tmp_bound,sprintf("%s %s\n%s %s\n%s %s\n%s %s\n",$x,$y,$x,$y1,$x1,$y,$x1,$y1));
+		$cmd = sprintf("cp %s %s.tmp; gpsbabel -i kml -f %s.tmp -x polygon,file=%s -o gpx -F %s",$merged_gpx, $merged_gpx, $merged_gpx,$tmp_bound,$merged_gpx);
+		$retmsg = exec($cmd, $out, $ret);
+		if ($ret != 0 ) {
+		 	@unlink($outimage_orig);
+		@unlink($outimage);
+		@unlink($tmp_bound);
+			cli_error_out("filter gpx fail:" . $cmd . $retmsg);
+		}
+		@unlink($tmp_bound);
+		// 2. 轉成 svg
+		list($ret,$msg) = gpx2svg($param, $outsvg_big);
+	  if ($ret === false ) {
+			      @unlink($outimage_orig);
+			      cli_error_out("gpx2svg fail: ". print_r($msg,true). print_r($param,true));
+		}
+		list ($ret,$msg) = svg2png($outsvg_big, $outimage);
+	   if ($ret === false ) {
+			      @unlink($outimage_orig);
+			      @unlink($outimage);
+	   	      cli_error_out("svg2png fail: $msg");
+    }
+
+	}
+	// 加上 grid
+	if (isset($opt['e'])) {
+		cli_msglog("add grid to  image...");
+		im_addgrid($outimage, 100, $version);
+	}
+	// happyman
 	cli_msglog("ps%40");
 	cli_msglog("grayscale image...");
 	// 產生灰階圖檔

@@ -42,7 +42,7 @@ for(var i=13;i<=18;i++) {
 }
 var kmlArrayMax = 50;
 var SunriverMapOptions = {
-	getTileUrl_sunriver: function(coord, zoom) {
+	getTileUrl_1: function(coord, zoom) {
 		return "http://210.59.147.231/~happyman/mapserv/mapserv.php?" + "zoom=" + zoom + "&x=" + coord.x + "&y=" + coord.y;
 
 	},
@@ -169,7 +169,7 @@ var show_marker = "a"; // getParameterByName("show_marker")? getParameterByName(
 
 var myInfoBoxOptions = {
 	disableAutoPan: false,
-	maxWidth: 200,
+	maxWidth: 300,
 	alignBottom: true,
 	pixelOffset: new google.maps.Size(-100, -35),
 	boxClass: "ui-corner-all infobox",
@@ -238,7 +238,7 @@ function showInsideMarkers() {
 }
 var bigPoly;
 var grid; // for wgs84 grid
-function showGrid(loc) {
+function showGrid(grid_type) {
 
 	var vp = map.getBounds();
 	var vpp = [];
@@ -246,16 +246,16 @@ function showGrid(loc) {
 	var newp = [];
 	var dstBound = TW_Bounds;
 	var ph = 0;
-	if (loc == 'TWD67PH') {
+	if (grid_type == 'TWD67PH') {
 		dstBound = PH_Bounds;
 		ph = 1;
-	} else if (loc == 'WGS84') {
+	} else if (grid_type == 'WGS84') {
 		if (!grid)
 			grid = new Graticule(map, true);
 		else
 			grid.show();
 		return;
-	} else if (loc == 'None') {
+	} else if (grid_type == 'None') {
 		if (grid)
 			grid.hide();
 		// clean grid
@@ -297,14 +297,14 @@ function showGrid(loc) {
 		bigPoly = new google.maps.Rectangle({map: map,fillColor: "red", fillOpacity: 0.1 });
 	if (InterBounds) {
 		//bigPoly.setBounds(InterBounds);
-		var sw = lonlat_getblock(InterBounds.getSouthWest().lng(), InterBounds.getSouthWest().lat(), ph);
-		var ne = lonlat_getblock(InterBounds.getNorthEast().lng(), InterBounds.getNorthEast().lat(), ph);
+		var sw = lonlat_getblock(InterBounds.getSouthWest().lng(), InterBounds.getSouthWest().lat(), ph, 100);
+		var ne = lonlat_getblock(InterBounds.getNorthEast().lng(), InterBounds.getNorthEast().lat(), ph, 100);
 		var minx = sw[0].x;
 		var maxx = ne[1].x;
 		var miny = sw[1].y;
 		var maxy = ne[0].y;
 		// 畫 grid
-		lonlat_range_getblock(minx,miny,maxx,maxy, ph);
+		lonlat_range_getblock(minx,miny,maxx,maxy, ph, grid_type);
 	}
 }
 function removeAllkmls(keep) {
@@ -317,7 +317,8 @@ function removeAllkmls(keep) {
 			delete kmlArray[z][key];
 		}
 	}
-	$.unblockUI();
+	if (!ismakingmap)
+		$.unblockUI();
 	console.log("remove All KML " + keep );
 }
 var parsedkml = 0;
@@ -428,7 +429,8 @@ if (z < 13)  {
 						google.maps.event.addListener( kmlArray[z][key], 'parsed',  function() {
 								parsedkml--;
 								//console.log("remain " + parsedkml + " kmls to add");
-								$.unblockUI();
+								if (!ismakingmap)
+									$.unblockUI();
 								if (parsedkml == 0 ) {
 										$("#kml_sw").removeClass("wait");
 								}
@@ -482,7 +484,7 @@ function locInfo(newpos) {
 		content += permLinkURL( newpos.toUrlValue(5) );
 	else
 		content += permLinkURL( encodeURIComponent(locInfo_name) );
-	content += "<br>經緯度: " + newpos.toUrlValue(5);
+	content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" +  ConvertDDToDMS(newpos.lat()) + "," +  ConvertDDToDMS(newpos.lng());
 	content += "<br>座標: " + comment + ""+  Math.round(p.x) + "," + Math.round(p.y);
 	if (admin_role == 1) {
 		if (locInfo_name == "我的位置")
@@ -523,6 +525,7 @@ function tagInfo(newpos,id){
 				content = "<div class='infowin'><b>"+ data[0].name +"</b>";
 				content += permLinkURL( encodeURIComponent(data[0].name) );
 				content += "<br>座標: " + comment + "<br>"+ Math.round(p.x) + "," + Math.round(p.y);
+				content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" +  ConvertDDToDMS(newpos.lat()) + "," +  ConvertDDToDMS(newpos.lng());
 				content += data[0].story;
 				content += "</div>";
 
@@ -932,13 +935,12 @@ function initialize() {
 	// 載入 Tags
 	$("#tags").val("初始化中");
 	// 搜尋框被 focus 跟 blur 的時候
-	$("input:text").on('focus',function() {
+	$("input:text").on('focus mouseover',function() {
 			$(this).css('font-size','3em');
-			$(this).autoGrowInput().trigger('keydown');
-	}).on('blur',function() {
-			$(this).css({'font-size':'1em'});
-			$(this).autoGrowInput().trigger('keydown');
+	}).on('blur mouseout',function() {
+			$(this).css('font-size','1em');
 	});
+
 	// 按下 esc key
 	$(document).keyup(function(e) {
 			if (e.keyCode == 27) { $("input:text").blur(); }   // esc
@@ -1069,7 +1071,6 @@ function initialize() {
 				centerInfo.close();
 
 			map.setCenter(new google.maps.LatLng(miniY+(maxiY-miniY)/2,miniX+(maxiX-miniX)/2));
-
 			ismakingmap = 1;
 			$.blockUI({ message: $('#inputtitleform') });
 	});
@@ -1425,16 +1426,12 @@ function showmeerkat(url) {
 }
 var poly = [];
 var polylabel = [];
-function lonlat_range_getblock(minx,miny,maxx,maxy,ph) {
+function lonlat_range_getblock(minx,miny,maxx,maxy,ph,grid_type) {
 
-	var gridColor = 'white';
-	if (ph == 1) gridColor = 'yellow';
+
 	var sw = lonlat2twd67(minx,miny,ph);
 	var ne = lonlat2twd67(maxx,maxy,ph);
-	var startx = Math.round(sw.x/1000)*1000;
-	var starty = Math.round(sw.y/1000)*1000;
-	var endx = Math.round(ne.x/1000)*1000;
-	var endy = Math.round(ne.y/1000)*1000;
+
 	// y 軸
 	var i = 0;
 	var j = 0;
@@ -1442,6 +1439,8 @@ function lonlat_range_getblock(minx,miny,maxx,maxy,ph) {
 	var xstep = 1000;
 	var ystep = 1000;
 	var curZoom = map.getZoom();
+	var gridColor = 'white';
+	if (ph == 1) gridColor = 'yellow';
 	var showlabel = 1;
 	var adjusty = 0;
 	var adjustx = 1;
@@ -1474,6 +1473,36 @@ function lonlat_range_getblock(minx,miny,maxx,maxy,ph) {
 		adjusty = 30;
 		adjustx = 1;
 	}
+	// 特別的
+	if (grid_type == 'TWD67_EXT') {
+		if (curZoom == 16) {
+			xstep = 200;
+			ystep = 200;
+			adjusty = 30;
+			adjustx = 1;
+			gridColor = 'black';
+		} else if (curZoom >=17 && curZoom <=18 ) {
+			xstep = 100;
+			ystep = 100;
+			adjusty = 10;
+			adjustx = 1;
+			gridColor = 'black';
+		} else if (curZoom == 19) {
+			xstep = 100;
+			ystep = 100;
+			adjusty = 5;
+			adjustx = 1;
+			gridColor = 'white';
+		} else {
+			gridColor = 'black';
+		}
+
+	}
+	var startx = Math.round(sw.x/xstep)*xstep;
+	var starty = Math.round(sw.y/ystep)*ystep;
+	var endx = Math.round(ne.x/xstep)*xstep;
+	var endy = Math.round(ne.y/ystep)*ystep;
+	//console.log("x="+startx +"y="+ starty +"endx="+ endx + "endy="+ endy);
 	for(var y=starty; y<=endy; y+=ystep) {
 		var p = twd672lonlat(startx, y,ph);
 		var p1 = twd672lonlat(endx, y ,ph);
@@ -1483,7 +1512,7 @@ function lonlat_range_getblock(minx,miny,maxx,maxy,ph) {
 			poly[i] = new google.maps.Polyline({map: map, path:[ new google.maps.LatLng(p.y,p.x), new google.maps.LatLng(p1.y,p1.x) ], strokeColor: gridColor, strokeWeight: 1  });
 		else
 			poly[i].setPath([ new google.maps.LatLng(p.y,p.x), new google.maps.LatLng(p1.y,p1.x) ]);
-		poly[i].setOptions({strokeColor: gridColor});
+		poly[i].setOptions({strokeColor: gridColor, clickable: false, strokeOpacity: 0.8});
 		poly[i].setMap(map);
 		// 畫出 Y 軸
 		if (showlabel) {
@@ -1505,7 +1534,7 @@ function lonlat_range_getblock(minx,miny,maxx,maxy,ph) {
 			poly[i] = new google.maps.Polyline({map: map, path:[ new google.maps.LatLng(p.y,p.x), new google.maps.LatLng(p1.y,p1.x) ], strokeColor: gridColor, strokeWeight: 1});
 		else {
 			poly[i].setPath([ new google.maps.LatLng(p.y,p.x), new google.maps.LatLng(p1.y,p1.x) ]);
-			poly[i].setOptions({strokeColor: gridColor});
+			poly[i].setOptions({strokeColor: gridColor, clickable: false, strokeOpacity: 0.8});
 			poly[i].setMap(map);
 		}
 		if (showlabel == 1) {
