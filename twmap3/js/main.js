@@ -33,6 +33,8 @@ var opacity = getParameterByName("opacity")? getParameterByName("opacity") : 0.7
 var got_geo = 0;
 // geocoding
 var geocoder;
+var elevator;
+
 // var show_kml = (getParameterByName("kml")) ? 1: 0;
 var show_kml_layer = 1; // getParameterByName("show_kml_layer")?  getParameterByName("show_kml_layer") : 1;
 var GPSLayer; // external kml layer
@@ -330,131 +332,131 @@ function showInsideKML(clear_pending) {
 	if (tags_ready == 0 ) return;
 	var z = map.getZoom();
 	/*
-	if (zoom < 11) {
-		for(var key in kmlArray) {
-			//kmlArray[key].hideDocument(kmlArray[key].docs[0]);
-			kmlArray[key].removeDocument(kmlArray[key].docs[0]);
-			delete kmlArray[key];
-		}
-	}
-		$.unblockUI();
+	 if (zoom < 11) {
+		 for(var key in kmlArray) {
+			 //kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+			 kmlArray[key].removeDocument(kmlArray[key].docs[0]);
+			 delete kmlArray[key];
+		 }
+	 }
+	 $.unblockUI();
 
-		return;
-	}
-	*/
+	 return;
+ }
+ */
 if (z < 13)  {
-  removeAllkmls();
+	removeAllkmls();
 	return;
 }
-	if (clear_pending && showInsideKML.to_draw == 0 ) {
-		console.log("skip show KML");
-		return;
-	}
-	if (showInsideKML.drawing == 1 ) {
-		showInsideKML.to_draw = 1;
-		setTimeout(function() { showInsideKML(1)}, 1000);
-		console.log("pending call");
-		return;
-	}
-	showInsideKML.drawing = 1;
+if (clear_pending && showInsideKML.to_draw == 0 ) {
+	console.log("skip show KML");
+	return;
+}
+if (showInsideKML.drawing == 1 ) {
+	showInsideKML.to_draw = 1;
+	setTimeout(function() { showInsideKML(1)}, 1000);
+	console.log("pending call");
+	return;
+}
+showInsideKML.drawing = 1;
 
-	var parts = map.getBounds().toUrlValue(5).split(",").map(Number);
-	//console.log(parts);
-	var minX, minY, maxX, maxY;
-	if (parts[1] > parts[3]) {
-		minX = parts[3];
-		maxX = parts[1];
-	} else {
-		maxX = parts[3];
-		minX = parts[1];
+var parts = map.getBounds().toUrlValue(5).split(",").map(Number);
+//console.log(parts);
+var minX, minY, maxX, maxY;
+if (parts[1] > parts[3]) {
+	minX = parts[3];
+	maxX = parts[1];
+} else {
+	maxX = parts[3];
+	minX = parts[1];
+}
+if (parts[0] > parts[2]) {
+	maxY = parts[0];
+	minY = parts[2];
+} else {
+	maxY = parts[2];
+	minY = parts[0];
+}
+//  左上座標
+var cc = is_taiwan(maxY, minX);
+if (cc == 0 )
+	return;
+var ph = (cc==2)?1:0;
+var tl = lonlat2twd67(minX, maxY, ph);
+var br = lonlat2twd67(maxX, minY, ph);
+var keys = [];
+for (var key in kmlArray[z]) {
+	if (kmlArray[z].hasOwnProperty(key)) {
+		keys.push(key);
 	}
-	if (parts[0] > parts[2]) {
-		maxY = parts[0];
-		minY = parts[2];
-	} else {
-		maxY = parts[2];
-		minY = parts[0];
-	}
-	//  左上座標
-	var cc = is_taiwan(maxY, minX);
-	if (cc == 0 )
-		return;
-	var ph = (cc==2)?1:0;
-	var tl = lonlat2twd67(minX, maxY, ph);
-	var br = lonlat2twd67(maxX, minY, ph);
-	var keys = [];
-	for (var key in kmlArray[z]) {
-		if (kmlArray[z].hasOwnProperty(key)) {
-			keys.push(key);
-		}
-	}
-	// todo: not yet support ph
-	$("#kml_sw").addClass("wait");
-	console.log("call getkmlfrom bounds");
-	$.ajax({
-			dataType: 'json',
-			url: getkmlfrombounds_url,
-			cache: false,
-			data: {
-				tlx: parseInt(tl.x),
-				tly: parseInt(tl.y),
-				brx: parseInt(br.x),
-				bry: parseInt(br.y),
-				gpx: 1,
-				keys: keys.join(","),
-				maxkeys: 0
-			},
+}
+// todo: not yet support ph
+$("#kml_sw").addClass("wait");
+console.log("call getkmlfrom bounds");
+$.ajax({
+		dataType: 'json',
+		url: getkmlfrombounds_url,
+		cache: false,
+		data: {
+			tlx: parseInt(tl.x),
+			tly: parseInt(tl.y),
+			brx: parseInt(br.x),
+			bry: parseInt(br.y),
+			gpx: 1,
+			keys: keys.join(","),
+			maxkeys: 0
+		},
 
-			success: function(data) {
-				if (data.ok != true) return;
-				// 總共要加幾個
-				parsedkml = data.rsp.count['add'];
-				//alert(parsedkml);
-				if (parsedkml == 0 ) {
+		success: function(data) {
+			if (data.ok != true) return;
+			// 總共要加幾個
+			parsedkml = data.rsp.count['add'];
+			//alert(parsedkml);
+			if (parsedkml == 0 ) {
 				$("#kml_sw").removeClass("wait");
-					if (!ismakingmap)
-						$.unblockUI();
-				}
+				if (!ismakingmap)
+					$.unblockUI();
+			}
 
-				for(var key in data.rsp.add) {
-					if (!kmlArray[z][key]) {
+			for(var key in data.rsp.add) {
+				if (!kmlArray[z][key]) {
 
-						kmlArray[z][key] = new geoXML3.parser(
-							{map:map, singleInfoWindow: true,
-								additional_marker_desc: data.rsp.add[key].desc,
-								additional_path_desc: data.rsp.add[key].desc,
-								zoom:false
-						});
-						kmlArray[z][key].parse(data.rsp.add[key].url +'&zoom='+ map.getZoom() + '&ts=' + (new Date()).getTime());
-						google.maps.event.addListener( kmlArray[z][key], 'parsed',  function() {
-								parsedkml--;
-								//console.log("remain " + parsedkml + " kmls to add");
-								if (!ismakingmap)
-									$.unblockUI();
-								if (parsedkml == 0 ) {
-										$("#kml_sw").removeClass("wait");
-								}
-						});
-
-					}
+					kmlArray[z][key] = new geoXML3.parser(
+						{map:map, singleInfoWindow: true,
+							additional_marker_desc: data.rsp.add[key].desc,
+							additional_path_desc: data.rsp.add[key].desc,
+							zoom:false
+					});
+					kmlArray[z][key].parse(data.rsp.add[key].url +'&zoom='+ map.getZoom() + '&ts=' + (new Date()).getTime());
+					google.maps.event.addListener( kmlArray[z][key], 'parsed',  function() {
+							parsedkml--;
+							//console.log("remain " + parsedkml + " kmls to add");
+							if (!ismakingmap)
+								$.unblockUI();
+							if (parsedkml == 0 ) {
+								$("#kml_sw").removeClass("wait");
+							}
+					});
 
 				}
-				for(var key in data.rsp.del) {
-					if (kmlArray[z][key]) {
-						//kmlArray[key].hideDocument(kmlArray[key].docs[0]);
-					  kmlArray[z][key].removeDocument(kmlArray[z][key].docs[0]);
-						delete kmlArray[z][key];
-					}
-				}
-				// keep z, and clean other zoom level
-				removeAllkmls(z);
-				showInsideKML.drawing = 0;
-				if (clear_pending == 1) {
-					console.log("clear pending call");
-					showInsideKML.to_draw = 0;
+
+			}
+			for(var key in data.rsp.del) {
+				if (kmlArray[z][key]) {
+					//kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+					kmlArray[z][key].removeDocument(kmlArray[z][key].docs[0]);
+					delete kmlArray[z][key];
 				}
 			}
-	});
+			// keep z, and clean other zoom level
+			removeAllkmls(z);
+			showInsideKML.drawing = 0;
+			if (clear_pending == 1) {
+				console.log("clear pending call");
+				showInsideKML.to_draw = 0;
+			}
+		}
+});
 
 
 }
@@ -465,8 +467,28 @@ function permLinkURL(goto) {
 	return "<a href='?goto=" + goto + "&zoom="+ map.getZoom() +"&opacity="+ opacity + "&mapversion=" + ver + "&maptypeid="+ map.getMapTypeId() +"&show_label="+ show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker +"&roadmap="+ curMap+"&grid=" + curGrid +"'><img src='img/permlink.png' border=0/></a>";
 }
 
+function locInfo(newpos){
+	if (!elevator)
+		elevator = new google.maps.ElevationService();
+
+	elevator.getElevationForLocations({'locations': [ newpos ] }, function(results, status) {
+			if (status == google.maps.ElevationStatus.OK) {
+
+				// Retrieve the first result
+				if (results[0]) {
+
+					locInfo_show(newpos, results[0].elevation);
+				} else {
+					locInfo_show(newpos, -10000); // success but unknown
+				}
+			} else {
+				locInfo_show(newpos, -20000);
+			}
+	});
+
+}
 // location Information
-function locInfo(newpos) {
+function locInfo_show(newpos,ele) {
 	//console.log( "locInfo:"+locInfo_name);
 	var ll = is_taiwan(newpos.lat(), newpos.lng());
 	if (ll == 2) {
@@ -484,13 +506,16 @@ function locInfo(newpos) {
 		content += permLinkURL( newpos.toUrlValue(5) );
 	else
 		content += permLinkURL( encodeURIComponent(locInfo_name) );
+
 	content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" +  ConvertDDToDMS(newpos.lat()) + "," +  ConvertDDToDMS(newpos.lng());
+	if (ele > -1000) 
+		content += "<br>高度: " + ele.toFixed(2) + "M";
 	content += "<br>座標: " + comment + ""+  Math.round(p.x) + "," + Math.round(p.y);
 	if (admin_role == 1) {
 		if (locInfo_name == "我的位置")
-		content += "<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=1&x=" + newpos.lng().toFixed(5) + "&y="+  newpos.lat().toFixed(5) + "&form=add');return false\">新增</a>";
+			content += "<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=1&x=" + newpos.lng().toFixed(5) + "&y="+  newpos.lat().toFixed(5) + "&form=add');return false\">新增</a>";
 		else
-		content += "<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=1&x=" + newpos.lng().toFixed(5) + "&y="+  newpos.lat().toFixed(5) + "&name="+ locInfo_name +"&form=add');return false\">新增</a>";
+			content += "<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=1&x=" + newpos.lng().toFixed(5) + "&y="+  newpos.lat().toFixed(5) + "&name="+ locInfo_name +"&form=add');return false\">新增</a>";
 
 	}
 	content += "</div>";
@@ -998,10 +1023,10 @@ function initialize() {
 				if (show_kml_layer == 1)  {
 					BackgroundMapType = TaiwanGpxMapType;
 					BackgroundMapOptions = TaiwanGpxMapOptions;
-			 } else {
+				} else {
 					BackgroundMapType = TaiwanMapType;
 					BackgroundMapOptions = TaiwanMapOptions;
-			 }
+				}
 				BackgroundMap = 0;
 				$("#changemap").removeClass("disable");
 				$("#changemap").text("經建三");
@@ -1085,12 +1110,12 @@ function initialize() {
 				$.blockUI({ message: "移除 kml 圖層..." });
 				removeAllkmls();
 				/*
-				for (var key in kmlArray) {
-					//kmlArray[key].hideDocument(kmlArray[key].docs[0]);
-					kmlArray[key].removeDocument(kmlArray[key].docs[0]);
-					delete kmlArray[key];
-				}
-				*/
+				 for (var key in kmlArray) {
+					 //kmlArray[key].hideDocument(kmlArray[key].docs[0]);
+					 kmlArray[key].removeDocument(kmlArray[key].docs[0]);
+					 delete kmlArray[key];
+				 }
+				 */
 				show_kml_layer = 0;
 				$("#kml_sw").addClass("disable");
 				$.unblockUI();
@@ -1101,8 +1126,8 @@ function initialize() {
 				$("#kml_sw").removeClass("disable");
 			}
 			if (BackgroundMap == 0 ) {
-			  $("#changemap").trigger('click');
-			  $("#changemap").trigger('click');
+				$("#changemap").trigger('click');
+				$("#changemap").trigger('click');
 			}
 			//updateView("info_only");
 	});
@@ -1188,7 +1213,7 @@ function initialize() {
 
 
 	var map_is_ready = google.maps.event.addListener(	map, "bounds_changed", function() {
-		  console.log("bounds_changed");
+			console.log("bounds_changed");
 			if (getParameterByName("show_label") && getParameterByName("show_label") == 0 ) { $("#label_sw").trigger('click'); }
 			//if (getParameterByName("show_marker") && getParameterByName("show_marker") == 0 ) { $("#marker_sw").trigger('click'); }
 			if (getParameterByName("show_marker")) {
@@ -1232,8 +1257,8 @@ function initialize() {
 			else {
 				console.log("getgeolocation");
 				$.geolocation.get({ win: function(position) {
-					CurrentLocation(position);
-					var moveDiv = document.createElement('div');
+							CurrentLocation(position);
+							var moveDiv = document.createElement('div');
 							var myCustomControl2 = new curLocControl(moveDiv, map);
 							map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(moveDiv);
 				}, fail: FeatureLocation });
