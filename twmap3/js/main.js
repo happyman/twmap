@@ -960,7 +960,7 @@ function initialize() {
 	// 載入 Tags
 	$("#tags").val("初始化中");
 	// 搜尋框被 focus 跟 blur 的時候
-	$("input:text").on('focus mouseover',function() {
+	$("input:text#tags").on('focus mouseover',function() {
 			$(this).css('font-size','3em');
 	}).on('blur mouseout',function() {
 			$(this).css('font-size','1em');

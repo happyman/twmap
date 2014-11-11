@@ -94,7 +94,7 @@ printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 		</select>
 
 		<div id="inputtitleform" style="display:none">
-			請輸入地圖標題: <input id="inputtitle" type="text" size="2" />
+			<br>請輸入地圖標題: <br><br><input id="inputtitle" type="text" size="2" />
 			<br>
 			<input type="button" id='inputtitlebtn' value="送出" />
 			<input type="button" id='inputtitlebtn2' value="取消" />

@@ -188,3 +188,6 @@ color: #000000;
 	font-size: 20px;
 	padding: 5px;
 }
+#inputtitleform > input {
+	font-size: 3em;
+}
