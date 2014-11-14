@@ -36,8 +36,13 @@ function img_from_tiles($base_dir, $x, $y, $shiftx, $shifty, $zoom, $ph=0, $debu
 				unlink($outimage);
 				symlink($cache_filename, $outimage);
 			}
-			if ($debug) 
-				error_log("\ncache: $cache_filename read" . is_link($cache_filename)? "[link]" : "");
+			if ($debug)  {
+				$msg = sprintf("cache: $cache_filename read %s", is_link($cache_filename)? "[link]" : "");
+				if ($warm > 0 )
+					echo "$msg\n";
+				else
+					error_log($msg);
+			}
 			return array(TRUE, $outimage, "cached: $cache_filename");
 		} 
 	}

@@ -1,6 +1,14 @@
 <?php
 require_once "config.inc.php";
 session_start();
+?>
+<html>
+  <head>
+	    <title>地圖產生器-雲端列印</title>
+		  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ </head>
+<body>
+<?php
 if (!isset($_GET['mid'])){
 	echo "<h1>需要 mid 喔</h1>";
 	exit(0);
@@ -63,7 +71,6 @@ $filekey = $file_info['rsp']['file'][0]['key'];
 $rsp = $xuite->print_code_get($filekey);
 $code = $rsp['rsp']['code'];
 $expire = $rsp['rsp']['expire'];
-echo "<title>雲端列印</title>";
 echo "<img src=imgs/HAMI.png>";
 echo "<h1>本圖的列印碼是 $code 可用到 ". date("Y-m-d H:i", $expire) . "</h1>";
 echo "請到 ibon 去列印吧! 不會請參考";
