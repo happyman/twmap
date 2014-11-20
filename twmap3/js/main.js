@@ -1034,6 +1034,7 @@ function initialize() {
 			map.overlayMapTypes.removeAt(0, BackgroundMapType);
 			map.overlayMapTypes.insertAt(0, BackgroundMapType);
 			updateView("info_only");
+			changeBackgroundOpacity(opacity);
 	});
 	// 切換前景圖
 	$('#changegname').change(function() {
@@ -1128,6 +1129,8 @@ function initialize() {
 			if (BackgroundMap == 0 ) {
 				$("#changemap").trigger('click');
 				$("#changemap").trigger('click');
+				//changeBackgroundOpacity(opacity);
+				//changeBackgroundOpacity(opacity+0.001);
 			}
 			//updateView("info_only");
 	});
