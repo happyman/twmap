@@ -5,7 +5,7 @@
 require_once("adodb_lite/adodb.inc.php");
 
 function get_conn() {
-	global $db_conn,$db_user, $db_pass, $db_name;
+	global $db_host, $db_conn,$db_user, $db_pass, $db_name;
 
 	if ($db_conn != null && $db_conn->IsConnected())
 		return $db_conn;
