@@ -38,6 +38,7 @@ $pixels['A4R'] = array("x"=>2110, "y"=>1492);
 $fuzzy = 20;
 
 /* DB 設定寫在這裡 */
+$db_host = 'localhost';
 $db_user = "twmap";
 $db_pass = "password";
 $db_name = "twmap";

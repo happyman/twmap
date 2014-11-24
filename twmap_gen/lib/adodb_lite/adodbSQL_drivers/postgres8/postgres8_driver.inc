@@ -39,7 +39,7 @@ class postgres8_driver_ADOConnection extends ADOConnection
 		if ($this->username || $this->password || $this->database) {
 			$this->connect_string = $this->host;
 		   	if ($this->connect_string)  {
-			 	$host = split(":", $this->connect_string);
+			 	$host = explode(":", $this->connect_string);
 				if ($host[0]) $this->connect_string = "host=" . $this->query_addslashes($host[0]);
 				else $this->connect_string = 'host=localhost';
 				if (isset($host[1])) $this->connect_string .= " port=$host[1]";

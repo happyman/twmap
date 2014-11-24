@@ -10,18 +10,16 @@ function get_conn() {
 	if ($db_conn != null && $db_conn->IsConnected())
 		return $db_conn;
 
-	// error_log("new conection");
-    // db_conn = ADONewConnection('mysqli');
-	//$status = $db_conn->PConnect('localhost', $db_user, $db_pass, $db_name);
-	$db_conn = ADONewConnection('postgres8');
-	$status = $db_conn->PConnect($db_host, $db_user, $db_pass, $db_name);
+	error_log("new conection");
+	$db_conn = ADONewConnection('mysqli');
+	$status = $db_conn->PConnect('localhost', $db_user, $db_pass, $db_name);
 
 	if ($status === true ) {
 		if ($db_conn->IsConnected() !== true) {
 			error_log("db can't connect");
 			//return false;
 			exit("no db connection");
-		}
+		} 
 		//$db_conn->SetFetchMode(ADODB_FETCH_ASSOC);
 		$ADODB_FETCH_MODE = 'ADODB_FETCH_ASSOC';
 		$db_conn->debug = false;
@@ -32,24 +30,10 @@ function get_conn() {
 	}
 
 }
-function logsql($sql,$rs){
-	$debug = 0;
-	if ($debug == 0 ) reutrn;
-	$trace = getCallingFunctionName(true);
-	if ($rs===false){
-		$msg = "return FALSE";
-	} else if (empty($rs)) {
-		$msg= "return EMPTY";
-	} else {
-		$msg= "return ok";
-	}
-	error_log("$trace run $sql". $msg);
-}
 function fetch_user($mylogin) {
-	$sql = sprintf("select * from \"user\" where email='%s' and type='%s'", $mylogin['email'],$mylogin['type']);
+	$sql = sprintf("select * from user where email='%s' and type='%s'", $mylogin['email'],$mylogin['type']);
 	$db = get_conn();
 	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
 	if (count($rs) == 0) return false;
 	//$res = mysql_query($sql);
 	//$row = mysql_fetch_array($res);
@@ -62,15 +46,16 @@ function login_user($mylogin) {
 	$db = get_conn();
 	// 尚未註冊, 註冊
 	if ($row === FALSE || count($row) == 0 ) {
-		$sql = sprintf("INSERT INTO \"user\" (\"uid\", \"email\", \"type\", \"name\", \"limit\", \"cdate\", \"login\") VALUES (DEFAULT, '%s', '%s', '%s',  30, CURRENT_TIMESTAMP, 1)", $mylogin['email'],$mylogin['type'],$mylogin['nick']);
+		$sql = sprintf("INSERT INTO `twmap`.`user` (`uid`, `email`, `type`, `name`, `limit`, `cdate`, `login`) VALUES (NULL, '%s', '%s', '%s',  30, CURRENT_TIMESTAMP, 1)", $mylogin['email'],$mylogin['type'],$mylogin['nick']);
+
+		//$res = mysql_query($sql);
+		//error_log("sql=".print_r($sql, true));
 		$rs = $db->Execute($sql);
-		logsql($sql,$rs);
 	} else {
 		// 新增 counter
-		$sql = sprintf("update \"user\" SET \"login\"=%d, \"name\"='%s' WHERE \"uid\"=%d",$row['login']+1, pg_escape_string($mylogin['nick']),$row['uid']);
+		$sql = sprintf("update `twmap`.`user` SET `login`=%d, `name`='%s' WHERE `user`.`uid`=%d",$row['login']+1, $mylogin['nick'],$row['uid']);
 		//$res = mysql_query($sql);
 		$rs = $db->Execute($sql);
-		logsql($sql,$rs);
 	}
 	// 是否加上 login record ?
 	//
@@ -78,19 +63,27 @@ function login_user($mylogin) {
 }
 function map_exists($uid,$startx,$starty,$shiftx,$shifty,$version,$gpx=0) {
 	$db = get_conn();
-	$sql = sprintf("SELECT \"mid\" from \"map\" WHERE \"uid\"='%s' AND \"locX\"=%d AND \"locY\"=%d AND \"shiftX\"=%d and \"shiftY\"=%d and \"version\"=%d and \"gpx\"=%d",$uid,$startx,$starty,$shiftx,$shifty,$version,$gpx);
+	$sql = sprintf("SELECT `mid` from `twmap`.`map` WHERE `uid`='%s' AND `locX`=%d AND `locY`=%d AND `shiftX`=%d and `shiftY`=%d and `version`=%d and `gpx` = %d",$uid,$startx,$starty,$shiftx,$shifty,$version,$gpx);
 	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
+	//$res = mysql_query($sql);
+	//error_log("to find existing mid: $mid");
+	//if (!$res) return false;
+	//$row = mysql_fetch_array($res);
+	//if ($row===false) return false;
 	if (count($rs) == 0 ) return false;
 	return $rs[0];
 }
 function keepon_map_exists($uid,$keepon_id){
 	$db=get_conn();
-	$sql = sprintf("SELECT * from  \"map\" WHERE \"uid\"='%s' AND \"keepon_id\"=%d",$uid,$keepon_id);
+	$sql = sprintf("SELECT * from  `twmap`.`map` WHERE `uid`= '%s' AND `keepon_id`=%d",$uid,$keepon_id);
 	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
 	if (count($rs) == 0 ) return false;
 	return $rs[0];
+	//$res = mysql_query($sql);
+	//if (!$res) return false;
+	//$row = mysql_fetch_array($res);
+	//if ($row===false) return false;
+	//return $row;
 }
 // 寫到 map table
 function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="localhost",$file,$size=0,$version=1,$gpx=0,$keepon_id=0) {
@@ -101,56 +94,69 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="loca
 	$db=get_conn();
 	if ($row === FALSE || $keepon_id != 0 ) {
 		// 新地圖
-		// 使用 postgresql 要改 default
-		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %s)", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==0)?'NULL':$keepon_id);
+		$sql = sprintf("INSERT INTO `twmap`.`map` (`mid`,`uid`,`cdate`,`host`,`title`,`locX`,`locY`,`shiftX`,`shiftY`,`pageX`,`pageY`,`filename`, `size`,`version`,`gpx`,`keepon_id`) VALUES (NULL, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %s)", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==0)?'NULL':$keepon_id);
 		$res = $db->Execute($sql);
-		logsql($sql,$rs);
+		//$res = mysql_query($sql);
+		// error_log("sql=".priont_r($sql, true));
 		if (!$res) {
-			//error_log("err sql: $sql");
+			error_log("err sql: $sql");
 			return FALSE;
 		}
+		//return mysql_insert_id();
 		return $db->Insert_ID();
 	} else {
 		// 重新產生的地圖, 連檔名都要更新
 		$mid = $row[0];
-		$sql = sprintf("UPDATE \"map\" SET \"locX\"=%d,\"locY\"=%d,\"shiftX\"=%d,\"shiftY\"=%d,\"size\"=%d,\"flag\"=0,\"cdate\"=CURRENT_TIMESTAMP,\"title\"='%s',\"version\"=%d,\"filename\"='%s',\"gpx\"=%d WHERE \"mid\"=%d",$startx, $starty, $shiftx, $shifty, $size,$title,$version,$file, $gpx, $mid);
-		$rs = $db->Execute($sql);
-		logsql($sql,$rs);
-		if (!$rs) return FALSE;
+		$sql = sprintf("UPDATE `twmap`.`map` SET `locX`=%d,`locY`=%d,`shiftX`=%d,`shiftY`=%d,`size`=%d,`flag`=0,`cdate`=CURRENT_TIMESTAMP,`title`='%s',`version`=%d, `filename`='%s', `gpx`=%d WHERE `mid`=%d",$startx, $starty, $shiftx, $shifty, $size,$title,$version,$file, $gpx, $mid);
+		//$res = mysql_query($sql);
+		$res = $db->Execute($sql);
+		error_log("update mid sql=$sql");
+		if (!$res) return FALSE;
 		return $mid;
 	}
 }
 // 取出所有 uid 產生的地圖
 function map_get($uid) {
 	$db=get_conn();
-	$sql = sprintf("select * from \"map\" where uid=%d",$uid);
-	$rs=$db->GetAll($sql);
-	logsql($sql,$rs);
-	return $rs;
+	$sql = "select * from `twmap`.`map` where `uid`=$uid";
+	return $db->GetAll($sql);
+	//$res = mysql_query($sql);
+	//error_log($sql);
+	//if ($res === false ) return FALSE;
+	//while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+	//		$result[] = $row;
+	//	}
+	//return $result;
+
 }
 // 取 ok, expired  flag = 0 or 1 的地圖, 用來算限制
 function map_list_get($uid) {
 	$db=get_conn();
-	$sql = sprintf("select * from \"map\" where \"uid\"=%s AND (flag = 1 or flag = 0)",$uid);
-	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
-	return $rs;
+	$sql = "select * from `twmap`.`map` where `uid`=$uid AND (`flag` = 1 or `flag` = 0)";
+	return $db->GetAll($sql);
 }
 function map_list_count($uid) {
 	$db=get_conn();
-	$sql = sprintf("select count(*) from \"map\" WHERE \"uid\"=%d AND (flag = 1 or flag = 0)",$uid);
+	$sql = "select count(*) from `twmap`.`map` where `uid`=$uid AND (`flag` = 1 or `flag` = 0)";
 	$row = $db->GetAll($sql);
-	logsql($sql,$row);
+	//error_log("$sql" . print_r($row, true));
 	return $row[0][0];
 }
 // 只取 ok 的, 用在 recreate
 function map_get_ok($uid) {
 	$db=get_conn();
-	$sql = sprintf("select * from \"map\" WHERE \"uid\"=%d AND flag=0",$uid);
-	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
-	return $rs;
-
+	$sql = "select * from `twmap`.`map` where `uid`=$uid AND `flag` = 0";
+	return $db->GetAll($sql);
+	/*
+	$res = mysql_query($sql);
+	//error_log($sql);
+	if (!$res) return FALSE;
+	$result=array();
+	while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+		$result[] = $row;
+	}
+	return $result;
+	 */
 }
 // 是否地圖滿了?
 function map_full($uid,$limit,$mapexist=0) {
@@ -167,24 +173,39 @@ function map_full($uid,$limit,$mapexist=0) {
 // 只取一張地圖
 function map_get_single($mid){
 	$db=get_conn();
-	$sql = sprintf("select * from \"map\" WHERE \"mid\"=%d",$mid);
+	$sql = "select * from `twmap`.`map` where `mid`=$mid";
 	$res = $db->GetAll($sql);
-	logsql($sql,$res);
+	error_log(print_r($res,true));
 	return $res[0];
+	/*
+	$res = mysql_query($sql);
+	if (!$res) return FALSE;
+	return mysql_fetch_array($res, MYSQL_ASSOC);
+	 */
 }
 function map_accessed($mid) {
 	$db=get_conn();
-	$sql = sprintf("update \"map\" SET \"count\"=\"count\"+1 WHERE \"mid\"=%s",$mid);
-	$rs = $db->Execute($sql);
-	logsql($sql,$rs);
-	return $rs;
+	$sql = "update `twmap`.`map` SET `count`=`count`+1 where `mid`=$mid";
+	return $db->Execute($sql);
+	/*
+	$res = mysql_query($sql);
+	if (!$res) return FALSE;
+	return true;
+	 */
 }
 function map_get_hot($num) {
 	$db=get_conn();
-	$sql = sprintf("SELECT * FROM \"map\" WHERE \"flag\" !=2  AND \"host\" != '210.59.147.226' and \"count\" > 0 ORDER BY \"count\" DESC LIMIT %d",$num);
-	$rs =$db->GetAll($sql);
-	logsql($sql,$rs);
-	return $rs;
+	$sql = "SELECT * FROM `map` WHERE flag !=2  and host != \"210.59.147.226\" and count > 0 order by count desc limit 0, $num";
+	return $db->GetAll($sql);
+	/*
+	$res = mysql_query($sql);
+	//error_log($sql);
+	if (!$res) return FALSE;
+	while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+		$result[] = $row;
+	}
+	return $result;
+	 */
 }
 function map_get_gpx($num) {
 	return map_get_lastest($num,1);
@@ -193,22 +214,36 @@ function map_get_gpx($num) {
 function map_get_lastest($num,$gpx=0) {
 	$db = get_conn();
 	$where = "and gpx = $gpx";
-	// postgresql use LIMIT num OFFSET 0
-	//  MySQL use LIMIT 0 num
-	$sql = sprintf("SELECT * FROM \"map\" WHERE \"flag\"=0 and \"count\" > 0 %s ORDER BY \"cdate\" DESC LIMIT %d",$where,$num);
-	$rs =$db->GetAll($sql);
-	logsql($sql,$rs);
-	return $rs;
-
+	$sql = "SELECT * FROM `map` WHERE flag=0 and count > 0 $where order by cdate desc limit 0, $num";
+	return $db->GetAll($sql);
+	/*
+	$res = mysql_query($sql);
+	//error_log($sql);
+	if (!$res) return FALSE;
+	$result = array();
+	while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+		$result[] = $row;
+	}
+	return $result;
+	 */
 }
 function map_get_lastest_by_uid($num,$uid) {
 	if ($uid == 0 ) return null;
 	$db=get_conn();
-	$where = "AND \"uid\"=$uid";
-	$sql = sprintf("SELECT * FROM \"map\" WHERE \"flag\"=0 %s ORDER BY \"cdate\" DESC LIMIT %d",$where,$num);
-	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
-	return $rs;
+	$where = "and uid=$uid ";
+
+	$sql = "SELECT * FROM `map` WHERE flag=0 $where order by cdate desc limit 0, $num";
+	return $db->GetAll($sql);
+	/*
+	$res = mysql_query($sql);
+	//error_log($sql);
+	if (!$res) return FALSE;
+	$result = array();
+	while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+		$result[] = $row;
+	}
+	return $result;
+	 */
 }
 
 // map files
@@ -226,10 +261,10 @@ function map_files($outimage) {
 	return null;
 }
 /**
- * map_file_exists
+ * map_file_exists 
  *  dir structure
- * @param mixed $outimage
- * @param mixed $ftype
+ * @param mixed $outimage 
+ * @param mixed $ftype 
  * @access public
  * @return void
  */
@@ -263,7 +298,7 @@ function map_migrate($root,$uid,$mid) {
 	$dir = sprintf("%s/%06d/%d",$root,$uid,$mid);
 	// if (file_exists($dir) && is_dir($dir)) return true;
 	// 1. 建立目錄
-	@mkdir($dir,0755,true);
+	@mkdir($dir,0755,true); 
 	$row = map_get_single($mid);
 	// 檢查檔案是否在正確目錄
 	$newfilename = sprintf("%s/%s",$dir, basename($row['filename']));
@@ -282,7 +317,7 @@ function map_migrate($root,$uid,$mid) {
 	//$newfilename = sprintf("%s/%s",$dir, basename($row['filename']));
 	// 3. 更新資料庫
 	$db=get_conn();
-	$sql = sprintf("update \"map\" set \"filename\"='%s' WHERE \"mid\" = %d",pg_escape_string($newfilename),$mid);
+	$sql = "update `twmap`.`map` set `filename` = '$newfilename' where `mid` = $mid";
 	//$res = mysql_query($sql);
 	$rs = $db->Execute($sql);
 	error_log("migrate $mid:$sql");
@@ -329,15 +364,18 @@ function map_del($mid) {
 	}
 	// update db
 	$db=get_conn();
-	$sql = sprintf("update \"map\" set \"flag\" = 2, \"size\"= 0, \"ddate\"=NOW()  WHERE \"mid\" = %d",$mid);
-	$rs =$db->Execute($sql);
-	logsql($sql,$rs);
-	return $rs;
+	$sql = "update `twmap`.`map` set `flag` = 2, `size`= 0, `ddate`=NOW()  where `mid` = $mid";
+	return $db->Execute($sql);
+	/*
+	$res = mysql_query($sql);
+	if (!$res) return FALSE;
+	return true;
+	 */
 }
 function map_expire($mid) {
 	$row = map_get_single($mid);
 	if ($row === FALSE) return FALSE;
-	// $sql = "delete from map where mid=$mid";
+	// $sql = "delete from `twmap`.`map` where `mid`=$mid";
 	// remove files
 	$files = map_files($row['filename']);
 	foreach($files as $f) {
@@ -353,24 +391,31 @@ function map_expire($mid) {
 	}
 	$db=get_conn();
 	// update db
-	$sql = sprintf("UPDATE \"map\" set \"flag\" = 1,\"size\"=0  WHERE \"mid\" = %d",$mid);
-	$rs= $db->Execute($sql);
-	logsql($sql,$rs);
-	return $rs;
-
+	$sql = "update `twmap`.`map` set `flag` = 1,`size`=0  where `mid` = $mid";
+	return $db->Execute($sql);
+	/*
+	$res = mysql_query($sql);
+	if (!$res) return FALSE;
+	return true;
+	 */
 }
 function get_old_maps($days) {
-	//$sql = sprintf("select * from map where flag = 0 AND TIME_TO_SEC(TIMEDIFF(NOW(),cdate))> %d",$howlong);
-	// uid == 1 是 keepon
+	//$sql = sprintf("select * from `twmap`.`map` where flag = 0 AND TIME_TO_SEC(TIMEDIFF(NOW(),`cdate`))> %d",$howlong);
+	// uid == 1 是 keepon 
 	$tdiff = time() - $days*86400;
 	$db=get_conn();
-	//$sql = sprintf("select * from \"map\" WHERE \"flag\" = 0 AND unix_timestamp(cdate) < %s  and count < 100 and size > 10240000",$tdiff);
-	// postgresql
-	$sql = sprintf("select * from \"map\" WHERE \"flag\" = 0 AND EXTRACT(EPOCH FROM cdate) < %s  and count < 100 and size > 10240000",$tdiff);
-	$rs= $db->GetAll($sql);
-	logsql($sql,$rs);
-	return $rs;
-
+	$sql = sprintf("select * from `twmap`.`map` where flag = 0 AND unix_timestamp(`cdate`) < %s  and `count` < 100 and size > 10240000",$tdiff);
+	return $db->GetAll($sql);
+	/*
+	$res = mysql_query($sql);
+	if (!$res) return FALSE;
+	$result = array();
+	while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+		$result[] = $row;
+	}
+	echo $sql . "\ncount=". count($result) ."\n";
+	return $result;
+	 */
 }
 function do_expire($days = 180, $realdo = 0) {
 	$maps = get_old_maps($days);
@@ -386,12 +431,15 @@ function do_expire($days = 180, $realdo = 0) {
 }
 function map_totalsize() {
 	$db=get_conn();
-	$sql = sprintf("select sum(size) as totalsize from \"map\"");
+	$sql = "select sum(size) as totalsize from `twmap`.`map`";
 	$res = $db->GetAll($sql);
-	logsql($sql,$res);
 	return $res[0]['totalsize'];
+	/*
+	$res = mysql_query($sql);
+	$row = mysql_fetch_array($res);
+	return $row[0];
+	 */
 }
-// still broken
 function mrtg($type) {
 	switch($type) {
 	case 'disk':
@@ -401,7 +449,7 @@ function mrtg($type) {
 	case 'map':
 	default:
 		$sql = sprintf("SELECT *
-			FROM map
+			FROM `twmap`.`map`
 			WHERE TIME_TO_SEC( timediff( NOW( ) , cdate ) ) < %d
 			OR TIME_TO_SEC( timediff( NOW( ) , ddate ) ) < %d", 300,300);
 		$res = mysql_query($sql);
@@ -421,29 +469,42 @@ function stats() {
 	$total_maps = 0;
 	$maxmid = 0;
 	$db=get_conn();
-	$sql = sprintf("select size,mid from \"map\" where flag <> 2");
+	$sql = "select size,mid from `twmap`.`map` where flag <> 2";
 	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
 	foreach($rs as $row) {
 		$size+=$row['size'];
 		if ($row['mid'] > $maxmid) $maxmid = $row['mid'];
 		$total_maps++;
 	}
+	/*
+	$res = mysql_query($sql);
+	$size = 0;
+	$total_maps = 0;
+	$maxmid = 0;
+	while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+		$size+=$row['size'];
+		if ($row['mid'] > $maxmid) $maxmid = $row['mid'];
+		$total_maps++;
 
-	$sql = sprintf("select count(distinct(uid)) as num_user  from \"map\"");
+	}
+	 */
+	$sql = "select count(distinct(uid)) as num_user  from `twmap`.`map`";
 	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
 	$active_users = $rs[0]['num_user'];
 	/*
 	$res = mysql_query($sql);
 	$row = mysql_fetch_row($res);
 	$active_users = $row[0];
 	 */
-	$sql = sprintf("select count(*) from \"user\"");
+	$sql = "select count(*) from `twmap`.`user`";
 	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
 	$registerred_users = $rs[0][0];
 
+	/*
+	$res = mysql_query($sql);
+	$row = mysql_fetch_row($res);
+	$registerred_users = $row[0];
+	 */
 	return array($total_maps, $size, $registerred_users, $active_users, $maxmid);
 }
 
@@ -501,13 +562,13 @@ function name_to_icon($map) {
 	$name = $map['title'];
 	if (!empty($map['keepon_id']))
 		return 'icons/note.gif';
-	if (strstr($name,"湖")|| strstr($name,"溪")||strstr($name,"潭")||strstr($name,"島")|| strstr($name,"海岸"))
+	if (strstr($name,"湖")|| strstr($name,"溪")||strstr($name,"潭")||strstr($name,"島")|| strstr($name,"海岸")) 
 		$img="icons/fish.gif";
 	else if (strstr($name,"林道")|| strstr($name,"縱走"))
 		$img="icons/logging.gif";
-	else if (strstr($name,"山")||strstr($name,"洞")||strstr($name,"稜"))
+	else if (strstr($name,"山")||strstr($name,"洞")||strstr($name,"稜")) 
 		$img="icons/scat.gif";
-	else if (strstr($name,"溫泉")||strstr($name,"湯"))
+	else if (strstr($name,"溫泉")||strstr($name,"湯")) 
 		$img="icons/hotspring.gif";
 	else
 		$img="icons/angel.gif";
@@ -562,7 +623,7 @@ function soap_call_delete($id) {
 		//
 		kcli_msglog(array($params,"expection: $exception"));
 		return array(false,$exception);
-	}
+	} 
 
 }
 function kcli_msglog($msg){
@@ -595,8 +656,8 @@ function ajaxok($response) {
 function map_overlap($bounds, $gpx=1, $max=0){
 	// 四個端點  航跡圖的範圍落在 viewport  或者 viewport 落在航跡圖範圍裡頭
 	 /*
-	$sql = sprintf("SELECT * FROM map WHERE gpx=%d and (((locX BETWEEN %s AND %s) AND ((locY BETWEEN %s AND %s) OR (locY-shiftY*1000 BETWEEN %s AND %s))) OR ((locX+shiftX*1000 BETWEEN %s AND %s) AND ((locY BETWEEN %s AND %s) OR (locY-shiftY*1000 BETWEEN %s AND %s))) OR ((%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR
-		(%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY)))",
+	$sql = sprintf("SELECT * FROM `map` WHERE gpx=%d and (((locX BETWEEN %s AND %s) AND ((locY BETWEEN %s AND %s) OR (locY-shiftY*1000 BETWEEN %s AND %s))) OR ((locX+shiftX*1000 BETWEEN %s AND %s) AND ((locY BETWEEN %s AND %s) OR (locY-shiftY*1000 BETWEEN %s AND %s))) OR ((%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR 
+		(%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY)))", 
 		$gpx, $bounds['tlx'],$bounds['brx'],$bounds['bry'],$bounds['tly'], $bounds['bry'],$bounds['tly'], $bounds['tlx'],$bounds['brx'], $bounds['bry'], $bounds['tly'], $bounds['bry'], $bounds['tly'] ,
 		$bounds['tlx'],$bounds['tly'],$bounds['brx'],$bounds['bry'],$bounds['tlx'],$bounds['bry'],$bounds['brx'],$bounds['tly']);
 
@@ -606,24 +667,35 @@ function map_overlap($bounds, $gpx=1, $max=0){
 	//return ((R1.BR.y <= R2.TL.y)
 	//(R1.BR.x >= R2.TL.x) &&
 	//(R1.TL.x <= R2.BR.x) &&
-	//(R1.TL.y >= R2.BR.y) &&
+	//(R1.TL.y >= R2.BR.y) && 
 	$db=get_conn();
-	$sql = sprintf("SELECT * FROM \"map\" WHERE \"flag\" <> 2 and \"gpx\"=%d and ( \"locX\" < %s AND \"locX\"+\"shiftX\"*1000 > %s AND \"locY\" > %s  AND \"locY\"-\"shiftY\"*1000 < %s)", $gpx, $bounds['brx'], $bounds['tlx'],$bounds['bry'],$bounds['tly']);
+	$sql = sprintf("SELECT * FROM `map` WHERE flag <> 2 and gpx=%d and ( locX < %s and locX+shiftX*1000 > %s and locY > %s  and locY-shiftY*1000 < %s)", $gpx, $bounds['brx'], $bounds['tlx'],$bounds['bry'],$bounds['tly']);
 
 	if ($max > 0 ) {
 		$sql .= " LIMIT $max";
 	}
 	//$res = mysql_query($sql);
 	$res = $db->GetAll($sql);
-	logsql($sql,$rs);
 	return $res;
+	/*
+	if (!$res) {
+		error_log("err sql:".$sql);
+		return FALSE;
+	}
+	$result = array();
+	while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+		$result[] = $row;
+	}
+	//error_log("$sql " . count($result) );
+	return $result;
+	 */
 }
 
 /**
- * geocoder
+ * geocoder 
  * 存取 geocoder table
- * @param mixed $op
- * @param mixed $data
+ * @param mixed $op 
+ * @param mixed $data 
  * @access public
  * @return void
  */
@@ -631,9 +703,8 @@ function geocoder($op, $data) {
 	 $db=get_conn();
 	 switch($op) {
 	 case 'get':
-		 $sql = sprintf("select * from \"geocoder\" where address='%s'",$data['address']);
+		 $sql = sprintf("select * from `twmap`.`geocoder` where `address`='%s'",$data['address']);
 		 $res = $db->GetAll($sql);
-		 logsql($sql,$res);
 		 if (count($res) == 1)
 			return array(1, $res[0]);
 		 else if ($res === false)
@@ -644,42 +715,15 @@ function geocoder($op, $data) {
 	 case 'set':
 		 list ($ret, $msg )= geocoder('get', array('address' => $data['address']));
 		 if ($ret == 0)
-			 $sql = sprintf("insert into \"geocoder\" (\"address\",\"lat\",\"lng\",\"is_tw\",\"exact\",\"faddr\",\"name\") values ('%s',%f,%f,%d,%d,'%s','%s')",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
+			 $sql = sprintf("insert into `twmap`.`geocoder` (`address`,`lat`,`lng`,`is_tw`,`exact`,`faddr`,`name`) values ('%s',%f,%f,%d,%d,'%s','%s')",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
 		 else if ($ret == 1)
-			 $sql = sprintf("update \"geocoder\" set \"address\"='%s',\"lat\"=%f, \"lng\"=%d, \"is_tw\"=%d, \"exact\"=%d, \"faddr\"='%s', \"name\"='%s'",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
+			 $sql = sprintf("update `twmap`.`geocoder` set `address`='%s', `lat`=%f, `lng`=%d, `is_tw`=%d, `exact`=%d, `faddr`='%s', `name`='%s'",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
 		 else
 			 return array($ret, $msg);
 		 $res = $db->Execute($sql);
-		 logsql($sql,$res);
 		 if ($res == true )
 			 return array(1,"ok $sql");
 		 break;
 	 }
 	 return array(0,"no set / get ");
-}
-function getCallingFunctionName($completeTrace=false) {
-	$trace=debug_backtrace();
-	$caller=$trace[count($trace)-1];
-
-	if (isset($caller['file'])) {
-		$str = $caller['file'] . ' ';
-	} else {
-		$str = '';
-	}
-	if($completeTrace) {
-		foreach($trace as $caller) {
-			// skip unnecessary trace
-			if ($caller['function'] == 'getCallingFunctionName' || $caller['function'] == 'doLog')
-				continue;
-			if (isset($caller['class']))
-				$str .= sprintf(" -- Called by %s::%s", $caller['class'], $caller['function']);
-			else
-				$str .= " -- Called by {$caller['function']}";
-		}
-	} else {
-		$str .= "Called by {$caller['function']}";
-		if (isset($caller['class']))
-			$str .= " From Class {$caller['class']}";
-	}
-	return $str;
 }
