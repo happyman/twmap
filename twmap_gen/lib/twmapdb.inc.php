@@ -34,7 +34,7 @@ function get_conn() {
 }
 function logsql($sql,$rs){
 	$debug = 0;
-	if ($debug == 0 ) reutrn;
+	if ($debug == 0 ) return;
 	$trace = getCallingFunctionName(true);
 	if ($rs===false){
 		$msg = "return FALSE";
@@ -102,14 +102,15 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="loca
 	if ($row === FALSE || $keepon_id != 0 ) {
 		// 新地圖
 		// 使用 postgresql 要改 default
-		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %s)", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==0)?'NULL':$keepon_id);
-		$res = $db->Execute($sql);
+		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %s) returning mid", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==0)?'NULL':$keepon_id);
+		$rs = $db->getAll($sql);
 		logsql($sql,$rs);
-		if (!$res) {
+		if (!isset($rs[0]['mid'])) {
 			//error_log("err sql: $sql");
 			return FALSE;
 		}
-		return $db->Insert_ID();
+		//return $db->Insert_ID();
+		return $rs[0]['mid'];
 	} else {
 		// 重新產生的地圖, 連檔名都要更新
 		$mid = $row[0];
@@ -170,7 +171,10 @@ function map_get_single($mid){
 	$sql = sprintf("select * from \"map\" WHERE \"mid\"=%d",$mid);
 	$res = $db->GetAll($sql);
 	logsql($sql,$res);
-	return $res[0];
+	if (count($res) == 0)
+		return null;
+	else
+		return $res[0];
 }
 function map_accessed($mid) {
 	$db=get_conn();
@@ -265,6 +269,7 @@ function map_migrate($root,$uid,$mid) {
 	// 1. 建立目錄
 	@mkdir($dir,0755,true);
 	$row = map_get_single($mid);
+	if ($row == false) return false;
 	// 檢查檔案是否在正確目錄
 	$newfilename = sprintf("%s/%s",$dir, basename($row['filename']));
 	if ($row['filename'] == $newfilename ) {
@@ -320,7 +325,7 @@ function map_size($outimage) {
 // delete map file, db entry AND disk files
 function map_del($mid) {
 	$row = map_get_single($mid);
-	if ($row === FALSE) return FALSE;
+	if ($row === null) return FALSE;
 	// remove files
 	$files = map_files($row['filename']);
 	foreach($files as $f) {
@@ -644,7 +649,7 @@ function geocoder($op, $data) {
 	 case 'set':
 		 list ($ret, $msg )= geocoder('get', array('address' => $data['address']));
 		 if ($ret == 0)
-			 $sql = sprintf("insert into \"geocoder\" (\"address\",\"lat\",\"lng\",\"is_tw\",\"exact\",\"faddr\",\"name\") values ('%s',%f,%f,%d,%d,'%s','%s')",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
+			 $sql = sprintf("Insert_ID into \"geocoder\" (\"address\",\"lat\",\"lng\",\"is_tw\",\"exact\",\"faddr\",\"name\") values ('%s',%f,%f,%d,%d,'%s','%s')",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
 		 else if ($ret == 1)
 			 $sql = sprintf("update \"geocoder\" set \"address\"='%s',\"lat\"=%f, \"lng\"=%d, \"is_tw\"=%d, \"exact\"=%d, \"faddr\"='%s', \"name\"='%s'",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
 		 else
@@ -682,4 +687,40 @@ function getCallingFunctionName($completeTrace=false) {
 			$str .= " From Class {$caller['class']}";
 	}
 	return $str;
+}
+
+function import_gpx($mid){
+	// table gpx_waypoints
+	global $db_name,$db_user,$db_pass,$db_host;
+	// 0. 先檢查 gpx 存在與否
+	$row = map_get_single($mid);
+	if ($row==null) 
+		return array(false, "mid incorrect");
+	$gpx_file = map_file_name($row['filename'], 'gpx');
+	// 193 mount path
+	$gpx_file = str_replace("/srv/www/htdocs/","/mnt/nas/",$gpx_file);
+	// 1. 檢查 table 存在與否
+	$db=get_conn();
+	$table = "gpx_wp";
+	$sql = sprintf("SELECT relname FROM pg_class WHERE relname = '%s'",$table);
+	$rs = $db->getAll($sql);
+	if (isset($rs[0]['relname']) && $rs[0]['relname'] == $table) {
+		// 1. delete mid from table (prevent dup)
+		$sql = sprintf("DELETE FROM \"%s\" WHERE mid=%s",$table,$mid);
+		$db->Execute($sql);
+		// 2. add data by ogr2ogr
+		$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from waypoints %s\"'",
+			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$table);
+
+	} else {
+		// 1. append
+		$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from waypoints %s\"'",
+			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$table);
+	}
+	echo $cmd . "\n";
+	exec($cmd,$out,$ret);
+	if ($ret == 0)
+		return array(true,"success");
+	else
+		return array(false,"fail $cmd");
 }
