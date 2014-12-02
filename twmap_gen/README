@@ -20,4 +20,7 @@ aped (ajax push engine) 在 6969
    http://cht.tw/h/l5d35 STB.tar.ac
    cat STB.tar.aa  STB.tar.ab  STB.tar.ac |tar xvf -
 
- * 經建三版 來自 sinica, 程式會自己產生 cache
+ * 經建三版 來自 sinica, 程式會自己產生 cache 
+   or 下載所有的檔案自 http://rs.happyman.idv.tw/mapcache/ 到硬碟
+   然後設定 config 的 tilecachepath
+   $tilecachepath = "/mnt/twmapcache/cache";
