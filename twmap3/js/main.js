@@ -36,7 +36,7 @@ var geocoder;
 var elevator;
 
 // var show_kml = (getParameterByName("kml")) ? 1: 0;
-var show_kml_layer = 1; // getParameterByName("show_kml_layer")?  getParameterByName("show_kml_layer") : 1;
+var show_kml_layer = 0; // getParameterByName("show_kml_layer")?  getParameterByName("show_kml_layer") : 1;
 var GPSLayer; // external kml layer
 var kmlArray = [];
 for(var i=13;i<=18;i++) {
@@ -877,11 +877,11 @@ function initialize() {
 	//map.mapTypes.set('nlscname', NLSCNameMapType);
 	// 背景層
 	// 經建三版
-	//BackgroundMapType = TaiwanMapType;
-	//BackgroundMapOptions = TaiwanMapOptions;
+	BackgroundMapType = TaiwanMapType;
+	BackgroundMapOptions = TaiwanMapOptions;
 	// 三版加底圖
-	BackgroundMapType = TaiwanGpxMapType;
-	BackgroundMapOptions = TaiwanGpxMapOptions;
+	//BackgroundMapType = TaiwanGpxMapType;
+	//BackgroundMapOptions = TaiwanGpxMapOptions;
 
 	// 初始顯示哪張圖?
 	// map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
@@ -1228,7 +1228,7 @@ function initialize() {
 				$("#marker_sw_select").dropdownchecklist("refresh");
 				markerFilter();
 			}
-			if (getParameterByName("show_kml_layer") && getParameterByName("show_kml_layer") == 0 ) { $("#kml_sw").trigger('click'); }
+			if (getParameterByName("show_kml_layer") && getParameterByName("show_kml_layer") == 1 ) { $("#kml_sw").trigger('click'); }
 			if (getParameterByName("zoom")) { map.setZoom(parseInt(getParameterByName("zoom"))); }
 			if (getParameterByName("maptypeid")) { map.setMapTypeId(getParameterByName("maptypeid")); }
 			if (getParameterByName("roadmap")) { $("#changegname").val(getParameterByName("roadmap")); $("#changegname").change(); }
