@@ -510,8 +510,10 @@ function addtagborder2($oim, $x, $y, $i, $startx, $starty, $outputsize, $shiftx,
 function write_and_forget(&$im, $fname) {
 	ImagePNG($im, $fname);
 	imagedestroy($im);
+	// http://pointlessramblings.com/posts/pngquant_vs_pngcrush_vs_optipng_vs_pngnq/
+	// 縮小 png
 	if (file_exists('/usr/bin/pngquant')) {
-		exec(sprintf("pngquant --speed 1 -f -o '%s' '%s'",$fname,$fname));
+		exec(sprintf("pngquant --speed 1 -f --quality 65-95 -o '%s' '%s'",$fname,$fname));
 	} else if (file_exists("/usr/bin/advpng")) {
 		// optimize the size
 		exec("advpng -4 -q -z $fname");
