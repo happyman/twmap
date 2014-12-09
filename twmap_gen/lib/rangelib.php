@@ -510,7 +510,9 @@ function addtagborder2($oim, $x, $y, $i, $startx, $starty, $outputsize, $shiftx,
 function write_and_forget(&$im, $fname) {
 	ImagePNG($im, $fname);
 	imagedestroy($im);
-	if (file_exists("/usr/bin/advpng")) {
+	if (file_exists('/usr/bin/pngquant')) {
+		exec(sprintf("pngquant --speed 1 -f -o '%s' '%s'",$fname,$fname));
+	} else if (file_exists("/usr/bin/advpng")) {
 		// optimize the size
 		exec("advpng -4 -q -z $fname");
 	}
