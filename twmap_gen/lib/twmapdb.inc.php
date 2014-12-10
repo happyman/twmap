@@ -369,9 +369,8 @@ function get_old_maps($days) {
 	// uid == 1 是 keepon
 	$tdiff = time() - $days*86400;
 	$db=get_conn();
-	//$sql = sprintf("select * from \"map\" WHERE \"flag\" = 0 AND unix_timestamp(cdate) < %s  and count < 100 and size > 10240000",$tdiff);
-	// postgresql
-	$sql = sprintf("select * from \"map\" WHERE \"flag\" = 0 AND EXTRACT(EPOCH FROM cdate) < %s  and count < 100 and size > 10240000",$tdiff);
+	// 刪除 days 天之前的地圖, 不管大小了
+	$sql = sprintf("select * from \"map\" WHERE \"flag\" = 0 AND EXTRACT(EPOCH FROM cdate) < %s  and count < 100 and \"uid\" != 3 ",$tdiff);
 	$rs= $db->GetAll($sql);
 	logsql($sql,$rs);
 	return $rs;
