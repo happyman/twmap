@@ -13,8 +13,10 @@ $site_html_root = "/twmap";
 // 放一版的圖資目錄
 $stbpath = "/home/happyman/stb";
 // 放從 TMS 的圖磚
-$tilepath = "/mnt/twmapcache/tw25k2001";
-// 放 1x1 的圖檔
+// 放3版 1x1 的圖檔
+$tilecachepath = "/mnt/twmapcache/cache";
+
+// 不重要
 $tilecachepath = "/mnt/twmapcache/cache";
 //if (!file_exists($tilepath."/16")) {
 //	die("image dir not ready");
@@ -73,7 +75,7 @@ if (php_sapi_name() != "cli") {
 	$smarty->setTemplateDir(__ROOT__.'pages');
 	$smarty->setCompileDir($tmppath .'/smarty/tcache');
 	$smarty->setCacheDir($tmppath.'/smarty/cache');
-	$smarty->setConfigDir($tmppath'/smarty/configs');
+	$smarty->setConfigDir($tmppath.'/smarty/configs');
 
 	$smarty->assign("twmap_gen_version", $twmap_gen_version);
 	$smarty->assign("browser_url", $TWMAP3URL );
