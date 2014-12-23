@@ -34,6 +34,7 @@ var got_geo = 0;
 // geocoding
 var geocoder;
 var elevator;
+var theme = 'default';
 
 // var show_kml = (getParameterByName("kml")) ? 1: 0;
 var show_kml_layer = 0; // getParameterByName("show_kml_layer")?  getParameterByName("show_kml_layer") : 1;
@@ -151,6 +152,16 @@ var OSM_Options = {
 	name: "OSM",
 	alt: "Open Street Map"
 }
+var Darker_Options = {
+	getTileUrl: function(a, b) {
+		return "http://b.basemaps.cartocdn.com/dark_all/"+b + "/"+ a.x + "/" + a.y +".png";
+	},
+	tileSize: new google.maps.Size(256, 256),
+	maxZoom: 19,
+	name: "Darker",
+	alt: "Darker Matter from CartoDB"
+}
+var SunriverMapType = new google.maps.ImageMapType(SunriverMapOptions);
 var SunriverMapType = new google.maps.ImageMapType(SunriverMapOptions);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
 var TaiwanGpxMapType = new google.maps.ImageMapType(TaiwanGpxMapOptions);
@@ -160,6 +171,7 @@ var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_20
 var GoogleNameMapType =  new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType =  new google.maps.ImageMapType(NLSCNameOptions);
 var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
+var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
 var BackgroundMapType;
 var BackgroundMapOptions;
 var BackgroundMap = 0;
@@ -323,8 +335,35 @@ function removeAllkmls(keep) {
 		$.unblockUI();
 	console.log("remove All KML " + keep );
 }
+function showInsideKML(a){
+	var parts = map.getBounds().toUrlValue(5).split(",").map(Number);
+	//console.log(parts);
+	var minX, minY, maxX, maxY;
+	if (parts[1] > parts[3]) {
+		minX = parts[3];
+		maxX = parts[1];
+	} else {
+		maxX = parts[3];
+		minX = parts[1];
+	}
+	if (parts[0] > parts[2]) {
+		maxY = parts[0];
+		minY = parts[2];
+	} else {
+		maxY = parts[2];
+		minY = parts[0];
+	}
+	var polygon_bounds = [[ minX,maxY ].join(' '),[ maxX,maxY ].join(' '),[ maxX,minY ].join(' '),[ minX,minY ].join(' ')].join(',');
+	console.log(polygon_bounds);
+	return;
+		//  左上座標
+	var cc = is_taiwan(maxY, minX);
+	if (cc == 0 )
+		return;
+
+}
 var parsedkml = 0;
-function showInsideKML(clear_pending) {
+function showInsideKML2(clear_pending) {
 	clear_pending = clear_pending || 0 ;
 	//alert("showInsideKML: "+tags_ready);
 	showInsideKML.drawing = showInsideKML.drawing || 0;
@@ -790,11 +829,19 @@ function initialmarkers() {
 
 	);
 	var icon = [];
+	/*
 	icon[4] = "http://map.happyman.idv.tw/kml/3-4ok.png";
 	icon[1] = "http://map.happyman.idv.tw/kml/3-1ok.png";
 	icon[2] = "http://map.happyman.idv.tw/kml/3-2ok.png";
 	icon[3] = "http://map.happyman.idv.tw/kml/3-3ok.png";
-	icon[5] = "http://map.happyman.idv.tw/kml/3-5new.png";
+	iceon[5] = "http://map.happyman.idv.tw/kml/3-5new.png";
+	*/
+ icon[4] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_lev1.png';
+ icon[1] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_8res.png';
+ icon[2] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_6res.png';
+ icon[3] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_3res.png';
+ icon[6] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/helios_shard.png';
+ icon[5] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/neutral_icon.png';
 	var mysetIcon = function(i, isShadow) {
 		if (i > 0 && i <= 5) {
 			if (isShadow) return shadow;
@@ -812,13 +859,28 @@ function initialmarkers() {
 		}
 		if (isShadow)
 			return new google.maps.MarkerImage("http://map.happyman.idv.tw/icon/shadow-"+encodeURIComponent(type)+".png", null, new google.maps.Point(0, 0), new google.maps.Point(0, 19));
-		return "http://map.happyman.idv.tw/icon/"+encodeURIComponent(type)+".png";
+		if (theme == 'ingress') {
+			if (type == "一等點")
+				return icon[1];
+			else if (type == "二等點")
+				return icon[2];
+			else if (type == "三等點")
+				return icon[3];
+			else if (type == "森林點")
+				return icon[4];
+			else if (type == "未知森林點")
+				return icon[5];
+			else
+				return icon[6];
+		} else {
+			return "http://map.happyman.idv.tw/icon/"+encodeURIComponent(type)+".png";
+		}
 	}
 
-	if (!oms) oms = new OverlappingMarkerSpiderfier(map, {
-			markersWontMove: true,
-			markersWontHide: false
-	});
+		if (!oms) oms = new OverlappingMarkerSpiderfier(map, {
+				markersWontMove: true,
+				markersWontHide: false
+		});
 	for (var i = 0; i < availableTagsLocation.length; i++) {
 		allmarkers[i] = new google.maps.Marker({
 				icon: mysetIcon2(availableTagsMeta[i].type, 0),
@@ -854,7 +916,7 @@ function initialize() {
 			style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
 			position: google.maps.ControlPosition.TOP_LEFT,
 			//	draggableCursor: 'url(img/A4-32x32.gif),default',
-			mapTypeIds: ['general2011','twmapv1','osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE ]
+			mapTypeIds: ['general2011','twmapv1','osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker" ]
 		}
 
 	};
@@ -872,6 +934,7 @@ function initialize() {
 	map.mapTypes.set('taiwan', TaiwanMapType);
 	map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
 	map.mapTypes.set('osm', OSM_MapType);
+	map.mapTypes.set('darker', Darker_MapType);
 	// 前景免設
 	//map.mapTypes.set('googlename', GoogleNameMapType);
 	//map.mapTypes.set('nlscname', NLSCNameMapType);
@@ -972,6 +1035,7 @@ function initialize() {
 	});
 
 	tags_ready = 0;
+	if (getParameterByName("theme") && getParameterByName("theme") == 'ingress') { theme = 'ingress'; }
 	initialtags({});
 
 	$("#gotoform").submit(function() {
