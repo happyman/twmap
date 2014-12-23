@@ -503,7 +503,7 @@ function permLinkURL(goto) {
 	var ver = (BackgroundMap==0)?3:1;
 	var curMap = $("#changegname").val();
 	var curGrid = $("#changegrid").val();
-	return "<a href='?goto=" + goto + "&zoom="+ map.getZoom() +"&opacity="+ opacity + "&mapversion=" + ver + "&maptypeid="+ map.getMapTypeId() +"&show_label="+ show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker +"&roadmap="+ curMap+"&grid=" + curGrid +"'><img src='img/permlink.png' border=0/></a>";
+	return "<a href='?goto=" + goto + "&zoom="+ map.getZoom() +"&opacity="+ opacity + "&mapversion=" + ver + "&maptypeid="+ map.getMapTypeId() +"&show_label="+ show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker +"&roadmap="+ curMap+"&grid=" + curGrid +"&theme="+ theme +"'><img src='img/permlink.png' border=0/></a>";
 }
 
 function locInfo(newpos){
@@ -836,7 +836,7 @@ function initialmarkers() {
 	icon[3] = "http://map.happyman.idv.tw/kml/3-3ok.png";
 	iceon[5] = "http://map.happyman.idv.tw/kml/3-5new.png";
 	*/
- icon[4] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_lev1.png';
+ icon[4] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_lev8.png';
  icon[1] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_8res.png';
  icon[2] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_6res.png';
  icon[3] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_3res.png';
