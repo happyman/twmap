@@ -687,7 +687,42 @@ function getCallingFunctionName($completeTrace=false) {
 	}
 	return $str;
 }
+/**
+	GIS functions
+	depends on mapnik (nik4), gdal (ocr2ocr)
+	測試 code:
+	因為目前 production server 的 postgres library 太舊, 只好借用別台 172.31.39.193
+ */
+function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
+	global $db_name,$db_user,$db_pass,$db_host;
+	// 1. 檢查 table 存在與否
+	if ($type=='waypoints')
+		$table='gpx_wp';
+	else
+		$table='gpx_trk';
+	$db=get_conn();
+	$sql = sprintf("SELECT relname FROM pg_class WHERE relname = '%s'",$table);
+	$rs = $db->getAll($sql);
+	if (isset($rs[0]['relname']) && $rs[0]['relname'] == $table) {
+		// 1. delete mid from table (prevent dup)
+		$sql = sprintf("DELETE FROM \"%s\" WHERE mid=%s",$table,$mid);
+		$db->Execute($sql);
+		// 2. add data by ogr2ogr
+		//  沒辦法 因為 server 上 postgres library < 9.0 無法使用
+		$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
+			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type,$table);
 
+	} else {
+		// 1. append
+		$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
+			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type, $table);
+	}
+	//echo $cmd . "\n";
+	exec($cmd,$out,$ret);
+	return $ret;
+}
+/**  do import 
+ */
 function import_gpx($mid){
 	// table gpx_waypoints
 	global $db_name,$db_user,$db_pass,$db_host;
@@ -696,30 +731,51 @@ function import_gpx($mid){
 	if ($row==null) 
 		return array(false, "mid incorrect");
 	$gpx_file = map_file_name($row['filename'], 'gpx');
-	// 193 mount path
+	// TODO: 172.31.39.193 mount path
 	$gpx_file = str_replace("/srv/www/htdocs/","/mnt/nas/",$gpx_file);
-	// 1. 檢查 table 存在與否
-	$db=get_conn();
-	$table = "gpx_wp";
-	$sql = sprintf("SELECT relname FROM pg_class WHERE relname = '%s'",$table);
-	$rs = $db->getAll($sql);
-	if (isset($rs[0]['relname']) && $rs[0]['relname'] == $table) {
-		// 1. delete mid from table (prevent dup)
-		$sql = sprintf("DELETE FROM \"%s\" WHERE mid=%s",$table,$mid);
-		$db->Execute($sql);
-		// 2. add data by ogr2ogr
-		$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from waypoints %s\"'",
-			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$table);
-
-	} else {
-		// 1. append
-		$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from waypoints %s\"'",
-			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$table);
-	}
-	echo $cmd . "\n";
-	exec($cmd,$out,$ret);
-	if ($ret == 0)
+	$ret1 = ogr2ogr_import_gpx($mid, $gpx_file, 'waypoints');
+	$ret2 = ogr2ogr_import_gpx($mid, $gpx_file, 'tracks');
+	if ($ret1 == 0 && $ret2 == 0)
 		return array(true,"success");
 	else
-		return array(false,"fail $cmd");
+		return array(false,"fail import");
+}
+function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
+	$tl = proj_67toge($tw67_bbox[0]);
+	$br = proj_67toge($tw67_bbox[1]);
+	$imgsize = $tw67_bbox[2];
+	$tmpsvg = tempnam("/tmp","SVG") . ".svg";
+	$cmd = sprintf('ssh 172.31.39.193 "nik4.py -b %s %s %s %s -x %d %d ~wwwrun/etc/gpx.xml %s && cat %s && rm %s" > %s',$tl[0],$tl[1],$br[0],$br[1],$imgsize[0],$imgsize[1],$tmpsvg,$tmpsvg,$tmpsvg,$tmpsvg);
+	exec($cmd,$out,$ret);
+	if ($ret == 0) {
+		// replace 
+		$count=0;
+		if (($fq=fopen($outpath,"w")) != true) {
+			return array(false, "unable to write outpath");
+		}
+		if (($fp = fopen($tmpsvg,"r")) != true) {
+			return array(false, "unable to read remote svg");
+		}
+		while(!feof($fp)){
+				$line=fgets($fp);
+				if ($count == 0) {
+					if (!strstr($line,"xml")) {
+						@unlink($tmpsvg);
+						return array(false, "error get svg");
+					}
+				}
+				if ($count++==2) {
+					// 加上一行
+					$bgimg_line = sprintf('<g id="background image" opacity="1" transform="translate(0,0)"><image  id="background map" opacity="1" width="%d" height="%d" x="0" y="0" xlink:href="%s" /></g>',
+						$imgsize[0],$imgsize[1],$background_image_path);
+					//echo "add one line: $bgimg_line\n";
+					fwrite($fq,$bgimg_line);
+				}
+				fwrite($fq,$line);
+		} // while
+		@unlink($tmpsvg);
+		echo "$tmpsvg  created\n";
+		return array(true,"file written");
+	} // ret == 0
+	return array(false,"err exec $cmd");
 }

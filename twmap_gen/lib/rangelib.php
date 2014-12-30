@@ -507,16 +507,19 @@ function addtagborder2($oim, $x, $y, $i, $startx, $starty, $outputsize, $shiftx,
 	return $im;
 }
 
-function write_and_forget(&$im, $fname) {
+function write_and_forget(&$im, $fname, $debug=0) {
 	ImagePNG($im, $fname);
 	imagedestroy($im);
+	// debug 時不要 optimize 以加快測試時間
+	if ($debug==0){
 	// http://pointlessramblings.com/posts/pngquant_vs_pngcrush_vs_optipng_vs_pngnq/
 	// 縮小 png
-	if (file_exists('/usr/bin/pngquant')) {
-		exec(sprintf("pngquant --speed 1 -f --quality 65-95 -o '%s' '%s'",$fname,$fname));
-	} else if (file_exists("/usr/bin/advpng")) {
+		if (file_exists('/usr/bin/pngquant')) {
+			exec(sprintf("pngquant --speed 1 -f --quality 65-95 -o '%s' '%s'",$fname,$fname));
+		} else if (file_exists("/usr/bin/advpng")) {
 		// optimize the size
-		exec("advpng -4 -q -z $fname");
+			exec("advpng -4 -q -z $fname");
+		}
 	}
 }
 function showmem($str){

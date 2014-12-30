@@ -214,6 +214,10 @@ if (file_exists(str_replace(".tag.png",".gpx",$outimage))) {
 $mid = map_add($_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage),$version, $save_gpx);
 // 最後搬移到正確目錄
 map_migrate($out_root, $_SESSION['uid'], $mid);
+// 如果有 gpx 就 import 到 gis 的 database 中
+if ($svg_params != "") {
+	import_gpx($mid);
+}
 $okmsg = msglog("done");
 // even here is exit(0)
 // the ape client will still redirect user to the correct place?

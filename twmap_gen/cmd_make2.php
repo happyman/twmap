@@ -21,6 +21,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -s 1-5: stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf. debug purpose\n";
 	echo "          1 is done then go to 2, 3 ..\n";
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
+	echo "       -G merge user track_logs\n";
 	echo "       -l channel:uniqid to notify web, email from web interface\n";
 	exit(1);
 }
@@ -86,7 +87,7 @@ $total=count($out);
 for ($i=0; $i< $total; $i++) {
 	$todo[] = $i;
 	$simage[$i] = sprintf("%s_%d.png",$outfile_prefix,$i);
-} 
+}
 //
 //
 cli_msglog("ps%10");
@@ -101,7 +102,6 @@ if ($jump <= $stage ) {
 	}
 
 	$im = $g->createpng(0,0,0,1,1,$BETA); // 產生
-		
 	if ($im === FALSE) cli_error_out(implode(":",$g->err));
 	showmem("after image created");
 	cli_msglog("ps%30");
@@ -113,7 +113,6 @@ if ($jump <= $stage ) {
 			cli_error_out("unable to read gpx file");
 		}
 		$param['width'] = imagesx($im);
-		//write_and_forget($im, $outimage);
 		ImagePNG($im, $outimage_orig);
 		if (file_exists($outimage_orig)) {
 			cli_msglog("create PNG: $outimage_orig done");
@@ -143,11 +142,14 @@ if ($jump <= $stage ) {
 		// 這不要了
 		@unlink($outimage_orig);
 	} else {
-		write_and_forget($im,$outimage);
+		write_and_forget($im,$outimage,$BETA);
 	}
+
 	// add to here
 	if (isset($opt['G'])) {
-		// 1. merge gpx
+		 // version 1 作法: 轉成 svg 再 merge: 但是太多的話, php 會爆炸
+		// 1. merge gpx 
+		/*
 		$bound = array('brx' => ($startx+$shiftx)*1000, 'bry'=>  ($starty-$shifty)*1000,  
 			           'tlx'=>  $startx * 1000, 'tly'=> $starty * 1000);
 		$data = map_overlap($bound, 1, 100);
@@ -166,8 +168,7 @@ if ($jump <= $stage ) {
 			@unlink($outimage);
 			cli_error_out("merge gpx fail:" . $retmsg);
 		}
-	
-		 
+
 		$param['gpx'] = $merged_gpx;
 		$param['show_label_trk'] = 0;
 		$param['show_label_wpt'] = 0;
@@ -190,7 +191,7 @@ if ($jump <= $stage ) {
 		}
 		@unlink($tmp_bound);
 		// 2. 轉成 svg
-		list($ret,$msg) = gpx2svg($param, $outsvg_big);
+		list($ret,$msg) = gpx2svg($param, $$g);
 	  if ($ret === false ) {
 			      @unlink($outimage_orig);
 			      cli_error_out("gpx2svg fail: ". print_r($msg,true). print_r($param,true));
@@ -201,12 +202,32 @@ if ($jump <= $stage ) {
 			      @unlink($outimage);
 	   	      cli_error_out("svg2png fail: $msg");
     }
-
-	}
+	*/
+	cli_msglog("add GPX layer to PNG");
+    // version 2 直接從 gis 資料庫取得 svg
+    $bbox[0] =  array($startx * 1000,$starty * 1000);
+    $bbox[1] =  array(($startx+$shiftx)*1000, ($starty-$shifty)*1000);
+    $bbox[2] =  array($shiftx * 315, $shifty * 315);
+    list($ret, $msg) = mapnik_svg_gen($bbox, $outimage, $outsvg_big);
+    if ($ret == false) {
+    		@unlink($outimage_orig);
+			@unlink($outimage);
+	   	    cli_error_out("mapnik_svg2_gen fail: $msg");
+	    }
+    list ($ret,$msg) = svg2png($outsvg_big, $outimage);
+    	if ($ret == false) {
+    		@unlink($outimage_orig);
+			@unlink($outimage);
+	   	    cli_error_out("svg2png fail: $msg");
+	    }
+	 cli_msglog("convert svg to png success");
+	 cli_msglog("ps%+3");
+	} // end of -G
 	// 加上 grid
 	if (isset($opt['e'])) {
-		cli_msglog("add grid to  image...");
+		cli_msglog("add 100 grid to image...");
 		im_addgrid($outimage, 100, $version);
+		cli_msglog("ps%+3");
 	}
 	// happyman
 	cli_msglog("ps%40");
@@ -267,15 +288,6 @@ if ($stage >= $jump ) {
 	  cli_msglog("small image border added ...");
 		cli_msglog("ps:+".sprintf("%d", 20 * $i+1/$total));
 	}
-	/*
-	require_once('lib/njq/environment.php');
-	$executor = new \njq\Executor();
-	if ($total > 4 ) $maxps = 4; else $maxps = $total;
-	$jobqueue = new \njq\STBJobProvider($todo);
-	cli_msglog("fork $maxps to run");
-	$executor->run($jobqueue, $maxps);
-	cli_msglog("finished njq");
-	 */
 }
 showmem("after stage 3");
 $stage = 4;

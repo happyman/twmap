@@ -952,10 +952,10 @@ function gpx2svg($param,$outsvg) {
 	return array(true, "$outsvg created");
 }
 function svg2png($insvg, $outimage) {
-	$cmd = sprintf("inkscape -e '%s' %s", $outimage, $insvg);
+	$cmd = sprintf("inkscape -e '%s' %s 2>&1", $outimage, $insvg);
 	exec($cmd, $out, $ret);
-	if (strstr($out[2],"saved")) {
-		return array(true, $out[2]);
+	if (strstr($out[count($out)-1],"saved")) {
+		return array(true, print_r($out, true));
 	}
 	return array(false, print_r($out, true));
 }
