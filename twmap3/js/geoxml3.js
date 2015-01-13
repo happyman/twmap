@@ -36,8 +36,8 @@ geoXML3.parser = function (options) {
   var parserOptions = geoXML3.combineOptions(options, {
     singleInfoWindow: false,
     processStyles: true,
-		additional_marker_desc: "<a href='http://map.happyman.idv.tw/twmap/'>地圖產生器</a>",
-		additional_path_desc: "<a href='http://map.happyman.idv.tw/twmap/'>地圖產生器</a>",
+		//additional_marker_desc: "<a href='http://map.happyman.idv.tw/twmap/'>地圖產生器</a>",
+		//additional_path_desc: "<a href='http://map.happyman.idv.tw/twmap/'>地圖產生器</a>",
     zoom: true
   });
   var docs = []; // Individual KML documents

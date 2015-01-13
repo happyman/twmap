@@ -41,9 +41,10 @@ else {
 	$_SESSION['redirto'] = $_SERVER["REQUEST_URI"];
 	echo "var admin_role = 0;\n";
 }
-printf("var getkmlfrombounds_url = '%s';\n",$CONFIG['getkmlfrombounds_url']);
+printf("var getkml_url = '%s';\n",$CONFIG['getkml_url']);
 printf("var geocodercache_url = '%s';\n",$CONFIG['geocodercache_url']);
 printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
+printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 ?>
 </script>
 	</head>
@@ -72,7 +73,7 @@ printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 		  <form id="gotoform" name="gotoform">
 			<span id="about" title="關於" class="ui-state-default ui-corner-all" > 地圖瀏覽器 v<?=$ver?></span> <span id="search_text"><img src='img/loading20x20.gif' /></span> <input id="tags" type="text" class="ui-corner-all"  title="輸入山頭名稱或地標,或者座標" disabled>
 			<button type=button class="ui-state-default ui-corner-all" id="goto" title="搜尋並定位">到</button>
-			<button id="kml_sw" class="ui-state-default ui-corner-all disable" title="山友登山軌跡(支援z=13到18)" type=button>行跡</button>
+			<button id="kml_sw" class="ui-state-default ui-corner-all" title="山友登山軌跡(支援z=13到18)" type=button>行跡</button>
 			<button id="label_sw" class="ui-state-default ui-corner-all" title="三角點名稱"  type=button>標籤</button>
 			<select id="marker_sw_select" multiple="multiple">
       <option selected="selected" value="a">全部</option>

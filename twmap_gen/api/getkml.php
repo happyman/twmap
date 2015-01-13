@@ -11,27 +11,11 @@ if (empty($mid)) {
 	ajaxerr("insufficent parameters");
 }
 
-if ($zoom < 13 || $zoom > 18 )
-	ajaxerr("not support this zoom");
-
-if (strstr($mid,",")) {
-	$mids = explode(",",$mid);
-
-	foreach($mids as $mid) {
-		list ($status,$msg)=make_kml($mid,$zoom);
-		if ($status == true) {
-			$kml[] = $msg;
-		}
-	}
-	$cmd = sprintf("gpsbabel -i kml -f %s -o kml -F -", implode(" -f ",$kml));
-  passthru($cmd);
-} else {
-	 list ($status,$msg)=make_kml($mid,$zoom);
+list ($status,$msg)=make_kml($mid);
 	 if ($status == true) {
 		 readfile($msg);
-	 }
 }
-function make_kml($mid, $zoom) {
+function make_kml($mid) {
 	$map = map_get_single($mid);
 
 	if ($map === false)  {
@@ -41,36 +25,26 @@ function make_kml($mid, $zoom) {
 	// 把地圖拿出來換成 kml
 	$gpx = str_replace(".tag.png", ".gpx", $map['filename']);
 	// test kml happyman add test path
-	$cachefile = sprintf("/srv/www/htdocs/map/gpxtmp/test/%s/%06d/%d/%s", $zoom, $map['uid'], $map['mid'], basename(str_replace(".gpx", ".kml", $gpx)));
+	$cachefile = sprintf("/srv/www/htdocs/map/gpxtmp/test/%06d/%d/%s",$map['uid'], $map['mid'], basename(str_replace(".gpx", ".kml", $gpx)));
 	if (file_exists($gpx)) {
-		if (file_exists($cachefile) && filemtime($cachefile) >= filemtime($gpx)) {
-			//	readfile($cachefile);
-			//exit;
+		if (0 && file_exists($cachefile) && filemtime($cachefile) >= filemtime($gpx)) {
 			return array(true, $cachefile);
 		}
-		// 過濾掉 routes
-		//$cmd = sprintf("gpsbabel -i gpx -f %s -x transform,wpt=rte -x duplicate,shortname,location,all -o gpx -F %s.in.GPX; ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -overwrite %s.GPX %s.in.GPX waypoints tracks",$gpx, $gpx,$gpx,$gpx);
-		//	exec($cmd,$out,$ret);
-		//	if ($ret == 0 )
-		//		$input_gpx = $gpx . ".GPX";
-		//	else
-		mkdir(dirname($cachefile),0755, true);
+		@mkdir(dirname($cachefile),0755, true);
 		//$cmds_args[10]  = "-x nuketypes,tracks,routes -x simplify,count=10 -x position,distance=20k";
 		//	$cmds_args[11]  = "-x nuketypes,tracks,routes -x position,distance=10k";
 		//	$cmds_args[12]  = "-x nuketypes,tracks,routes -x position,distance=5k";
-		$cmds_args[13]  = "-x nuketypes,tracks,routes -x position,distance=2k";
-		$cmds_args[14]  = "-x nuketypes,tracks,routes -x position,distance=1k";
-		$cmds_args[15]  = "-x nuketypes,tracks,routes -x position,distance=500m";
-		$cmds_args[16]  = "-x nuketypes,tracks,routes -x position,distance=200m";
-		$cmds_args[17]  = "-x nuketypes,tracks,routes -x position,distance=100m";
-		$cmds_args[18]  = "-x nuketypes,tracks,routes -x position,distance=1m";
-		$cmd = sprintf("gpsbabel -i gpx -f %s %s -o kml -F %s", $gpx, $cmds_args[$zoom], $cachefile);
+		//$cmds_args[13]  = "-x nuketypes,tracks,routes -x position,distance=2k";
+		//$cmds_args[14]  = "-x nuketypes,tracks,routes -x position,distance=1k";
+		//$cmds_args[15]  = "-x nuketypes,tracks,routes -x position,distance=500m";
+		//$cmds_args[16]  = "-x nuketypes,tracks,routes -x position,distance=200m";
+		//$cmds_args[17]  = "-x nuketypes,tracks,routes -x position,distance=100m";
+		//$cmds_args[18]  = "-x nuketypes,tracks,routes -x position,distance=1m";
+		$cmd = sprintf("gpsbabel -i gpx -f %s -x nuketypes,points -o kml,lines=1,points=0,line_color=%s,line_width=3 -F %s", $gpx, pick_color($mid),$cachefile);
 		exec($cmd);
-		//passthru($cmd);
-		return array(true, $cachefile);
+			return array(true, $cachefile);
 	} else  {
-		//ajaxerr("no file");
-		return array(false, "no gpx");
+				return array(false, "no gpx");
 	}
 }
 

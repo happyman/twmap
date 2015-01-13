@@ -2,7 +2,7 @@
 // 當 login 之後, 必須註冊到 db 裡面
 // $Id: twmapdb.inc.php 356 2013-09-14 10:00:22Z happyman $
 //
-require_once("adodb_lite/adodb.inc.php");
+require_once("adodb5/adodb.inc.php");
 
 function get_conn() {
 	global $db_host, $db_conn,$db_user, $db_pass, $db_name;
@@ -13,7 +13,7 @@ function get_conn() {
 	// error_log("new conection");
     // db_conn = ADONewConnection('mysqli');
 	//$status = $db_conn->PConnect('localhost', $db_user, $db_pass, $db_name);
-	$db_conn = ADONewConnection('postgres8');
+	$db_conn = ADONewConnection('postgres9');
 	$status = $db_conn->PConnect($db_host, $db_user, $db_pass, $db_name);
 
 	if ($status === true ) {
@@ -723,7 +723,7 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 }
 /**  do import 
  */
-function import_gpx($mid){
+function import_gpx_to_gis($mid){
 	// table gpx_waypoints
 	global $db_name,$db_user,$db_pass,$db_host;
 	// 0. 先檢查 gpx 存在與否
@@ -778,4 +778,72 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
 		return array(true,"file written");
 	} // ret == 0
 	return array(false,"err exec $cmd");
+}
+/**
+ * [tilestache_clean 新增/刪除 mid 的時候 hook
+ * @param  [type] $mid [description]
+ * @return [type]      [description]
+ */
+function tilestache_clean($mid){
+	$row = map_get_single($mid);
+	//print_r($row);
+	echo "clean ". $row['title'] . "\n";
+	if ($row==null){
+		return array(false,"no such map");
+	}
+	$tl = proj_67toge(array($row['locX'],$row['locY']));
+	$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
+	
+	$cmd = sprintf("ssh 172.31.39.193 'tilestache-clean.py -c ~wwwrun/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1'",$tl[1],$tl[0],$br[1],$br[0]);
+	error_log("tilestache_clean: ". $cmd);
+	/*
+利用 tilestache-clean 的 output 來砍另一層 cache 
+
+10164 of 10192... twmap_gpx/18/219563/112348.png
+10165 of 10192... twmap_gpx/18/219564/112348.png
+10166 of 10192... twmap_gpx/18/219565/112348.png
+10167 of 10192... twmap_gpx/18/219566/112348.png
+10168 of 10192... twmap_gpx/18/219567/112348.png
+10169 of 10192... twmap_gpx/18/219568/112348.png
+10170 of 10192... twmap_gpx/18/219569/112348.png
+10171 of 10192... twmap_gpx/18/219570/112348.png
+10172 of 10192... twmap_gpx/18/219571/112348.png
+10173 of 10192... twmap_gpx/18/219572/112348.png
+10174 of 10192... twmap_gpx/18/219573/112348.png
+10175 of 10192... twmap_gpx/18/219574/112348.png
+*/
+	exec($cmd,$out,$ret);
+	if ($ret == 0){
+		foreach($out as $line){
+			list($a,$png) = preg_split("/\.\.\./",$line);
+			$clean[] = trim($png);
+		}
+		return array(true,$clean);
+	}
+	else
+		return array(false,implode("\n",$out));
+}
+function remove_gpx_from_gis($mid){
+	$sql[] = sprintf("DELETE FROM gpx_wp WHERE mid=%d",$mid);
+	$sql[] = sprintf("DELETE FROM gpx_trk WHERE mid=%d",$mid);
+	$db=get_conn();
+	$db->StartTrans();
+               foreach ($sql as $sql_str) {
+                        $db->Execute($sql_str);
+                }
+   $result = $db->CompleteTrans();
+   if ($result === false) {
+   	 return array(false,"sql transaction fail");
+   }
+   return array(true,"done");
+}
+function get_waypoint($x,$y,$r=10,$detail=0){
+	$db=get_conn();
+	if ($detail == 0)
+		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name from gpx_wp WHERE ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY name",$x,$y,$r/1000/111.325);
+	else
+		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name,\"gpx_wp.ele\" AS ele,ST_AsText(wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title from gpx_wp A, map WHERE  ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) AND A.mid = map.mid  ORDER BY map.title",$x,$y,$r/1000/111.325);
+	error_log($sql);
+	$rs = $db->getAll($sql);	
+	return $rs;
 }

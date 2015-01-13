@@ -191,3 +191,9 @@ color: #000000;
 #inputtitleform > input {
 	font-size: 3em;
 }
+
+## control geoxml3 inforwindo
+.gm-style-iw {
+  width: 300px; 
+  min-height: 100px;
+}

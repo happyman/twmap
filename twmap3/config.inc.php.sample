@@ -11,6 +11,8 @@ $site_twmap_html_root = "/twmap/";
 $CONFIG['getkmlfrombounds_url'] = $site_twmap_html_root ."api/getkmlfrombounds.php";
 $CONFIG['geocodercache_url'] = $site_twmap_html_root ."api/geocoder.php";
 $CONFIG['pointdata_url'] = $site_html_root . "data/ajaxCRUD/pointdata2.php";
+$CONFIG['getkml_url'] = site_twmap_html_root ."api/getkml.php";
+$CONFIG['get_waypoints_url'] = $site_twmap_html_root ."api/waypoints.php";
 // 資料庫連線參數
 $CONFIG['db'] = array('host'=> 'localhost', 'db' => 'twmap', 'user'=> 'user', 'pass' => 'password');
 // admin user 的 email 登入地圖產生器的帳號
