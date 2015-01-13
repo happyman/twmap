@@ -148,7 +148,7 @@ var OSM_Options = {
 	getTileUrl: function(a, b) {
 		//return "http://tile.openstreetmap.org/"+ b +"/" + a.x + "/" + a.y +".png";
 		//return 'http://rs.happyman.idv.tw/map/twmap_gpx/'+b+"_"+a.x+"_"+a.y+".png";
-		return "http://tile.waymarkedtrails.org/hiking/"+ b + "/" + a.x + "/" + a.y +".png";
+		return  "	http://otile1.mqcdn.com/tiles/1.0.0/map/"+ b + "/" + a.x + "/" + a.y +".jpg";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 19,
