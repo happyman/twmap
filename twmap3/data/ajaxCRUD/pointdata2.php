@@ -70,7 +70,7 @@ function tell_story($d,$p=array()){
 		$a .= sprintf("<br>註解: %s", $d['comment']);
 	if (is_admin()) {
 		if ($p['beta']) {
-			$a .= sprintf("<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=%d');return false\">編輯</a> %s",$d['id'],($d['checked'])? "ok" : "請編輯");
+			$a .= sprintf("<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=%d',{});return false\">編輯</a> %s",$d['id'],($d['checked'])? "ok" : "請編輯");
 
 		} else {
 			$a .= sprintf("<a href='data/ajaxCRUD/index.php?id=%d' target=edit><br>編輯</a> %s",$d['id'], ($d['checked'])? "ok" : "請編輯");
