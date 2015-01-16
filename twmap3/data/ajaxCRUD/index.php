@@ -35,6 +35,10 @@ if (!empty($_GET['id'])) {
 		$where = sprintf("WHERE mt100 = 1 ");
 		$limit = 100;
 		break;
+	case 'smt100': // 小百岳
+		$where = sprintf("WHERE mt100 = 2 ");
+		$limit = 100;
+		break;
 	case 'todo':
 		$where = "WHERE checked = 0 ";
 		$limit = 10;
@@ -72,7 +76,7 @@ $tbl->displayAs("mt100", "百岳");
 $tbl->displayAs("checked", "檢查");
 
 $tbl->defineCheckbox('checked','1','0');
-$tbl->defineCheckbox('mt100',1,0);
+//$tbl->defineCheckbox('mt100',1,0);
 
 if ($_GET['x'] && $_GET['y']) {
 	$tbl->setInitialAddFieldValue('x', $_GET['x']);

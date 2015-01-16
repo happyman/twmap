@@ -1533,7 +1533,12 @@ function markerFilter() {
 				if (availableTagsMeta[i].mt100 == 1 ){
 					want  = 1;
 				}
-			} else if (s[k] == '6') {
+			}  
+			if (s[k] == '6') {
+				if (availableTagsMeta[i].mt100 == 2 ){
+					want  = 1;
+				}
+			} else if (s[k] == '7') {
 				if (availableTagsMeta[i].class == 0 ){
 					want  = 1;
 				}

@@ -13,7 +13,7 @@ if (isset($opt['r']))
 	$real_do = 1;
 else
 	$real_do = 0;
-if ($opt['c'])
+if (isset($opt['c']))
 	$cache_dir = $opt['c'];
 else
 	$cache_dir = "/mnt/nas/twmapcache/twmap_gpx";
@@ -25,19 +25,27 @@ $maxid = intval($rs[0][0])+1;
 $sql = sprintf("select mid,title,filename FROM \"map\" WHERE gpx=1 AND flag <> 2 AND mid > %d ORDER BY cdate",$maxid);
 $rs = $db->getAll($sql);
 printf("Total %d, from mid %d\n",count($rs),$maxid);
+// debug== $i=0;
 if (count($rs) > 0 ) {
 	foreach($rs as $row) {
+	// debug==	if ($i++ > 3) break;
 		printf("doing mid %d %-30s",$row['mid'],$row['title']);
 		if ($real_do == 1) {
+			$exist_mid = is_keepon_map_imported($row['mid']);
+			if ($exist_mid) {
+				printf("skip.. ".$exist_mid['mid']."\n");
+				continue;
+			}
 			printf(" *\n");
 			list($ret,$msg) = import_gpx_to_gis($row['mid']);
 			if ($ret === true){
 			// clean tile cache
-				list($st, $toclean) = tilestache_clean($mid);
+				list($st, $toclean) = tilestache_clean($row['mid']);
 				if($st == true) {
 					foreach($toclean as $line){
 						$del = $cache_dir . "/" . $line;
-						echo "rm $del\n";
+						// if need debug, uncomment
+						// echo "rm $del\n";
 						@unlink($del);
 					}
 				}
@@ -50,4 +58,4 @@ if (count($rs) > 0 ) {
 		}
 	}
 }
-printf("inport %d gpx %s\n",count($rs),$real_do?"done":"dryrun");
+printf("import %d gpx %s\n",count($rs),$real_do?"done":"dryrun");

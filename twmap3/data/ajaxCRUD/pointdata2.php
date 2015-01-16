@@ -66,6 +66,8 @@ function tell_story($d,$p=array()){
 		$a .= sprintf("<br>別名: %s", $d['alias']);
 	if ($d['mt100']==1)
 		$a .= sprintf("<br>我是百岳");
+	else if ($d['mt100']==2)
+		$a .= sprintf("<br>我是小百岳");
 	if (!empty($d['comment']))
 		$a .= sprintf("<br>註解: %s", $d['comment']);
 	if (is_admin()) {
