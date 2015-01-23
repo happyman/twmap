@@ -86,7 +86,7 @@ function map_exists($uid,$startx,$starty,$shiftx,$shifty,$version,$gpx=0) {
 }
 function keepon_map_exists($uid,$keepon_id){
 	$db=get_conn();
-	$sql = sprintf("SELECT * from  \"map\" WHERE \"uid\"='%s' AND \"keepon_id\"=%d",$uid,$keepon_id);
+	$sql = sprintf("SELECT * from  \"map\" WHERE \"uid\"='%s' AND \"keepon_id\"='%s'",$uid,$keepon_id);
 	$rs = $db->GetAll($sql);
 	logsql($sql,$rs);
 	if (count($rs) == 0 ) return false;
@@ -104,16 +104,16 @@ function is_keepon_map_imported($mid) {
 	return $rs[0];
 }
 // 寫到 map table
-function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="localhost",$file,$size=0,$version=1,$gpx=0,$keepon_id=0) {
+function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="localhost",$file,$size=0,$version=1,$gpx=0,$keepon_id=NULL) {
 
 	// 若不是 keepon 來的, 檢查是否已經有同樣參數的地圖,有的話表示是重新產生
 	// 不更新 mid, 只更新 size, version, title, cdate, flag 等參數
 	$row = map_exists($uid,$startx,$starty,$shiftx,$shifty,$version,$gpx);
 	$db=get_conn();
-	if ($row === FALSE || $keepon_id != 0 ) {
+	if ($row === FALSE || $keepon_id != NULL ) {
 		// 新地圖
 		// 使用 postgresql 要改 default
-		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %s) returning mid", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==0)?'NULL':$keepon_id);
+		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, '%s') returning mid", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==NULL)?'NULL':$keepon_id);
 		$rs = $db->getAll($sql);
 		logsql($sql,$rs);
 		if (!isset($rs[0]['mid'])) {
@@ -364,7 +364,7 @@ function map_expire($mid) {
 			return false;
 		}
 	}
-	if ($row['keepon_id'] > 0 ) {
+	if (!empty($row['keepon_id'])) {
 		soap_call_delete($row['keepon_id']);
 	}
 	$db=get_conn();

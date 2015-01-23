@@ -91,3 +91,4 @@ else {
 	require_once __ROOT__."lib/ape/ApeResponse.php";
 
 }
+ini_set("session.gc_maxlifetime", 86400);

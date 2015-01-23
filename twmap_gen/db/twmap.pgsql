@@ -62,7 +62,7 @@ CREATE TABLE map (
     flag integer DEFAULT 0 NOT NULL,
     count bigint DEFAULT 0 NOT NULL,
     gpx integer NOT NULL,
-    keepon_id integer,
+    keepon_id character varying,
     hide integer DEFAULT 0 NOT NULL
 );
 
