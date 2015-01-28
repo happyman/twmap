@@ -83,6 +83,7 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 			<option selected="selected" value="4">森林</option>
       		<option selected="selected" value="5">百岳</option>
       		<option selected="selected" value="6">小百岳</option>
+      		<option selected="selected" value="8">溫泉</option>
 			<option selected="selected" value="7">其他</option>
 			</select>
 			<button id="marker_reload"class="ui-state-default ui-corner-all" type=button>重載</button>

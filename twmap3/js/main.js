@@ -1534,15 +1534,22 @@ function markerFilter() {
 					want  = 1;
 				}
 			}  
+			// 小百岳
 			if (s[k] == '6') {
 				if (availableTagsMeta[i].mt100 == 2 ){
 					want  = 1;
 				}
+			} else if (s[k] == '8') {
+				if (availableTagsMeta[i].class == 0 && (availableTagsMeta[i].type == '溫泉')){
+					want = 1;
+				}
 			} else if (s[k] == '7') {
+			// 其他
 				if (availableTagsMeta[i].class == 0 ){
 					want  = 1;
 				}
 			} else {
+				// 1-4 等
 				if (availableTagsMeta[i].class == s[k] ){
 					want  = 1;
 				}
