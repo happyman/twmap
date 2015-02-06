@@ -223,7 +223,7 @@ Class STB {
 						$cim=$dst;
 					}
 				// refer to X,Y, I
-				// debug: echo "addtagbprder2 cim $x $y $d $this->startx, $this->starty, 4x6, $this->shiftx, $this->shifty $fuzzy \n";
+			// debug: echo "addtagbprder2 cim $x $y $d $this->startx, $this->starty, 4x6, $this->shiftx, $this->shifty $fuzzy \n";
 				$cim=addtagborder2($cim, $x, $y, $d,  $this->startx, $this->starty, 
 					array("x"=>$this->outsizex,"y"=>$this->outsizey), 
 					$this->shiftx, $this->shifty, $fuzzy);
@@ -435,8 +435,8 @@ Class STB2 extends STB {
 			$this->doLog( "merge tiles...");
 			$outi = $outimage = tempnam($tmppath,"MTILES");
 			$montage_bin = "montage";
-			$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - png:%s",
-				implode(" ",$fn), $this->shiftx ,$this->shifty, $v3img,  $outi);
+			$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
+				implode(" ",$fn), $this->shiftx ,$this->shifty, $v3img, $this->shiftx*315, $this->shifty*315, $outi);
 			if ($debug_flag)
 				$this->doLog( $cmd );
 			exec($cmd);

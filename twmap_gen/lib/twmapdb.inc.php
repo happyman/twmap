@@ -143,7 +143,7 @@ function map_get($uid) {
 // 取 ok, expired  flag = 0 or 1 的地圖, 用來算限制
 function map_list_get($uid) {
 	$db=get_conn();
-	$sql = sprintf("select * from \"map\" where \"uid\"=%s AND (flag = 1 or flag = 0)",$uid);
+	$sql = sprintf("select * from \"map\" where \"uid\"=%s AND (flag = 1 or flag = 0) ORDER BY mid",$uid);
 	$rs = $db->GetAll($sql);
 	logsql($sql,$rs);
 	return $rs;
@@ -355,7 +355,7 @@ function map_expire($mid) {
 	if ($row === FALSE) return FALSE;
 	// $sql = "delete from map where mid=$mid";
 	// remove files
-	$files = map_files($row['filename']);
+$files = map_files($row['filename']);
 	foreach($files as $f) {
 		// 不刪除 gpx 檔案
 		if(strstr(basename($f),'.gpx')) continue;
@@ -364,7 +364,7 @@ function map_expire($mid) {
 			return false;
 		}
 	}
-	if (!empty($row['keepon_id'])) {
+	if (!empty($row['keepon_id']) && $row['keepon_id'] != 'NULL') {
 		soap_call_delete($row['keepon_id']);
 	}
 	$db=get_conn();

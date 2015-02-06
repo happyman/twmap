@@ -95,10 +95,18 @@ showmem("after STB created");
 if ($jump <= $stage ) {
 
 	if (file_exists($outimage)) {
-	  cli_msglog("$outimage exists");
-		cli_error_out("已經產生過相同的地圖 $outimage");
+		// 如果 10 分鐘之前的 dead file, 清除之
+	  if (time() - filemtime($outimage) > 600) {
+	  	$files = map_files($outimage);
+		foreach($files as $f) {
+			$ret = unlink($f);
+		}
+	  } else {
+	  	cli_msglog("$outimage exists");
+		cli_error_out("若發生此問題, 通常表示上一個出圖過程 crash 殘留檔案, 請回報此路徑 $outimage");
 		echo "$outimage there";
 		exit(0);
+	  }
 	}
 
 	$im = $g->createpng(0,0,0,1,1,$BETA); // 產生
