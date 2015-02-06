@@ -139,12 +139,13 @@ if ($jump <= $stage ) {
 		}
 		cli_msglog("create PNG: $outimage");
 		cli_msglog("ps%+3");
-		list ($ret,$msg) = svg2png($outsvg, $outimage);
+		list ($ret,$msg) = svg2png($outsvg, $outimage, array($shiftx*315,$shifty*315));
 		if ($ret === false ) {
 			@unlink($outimage_orig);
 			@unlink($outimage);
 			cli_error_out("svg2png fail: $msg");
 		}
+
 		// outimage 已生成
 		//$im = imagecreatefrompng($outimage);
 		// 這不要了
@@ -222,7 +223,7 @@ if ($jump <= $stage ) {
 			@unlink($outimage);
 	   	    cli_error_out("mapnik_svg2_gen fail: $msg");
 	    }
-    list ($ret,$msg) = svg2png($outsvg_big, $outimage);
+    list ($ret,$msg) = svg2png($outsvg_big, $outimage, $bbox[2]);
     	if ($ret == false) {
     		@unlink($outimage_orig);
 			@unlink($outimage);
