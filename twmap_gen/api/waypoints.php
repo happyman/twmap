@@ -1,5 +1,4 @@
 <?php
-
 $uid = 1;
 require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
@@ -18,13 +17,16 @@ $data = get_waypoint($x,$y,$r,$detail);
 // 整理一下 data
 
 if ($data == false || count($data)==0) {
+	header('Access-Control-Allow-Origin: *');
 	ajaxok(array());
 }
 if (empty($detail) || $detail == 0 ){
+	header('Access-Control-Allow-Origin: *');
 	ajaxok($data);
 } else {
 	// web page
 	echo "<html>";
+	echo "<title>TWMAP waypoint detail</title><meta charset=\"UTF-8\">";
 	echo "<style>
 	table, td, th {
     border: 1px solid green;

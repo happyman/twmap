@@ -858,3 +858,13 @@ function get_waypoint($x,$y,$r=10,$detail=0){
 	$rs = $db->getAll($sql);	
 	return $rs;
 }
+
+// http://gis.stackexchange.com/questions/44914/how-do-i-getthe-area-of-a-wgs84-polygon-in-square-meters
+function get_AREA($wkt_str) {
+	$db=get_conn();
+	$sql =  sprintf("SELECT ST_Area( ST_Transform( ST_SetSRID( ST_GeomFromText( '%s' ) , 4326) , 900913))", $wkt_str);
+	error_log($sql);
+	$rs = $db->getAll($sql);	
+	echo $db->errorMsg();
+	return $rs;
+}
