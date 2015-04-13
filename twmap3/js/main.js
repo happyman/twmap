@@ -519,6 +519,7 @@ function permLinkURL(goto) {
 	return "<a href='?goto=" + goto + "&zoom="+ map.getZoom() +"&opacity="+ opacity + "&mapversion=" + ver + "&maptypeid="+ map.getMapTypeId() +"&show_label="+ show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker +"&roadmap="+ curMap+"&grid=" + curGrid +"&theme="+ theme +"'><img src='img/permlink.png' border=0/></a>";
 }
 
+var initial_meerkat = 1; // 第一次顯示
 function locInfo(newpos, callback, param){
 	// 1. 檢查圖層是否是 Gpx 圖層
 	var radius = (show_kml_layer==1)? (20 - map.getZoom())*10-10 : 0;
@@ -545,8 +546,9 @@ function locInfo(newpos, callback, param){
 			extra_info += "<a href=# onClick=\"showmeerkat('"+ extra_url +"',{ 'width': '600px'} )\"><img src='img/icon-download.gif' border=0></a>";
 			locInfo_show(newpos, -10000, { "content": extra_info, "radius": radius });
 			// 如果已經打開
-			if ($("#meerkat-wrap").is(":visible")) {
+			if (initial_meerkat || $("#meerkat-wrap").is(":visible")) {
 				showmeerkat(extra_url,{ 'width': '600px'});
+				initial_meerkat = 0;
 			}
 
 			} else {
