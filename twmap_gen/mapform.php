@@ -139,7 +139,11 @@ $('#bt1').click(function() {
 		$("#mapform button[name=bt1]").html('上傳航跡檔產生');
 		$(".gpx_mode").show();
 		$("#create2").show();
+		blinking('create2',1);
+		blinking('create3',0);
+		blinking('create',0);
 		$("#create").hide();
+		$("#create3").hide();
 		$(".normal_mode").hide();
 		$(".gpx_recreate_mode").hide();
 		$("#mapform input[name=gps]").val(1);
@@ -151,12 +155,13 @@ $('#bt1').click(function() {
 		$(".gpx_mode").hide();
 		$(".normal_mode").show();
 		$("#create").show();
+		blinking('create',1);
+		blinking('create3',0);
+		blinking('create2',0);
 		$("#create2").hide();
+		$("#create3").hide();
 		$(".gpx_recreate_mode").hide();
 		$("#mapform input[name=gps]").val(0);
-		//	$("#mapform input[name=startx]").rules("add", {required: "必要", minlength: 3 });
-		//	$("#mapform input[name=starty]").rules("add", {required: "必要", minlength: 4 });
-		//	$("#mapform input[name=title]").rules("add", {required: "請加上標題", minlength: 2 });
 		$('#step_x').text("3");
 		$('#step_y').text("4");
 		$('#step_bound').text("5");
@@ -278,11 +283,16 @@ $(document).ready(function(){
 	$('#step_area').text("5");
 	$('#step_version').text("6");
 	$('#step_go').text("7");
-
+	blinking('bt1',1);
 	if (called == 1 ) {
 		$(".method").hide();
 		$(".normal_note").hide();
-	$('#step_go').text("這裡");
+		$('#step_go').text("這裡");
+		blinking('create',1);
+		blinking('create2',0);
+		blinking('create3',0);
+		$("#create3").hide();
+		$("#create2").hide();
 	}
 	if (called == 2 ) {
 		//alert(called);
@@ -291,9 +301,13 @@ $(document).ready(function(){
 		$(".gpx_recreate_mode").show();
 		$(".method").hide();
 		$(".normal_note").hide();
+		$("#create3").show();
+		blinking('create3',1);
+		blinking('create2',0);
+		blinking('create',0);
 		$("#create").hide();
 		$("#create2").hide();
-		$("#create3").show();
+		//alert(called);
 		//alert(called);
 		// tip
 		$('#step_version').text("3");
@@ -301,6 +315,9 @@ $(document).ready(function(){
 
 	} else {
 		$(".gpx_recreate_mode").hide();
+		blinking('create',1);
+		blinking('create2',0);
+		blinking('create3',0);
 		$("#create2").hide();
 		$("#create3").hide();
 	}

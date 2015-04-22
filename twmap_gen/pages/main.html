@@ -7,9 +7,8 @@
 		<ul>
 			<li><a href="mapform.php" class="showtip" title="輸入參數產生地圖">產生</a></li>
 			<li><a href="#browse" class="showtip" title="瀏覽地圖選取範圍">瀏覽</a></li>
-
 			<li><a href="list.php" class="showtip" title="檢視已產生的地圖">列出</a></li>
-			<li><a href="show.php?tab=1{$lastest_mid}" class="showtip" title="下載地圖">顯示</a></li>
+			<li><a href="show.php?tab=3{$lastest_mid}" class="showtip" title="下載地圖">顯示</a></li>
 			<li><a href="about.php">關於</a></li>
 			<li><a href="othermap.php?align=left&target=_top">其他地圖</a></li>
 		</ul>
@@ -52,6 +51,8 @@
 								iframe_loaded = 1;
 							}
 						} 
+						// 更改一下 url
+					window.history.pushState({},'','main.php?tab='+ui.index);		
 					},
 					// http://www.datatables.net/examples/api/tabs_and_scrolling.html
 					"show": function(event, ui) {
@@ -144,24 +145,6 @@
       $(".psLabel").css("background", "");
 
 	}); // ready
-/*
-	function checkFinished() {
-		// console.log("checkFinished is called");
-		if ($("#tabs").tabs("option", "selected") != 3 ) {
-			$.get("get_lastest_mid.php", "" ,function(data) {
-				 $.unblockUI();
-				if (data.status == "ok") {
-					var $tabs = $('#tabs').tabs();
-					$tabs.tabs('url',3,"show.php?tab=1&mid="+data.id);
-					$tabs.tabs('url',0, "mapform.php");
-					$tabs.tabs('select',3);  
-					} else {
-					alert("error: "+ data.msg);
-				}
-				}, "json");
-			}
-		}
-		*/
 		function clearProgress() {
 			makeprogress.progressbar("value",0);
 			makeprogress.hide();

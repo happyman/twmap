@@ -10,7 +10,7 @@ if (empty($_SESSION['loggedin'])) {
 // 如果從地圖瀏覽器導過來
 if (isset($_GET['tab'])) {
 	$jump = intval($_GET['tab']);
-	if ($jump < 0 || $jump > 4 ) $jump = 1;
+	if ($jump < 0 || $jump > 5 ) $jump = 1;
 
 	$_SESSION['makeparam'] = $_GET;
 	$_SESSION['initial_tab'] = $jump;
@@ -24,18 +24,20 @@ $smarty->assign("site_root_url", $site_url . $site_html_root);
 echo $smarty->fetch("header.html");
 
 // main body
+if (isset($_SESSION['makeparam']['mid'])){
+	    $lastest_mid = "&mid=".$_SESSION['makeparam']['mid'];
+} else {
+	$maps = map_get_lastest_by_uid(1,$_SESSION['uid']);
+	if (count($maps)==1) {
+			$lastest_mid = "&mid=".$maps[0]['mid'];
+	}
+}
 
-if (isset($_SESSION['initial_tab']) && isset($_SESSION['makeparam']['mid'])){
-	$lastest_mid = "&mid=".$_SESSION['makeparam']['mid'];
+if (isset($_SESSION['initial_tab'])) {
 	$initial_tab = $_SESSION['initial_tab'];
 } else {
-	// default 顯示最新地圖
-	$maps = map_get_lastest_by_uid(1,$_SESSION['uid']);
-	if (count($maps)==1) 
-		$lastest_mid = "&mid=".$maps[0]['mid'];
-	else
-		$lastest_mid = "";
-	$initial_tab =  0;
+		$initial_tab =  0;
+
 }
 $smarty->assign("user_icon", 'imgs/icon_'.$_SESSION['mylogin']['type']. '.png');
 $smarty->assign("user_email", $_SESSION['mylogin']['email'] );

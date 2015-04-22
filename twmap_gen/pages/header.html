@@ -90,4 +90,25 @@
      .hp { cursor: pointer; }
 
 		</style>
+<script>
+	var timer = [];
+function blinking(elm, action) {
+	if (action == 0 ){
+		if (timer[elm]){
+			clearInterval(timer[elm]);
+			delete timer[elm];
+		}
+		return;
+	}
+  timer[elm] = setInterval(blink, 10);
+    function blink() {
+        $("#"+elm).fadeOut(400, function() {
+					$("#"+elm).fadeIn(400, function() {
+						if (!timer[elm])
+							$("#"+elm).hide();
+					});
+        });
+  }
+}
+</script>
 	</head>

@@ -515,7 +515,7 @@ function hot_block($type=0, $target="_blank") {
 function name_to_icon($map) {
 	$name = $map['title'];
 	if (!empty($map['keepon_id']))
-		return 'icons/note.gif';
+		return 'icons/boobies.gif';
 	if (strstr($name,"湖")|| strstr($name,"溪")||strstr($name,"潭")||strstr($name,"島")|| strstr($name,"海岸"))
 		$img="icons/fish.gif";
 	else if (strstr($name,"林道")|| strstr($name,"縱走"))
