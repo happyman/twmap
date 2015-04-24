@@ -53,19 +53,19 @@ if (php_sapi_name() != "cli") {
 
 	require_once(__ROOT__."lib/xuite.php");
 	require_once(__ROOT__."lib/fb/facebook.php");
-	require_once(__ROOT__."lib/openid.php");
+	//require_once(__ROOT__."lib/openid.php");
+	// move to config-hybridauth.php
+	//$fb_appid = '';
+	//$facebook = new Facebook(array(
+	//			'appId'  => $fb_appid,
 	// here
-	$fb_appid = '';
-	$facebook = new Facebook(array(
-				'appId'  => $fb_appid,
+	//			'secret' => '',
+	//			'cookie' => false,
+	//			));
 	// here
-				'secret' => '',
-				'cookie' => false,
-				));
-	// here
-	$xuite = new xuiteAuth(array(
-				'api_key' => '',
-				'secret' => ''));
+	//$xuite = new xuiteAuth(array(
+	//			'api_key' => '',
+	//			'secret' => ''));
 
 	/* template */
 	require_once(__ROOT__."lib/twmapdb.inc.php");

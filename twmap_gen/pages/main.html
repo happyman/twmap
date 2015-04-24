@@ -1,7 +1,7 @@
 <body>
 	{if $loggedin == 1 }
 	<div id="greeting" align=right><img src="{$user_icon}" width=32px /><span class="showtip" title="{$user_email}" >{$user_nickname}</span> 你好! 
-		&nbsp; <a href="logout.php" id="logout">登出</a>
+		&nbsp; <a href="{$logout_url}" id="logout">登出</a>
 	</div>
 	<div id=tabs>
 		<ul>

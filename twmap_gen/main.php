@@ -39,6 +39,7 @@ if (isset($_SESSION['initial_tab'])) {
 		$initial_tab =  0;
 
 }
+$smarty->assign("logout_url", "lib/Hybrid/auth.php?provider=". $_SESSION['mylogin']['type'] . "&action=logout");
 $smarty->assign("user_icon", 'imgs/icon_'.$_SESSION['mylogin']['type']. '.png');
 $smarty->assign("user_email", $_SESSION['mylogin']['email'] );
 $smarty->assign("user_nickname", $_SESSION['mylogin']['nick'] );

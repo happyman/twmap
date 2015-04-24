@@ -15,9 +15,9 @@ if ($_SESSION['mylogin']['type'] == 'facebook') {
 	//	} 
 
 } else if ($_SESSION['mylogin']['type'] == 'xuite') {
-	$session = $_SESSION['mylogin']['session'];
-	$xuite->setData($session);
-	header("Location: ". $xuite->getRefreshURL());
+//	$session = $_SESSION['mylogin']['session'];
+//	$xuite->setData($session);
+//	header("Location: ". $xuite->getRefreshURL());
 }
 
 $_SESSION = array();
