@@ -86,7 +86,7 @@ function map_exists($uid,$startx,$starty,$shiftx,$shifty,$version,$gpx=0) {
 }
 function keepon_map_exists($uid,$keepon_id){
 	$db=get_conn();
-	$sql = sprintf("SELECT * from  \"map\" WHERE \"uid\"='%s' AND \"keepon_id\"='%s'",$uid,$keepon_id);
+	$sql = sprintf("SELECT * from  \"map\" WHERE \"uid\"='%s' AND \"keepon_id\"='%s' AND \"flag\" <> 2",$uid,$keepon_id);
 	$rs = $db->GetAll($sql);
 	logsql($sql,$rs);
 	if (count($rs) == 0 ) return false;
@@ -365,7 +365,8 @@ $files = map_files($row['filename']);
 		}
 	}
 	if (!empty($row['keepon_id']) && $row['keepon_id'] != 'NULL') {
-		soap_call_delete($row['keepon_id']);
+		//soap_call_delete($row['keepon_id']);
+		keepon_MapDelete($row['keepon_id']);
 	}
 	$db=get_conn();
 	// update db
@@ -531,11 +532,39 @@ function name_to_icon($map) {
 // keepon functions
 
 function kok_out($id, $msg, $url, $cdate=null) {
-	soap_call(true, $id, $msg, $url, $cdate);
+	//soap_call(true, $id, $msg, $url, $cdate);
+	keepon_MapResult(true, $id, $msg, $url, $cdate);
 }
-
+// 取代 soap_call
 function kerror_out($id,$msg) {
-	soap_call(false, $id, $msg);
+	//soap_call(false, $id, $msg);
+	keepon_MapResult(false, $id, $msg);
+}
+function keepon_MapResult($success, $id, $msg, $url=null, $cdate=null) {
+	$kurl = "http://www.keepon.com.tw/api/MapGenerator/MapResult";
+	$params = array(
+	    
+		    'Success'=> $success,
+		    'Identity'=> $id,
+		    'Date'=> ($cdate)? $cdate : date("Y-m-d H:i:s"),
+		    'ImageUrl'=> $url,
+		    'Message'=>$msg
+ );
+	$result = request_curl($kurl, "POST", $params);
+	error_log("request $kurl with params".print_r($params,true) ."get $result");
+	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
+	return array(true, $result);
+
+}
+function keepon_MapDelete($id) {
+	$kurl = "http://www.keepon.com.tw/api/MapGenerator/MapDelete";
+	$params = array(
+		    'Identity'=> $id );
+	$result = request_curl($kurl, "POST", $params);
+	error_log("request $kurl with params".print_r($params,true) ."get $result");
+	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
+	return array(true, $result);
+
 }
 function soap_call($success, $id, $msg, $url=null, $cdate =null) {
 	//建立SOAP

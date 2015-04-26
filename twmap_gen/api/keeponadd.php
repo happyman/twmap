@@ -8,6 +8,7 @@ $cp = $_REQUEST['cp'];
 $title = $_REQUEST['title'];
 
 
+error_log("keepon add:".print_r($_REQUEST, true));
 require_once("../config.inc.php");
 if (empty($id) || empty($tm) || empty($url) || empty($cp)  || empty($title)) {
 	ajaxerr("1:not enough parameters");
@@ -17,6 +18,7 @@ if (empty($id) || empty($tm) || empty($url) || empty($cp)  || empty($title)) {
 $check = intval($tm{0}) * $keepon_magic_1 + intval($tm{1}) + intval($tm{2}) * $keepon_magic_2 + intval($tm{3}) + intval($tm{4}) * $keepon_magic_3 + intval($tm{5}) + $keepon_magic_4 - strlen(urldecode($url));
 
 if ($cp != $check) {
+	error_log("checksum error");
 	ajaxerr("2:checksum error");
 }
 $uid = 1;
@@ -53,6 +55,7 @@ try {
 	}
 
 } catch (Exception $e) {
+error_log("keepon add: unable to download");
 	ajaxerr("3:unable to download gpx");
 }
 // 1.1 把參數抓出來
@@ -75,10 +78,14 @@ $TODO['ph'] = $svg->bound_twd67['ph'];
 require_once("../lib/memq.inc.php");
 
 $ret = MEMQ::enqueue("keepon", $TODO);
-if ($ret === FALSE) 
+if ($ret === FALSE) {
+
+error_log("add to queue fail". print_r($TODO,true));
 	ajaxerr("system error");
+}
 
 $ret = array("time" => time(), "msg" => "accepted");
+error_log("add to queue");
 ajaxok($ret);
 
 function formatreq($param) {

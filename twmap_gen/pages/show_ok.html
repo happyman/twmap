@@ -5,8 +5,8 @@
 	<tr><td width=400 valign="top" align="left">
 			<ul>
 				<li>標題: <b class="ui-state-default">{$map.title}</b>
-				{if $map.keepon_id && $map.keepon_id != 'NULL'}
-				<li>紀錄: <a href='http://www.keepon.com.tw/DocumentHandler.ashx?id={$map.keepon_id}' target=_blank><img src='http://www.keepon.com.tw/images/logo.jpg' height='35px' border=0></a>
+				{if $map.keepon_id && $map.keepon_id != 'NULL' && !is_numeric($map.keepon_id)}
+				<li>紀錄: <a href='http://www.keepon.com.tw/redirectMap-{$map.keepon_id}.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>
 				{/if}
 				<li>本頁<a href='{$links.page}'>連結</a> (張貼參考請使用下列 URL):
 				<ul><li><span class="copy">{$links.page}</span>

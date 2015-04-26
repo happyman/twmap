@@ -484,8 +484,8 @@ Class STB2 extends STB {
 } //eo class
 
 function request_curl($url, $method='GET', $params=array()) {
-	$params = http_build_query($params, '', '&');
-	$curl = curl_init($url . ($method == 'GET' && $params ? '?' . $params : ''));
+	$params_line = http_build_query($params, '', '&');
+	$curl = curl_init($url . ($method == 'GET' && $params_line ? '?' . $params_line : ''));
 	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
 	curl_setopt($curl, CURLOPT_HEADER, false);
 	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
