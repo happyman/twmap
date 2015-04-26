@@ -28,7 +28,18 @@ if (empty($detail) || $detail == 0 ){
 	echo "<html>";
 	echo "<title>TWMAP waypoint detail</title><meta charset=\"UTF-8\">";
 	echo "<style>
-	table, td, th {
+	/* Document level adjustments */
+html {
+  font-size: 17px;
+}
+@media (max-width: 900px) {
+  html,table { font-size: 15px; }
+}
+@media (max-width: 400px) {
+  html,table { font-size: 13px; }
+}
+
+table, td, th {
     border: 1px solid green;
 }
 
@@ -36,8 +47,9 @@ th {
     background-color: green;
     color: white;
 }
+
 </style>";
-	echo "<div align=center>";
+	echo "<body><div id='wpt_info' align=center>";
 	echo "<hr>以下 GPS 航跡皆為山友無私貢獻分享,請大家上山前做好準備,快樂出門,平安回家!";
 	echo "<br>距座標點". $_REQUEST['r'] ."M 的範圍的航點資訊";
 	echo "<table>";

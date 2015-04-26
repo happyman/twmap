@@ -543,11 +543,11 @@ function locInfo(newpos, callback, param){
 			}
 			var extra_info = "<br>"+ extra.join();
 			var extra_url = get_waypoints_url + "?x=" + newpos.lng() + "&y=" + newpos.lat() + "&r=" + radius + "&detail=1";
-			extra_info += "<a href=# onClick=\"showmeerkat('"+ extra_url +"',{ 'width': '600px'} )\"><img src='img/icon-download.gif' border=0></a>";
+			extra_info += "<a href=# onClick=\"showmeerkat('"+ extra_url +"',{ 'width': '600'} )\"><img src='img/icon-download.gif' border=0></a>";
 			locInfo_show(newpos, -10000, { "content": extra_info, "radius": radius });
 			// 如果已經打開
 			if (initial_meerkat || $("#meerkat-wrap").is(":visible")) {
-				showmeerkat(extra_url,{ 'width': '600px'});
+				showmeerkat(extra_url,{ 'width': '600'});
 				initial_meerkat = 0;
 			}
 
@@ -989,6 +989,8 @@ function initialmarkers() {
 			maxZoom: 20,
 			center: latlng,
 			overviewMapControl: true,
+			streetViewControl: false,
+			disableDoubleClickZoom: true,
 			mapTypeControlOptions: {
 				style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
 				position: google.maps.ControlPosition.TOP_LEFT,
@@ -997,14 +999,17 @@ function initialmarkers() {
 		}
 
 	};
-	if (is_mobile) {
-		myOptions.mapTypeControlOptions.position = google.maps.ControlPosition.RIGHT_BOTTOM;
-	}
+	//if (is_mobile) {
+	//	myOptions.mapTypeControlOptions.position = google.maps.ControlPosition.RIGHT_BOTTOM;
+	//}
 	resizeMap();
 
 	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-	if (!is_mobile)
+	if (!is_mobile){
 		map.enableKeyDragZoom();
+		map.setOptions({disableDoubleClickZoom: false });
+	}
+
 	map.mapTypes.set('gdem', OSM_GDEM_MapType);
 	// map.mapTypes.set('gdem', agsType);
 	map.mapTypes.set('twmapv1', SunriverMapType);
@@ -1035,15 +1040,20 @@ function initialmarkers() {
 	var container = $("#opSlider");
 	//var container = document.getElementById("opSlider");
 	//var range = (parseInt(container.style.width) - parseInt(bar.style.width));
+	if (is_mobile){
+		$('#opSlider').width('60px');
+		$('#op').width('8px');
+		$('#more').css({'left':'84px'});
+	}
 	var range = container.width() - $("#op").width();
 
 	map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('opContainer'));
+
 	var opSlider = new ExtDraggableObject(bar, {
 		restrictY: true,
 		container: container
 	});
 	//
-
 	// 顯示預設透明度, 一定要 改變才會生效.. 不懂
 	changeBackgroundOpacity(opacity-0.001);
 	opSlider.setValueX(range * opacity);
@@ -1066,19 +1076,21 @@ function initialmarkers() {
 		showOp(opacity);
 	});
 
-	google.maps.event.addDomListener(document.getElementById('less'), 'click', function() {
+	google.maps.event.addDomListener(document.getElementById('less'), 'click', function(event) {
 		var op = opacity - 0.1;
 			if (op < 0) op = 0; // return;
 			changeBackgroundOpacity(op);
 			opSlider.setValueX(range * opacity);
 			showOp(opacity);
+			event.preventDefault();
 		});
-	google.maps.event.addDomListener(document.getElementById('more'), 'click', function() {
+	google.maps.event.addDomListener(document.getElementById('more'), 'click', function(event) {
 		var op = opacity + 0.1;
 			if (op > 1) op = 1; // return;
 			changeBackgroundOpacity(op);
 			opSlider.setValueX(range * opacity);
 			showOp(opacity);
+			event.preventDefault();
 
 		});
 	// 畫框框
@@ -1096,14 +1108,24 @@ function initialmarkers() {
 		centerMarker.setPosition(newpos);
 		locInfo(newpos);
 	});
+	if (is_mobile){
+		google.maps.event.addListener(map,'dblclick', function(event){
+		console.log("left click fired"); 
+		var newpos = event.latLng;
+		locInfo_name = "我的位置";
+		centerMarker.setPosition(newpos);
+		locInfo(newpos);
+	});
+	} else{
 	google.maps.event.addListener(map, 'click', function(event) {
-		   map.set('disableDoubleClickZoom', false);
+	    map.setOptions({disableDoubleClickZoom: false });
 		console.log("left click fired"); 
 		var newpos = event.latLng;
 		locInfo_name = "我的位置";
 		centerMarker.setPosition(newpos);
 		locInfo(newpos, addremove_polygon, event);
 	});
+}
 
 	// 載入 Tags
 	$("#tags").val("初始化中");
@@ -1275,12 +1297,14 @@ function initialmarkers() {
 					labelArray[i].setMap(null);
 				}
 				$("#label_sw").addClass("disable");
+				$('.ui-dropdownchecklist-selector').addClass('disable');
 				// alert(show_label);
 			} else {
 				show_label = 1;
 				showInsideMarkers();
 				// alert(show_label);
 				$("#label_sw").removeClass("disable");
+				$('.ui-dropdownchecklist-selector').removelass('disable');
 			}
 			updateView("info_only");
 		});
@@ -1316,15 +1340,42 @@ function initialmarkers() {
 
 			}
 		});
-	//$("#ddcl-marker_sw_select").addClass("ui-corner-all");
+
 	$(".ui-dropdownchecklist-selector").addClass("ui-corner-all");
 	$(".ui-dropdownchecklist-text").css({"font-size":"12px", "margin": "1px"});
 	$("#ddcl-marker_sw_select").offset({top: 9});
-
+	$('#changemap').css({'left':'210px'});
 	$('#changegname').menu();
 	$('#changegrid').menu();
+	$('.close-meerkat2').hide();
+	if (is_mobile){
+		// 產生 setup menu
+				$('#changegname').removeAttr('style');
+				$('#changegrid').removeAttr('style');
+				
+				$("#ddcl-marker_sw_select").css({top: '5px'});
+				$('#kml_sw').appendTo('#mobile_setup').hide();
+				$('#label_sw').appendTo('#mobile_setup').hide();
+				$('#opContainer').appendTo('#mobile_setup');
 
-
+				$('#CGRID').appendTo('#mobile_setup').hide();
+				$('#CGNAME').appendTo('#mobile_setup').hide();
+				$('#setup').click(function(){
+							showmeerkat2({ width: 600, height: 200 });
+							$('.close-meerkat2').show();
+							$('#kml_sw').removeAttr('style').css({'position':'absolute','top':'30px','left': '10px','font-size':'20px'}).show();
+							$('#label_sw').removeAttr('style').css({'position':'absolute','top':'30px', 'left':'80px','font-size':'20px'}).show();
+							$('#CGRID').show();
+							$('#CGNAME').show();
+							$('#changegname').css({'left':'10px', 'top':'80px','font-size': '20px'}).addClass('ui-state-default ui-corner-all').show();
+							$('#changegrid').css({'left':'10px','top':'120px', 'font-size':'20px'}).addClass('ui-state-default ui-corner-all').show();
+							
+							
+				});
+				$('#setup').show();
+	} else {
+				
+	}
 
 	var map_is_ready = google.maps.event.addListener(	map, "bounds_changed", function() {
 		console.log("bounds_changed");
@@ -1395,7 +1446,7 @@ function initialmarkers() {
 				// 隱藏一些 button
 				$("#about").hide();
 				$("#generate").hide();
-				$("#changemap").hide();
+				$("#changemap").removeAttr('style');
 				$("#search_text").hide();
 				$("#loc").hide();
 				google.maps.event.clearListeners(map, 'click');
@@ -1403,6 +1454,8 @@ function initialmarkers() {
 				var myCustomControlDiv = document.createElement('div');
 				var myCustomControl = new MyCustomControl(myCustomControlDiv, map);
 				map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(myCustomControlDiv);
+
+				
 			} // is_mobile
 
 			// remove 掉
@@ -1421,8 +1474,8 @@ function MyCustomControl(controlDiv, map) {
 	$(testBtn).click (function() {
 		$("#footer").dialog();
 	});
-
 }
+
 function resizeMap() {
 	var viewport_height = ($(window).height() < 460 )?  460 : $(window).height();
 	$("#map_canvas").height( viewport_height - 33+ "px");
@@ -1462,6 +1515,7 @@ function updateView(type) {
 	if ($('div.gmnoprint').last().find("div").first().css("font-size") != "15px") {
 		$('div.gmnoprint').last().find("div").css({ "top": "3px","font-size": "15px"} );
 		$('div.gmnoprint').last().find("div").first().addClass("ui-corner-all");
+
 	}
 
 	if (type != "info_only")  {
@@ -1475,7 +1529,7 @@ function updateView(type) {
 	//	showInsideKML();
 	//	return;
 	//}
-	// 如果已經關閉舊不用重開
+	// 如果已經關閉就不用重開
 	if (centerInfo && centerInfo.getMap()) {
 		var newpos = centerMarker.getPosition();
 		// 如果不在範圍內,就關了他吧
@@ -1569,12 +1623,18 @@ function markerFilter() {
 }
 
 function showmeerkat(url, options) {
-	options.width = (options.width)? options.width : '830px';
-	options.height = (options.height)? options.height : '100%';
+	var screenwidth = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+	var opt = {};
+	opt.width = (options.width)? options.width : '830px';
+	if (opt.width > screenwidth)
+		opt.width = screenwidth-50;
+	//alert("screen:"+screenwidth+"option:"+opt.width);
+	//opt.height = (options.height)? options.height : '100%';
+	opt.height = '100%';
 	$('#meerkat').meerkat({
 		background: '#ffffff',
-		height: options.height,
-		width: options.width,
+		height: opt.height,
+		width: opt.width,
 		position: 'right',
 		close: '.close-meerkat',
 		dontShowAgain: '.dont-show',
@@ -1585,7 +1645,26 @@ function showmeerkat(url, options) {
 			},
 			animationSpeed: 500
 		}).removeClass('pos-left pos-bot pos-top').addClass('pos-right');
-	$(".meerkat-content").html("<iframe id=\"meerkatiframe\" align=\"middle\" scrolling=\"yes\" width="+ options.width +" style=\"height:100%\"  frameborder=\"0\" allowtransparency=\"true\" hspace=\"0\" vspace=\"0\" marginheight=\"0\" marginwidth=\"0\"src='"+url+"'></iframe>");
+	$(".meerkat-content").html("<iframe id=\"meerkatiframe\" align=\"middle\" scrolling=\"yes\" style=\"width:" + opt.width + "px; height:"+opt.height+"\"  frameborder=\"0\" allowtransparency=\"true\" hspace=\"0\" vspace=\"0\" marginheight=\"0\" marginwidth=\"0\"src='"+url+"'></iframe>");
+}
+function showmeerkat2(options){
+	var screenwidth = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+	var opt = {};
+	opt.width = (options.width)? options.width : '500';
+	if (opt.width > screenwidth)
+		opt.width = screenwidth;
+	opt.height = (options.height)? options.height: '300';
+	$('#mobile_setup').meerkat({
+		background: '#ffffff',
+		height: opt.height + 'px',
+		width: opt.width + 'px',
+		position: 'top',
+		close: '.close-meerkat2',
+		dontShowAgain: '.dont-show',
+		animationIn: 'slide',
+		animationSpeed: 500
+		}).removeClass('pos-left pos-bot pos-right').addClass('pos-top');
+	//$(".meerkat-content2").html(.html());
 }
 var poly = [];
 var polylabel = [];

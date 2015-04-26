@@ -57,17 +57,16 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 				&nbsp;-&nbsp;
 			</div>
 			<div id="opSlider">
-				&nbsp;拖曳改變透明度 (<span id='opv'></span>)%
+				&nbsp;透明度 (<span id='opv'></span>)%
 				<div id="op" title="拉我調整透明度">&nbsp;</div>
 			</div>
 			<div id="more" title="前景清楚一點">
 				&nbsp;+&nbsp;
 			</div>
-		<button type="button" id="changemap" name="changemap" title="切換一版與三版地形圖" class="ui-state-default ui-corner-all" >經建三</button>
-		<select title="切換路圖" name="road" id="changegname" class="ui-corner-all"><option value="GoogleNames">Google道路</option><option value="NLSCNames">nlsc道路</option><option value="None">無路圖</option></select>
+			<button type="button" id="changemap" name="changemap" title="切換一版與三版地形圖" >經建三</button>
 		</div>
 
-		<div id="map_canvas"></div>
+		<div id="map_canvas"  data-tap-disabled="true"></div>
 
 		<div id="title" class="title">
 		  <form id="gotoform" name="gotoform">
@@ -75,8 +74,9 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 			<button type=button class="ui-state-default ui-corner-all" id="goto" title="搜尋並定位">到</button>
 			<button id="kml_sw" class="ui-state-default ui-corner-all" title="山友登山軌跡(支援z=13到18)" type=button>行跡</button>
 			<button id="label_sw" class="ui-state-default ui-corner-all" title="三角點名稱"  type=button>標籤</button>
+
 			<select id="marker_sw_select" multiple="multiple">
-      <option selected="selected" value="a">全部</option>
+      		<option selected="selected" value="a">全部</option>
 			<option selected="selected" value="1">一等</option>
 			<option selected="selected" value="2">二等</option>
 			<option selected="selected" value="3">三等</option>
@@ -86,15 +86,23 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
       		<option selected="selected" value="8">溫泉</option>
 			<option selected="selected" value="7">其他</option>
 			</select>
+			
+		<div id='CGNAME'>
+		<select title="切換路圖" name="road" id="changegname">
+		<option value="GoogleNames">Google道路</option><option value="NLSCNames">nlsc道路</option><option value="None">無路圖</option></select>
+		</div>
 			<button id="marker_reload"class="ui-state-default ui-corner-all" type=button>重載</button>
 			</form>
 		</div>
 		<div id="params"></div>
 		<button type="button" id="generate" name="generate" title="將參數傳送到地圖產生器" class="ui-state-default ui-corner-all" >產生</button>
+		<button type="button" id="setup" name="setup" style='display:none' class="ui-state-default ui-corner-all">設定</button>
+		<div id="CGRID">
 		<select title="切換 Grid" name="grid" id="changegrid" class="ui-corner-all">
 		<option value="TWD67" selected >TWD67 Grid</option><option value="TWD67PH">TWD67澎</option><option value="WGS84">經緯度</option><option value="None">無Grid</option>
 		<option value="TWD67_EXT">TWD67 EXT</option>
 		</select>
+		</div>
 
 		<div id="inputtitleform" style="display:none">
 			<br>請輸入地圖標題: <br><br><input id="inputtitle" type="text" size="2" />
@@ -102,7 +110,9 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 			<input type="button" id='inputtitlebtn' value="送出" />
 			<input type="button" id='inputtitlebtn2' value="取消" />
 		</div>
-
+		<div id="mobile_setup">
+			<a href="#" class="close-meerkat2">close</a>
+		</div>
 		<div id="footer" title="About"  name="footer">
 			<div id="openwin"></div>
 			本程式功能
@@ -124,8 +134,8 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 <div id=meerkat>
 	<a href="#" class="close-meerkat">close</a>
 	<div class="meerkat-content">
-		Here we go :*
-	</div>
+				Here we go :*
+		</div>
 </div>
 <script>
 	var _gaq = _gaq || [];

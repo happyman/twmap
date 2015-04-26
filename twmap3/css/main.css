@@ -1,3 +1,12 @@
+html {
+  font-size: 17px;
+}
+@media (max-width: 900px) {
+  html,table { font-size: 15px; }
+}
+@media (max-width: 400px) {
+  html,table { font-size: 13px; }
+}
 
 #locContainer {
 	position:absolute; margin-top:10px
@@ -131,18 +140,27 @@ textarea:hover {
 	position:absolute;top:5px;right:10px;
 	cursor: pointer;
 }
+#setup {
+	position:absolute;right:10px;
+	cursor: pointer;
+
+}
 #changemap {
-	position: absolute; left:210px;
 	width: 80px;
+	font-weight: bold;
+	position: absolute;
+	left: 110px;
 	cursor: pointer;
 }
 #changegname {
-	position: absolute; left:290px;
+	position: absolute; left:430px;
+	top:5px;
+	font-size:11px;
 	cursor: pointer;
 }
 #changegrid {
-	position:absolute;top:6px;right:60px;
-	font-size: 12px;
+	position:absolute;top:5px;right:60px;
+	font-size:11px;
 	cursor: pointer;
 }
 #footer {
@@ -160,6 +178,17 @@ color: #000000;
 .close-meerkat {
 	background: url("http://meerkat.jarodtaylor.com/demo/images/close-x.png") no-repeat scroll 0 0 transparent;
 	cursor: pointer;
+	display: block;
+	height: 18px;
+	text-indent: -9000px;
+	width: 18px;
+	z-index: 10;
+}
+.close-meerkat2{
+	background: url("http://meerkat.jarodtaylor.com/demo/images/close-x.png") no-repeat scroll 0 0 transparent;
+	cursor: pointer;
+	position: absolute;
+	right: 10px;
 	display: block;
 	height: 18px;
 	text-indent: -9000px;
@@ -184,9 +213,17 @@ color: #000000;
 #moveBtn {
 	cursor:pointer;
 }
-.infowin {
+.infowin 
+{
 	font-size: 20px;
 	padding: 5px;
+}
+@media (max-width: 900px) {
+  .infowin { font-size: 15px;	padding: 3px; }
+
+}
+@media (max-width: 400px) {
+  .infowin { font-size: 13px;	padding: 1px; }
 }
 #inputtitleform > input {
 	font-size: 3em;
