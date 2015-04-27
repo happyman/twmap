@@ -27,7 +27,7 @@ $ver = trim(file_get_contents("VERSION"));
 	<script type="text/javascript" src="js/functions.js" charset="utf-8"></script>
 	<script type="text/javascript" src="js/jquery-autoGrowInput.js" charset="utf-8"></script>
 	<script type="text/javascript" src="js/jquery.geolocation.js" charset="utf-8"></script>
-	<script type="text/javascript" src="js/ui.dropdownchecklist-1.4-min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
 	<script type="text/javascript" src="js/v3_ll_grat.js?v=<?=$ver?>"></script>
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
 	<link rel="stylesheet" type="text/css" href="css/main.css?v=<?=$ver?>" />
@@ -64,6 +64,10 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 				&nbsp;+&nbsp;
 			</div>
 			<button type="button" id="changemap" name="changemap" title="切換一版與三版地形圖" >經建三</button>
+			   <div id='CGNAME'>
+				     <select title="切換路圖" name="road" id="changegname">
+						     <option value="GoogleNames">Google道路</option><option value="NLSCNames">nlsc道路</option><option value="None">無路圖</option></select>
+								     </div>
 		</div>
 
 		<div id="map_canvas"  data-tap-disabled="true"></div>
@@ -86,11 +90,6 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
       		<option selected="selected" value="8">溫泉</option>
 			<option selected="selected" value="7">其他</option>
 			</select>
-			
-		<div id='CGNAME'>
-		<select title="切換路圖" name="road" id="changegname">
-		<option value="GoogleNames">Google道路</option><option value="NLSCNames">nlsc道路</option><option value="None">無路圖</option></select>
-		</div>
 			<button id="marker_reload"class="ui-state-default ui-corner-all" type=button>重載</button>
 			</form>
 		</div>

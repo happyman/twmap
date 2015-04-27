@@ -191,10 +191,11 @@ var myInfoBoxOptions = {
 	pixelOffset: new google.maps.Size(-100, -35),
 	boxClass: "ui-corner-all infobox",
 	zIndex: null,
-	boxStyle: {
-		background: "white",
-		width: "200px"
-	},
+		boxStyle: {
+	   // background: "url('http://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/examples/tipbox.gif') no-repeat",
+	    opacity: 0.75,
+	    width: "200px"
+  },
 	closeBoxMargin: "2px 2px 2px 2px",
 	closeBoxURL: "http://www.google.com/intl/en_us/mapfiles/close.gif",
 	pane: "floatPane",
@@ -520,8 +521,13 @@ function permLinkURL(goto) {
 }
 
 var initial_meerkat = 1; // 第一次顯示
+var last_pos = {};
 function locInfo(newpos, callback, param){
 	// 1. 檢查圖層是否是 Gpx 圖層
+	if (last_pos == newpos) {
+		console.log("position not change");
+		return;
+	}
 	var radius = (show_kml_layer==1)? (20 - map.getZoom())*10-10 : 0;
 	$.ajax({
 		dataType: 'json',
@@ -545,6 +551,7 @@ function locInfo(newpos, callback, param){
 			var extra_url = get_waypoints_url + "?x=" + newpos.lng() + "&y=" + newpos.lat() + "&r=" + radius + "&detail=1";
 			extra_info += "<a href=# onClick=\"showmeerkat('"+ extra_url +"',{ 'width': '600'} )\"><img src='img/icon-download.gif' border=0></a>";
 			locInfo_show(newpos, -10000, { "content": extra_info, "radius": radius });
+			last_pos = newpos;
 			// 如果已經打開
 			if (initial_meerkat || $("#meerkat-wrap").is(":visible")) {
 				showmeerkat(extra_url,{ 'width': '600'});
@@ -1304,7 +1311,7 @@ function initialmarkers() {
 				showInsideMarkers();
 				// alert(show_label);
 				$("#label_sw").removeClass("disable");
-				$('.ui-dropdownchecklist-selector').removelass('disable');
+				$('.ui-dropdownchecklist-selector').removeClass('disable');
 			}
 			updateView("info_only");
 		});
@@ -1341,11 +1348,12 @@ function initialmarkers() {
 			}
 		});
 
-	$(".ui-dropdownchecklist-selector").addClass("ui-corner-all");
-	$(".ui-dropdownchecklist-text").css({"font-size":"12px", "margin": "1px"});
-	$("#ddcl-marker_sw_select").offset({top: 9});
+		$(".ui-dropdownchecklist-selector").addClass("ui-corner-all").css({'top':'1px', 'position': 'absolute'});
+	$(".ui-dropdownchecklist-text").css({"font-size":"13px", "margin": "1px"});
+	//$("#ddcl-marker_sw_select").css({"top": "5px"});
 	$('#changemap').css({'left':'210px'});
 	$('#changegname').menu();
+	$('#changegname').removeClass('ui-widget-content ui-corner-all');
 	$('#changegrid').menu();
 	$('.close-meerkat2').hide();
 	if (is_mobile){

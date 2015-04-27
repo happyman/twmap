@@ -96,6 +96,7 @@ min-height: 480px;
 	position:absolute;
 	top:5px;
 	left:5px;
+	width: 640px;
 }
 #about {
 	cursor:pointer;
@@ -145,16 +146,21 @@ textarea:hover {
 	cursor: pointer;
 
 }
+#marker_reload {
+	position:absolute; right:0px;
+	top:5px;
+	cursor: pointer;
+}
 #changemap {
 	width: 80px;
 	font-weight: bold;
 	position: absolute;
-	left: 110px;
+	left: 100px;
 	cursor: pointer;
 }
 #changegname {
-	position: absolute; left:430px;
-	top:5px;
+	position: absolute; left:290px;
+	top:0px;
 	font-size:11px;
 	cursor: pointer;
 }
@@ -217,6 +223,22 @@ color: #000000;
 {
 	font-size: 20px;
 	padding: 5px;
+}
+
+.infobox {
+    border:2px solid black;
+    margin-top: 8px;
+    background:#333;
+    color:#FFF;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:12px;
+    padding: .5em 1em;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    text-shadow:0 -1px #000000;
+    -webkit-box-shadow: 0 0  8px #000;
+    box-shadow: 0 0 8px #000;
 }
 @media (max-width: 900px) {
   .infowin { font-size: 15px;	padding: 3px; }
