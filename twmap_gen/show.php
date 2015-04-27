@@ -5,7 +5,7 @@ require_once("config.inc.php");
 
 $html_head = 1;
 if (!isset($_GET['mid'])){
-	echo "<h1>尚無圖可顯示 ". print_r($_GET)."</h1>";
+	echo "<h1>尚無圖可顯示</h1>";
 	exit(0);
 }       
 
