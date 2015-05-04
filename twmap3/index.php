@@ -7,7 +7,7 @@ $ver = trim(file_get_contents("VERSION"));
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name = "viewport" content = "width=device-width">
+	<meta name = "viewport" content = "width=device-width, initial-scale=1.0">
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
 	<meta name="viewport" content="initial-scale=1.0, width=device-width" />
@@ -49,6 +49,11 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 </script>
 	</head>
 	<body>
+	<div id="loading">
+	歡迎使用 地圖瀏覽器 v<?=$ver?><br>
+  		<img src="/twmap/icons/twmap3.jpg"><p>
+  		<img src="img/loading20x20.gif">   載入中...
+	</div>
 		<div id="locContainer">
 			<div id="loc"></div>
 		</div>
@@ -64,10 +69,10 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 				&nbsp;+&nbsp;
 			</div>
 			<button type="button" id="changemap" name="changemap" title="切換一版與三版地形圖" >經建三</button>
-			   <div id='CGNAME'>
+			 <div id='CGNAME'>
 				     <select title="切換路圖" name="road" id="changegname">
 						     <option value="GoogleNames">Google道路</option><option value="NLSCNames">nlsc道路</option><option value="None">無路圖</option></select>
-								     </div>
+			 </div>
 		</div>
 
 		<div id="map_canvas"  data-tap-disabled="true"></div>

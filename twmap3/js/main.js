@@ -45,11 +45,8 @@ for(var i=13;i<=18;i++) {
 	kmlArray[i] = [];
 }
 var kmlArrayMax = 50;
+// 以下為底圖
 var SunriverMapOptions = {
-	getTileUrl_1: function(coord, zoom) {
-		return "http://210.59.147.231/~happyman/mapserv/mapserv.php?" + "zoom=" + zoom + "&x=" + coord.x + "&y=" + coord.y;
-
-	},
 	getTileUrl: function(a, b) {
 		var z = 17 - b;
 		return "http://map.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
@@ -59,68 +56,6 @@ var SunriverMapOptions = {
 	minZoom: 13,
 	name: '一版底圖',
 	alt: 'sunriver tile map'
-}
-var GoogleNameOptions = {
-	getTileUrl: function(a, b) {
-		return "http://mts1.google.com/vt/lyrs=h@195026035&x=" + a.x + "&y=" + a.y +"&z=" + b;
-	},
-	tileSize: new google.maps.Size(256,256),
-	maxZoom: 20,
-	minZoom: 0,
-	name: 'GoogleNames'
-}
-var NLSCNameOptions = {
-	getTileUrl: function(a, b) {
-
-		return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=EMAP2&STYLE=_null&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
-	},
-	tileSize: new google.maps.Size(256,256),
-	maxZoom: 19,
-	name: 'NLSCNames'
-}
-var OSM_GDEM_Options = {
-	maxZoom: 18,
-	minZoom: 13,
-	name: 'GDEM',
-	tileSize: new google.maps.Size(256, 256),
-	getTileUrl: function(a,b) {
-		var z=b;
-		return "http://129.206.74.245:8006/tms_il.ashx?x="+ a.x + "&y=" + a.y +"&z=" + b;
-		// return "http://210.69.91.53/ArcGIS/rest/services/EMAP_Raster102/MapServer/tile/"+z+"/"+a.y+"/"+a.x;
-	}
-
-}
-//var url = 'http://210.69.91.63/ArcGIS/rest/services/EMAP_Raster102/MapServer';
-//var agsType = new  gmaps.ags.MapType(url,{name:'ArcGIS'});
-
-
-
-var Taiwan_General_2011_MapOptions = {
-	getTileUrl: function(a, b) {
-		var set="PHOTO2";
-		var road="EMAP1";
-		//	var z = 17 - b;
-		//		return "http://gis.sinica.edu.tw/googlemap/Formosat_Taiwan_2011/" + z + "/"+ a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".png";
-		return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=PHOTO2&STYLE=_null&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
-	},
-	tileSize: new google.maps.Size(256, 256),
-	//maxZoom: 16,
-	//minZoom: 6,
-	maxZoom: 19,
-	minZoom: 9,
-	name: "NLSC",
-	alt: "內政部國土測量中心 2011"
-
-}
-var Taiwan_Formosat_2011_MapOptions = {
-	getTileUrl: function(a, b) {
-		var z = 17 - b;
-		return "http://gis.sinica.edu.tw/googlemap/Formosat_Taiwan_2011/" + z + "/"+ a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".png";
-	},
-	tileSize: new google.maps.Size(256, 256),
-	maxZoom: 16,
-	minZoom: 6,
-	name: "台灣福衛2號2011"
 }
 var TaiwanMapOptions = {
 	getTileUrl: function(coord, zoom) {
@@ -134,8 +69,6 @@ var TaiwanMapOptions = {
 }
 var TaiwanGpxMapOptions = {
 	getTileUrl: function(a, b) {
-		//return "http://rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
-		//return "http://rs.happyman.idv.tw/map/tw25k2001_gpx/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
 		return 'http://rs.happyman.idv.tw/map/twmap_gpx/'+b+"_"+a.x+"_"+a.y+".png";
 	},
 	tileSize: new google.maps.Size(256, 256),
@@ -144,11 +77,66 @@ var TaiwanGpxMapOptions = {
 	name: "台灣GPX",
 	alt: 'Taiwan TW67 Map with GPX'
 }
+// 以下為前景圖層(透明背景可疊合)
+var GoogleNameOptions = {
+	getTileUrl: function(a, b) {
+		return "http://mts1.google.com/vt/lyrs=h@195026035&x=" + a.x + "&y=" + a.y +"&z=" + b;
+	},
+	tileSize: new google.maps.Size(256,256),
+	maxZoom: 20,
+	minZoom: 0,
+	name: 'GoogleNames'
+}
+var NLSCNameOptions = {
+	getTileUrl: function(a, b) {
+		return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=EMAP2&STYLE=_null&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
+	},
+	tileSize: new google.maps.Size(256,256),
+	maxZoom: 19,
+	name: 'NLSCNames'
+}
+// 以下為背景圖
+//var OSM_GDEM_Options = {
+//	maxZoom: 18,
+//	minZoom: 13,
+//	name: 'GDEM',
+//	tileSize: new google.maps.Size(256, 256),
+//	getTileUrl: function(a,b) {
+//		var z=b;
+//		return "http://129.206.74.245:8006/tms_il.ashx?x="+ a.x + "&y=" + a.y +"&z=" + b;
+//	}
+//}
+
+
+var Taiwan_General_2011_MapOptions = {
+	getTileUrl: function(a, b) {
+		var set="PHOTO2";
+		var road="EMAP1";
+		return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=PHOTO2&STYLE=_null&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
+	},
+	tileSize: new google.maps.Size(256, 256),
+	//maxZoom: 16,
+	//minZoom: 6,
+	maxZoom: 19,
+	minZoom: 9,
+	name: "NLSC",
+	alt: "內政部國土測量中心 2011"
+
+}
+//var Taiwan_Formosat_2011_MapOptions = {
+//	getTileUrl: function(a, b) {
+//		var z = 17 - b;
+//		return "http://gis.sinica.edu.tw/googlemap/Formosat_Taiwan_2011/" + z + "/"+ a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".png";
+//	},
+//	tileSize: new google.maps.Size(256, 256),
+//	maxZoom: 16,
+//	minZoom: 6,
+//	name: "台灣福衛2號2011"
+//}
+
 var OSM_Options = {
 	getTileUrl: function(a, b) {
-		//return "http://tile.openstreetmap.org/"+ b +"/" + a.x + "/" + a.y +".png";
-		//return 'http://rs.happyman.idv.tw/map/twmap_gpx/'+b+"_"+a.x+"_"+a.y+".png";
-		return  "	http://otile1.mqcdn.com/tiles/1.0.0/map/"+ b + "/" + a.x + "/" + a.y +".jpg";
+		return  "http://otile1.mqcdn.com/tiles/1.0.0/map/"+ b + "/" + a.x + "/" + a.y +".jpg";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 19,
@@ -164,17 +152,29 @@ var Darker_Options = {
 	name: "Darker",
 	alt: "Darker Matter from CartoDB"
 }
-var SunriverMapType = new google.maps.ImageMapType(SunriverMapOptions);
+var Fandi_Options = {
+	getTileUrl: function (a,b) {
+		var z = 17-b;
+		return "http://gis.sinica.edu.tw/googlemap/JM50K_1916/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+	},
+	tileSize: new google.maps.Size(256, 256),
+	name: "蕃地",
+	alt: "日治五萬分之一蕃地地形圖",
+	maxZoom: 17
+}
+// 前景
 var SunriverMapType = new google.maps.ImageMapType(SunriverMapOptions);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
 var TaiwanGpxMapType = new google.maps.ImageMapType(TaiwanGpxMapOptions);
-var OSM_GDEM_MapType = new google.maps.ImageMapType(OSM_GDEM_Options);
-//var Taiwan_Formosat_2011_MapType = new google.maps.ImageMapType(Taiwan_Formosat_2011_MapOptions);
+//  背景
 var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_2011_MapOptions);
-var GoogleNameMapType =  new google.maps.ImageMapType(GoogleNameOptions);
-var NLSCNameMapType =  new google.maps.ImageMapType(NLSCNameOptions);
 var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
+var FanDi_MapType = new google.maps.ImageMapType(Fandi_Options);
+// 前景路圖
+var GoogleNameMapType =  new google.maps.ImageMapType(GoogleNameOptions);
+var NLSCNameMapType =  new google.maps.ImageMapType(NLSCNameOptions);
+
 var BackgroundMapType;
 var BackgroundMapOptions;
 var BackgroundMap = 0;
@@ -678,6 +678,10 @@ function tagInfo(newpos,id){
 var circle;
 function showCenterMarker(name) {
 	var i;
+	if (name == ''){
+		alert("請輸入");
+		return;
+	}
 	if (!circle) {
 				circle = new google.maps.Circle({
 						map: map,
@@ -701,20 +705,8 @@ for (i = 0; i < availableTags.length; i++) {
 					// icon: new google.maps.MarkerImage("http://sites.google.com/site/mcmarkers/gachapeg-20.png")
 				});
 			circle.bindTo('center',centerMarker, 'position');
-			/*google.maps.event.addListener(centerMarker, "dragend", function (e) {
-					//alert(centerMarker.getPosition());
-					var newpos = centerMarker.getPosition();
-					locInfo(newpos);
-			});
-			google.maps.event.addListener(centerMarker, "dragstart", function (e) {
-					locInfo_name = "我的位置";
-					if (centerInfo)
-						centerInfo.close();
-			});
-*/
-
-google.maps.event.addListener(centerMarker, 'click', function() {
-	centerInfo.open(map, centerMarker);
+			google.maps.event.addListener(centerMarker, 'click', function() {
+			centerInfo.open(map, centerMarker);
 });
 
 if (!centerInfo) {
@@ -988,13 +980,13 @@ function initialmarkers() {
 	var PH_Bounds;
 	function initialize() {
 
-		geocoder = new google.maps.Geocoder();
-
-		var latlng = new google.maps.LatLng(23.55080, 121.13220);
-		var myOptions = {
-			zoom: 14,
+	geocoder = new google.maps.Geocoder();
+	resizeMap();
+	var init_latlng = new google.maps.LatLng(23.55080, 121.13220);
+	map = new google.maps.Map(document.getElementById("map_canvas"), {
+		zoom: 14,
 			maxZoom: 20,
-			center: latlng,
+			center: init_latlng,
 			overviewMapControl: true,
 			streetViewControl: false,
 			disableDoubleClickZoom: true,
@@ -1002,41 +994,26 @@ function initialmarkers() {
 				style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
 				position: google.maps.ControlPosition.TOP_LEFT,
 			//	draggableCursor: 'url(img/A4-32x32.gif),default',
-			mapTypeIds: ['general2011','twmapv1','osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker" ]
-		}
-
-	};
-	//if (is_mobile) {
-	//	myOptions.mapTypeControlOptions.position = google.maps.ControlPosition.RIGHT_BOTTOM;
-	//}
-	resizeMap();
-
-	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+			mapTypeIds: ['general2011','twmapv1','osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi' ]
+			}
+	});
 	if (!is_mobile){
 		map.enableKeyDragZoom();
 		map.setOptions({disableDoubleClickZoom: false });
 	}
 
-	map.mapTypes.set('gdem', OSM_GDEM_MapType);
-	// map.mapTypes.set('gdem', agsType);
 	map.mapTypes.set('twmapv1', SunriverMapType);
 	map.mapTypes.set('taiwan', TaiwanMapType);
 	map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
 	map.mapTypes.set('osm', OSM_MapType);
 	map.mapTypes.set('darker', Darker_MapType);
+	map.mapTypes.set('fandi', FanDi_MapType);
 	// 前景免設
-	//map.mapTypes.set('googlename', GoogleNameMapType);
-	//map.mapTypes.set('nlscname', NLSCNameMapType);
-	// 背景層
-	// 經建三版
-	//BackgroundMapType = TaiwanMapType;
-	//BackgroundMapOptions = TaiwanMapOptions;
 	// 三版加底圖
 	BackgroundMapType = TaiwanGpxMapType;
 	BackgroundMapOptions = TaiwanGpxMapOptions;
 
-	// 初始顯示哪張圖?
-	// map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
+	// 初始顯示哪張圖? 衛星圖
 	map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
 	// 背景哪張圖
 	map.overlayMapTypes.insertAt(0, BackgroundMapType);
@@ -1105,6 +1082,7 @@ function initialmarkers() {
 		updateView("info_only");
 	});
 	listener = google.maps.event.addListener(map, 'idle', function() {
+		$("#loading").hide();
 		updateView('bounds_changed');
 	});
 
@@ -1173,7 +1151,7 @@ function initialmarkers() {
 	// initialize markerArray
 	for (var i = 0; i < markerArrayMax; i++) {
 		markerArray[i] = new google.maps.Marker({
-			position: latlng,
+			position: init_latlng,
 			icon: "img/pointer01.jpg",
 			title: "init",
 			draggable: true,
@@ -1532,11 +1510,7 @@ function updateView(type) {
 	}
 	if ($('#changegrid') != 'None')
 		showGrid($('#changegrid').val());
-	//} else if (type == 'bounds_changed') {
-	//	showInsideMarkers();
-	//	showInsideKML();
-	//	return;
-	//}
+
 	// 如果已經關閉就不用重開
 	if (centerInfo && centerInfo.getMap()) {
 		var newpos = centerMarker.getPosition();
