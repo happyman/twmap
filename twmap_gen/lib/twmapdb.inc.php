@@ -550,7 +550,7 @@ function keepon_MapResult($success, $id, $msg, $url=null, $cdate=null) {
 		    'ImageUrl'=> $url,
 		    'Message'=>$msg
  );
-	$result = request_curl($kurl, "POST", $params);
+	$result = request_curl($kurl, "POSTJSON", $params);
 	error_log("request $kurl with params".print_r($params,true) ."get $result");
 	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
 	return array(true, $result);
@@ -560,7 +560,7 @@ function keepon_MapDelete($id) {
 	$kurl = "http://www.keepon.com.tw/api/MapGenerator/MapDelete";
 	$params = array(
 		    'Identity'=> $id );
-	$result = request_curl($kurl, "POST", $params);
+	$result = request_curl($kurl, "POSTJSON", $params);
 	error_log("request $kurl with params".print_r($params,true) ."get $result");
 	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
 	return array(true, $result);

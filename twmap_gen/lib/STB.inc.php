@@ -493,17 +493,32 @@ function request_curl($url, $method='GET', $params=array()) {
 	curl_setopt($curl, CURLOPT_DNS_USE_GLOBAL_CACHE, false );
 	curl_setopt($curl, CURLOPT_DNS_CACHE_TIMEOUT, 1 );
 
-	if ($method == 'POST') {
-		curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-		curl_setopt($curl, CURLOPT_POST, true);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
-	} elseif ($method == 'HEAD') {
-		curl_setopt($curl, CURLOPT_HEADER, true);
-		curl_setopt($curl, CURLOPT_NOBODY, true);
-	} else {
-		curl_setopt($curl, CURLOPT_HTTPGET, true);
-	}
-	$response = curl_exec($curl);
+
+        if ($method == 'POST') {
+                curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $params_line);
+
+        } elseif ($method == 'POSTFILE') {
+                curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
+                curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        } elseif ($method == "GETFILE") {
+                curl_setopt($curl,CURLOPT_FILE, $params['fd']);
+        } elseif ($method == 'POSTJSON') {
+                $data_string = json_encode($params);
+                curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+                curl_setopt($curl, CURLOPT_HTTPHEADER, array( 'Content-Type: application/json','Content-Length: ' . strlen($data_string)));
+        } elseif ($method == 'HEAD') {
+                curl_setopt($curl, CURLOPT_HEADER, true);
+                curl_setopt($curl, CURLOPT_NOBODY, true);
+        } else {
+                curl_setopt($curl, CURLOPT_HTTPGET, true);
+        }
+        $response = curl_exec($curl);
 
 	if($method == 'HEAD') {
 		$headers = array();
@@ -512,15 +527,9 @@ function request_curl($url, $method='GET', $params=array()) {
 			$name = strtolower(trim(substr($header, 0, $pos)));
 			$headers[$name] = trim(substr($header, $pos+1));
 		}
-
-		# Updating claimed_id in case of redirections.
-		$effective_url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
-		if($effective_url != $url) {
-			$this->identity = $this->claimed_id = $effective_url;
-		}
-
 		return $headers;
 	}
+	error_log("curl $method $url");
 
 	if (curl_errno($curl)) {
 		throw new ErrorException(curl_error($curl), curl_errno($curl));
