@@ -27,16 +27,20 @@ if (!empty($_GET['id'])) {
 	$where = sprintf("WHERE id = %d",$_GET['id']);
 	$limit = 1;
 } else if (!empty($_GET['name'])) {
-	$where = "WHERE name like '%" . addslashes($_GET['name']) . "%'";
+	$where = "WHERE name like '%" . addslashes(trim($_GET['name'])) . "%'";
 	$limit = 10;
 } else if  (!empty($_GET['cond'])) { // 特殊條件
 	switch($_GET['cond']) {
 	case 'mt100': // 百岳
-		$where = sprintf("WHERE mt100 = 1 ");
+		$where = sprintf("WHERE mt100 & 1 ");
 		$limit = 100;
 		break;
 	case 'smt100': // 小百岳
-		$where = sprintf("WHERE mt100 = 2 ");
+		$where = sprintf("WHERE mt100 & 2 ");
+		$limit = 100;
+		break;
+	case 'wkmt100':
+		$where = sprintf("WHERE mt100 & 4 ");
 		$limit = 100;
 		break;
 	case 'todo':
@@ -94,14 +98,18 @@ function showIcon($val){
 ?>
 <div align=center class="note">
 <b>管理者您好</b><br>
-
+<p>
+ps: 大百岳=1 小百岳=2 百名山=4 若兩者皆是 1+4=5 
+<p>
 <form action="" method="GET">
 查詢 name <input name=name>
 輸入 id <input name="id">
 <br>
 <button>送出</button>
 
-<a href="index.php?cond=mt100">百岳</a>
+<a href="index.php?cond=mt100">百岳</a>,
+<a href="index.php?cond=smt100">小百岳</a>,
+<a href="index.php?cond=wkmt100">百名山</a>,
 <a href="index.php?cond=todo">還沒檢查的</a>
 </form>
 </div>

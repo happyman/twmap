@@ -1568,14 +1568,18 @@ function markerFilter() {
 			// 其他則忽略
 			if (s[k] == '0') continue;
 			if (s[k] == '5') {
-				if (availableTagsMeta[i].mt100 == 1 ){
+				if (availableTagsMeta[i].mt100 & 1 ){
 					want  = 1;
 				}
 			}  
 			// 小百岳
 			if (s[k] == '6') {
-				if (availableTagsMeta[i].mt100 == 2 ){
+				if (availableTagsMeta[i].mt100 & 2 ){
 					want  = 1;
+				}
+			} else if (s[k] == '9') {
+				if (availableTagsMeta[i].mt100 & 4 ){
+					want = 1;
 				}
 			} else if (s[k] == '8') {
 				if (availableTagsMeta[i].class == 0 && (availableTagsMeta[i].type == '溫泉')){
@@ -1607,11 +1611,9 @@ function markerFilter() {
 function showmeerkat(url, options) {
 	var screenwidth = (window.innerWidth > 0) ? window.innerWidth : screen.width;
 	var opt = {};
-	opt.width = (options.width)? options.width : '830px';
+	opt.width = (options.width)? options.width : '830';
 	if (opt.width > screenwidth)
 		opt.width = screenwidth-50;
-	//alert("screen:"+screenwidth+"option:"+opt.width);
-	//opt.height = (options.height)? options.height : '100%';
 	opt.height = '100%';
 	$('#meerkat').meerkat({
 		background: '#ffffff',
@@ -1627,7 +1629,7 @@ function showmeerkat(url, options) {
 			},
 			animationSpeed: 500
 		}).removeClass('pos-left pos-bot pos-top').addClass('pos-right');
-	$(".meerkat-content").html("<iframe id=\"meerkatiframe\" align=\"middle\" scrolling=\"yes\" style=\"width:" + opt.width + "px; height:"+opt.height+"\"  frameborder=\"0\" allowtransparency=\"true\" hspace=\"0\" vspace=\"0\" marginheight=\"0\" marginwidth=\"0\"src='"+url+"'></iframe>");
+	$(".meerkat-content").html("<iframe id=\"meerkatiframe\" align=\"middle\" scrolling=\"yes\" style=\"width:" + opt.width +"px;height:"+opt.height+"\"  frameborder=\"0\" allowtransparency=\"true\" hspace=\"0\" vspace=\"0\" marginheight=\"0\" marginwidth=\"0\"src='"+url+"'></iframe>");
 }
 function showmeerkat2(options){
 	var screenwidth = (window.innerWidth > 0) ? window.innerWidth : screen.width;

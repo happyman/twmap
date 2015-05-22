@@ -64,10 +64,17 @@ function tell_story($d,$p=array()){
 		$a .= sprintf("<br>狀態: %s", $d['status']);
 	if (!empty($d['alias']))
 		$a .= sprintf("<br>別名: %s", $d['alias']);
-	if ($d['mt100']==1)
-		$a .= sprintf("<br>我是百岳");
-	else if ($d['mt100']==2)
-		$a .= sprintf("<br>我是小百岳");
+
+	if ($d['mt100']>0) {
+		$a .= "<br>我是";
+	if ($d['mt100'] & 1 )
+		$astr[] = "百岳";
+	else if ($d['mt100'] & 2 ) 
+		$astr[] = "小百岳";
+	else if ($d['mt100'] & 4 )
+		$astr[] = "百名山";
+		$a .= sprintf("%s",implode(",",$astr));
+	}
 	if (!empty($d['comment']))
 		$a .= sprintf("<br>註解: %s", $d['comment']);
 	if (is_admin()) {

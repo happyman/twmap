@@ -92,6 +92,7 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 			<option selected="selected" value="4">森林</option>
       		<option selected="selected" value="5">百岳</option>
       		<option selected="selected" value="6">小百岳</option>
+      		<option selected="selected" value="9">百名山</option>
       		<option selected="selected" value="8">溫泉</option>
 			<option selected="selected" value="7">其他</option>
 			</select>
