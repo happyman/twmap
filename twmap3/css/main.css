@@ -189,6 +189,8 @@ color: #000000;
 	text-indent: -9000px;
 	width: 18px;
 	z-index: 10;
+	position: absolute;
+	top: 10px;
 }
 .close-meerkat2{
 	background: url("http://meerkat.jarodtaylor.com/demo/images/close-x.png") no-repeat scroll 0 0 transparent;
@@ -264,8 +266,52 @@ color: #000000;
 }
 
 ## control geoxml3 inforwindo
-.gm-style-iw {
-  width: 300px; 
-  min-height: 100px;
+
+.geoxml3_infowindow {
+	font-size: 15px;
+	font-family:Arial, Helvetica, sans-serif;
+	 border:2px solid black;
+	     margin-top: 8px; 
+			     background:#333;
+					     color:#FFF;
+
 }
 
+  .custom-iw .gm-style-iw {
+      top:15px !important;
+      left:0 !important;
+      border-radius:2px;
+  }
+  .custom-iw>div:first-child>div:nth-child(2) {
+      display:none;
+  }
+  /** the shadow **/
+  .custom-iw>div:first-child>div:last-child {
+      left:0 !important;
+      top:0px;
+      box-shadow: rgba(0, 0, 0, 0.6) 0px 1px 6px;
+      z-index:-1 !important;
+  }
+
+  .custom-iw .gm-style-iw, 
+  .custom-iw .gm-style-iw>div, 
+  .custom-iw .gm-style-iw>div>div {
+      width:100% !important;
+      max-width:100% !important;
+  }
+  /** set here the width **/
+  .custom-iw, 
+  .custom-iw>div:first-child>div:last-child {
+      width:342px !important;
+  }
+
+
+  /** set here the desired background-color **/
+  #div-main-infoWindow, 
+  .custom-iw>div:first-child>div:nth-child(n-1)>div>div, 
+  .custom-iw>div>div:last-child, 
+  .custom-iw .gm-style-iw, 
+  .custom-iw .gm-style-iw>div, 
+  .custom-iw .gm-style-iw>div>div {
+      background-color:orange !important;
+  }

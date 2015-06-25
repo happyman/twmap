@@ -88,7 +88,7 @@ th {
 				$mid_to_show = $row['mid'];
 			}
 			$show_url = sprintf("<a href='/twmap/show.php?mid=%s' target=_blank>%s</a>",$mid_to_show,$row['title']);
-			printf("<tr><td>%s<td>%s<td><a href=# onclick='javascript:parent.showmapkml(%d,\"%s\");'>%s<td>%s<td>%s",$row['name'],$row['ele'],$mid_to_show,$row['title'],$mid_to_show,$show_url,($found)?'<img src="/twmap/icons/op_mapshow.png">':"");
+			printf("<tr><td>%s<td>%s<td><a href=# onclick='javascript:parent.showmapkml(%d,\"%s\",\"%s\");'>%s<td>%s<td>%s",$row['name'],$row['ele'],$mid_to_show,$row['title'],rawurlencode($show_url),$mid_to_show,$show_url,($found)?'<img src="/twmap/icons/op_mapshow.png">':"");
 
 
 		}

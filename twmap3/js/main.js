@@ -496,36 +496,32 @@ $.ajax({
 }
 */
 var skml;
-function showmapkml(mid, marker_desc){
+function showmapkml(mid, marker_desc, uri_enc){
 	if (skml && skml.mid > 0) {
 		if (skml.mid == mid) return;
 		skml.removeDocument(skml.docs[0]);
 	}
-
 	skml =  new geoXML3.parser(
-						{map:map, singleInfoWindow: true,
-							infoWindowOptions: { maxWidth: "200px"},
-							additional_marker_desc: marker_desc,
-							suppressInfoWindows: true,
-							//additional_path_desc: data.rsp.add[key].desc,
-							zoom: false
-						});
+		{map:map, singleInfoWindow: true,
+			additional_marker_desc: decodeURIComponent(uri_enc),
+			zoom: false,
+	});
 	skml.parse(getkml_url + "?mid=" + mid);
-	google.maps.event.addListener( skml, 'parsed',  function() {
+		google.maps.event.addListener( skml, 'parsed',  function() {
 		skml.mid = mid;
 	});
 }
 function permLinkURL(goto) {
-	var ver = (BackgroundMap==0)?3:1;
-	var curMap = $("#changegname").val();
-	var curGrid = $("#changegrid").val();
-	return "<a href='?goto=" + goto + "&zoom="+ map.getZoom() +"&opacity="+ opacity + "&mapversion=" + ver + "&maptypeid="+ map.getMapTypeId() +"&show_label="+ show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker +"&roadmap="+ curMap+"&grid=" + curGrid +"&theme="+ theme +"'><img src='img/permlink.png' border=0/></a>";
-}
+			var ver = (BackgroundMap==0)?3:1;
+			var curMap = $("#changegname").val();
+			var curGrid = $("#changegrid").val();
+			return "<a href='?goto=" + goto + "&zoom="+ map.getZoom() +"&opacity="+ opacity + "&mapversion=" + ver + "&maptypeid="+ map.getMapTypeId() +"&show_label="+ show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker +"&roadmap="+ curMap+"&grid=" + curGrid +"&theme="+ theme +"'><img src='img/permlink.png' border=0/></a>";
+		}
 
-var initial_meerkat = 1; // 第一次顯示
-var last_pos = {};
-function locInfo(newpos, callback, param){
-	// 1. 檢查圖層是否是 Gpx 圖層
+		var initial_meerkat = 1; // 第一次顯示
+		var last_pos = {};
+		function locInfo(newpos, callback, param){
+			// 1. 檢查圖層是否是 Gpx 圖層
 	if (last_pos == newpos) {
 		console.log("position not change");
 		return;
