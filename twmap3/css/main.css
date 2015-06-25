@@ -96,7 +96,7 @@ min-height: 480px;
 	position:absolute;
 	top:5px;
 	left:5px;
-	width: 640px;
+	/*width: 640px;*/
 }
 #about {
 	cursor:pointer;
@@ -268,3 +268,4 @@ color: #000000;
   width: 300px; 
   min-height: 100px;
 }
+

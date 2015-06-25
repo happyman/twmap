@@ -7,10 +7,9 @@ $ver = trim(file_get_contents("VERSION"));
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name = "viewport" content = "width=device-width, initial-scale=1.0">
+	<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=0">
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
-	<meta name="viewport" content="initial-scale=1.0, width=device-width" />
 	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 	<script type="text/javascript" src="js/keydragzoom-2.0.6.js"></script>
 	<script type="text/javascript" src="js/infobox.js"></script>

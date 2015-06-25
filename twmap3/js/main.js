@@ -46,7 +46,7 @@ for(var i=13;i<=18;i++) {
 }
 var kmlArrayMax = 50;
 // 以下為底圖
-var SunriverMapOptions = {
+var TaiwanMapV1Options = {
 	getTileUrl: function(a, b) {
 		var z = 17 - b;
 		return "http://map.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
@@ -54,7 +54,7 @@ var SunriverMapOptions = {
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 18,
 	minZoom: 13,
-	name: '一版底圖',
+	name: '經建1',
 	alt: 'sunriver tile map'
 }
 var TaiwanMapOptions = {
@@ -112,7 +112,8 @@ var Taiwan_General_2011_MapOptions = {
 	getTileUrl: function(a, b) {
 		var set="PHOTO2";
 		var road="EMAP1";
-		return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=PHOTO2&STYLE=_null&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
+
+		return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=PHOTO2&STYLE=_null&TILEMATRIXSET=EPSG%3A3857&TILEMATRIX=' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	//maxZoom: 16,
@@ -163,7 +164,7 @@ var Fandi_Options = {
 	maxZoom: 17
 }
 // 前景
-var SunriverMapType = new google.maps.ImageMapType(SunriverMapOptions);
+var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
 var TaiwanGpxMapType = new google.maps.ImageMapType(TaiwanGpxMapOptions);
 //  背景
@@ -505,6 +506,7 @@ function showmapkml(mid, marker_desc){
 						{map:map, singleInfoWindow: true,
 							infoWindowOptions: { maxWidth: "200px"},
 							additional_marker_desc: marker_desc,
+							suppressInfoWindows: true,
 							//additional_path_desc: data.rsp.add[key].desc,
 							zoom: false
 						});
@@ -993,8 +995,8 @@ function initialmarkers() {
 			mapTypeControlOptions: {
 				style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
 				position: google.maps.ControlPosition.TOP_LEFT,
-			//	draggableCursor: 'url(img/A4-32x32.gif),default',
-			mapTypeIds: ['general2011','twmapv1','osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi' ]
+				// dropdown menu 要重複一次
+				mapTypeIds: ['general2011','twmapv1','osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi', 'general2011' ]
 			}
 	});
 	if (!is_mobile){
@@ -1002,7 +1004,7 @@ function initialmarkers() {
 		map.setOptions({disableDoubleClickZoom: false });
 	}
 
-	map.mapTypes.set('twmapv1', SunriverMapType);
+	map.mapTypes.set('twmapv1', TaiwanMapV1MapType);
 	map.mapTypes.set('taiwan', TaiwanMapType);
 	map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
 	map.mapTypes.set('osm', OSM_MapType);
@@ -1171,8 +1173,8 @@ function initialmarkers() {
 	// 切換舊版地圖
 	$("#changemap").click(function() {
 		if (BackgroundMap == 0) {
-			BackgroundMapType = SunriverMapType;
-			BackgroundMapOptions = SunriverMapOptions;
+			BackgroundMapType = TaiwanMapV1MapType;
+			BackgroundMapOptions = TaiwanMapV1Options;
 			BackgroundMap = 1;
 			$("#changemap").addClass("disable");
 			$("#changemap").text("經建一");
