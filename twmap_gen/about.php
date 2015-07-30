@@ -12,6 +12,7 @@ $smarty->assign("twmap_gen_version", $twmap_gen_version);
 
 list ($total_maps, $total_size, $all_users, $active_users, $created)=stats();
 $smarty->assign("size", humanreadable($total_size) );
+$smarty->assign("all_users", $all_users );
 $smarty->assign("created", $created );
 $smarty->assign("total_maps", $total_maps );
 $smarty->assign("active_users", $active_users );

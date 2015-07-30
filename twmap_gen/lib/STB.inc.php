@@ -1,4 +1,4 @@
-<?
+<?php
 // $Id: STB.inc.php 365 2013-11-21 05:41:28Z happyman $
 class xxmdasort {
 	var $aData;//the array we want to sort.

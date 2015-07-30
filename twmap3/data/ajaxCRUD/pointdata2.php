@@ -24,15 +24,17 @@ if (!empty($q)) {
 }
 
 $sql.=$order;
-$res = mysql_query($sql);
+$result = q($sql);
+/*
+$res = q($sql);
 $result = array();
 
 if ($res) {
-	while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+	while($row = mysqli_fetch_array($res, MYSQL_ASSOC)){
 		$result[] = $row;
 	}
 }
-
+*/
 if(!ob_start("ob_gzhandler")) ob_start();
 if (empty($q))  {
 	header('Content-Type: application/json');

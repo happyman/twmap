@@ -17,11 +17,11 @@ $stbpath = "/home/happyman/stb";
 $tilecachepath = "/mnt/twmapcache/cache";
 
 // 不重要
-$tilecachepath = "/mnt/twmapcache/cache";
 //if (!file_exists($tilepath."/16")) {
 //	die("image dir not ready");
 //}
-$tmppath = "/mnt/twmapcache/tmp"; 
+$tmppath = "/home/nas/twmapcache/tmp"; 
+$diskfullchk = "/home/nas/";
 $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 
 $TWMAP3URL = "/~happyman/twmap3/index.php";

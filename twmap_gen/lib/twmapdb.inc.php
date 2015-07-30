@@ -41,7 +41,7 @@ function logsql($sql,$rs){
 	} else if (empty($rs)) {
 		$msg= "return EMPTY";
 	} else {
-		$msg= "return ok";
+		$msg= "return ok" . print_r($rs,true);
 	}
 	error_log("$trace run $sql". $msg);
 }
@@ -455,12 +455,12 @@ function stats() {
 	$row = mysql_fetch_row($res);
 	$active_users = $row[0];
 	 */
-	$sql = sprintf("select count(*) from \"user\"");
-	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
-	$registerred_users = $rs[0][0];
+	$sql = sprintf("select count(*) as count from \"user\"");
+	$rs2 = $db->GetAll($sql);
+	logsql($sql,$rs2);
+	$all_users = intval($rs2[0]['count']);
 
-	return array($total_maps, $size, $registerred_users, $active_users, $maxmid);
+	return array($total_maps, $size, $all_users, $active_users, $maxmid);
 }
 
 function humanreadable($size)
@@ -749,12 +749,14 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 		$db->Execute($sql);
 		// 2. add data by ogr2ogr
 		//  沒辦法 因為 server 上 postgres library < 9.0 無法使用
-		$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
+		//$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
+		$cmd = sprintf("ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
 			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type,$table);
 
 	} else {
 		// 1. append
-		$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
+		//$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
+		$cmd = sprintf("ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
 			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type, $table);
 	}
 	//echo $cmd . "\n";
@@ -771,8 +773,8 @@ function import_gpx_to_gis($mid){
 	if ($row==null) 
 		return array(false, "mid incorrect");
 	$gpx_file = map_file_name($row['filename'], 'gpx');
-	// TODO: 172.31.39.193 mount path
-	$gpx_file = str_replace("/srv/www/htdocs/","/mnt/nas/",$gpx_file);
+	// check 172.31.39.193 mount path
+	// $gpx_file = str_replace("/srv/www/htdocs/","/mnt/nas/",$gpx_file);
 	$ret1 = ogr2ogr_import_gpx($mid, $gpx_file, 'waypoints');
 	$ret2 = ogr2ogr_import_gpx($mid, $gpx_file, 'tracks');
 	if ($ret1 == 0 && $ret2 == 0)
@@ -785,7 +787,8 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
 	$br = proj_67toge($tw67_bbox[1]);
 	$imgsize = $tw67_bbox[2];
 	$tmpsvg = tempnam("/tmp","SVG") . ".svg";
-	$cmd = sprintf('ssh 172.31.39.193 "nik4.py -b %s %s %s %s -x %d %d ~wwwrun/etc/gpx.xml %s && cat %s && rm %s" > %s',$tl[0],$tl[1],$br[0],$br[1],$imgsize[0],$imgsize[1],$tmpsvg,$tmpsvg,$tmpsvg,$tmpsvg);
+	//$cmd = sprintf('ssh 172.31.39.193 "nik4.py -b %s %s %s %s -x %d %d ~wwwrun/etc/gpx.xml %s && cat %s && rm %s" > %s',$tl[0],$tl[1],$br[0],$br[1],$imgsize[0],$imgsize[1],$tmpsvg,$tmpsvg,$tmpsvg,$tmpsvg);
+	$cmd = sprintf('nik4.py -b %s %s %s %s -x %d %d ~www-data/etc/gpx.xml %s',$tl[0],$tl[1],$br[0],$br[1],$imgsize[0],$imgsize[1],$tmpsvg);
 	exec($cmd,$out,$ret);
 	if ($ret == 0) {
 		// replace 
@@ -834,7 +837,8 @@ function tilestache_clean($mid){
 	$tl = proj_67toge(array($row['locX'],$row['locY']));
 	$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
 	
-	$cmd = sprintf("ssh 172.31.39.193 'tilestache-clean.py -c ~wwwrun/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1'",$tl[1],$tl[0],$br[1],$br[0]);
+	//$cmd = sprintf("ssh 172.31.39.193 'tilestache-clean.py -c ~wwwrun/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1'",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd = sprintf("tilestache-clean.py -c ~wwwrun/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	error_log("tilestache_clean: ". $cmd);
 	/*
 利用 tilestache-clean 的 output 來砍另一層 cache 

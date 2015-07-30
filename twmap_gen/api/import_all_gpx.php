@@ -2,7 +2,7 @@
 
 require_once("../config.inc.php");
 $id = `id -u`;
-if ($id != 30 ) {
+if ($id != 33 ) {
         echo "Please run as wwwrun\n";
         exit;
 }
@@ -16,7 +16,7 @@ else
 if (isset($opt['c']))
 	$cache_dir = $opt['c'];
 else
-	$cache_dir = "/mnt/nas/twmapcache/twmap_gpx";
+	$cache_dir = "/home/nas/twmapcache/twmap_gpx";
 $db=get_conn();
 $sql = sprintf("select max(mid) from gpx_wp");
 $rs = $db->getAll($sql);
@@ -50,6 +50,7 @@ if (count($rs) > 0 ) {
 					}
 				}
 				printf("%d %s imported ok\n",$row['mid'],$row['title']);
+				exit(0);
 			}
 			else
 				printf("%d failed %s\n",$row['mid'],$msg);

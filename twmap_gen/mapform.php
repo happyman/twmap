@@ -19,7 +19,7 @@ if (isset($_GET['recreate']))  {
 	$recreate_flag = 0;
 }
 
-if (disk_free_space("/mnt/nas") < 500000000) {
+if (disk_free_space($diskfullchk) < 500000000) {
 	printf("<h1>磁碟空間已滿</h1>");
   exit;
 }

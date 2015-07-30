@@ -1,0 +1,92 @@
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #666666;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-color: #f2f2f2;
+}
+a{
+	color:#0066CC;
+	font-weight:bold;
+	text-decoration:none;
+}
+a:hover{
+	color:#0099CC;
+	text-decoration:underline;
+}
+A.menu{
+	color:#FFCC00;
+	font-weight:bold;
+	text-decoration:none;
+}
+a.menu:hover{
+	color:#718ABE;
+	text-decoration:underline;
+}
+
+a.smalllink{
+	color:#3366CC;
+	font-size:10px;
+}
+a.biglink{
+	color:#3366CC;
+	font-weight:bold;
+	font-size:17px;
+}
+.hand_cursor{
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+}
+
+img.imagedropshadow {
+	border: solid 1px #CCC;
+	-moz-box-shadow: 1px 1px 5px #999;
+	-webkit-box-shadow: 1px 1px 5px #999;
+        box-shadow: 1px 1px 5px #999;
+
+	/* rounded edges */
+	-moz-border-radius: 10px / 40px;
+	-webkit-border-radius: 36px 12px;
+}
+
+.report, .alertgood {
+	text-align: left;
+	border-top: 1px solid #9c9;
+	border-bottom: 1px solid #9c9;
+	padding: 5px 5px 5px 30px;
+	font-size: 11px;
+	margin: 0 20px 15px 20px;
+	color: #060;
+	background: url("../../css/checkicon.gif") #e2f9e3 left no-repeat;
+}
+
+.error, .alertbad {
+	text-align: left;
+	font-weight: bold;
+	border-top: 1px solid #c99;
+	border-bottom: 1px solid #c99;
+	padding: 5px 5px 5px 27px;
+	font-size: 11px;
+	margin: 0 20px 15px 20px;
+	background: url("../../css/badicon.gif") #c00 left no-repeat;
+	color: #fff;
+}
+
+.highlight {
+	background: #eee;
+}
+
+p.highlight {
+	background: #eee;
+	border: 1px solid #ccc;
+	padding: 10px;
+}
+
+div.highlight {
+	background: #eee;
+	border: 1px solid #ccc;
+	padding: 10px 10px 10px 10px; margin: 0 0 1em 0;
+}

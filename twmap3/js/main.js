@@ -49,7 +49,7 @@ var kmlArrayMax = 50;
 var TaiwanMapV1Options = {
 	getTileUrl: function(a, b) {
 		var z = 17 - b;
-		return "http://map.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
+		return "http://rs.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 18,

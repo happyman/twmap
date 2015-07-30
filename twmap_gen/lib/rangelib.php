@@ -1,4 +1,4 @@
-<?
+<?php
 // rangelib.php
 // image functions
 // $Id: rangelib.php 340 2013-08-26 13:28:06Z happyman $

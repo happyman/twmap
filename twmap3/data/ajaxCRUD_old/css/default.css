@@ -1,0 +1,121 @@
+/*
+	HUNDREDS of other stylesheets which work with this class can be found here - http://icant.co.uk/csstablegallery
+	Try a few demos using the style dropdown box for our demo here - http://www.ajaxcrud.com/
+*/
+
+
+h3{
+	text-align: center;
+}
+
+.hand_cursor{
+	cursor: pointer; /* hand-shaped cursor */
+	cursor: hand; /* for IE 5.x */
+}
+
+.paging_links{font-family:Verdana, Arial, Helvetica, sans-serif; font-size:10px; color:#F5E000;}
+
+.ajaxCRUD {
+	background: #F4F2FD;
+	border-color: #BBB1ED;
+	border-style: solid;
+	border-width: 0px;
+	padding:4px;
+	border-collapse:collapse;
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+.ajaxCRUD th{
+	background: #CFDBF3;
+	font-weight: bold;
+	color:#445276;
+	font-size: 14px;
+}
+
+.ajaxCRUD th a{
+	color: #173D7F;
+}
+
+.ajaxCRUD td, th a{
+	text-decoration: none;
+}
+
+.ajaxCRUD td, th a:hover{
+	color: #000;
+}
+
+.ajaxCRUD td{
+	font-family: Arial, Verdana;
+	font-size: 14px;
+	background: #F9F8FB;
+	color: #716E6E;
+	font-weight:normal;
+	/* text-align: center; */
+	vertical-align: middle;
+}
+
+.ajaxCRUD td, .ajaxCRUD th{
+	padding: 5px 5px;
+}
+table td.odd, table tr.odd, tr.odd td, tbody tr.odd th{
+	background-color: #f2f2f2;
+}
+
+.editingSize{
+	font-size: 16px;
+}
+
+.vertical, .vertical td, .vertical th{
+	text-align:left;
+}
+
+/* this will only work when your HTML doctype is in "strict" mode. took forever to figure that out...
+In other words - put this in your header:
+   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+*/
+
+.editable:hover, p.editable:hover{
+	background-color: #FFFF99;
+}
+.note {
+	font-size: 16px;
+
+}
+
+input, textarea{
+	font-size: 100%;
+	border-top: 1px solid #7c7c7c;
+	border-left: 1px solid #c3c3c3;
+	border-right: 1px solid #c3c3c3;
+	border-bottom: 1px solid #ddd;
+	background: #fff url("fieldbg.gif") repeat-x top;
+	color: #333;
+	padding: 2px 0 2px 2px;
+}
+
+.btn{
+	font-size: 14px;
+}
+.report {
+	text-align: left;
+	border-top: 1px solid #9c9;
+	border-bottom: 1px solid #9c9;
+	padding: 5px 5px 5px 30px;
+	font-size: 11px;
+	margin: 0 20px 15px 20px;
+	color: #060;
+	background: url("checkicon.gif") #e2f9e3 left no-repeat;
+}
+
+.error {
+	text-align: left;
+	font-weight: bold;
+	border-top: 1px solid #c99;
+	border-bottom: 1px solid #c99;
+	padding: 5px 5px 5px 27px;
+	font-size: 11px;
+	margin: 0 20px 15px 20px;
+	background: url("badicon.gif") #c00 left no-repeat;
+	color: #fff;
+}

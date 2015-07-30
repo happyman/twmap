@@ -8,6 +8,8 @@ $r = $_REQUEST['r'];
 $x = $_REQUEST['x'];
 $y = $_REQUEST['y'];
 $detail = $_REQUEST['detail'];
+$dup=array();
+$found=0;
 
 if ($r>100)
 	ajaxerr("too big range");

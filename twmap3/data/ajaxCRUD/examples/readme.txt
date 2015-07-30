@@ -27,4 +27,5 @@ USING THESE EXAMPLE SCRIPTS:
 www.loudcanvas.com
 
 
-NB: Make sure you include any "header" files AFTER you include ajaxCRUD.class. 
+NB: Make sure you include any "header" info (e.g. any HTML, echo statement,s etc) AFTER you 
+include the ajaxCRUD class. 

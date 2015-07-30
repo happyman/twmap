@@ -3,17 +3,12 @@
 	Try a few demos using the style dropdown box for our demo here - http://www.ajaxcrud.com/
 */
 
-
-h3{
-	text-align: center;
+.paging_links{
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:10px;
+	/* color:#F5E000;*/
+	color:#445276;
 }
-
-.hand_cursor{
-	cursor: pointer; /* hand-shaped cursor */
-	cursor: hand; /* for IE 5.x */
-}
-
-.paging_links{font-family:Verdana, Arial, Helvetica, sans-serif; font-size:10px; color:#F5E000;}
 
 .ajaxCRUD {
 	background: #F4F2FD;
@@ -30,24 +25,27 @@ h3{
 	background: #CFDBF3;
 	font-weight: bold;
 	color:#445276;
-	font-size: 14px;
+	font-size: 12px;
 }
 
 .ajaxCRUD th a{
 	color: #173D7F;
 }
 
-.ajaxCRUD td, th a{
+.ajaxCRUD td a{
+	border-bottom: 1px dotted #ba0000;
+	font-size: 11px;
 	text-decoration: none;
 }
 
-.ajaxCRUD td, th a:hover{
+.ajaxCRUD td a:hover{
 	color: #000;
+	border-bottom: 1px solid #ba0000;
 }
 
 .ajaxCRUD td{
 	font-family: Arial, Verdana;
-	font-size: 14px;
+	font-size: 11px;
 	background: #F9F8FB;
 	color: #716E6E;
 	font-weight:normal;
@@ -63,27 +61,14 @@ table td.odd, table tr.odd, tr.odd td, tbody tr.odd th{
 }
 
 .editingSize{
-	font-size: 16px;
+	font-size: 10px;
 }
 
 .vertical, .vertical td, .vertical th{
 	text-align:left;
 }
 
-/* this will only work when your HTML doctype is in "strict" mode. took forever to figure that out...
-In other words - put this in your header:
-   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-*/
-
-.editable:hover, p.editable:hover{
-	background-color: #FFFF99;
-}
-.note {
-	font-size: 16px;
-
-}
-
-input, textarea{
+input, select, textarea{
 	font-size: 100%;
 	border-top: 1px solid #7c7c7c;
 	border-left: 1px solid #c3c3c3;
@@ -95,9 +80,9 @@ input, textarea{
 }
 
 .btn{
-	font-size: 14px;
+	font-size: 11px;
 }
-.report {
+.report, .alertgood {
 	text-align: left;
 	border-top: 1px solid #9c9;
 	border-bottom: 1px solid #9c9;
@@ -108,7 +93,7 @@ input, textarea{
 	background: url("checkicon.gif") #e2f9e3 left no-repeat;
 }
 
-.error {
+.error, .alertbad {
 	text-align: left;
 	font-weight: bold;
 	border-top: 1px solid #c99;

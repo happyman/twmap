@@ -39,6 +39,7 @@ $smarty->assign("title","檢視地圖:". $map['title']);
 $smarty->assign("description",sprintf("%s 地圖資訊: %dx%d-%dx%d. ", $map['title'],$map['locX'],$map['locY'],$map['shiftX'],$map['shiftY']));
 $smarty->assign("site_root_url", $site_url . $site_html_root);
 $smarty->assign("ogimage", array("thumb.php?mid=$mid&size=s", "thumb.php?mid=$mid&size=m", "thumb.php?mid=$mid&size=l"));
+$smarty->assign("html_head", $html_head);
 if ($html_head == 1 ) {
 	echo $smarty->fetch("header.html");
 	if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1 ) {
@@ -82,12 +83,14 @@ case 2:
 case 1:
 	// 真正加總
 	map_accessed($mid);
+	$links['page'] = pagelink($map);
 	$links['fullmap'] = $site_url . $html_root . "/" . basename($map['filename']);
 	if (file_exists(str_replace(".tag.png",".gpx",$map['filename']))) {
 		$links['gpx'] = str_replace(".tag.png",".gpx", $links['fullmap']);
 		$smarty->assign('gpx_link',$links['gpx']);
 	}
 	$smarty->assign('map',$map);
+	$smarty->assign('links',$links);
 	$smarty->display('show_expired.html');
 	exit;
 	break;
@@ -95,6 +98,7 @@ case 0:
 default:
 	//error_log($map['filename']);
 	$files = map_files($map['filename']);
+	$imgarr = array();
 	foreach($files as $f ) {
 		if (preg_match("/_\d+\.png/",$f)) {
 			$imgarr[] = $f;
@@ -102,7 +106,8 @@ default:
 	}
 	//error_log(print_r($imgarr,true));
 	// 排序一下
-	usort($imgarr, 'indexcmp');
+	if (count($imgarr)>0)
+		usort($imgarr, 'indexcmp');
 	//error_log(print_r($imgarr,true));
 	// $imgarr 是下載圖檔連結
 	if (isset($_GET['links']) && $_GET['links'] == 1) {
@@ -143,13 +148,15 @@ default:
 	if (map_file_exists($map['filename'], 'pdf')) {
 		$links['pdf'] = $links['fullmap_path'] . "/". basename(map_file_name($map['filename'], 'pdf'));
 	}
-	foreach($imgarr as $imgs ) {
-		$links['simgs'][] = $links['fullmap_path'] . "/" . basename($imgs);
-		$tdata[] = sprintf("<a href='$html_root/%s' rel='gallery' class='pirobox_gall'><img border=0 src='$html_root/%s' width=%s></a>\n",basename($imgs),basename($imgs), round(500/$map['pageX']));
+	if (count($imgarr)>0) {
+		foreach($imgarr as $imgs ) {
+			$links['simgs'][] = $links['fullmap_path'] . "/" . basename($imgs);
+			$tdata[] = sprintf("<a href='$html_root/%s' rel='gallery' class='pirobox_gall'><img border=0 src='$html_root/%s' width=%s></a>\n",basename($imgs),basename($imgs), round(500/$map['pageX']));
+		}	
+		$smarty->assign("imgdata",$tdata);
 	}
 	$smarty->assign("map",$map);
 	$smarty->assign("links",$links);
-	$smarty->assign("imgdata",$tdata);
 	$smarty->display("show_ok.html");
 	exit;
 	// ad();

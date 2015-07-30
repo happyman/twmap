@@ -162,7 +162,7 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
 	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 	if (window.location.href != window.top.location.href) {
-		$('#openwin').html('<a href="http://map.happyman.idv.tw/~happyman/twmap3/" target=_top>獨立視窗</a>');
+		$('#openwin').html('<a href="/~happyman/twmap3/" target=_top>獨立視窗</a>');
 	}
 });
 

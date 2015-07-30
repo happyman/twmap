@@ -5,7 +5,7 @@ require_once("../config.inc.php");
   remove gpx from GIS
  */
 $id = `id -u`;
-if ($id != 30 ) {
+if ($id != 33 ) {
         echo "Please run as wwwrun\n";
         exit;
 }
@@ -26,7 +26,7 @@ if ($id != 30 ) {
   if ($opt['c'])
   	$cache_dir = $opt['c'];
   else
-  	$cache_dir = "/mnt/nas/twmapcache/twmap_gpx";
+  	$cache_dir = "/home/nas/twmapcache/twmap_gpx";
 
   echo ($realdo==1)?"Do ":"Test (without -r)";
   echo "remove map from GIS:$mid " . date('Y-m-d H:i:s') ."\n";
