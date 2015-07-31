@@ -881,22 +881,24 @@ function remove_gpx_from_gis($mid){
    }
    return array(true,"done");
 }
+// 取得範圍內的 gpx waypoints
 function get_waypoint($x,$y,$r=10,$detail=0){
 	$db=get_conn();
 	if ($detail == 0)
 		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name from gpx_wp WHERE ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY name",$x,$y,$r/1000/111.325);
 	else
 		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name,\"gpx_wp.ele\" AS ele,ST_AsText(wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title from gpx_wp A, map WHERE  ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) AND A.mid = map.mid  ORDER BY map.title",$x,$y,$r/1000/111.325);
-	error_log($sql);
+	// error_log($sql);
 	$rs = $db->getAll($sql);	
 	return $rs;
 }
 
+// 取得面積
 // http://gis.stackexchange.com/questions/44914/how-do-i-getthe-area-of-a-wgs84-polygon-in-square-meters
 function get_AREA($wkt_str) {
 	$db=get_conn();
 	$sql =  sprintf("SELECT ST_Area( ST_Transform( ST_SetSRID( ST_GeomFromText( '%s' ) , 4326) , 900913))", $wkt_str);
-	error_log($sql);
+	// error_log($sql);
 	$rs = $db->getAll($sql);	
 	echo $db->errorMsg();
 	return $rs;
