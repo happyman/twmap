@@ -9,6 +9,8 @@ $out_root = "/srv/www/htdocs/map/out";
 $out_html_root = "/map/out";
 $site_url = "http://map.happyman.idv.tw";
 $site_html_root = "/twmap";
+// 30 for SuSE, 33 for Ububtu
+define('WWWRUN_UID', 33);
 
 // 放一版的圖資目錄
 $stbpath = "/home/happyman/stb";

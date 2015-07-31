@@ -2,7 +2,7 @@
 //http://abhinavsingh.com/blog/2010/02/memq-fast-queue-implementation-using-memcached-and-php-only/
 
 // 
-require_once("../config.inc.php");
+require_once( dirname(__FILE__) . "/../config.inc.php");
 // move the following line to config
 //define('MEMQ_POOL', '127.0.0.1:11211');
 //define('MEMQ_TTL', 0);

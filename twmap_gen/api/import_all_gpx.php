@@ -2,7 +2,7 @@
 
 require_once("../config.inc.php");
 $id = `id -u`;
-if ($id != 33 ) {
+if ($id != WWWRUN_UID ) {
         echo "Please run as wwwrun\n";
         exit;
 }

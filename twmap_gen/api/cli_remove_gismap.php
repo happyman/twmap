@@ -5,7 +5,7 @@ require_once("../config.inc.php");
   remove gpx from GIS
  */
 $id = `id -u`;
-if ($id != 33 ) {
+if ($id != WWWRUN_UID ) {
         echo "Please run as wwwrun\n";
         exit;
 }
