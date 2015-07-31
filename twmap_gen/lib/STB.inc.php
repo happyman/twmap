@@ -549,7 +549,7 @@ function MyErrorLog($ident, $data) {
 }
 function notify_web($channel,$rawmsg,$debug=0) {
 
-	$connection = new ApeCurlConnection("0.ape.happyman.idv.tw",80);
+	$connection = new ApeCurlConnection( APE_HOST ,80);
 	$client = new ApeClient($connection);
 	$request = new ApeRequest("xxx", array("abc"));
 	list($email,$msg_prefix) = explode(":",$channel);

@@ -83,6 +83,7 @@ if (php_sapi_name() != "cli") {
 
 }
 else {
+	define('APE_HOST','0.ape.happyman.idv.tw');
 	require_once __ROOT__."lib/ape/ApeAbstractConnection.php";
 	require_once __ROOT__."lib/ape/ApeClient.php";
 	require_once __ROOT__."lib/ape/ApeCurlConnection.php";
@@ -92,3 +93,9 @@ else {
 
 }
 ini_set("session.gc_maxlifetime", 86400);
+
+#
+define('MEMQ_POOL', '127.0.0.1:11211');
+define('MEMQ_TTL', 0);
+
+

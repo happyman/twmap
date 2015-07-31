@@ -1,8 +1,11 @@
 <?php
 //http://abhinavsingh.com/blog/2010/02/memq-fast-queue-implementation-using-memcached-and-php-only/
 
-define('MEMQ_POOL', '172.31.39.16:11211');
-define('MEMQ_TTL', 0);
+// 
+require_once("../config.inc.php");
+// move the following line to config
+//define('MEMQ_POOL', '127.0.0.1:11211');
+//define('MEMQ_TTL', 0);
 
 class MEMQ {
 
