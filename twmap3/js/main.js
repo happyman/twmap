@@ -999,6 +999,11 @@ function initialmarkers() {
 		map.enableKeyDragZoom();
 		map.setOptions({disableDoubleClickZoom: false });
 	}
+	// 
+	var moveDiv = document.createElement('div');
+	var myCustomControl2 = new curLocControl(moveDiv, map);
+	map.controls[google.maps.ControlPosition.RIGHT_TOP].push(moveDiv);
+
 
 	map.mapTypes.set('twmapv1', TaiwanMapV1MapType);
 	map.mapTypes.set('taiwan', TaiwanMapType);
@@ -1409,9 +1414,9 @@ function initialmarkers() {
 				$.geolocation.get({ win: function(position) {
 					CurrentLocation(position);
 					position_get = 1;
-					var moveDiv = document.createElement('div');
-					var myCustomControl2 = new curLocControl(moveDiv, map);
-					map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(moveDiv);
+			//		var moveDiv = document.createElement('div');
+			//		var myCustomControl2 = new curLocControl(moveDiv, map);
+			//		map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(moveDiv);
 				}, fail: FeatureLocation, 
 				error: FeatureLocation
 				});
@@ -1438,8 +1443,6 @@ function initialmarkers() {
 				var myCustomControlDiv = document.createElement('div');
 				var myCustomControl = new MyCustomControl(myCustomControlDiv, map);
 				map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(myCustomControlDiv);
-
-				
 			} // is_mobile
 
 			// remove 掉
@@ -1467,18 +1470,22 @@ function resizeMap() {
 		google.maps.event.trigger(map, 'resize');
 	}
 }
+
 function curLocControl(controlDiv, map) {
 	var control = this;
-	var testBtn = document.createElement('button');
-	testBtn.id = 'moveBtn';
-	testBtn.className = 'ui-state-default ui-corner-all';
-	testBtn.innerHTML = " 目前位置 ";
+	//var testBtn = document.createElement('button');
+	//testBtn.id = 'moveBtn';
+	//testBtn.className = 'ui-state-default ui-corner-all';
+	//testBtn.innerHTML = " 目前位置 ";
+	var testBtn = document.createElement('img');
+	testBtn.setAttribute('src',"img/location.png");
 	controlDiv.appendChild(testBtn);
 	//
 	$(testBtn).click(function() {
 		navigator.geolocation.getCurrentPosition( CurrentLocation );
 	});
 }
+
 function CurrentLocation(position) {
 	// user 提供資訊
 	got_geo = 1;

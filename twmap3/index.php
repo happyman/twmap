@@ -82,7 +82,7 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 			<button type=button class="ui-state-default ui-corner-all" id="goto" title="搜尋並定位">到</button>
 			<button id="kml_sw" class="ui-state-default ui-corner-all" title="山友登山軌跡(支援z=13到18)" type=button>行跡</button>
 			<button id="label_sw" class="ui-state-default ui-corner-all" title="三角點名稱"  type=button>標籤</button>
-
+			<button id="marker_reload"class="ui-state-default ui-corner-all" type=button>重載</button>
 			<select id="marker_sw_select" multiple="multiple">
       		<option selected="selected" value="a">全部</option>
 			<option selected="selected" value="1">一等</option>
@@ -95,7 +95,7 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
       		<option selected="selected" value="8">溫泉</option>
 			<option selected="selected" value="7">其他</option>
 			</select>
-			<button id="marker_reload"class="ui-state-default ui-corner-all" type=button>重載</button>
+			
 			</form>
 		</div>
 		<div id="params"></div>
