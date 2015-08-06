@@ -50,7 +50,6 @@ if (count($rs) > 0 ) {
 					}
 				}
 				printf("%d %s imported ok\n",$row['mid'],$row['title']);
-				exit(0);
 			}
 			else
 				printf("%d failed %s\n",$row['mid'],$msg);

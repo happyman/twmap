@@ -775,6 +775,8 @@ function import_gpx_to_gis($mid){
 	$gpx_file = map_file_name($row['filename'], 'gpx');
 	// check 172.31.39.193 mount path
 	// $gpx_file = str_replace("/srv/www/htdocs/","/mnt/nas/",$gpx_file);
+	if (!file_exists($gpx_file))
+		return array(false, "$gpx_file  not exists");
 	$ret1 = ogr2ogr_import_gpx($mid, $gpx_file, 'waypoints');
 	$ret2 = ogr2ogr_import_gpx($mid, $gpx_file, 'tracks');
 	if ($ret1 == 0 && $ret2 == 0)
@@ -838,7 +840,7 @@ function tilestache_clean($mid){
 	$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
 	
 	//$cmd = sprintf("ssh 172.31.39.193 'tilestache-clean.py -c ~wwwrun/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1'",$tl[1],$tl[0],$br[1],$br[0]);
-	$cmd = sprintf("tilestache-clean.py -c ~wwwrun/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	error_log("tilestache_clean: ". $cmd);
 	/*
 利用 tilestache-clean 的 output 來砍另一層 cache 
