@@ -183,10 +183,11 @@ if ($inp['gps'] == 1 || $inp['gps'] == 2 ) {
 // 呼叫 cmd_line make, 他也需要 gpx aware
 // -l 傳入 email:formid 作為識別 channel 與 msg owner
 showmem("before call cmd_make.php");
-$cmd=sprintf("php cmd_make2.php -r %d:%d:%d:%d -O %s -v %d -t '%s' -i %s -p %d %s -l %s:%s %s %s",
+$cmd=sprintf("php cmd_make2.php -r %d:%d:%d:%d -O %s -v %d -t '%s' -i %s -p %d %s -l %s:%s %s %s %s",
 	$startx,$starty,$shiftx,$shifty,$outpath,$version,addslashes($title),$_SERVER['REMOTE_ADDR'],$ph,$svg_params,$_SESSION['mylogin']['email'],$inp['formid'],
 	 isset($inp['grid_100M'])?'-e':'',// 是否包含 100M grid
-	 isset($inp['inc_trace'])?'-G':''); // 是否包含已知 gps trace
+	 isset($inp['inc_trace'])?'-G':'',//是否包含已知 gps trace
+	 isset($inp['keep_color'])?'-c':''); // 是否輸出彩圖
 msglog($cmd);
 exec($cmd,$output,$ret);
 

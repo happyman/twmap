@@ -6,9 +6,9 @@ require_once("config.inc.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:");
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c");
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
-	echo "Usage: $argv[0] -r 236:2514:6:4 [-g gpx:0:0] [-G]-O dir [-e] -v 1|3 -t title -i localhost\n";
+	echo "Usage: $argv[0] -r 236:2514:6:4 [-g gpx:0:0] [-c] [-G]-O dir [-e] -v 1|3 -t title -i localhost\n";
 	echo "       -r params: startx:starty:shiftx:shifty\n";
 	echo "       -O outdir: /home/map/out/000003\n";
 	echo "       -v 1|3: version of map,default 3\n";
@@ -16,6 +16,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -i ip: log remote address\n";
 	echo "       -p 1|0: 1 if is pong-hu\n";
 	echo "       -g gpx_fpath:trk_label:wpt_label \n";
+	echo "       -c keep color\n";
 	echo "       -d debug\n";
 	echo "       -e draw 100M grid\n";
 	echo "       -s 1-5: stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf. debug purpose\n";
@@ -32,6 +33,7 @@ if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) )
 
 $version=$opt['v'];
 $title=$opt['t'];
+$keep_color = (isset($opt['c']))? 1 : 0;
 $ph = isset($opt['p'])? $opt['p'] : 0;
 $jump = isset($opt['s'])? $opt['s'] : 1;
 if (isset($opt['S'])) $jumpstop = $jump+1; else $jumpstop = 0;
@@ -81,8 +83,8 @@ if (!empty($g->err))
 $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
 $out=$g->getsimages();
 // debug: print_r($out);
-$outx=$g->getoutx(); // 4
-$outy=$g->getouty();  // 6
+$outx=$g->getoutx(); // 5
+$outy=$g->getouty();  // 7
 $total=count($out);
 for ($i=0; $i< $total; $i++) {
 	$todo[] = $i;
@@ -153,67 +155,9 @@ if ($jump <= $stage ) {
 	} else {
 		write_and_forget($im,$outimage,$BETA);
 	}
-
-	// add to here
 	if (isset($opt['G'])) {
-		 // version 1 作法: 轉成 svg 再 merge: 但是太多的話, php 會爆炸
-		// 1. merge gpx 
-		/*
-		$bound = array('brx' => ($startx+$shiftx)*1000, 'bry'=>  ($starty-$shifty)*1000,  
-			           'tlx'=>  $startx * 1000, 'tly'=> $starty * 1000);
-		$data = map_overlap($bound, 1, 100);
-		foreach($data as $map) {
-       		$tmpgpx = str_replace(".tag.png",".gpx",$map['filename']);
-			if (file_exists($tmpgpx))
-				$cmd_tmp[]= sprintf(" -i gpx -f %s -x nuketypes,routes,waypoints -x simplify,crosstrack,error=0.001k -x interpolate,distance=0.095k  ",$tmpgpx);
-		}
-		$cmd = sprintf("gpsbabel %s -o kml -F %s ", implode(" ",$cmd_tmp), $merged_gpx);
-		// debug
-		file_put_contents("/tmp/testcmd_1",$cmd);
-		//
-	  	$retmsg = exec($cmd, $out, $ret);
-		if ($ret != 0 ) {
-		 	@unlink($outimage_orig);
-			@unlink($outimage);
-			cli_error_out("merge gpx fail:" . $retmsg);
-		}
-
-		$param['gpx'] = $merged_gpx;
-		$param['show_label_trk'] = 0;
-		$param['show_label_wpt'] = 0;
-		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
-		$param['logotext'] = $title;
-		$param['bgimg'] = $outimage;
-		list($param['width'], $junk, $junk, $junk) = getimagesize($outimage);
-		// 怕檔案範圍太大,再 filter 一下
-		$svg = new gpxsvg($param);
-		list($x, $y, $x1, $y1) = $svg->get_bound($junk);
-		$tmp_bound = tempnam("/tmp","BOUND") . ".txt";
-		file_put_contents($tmp_bound,sprintf("%s %s\n%s %s\n%s %s\n%s %s\n",$x,$y,$x,$y1,$x1,$y,$x1,$y1));
-		$cmd = sprintf("cp %s %s.tmp; gpsbabel -i kml -f %s.tmp -x polygon,file=%s -o gpx -F %s",$merged_gpx, $merged_gpx, $merged_gpx,$tmp_bound,$merged_gpx);
-		$retmsg = exec($cmd, $out, $ret);
-		if ($ret != 0 ) {
-		 	@unlink($outimage_orig);
-		@unlink($outimage);
-		@unlink($tmp_bound);
-			cli_error_out("filter gpx fail:" . $cmd . $retmsg);
-		}
-		@unlink($tmp_bound);
-		// 2. 轉成 svg
-		list($ret,$msg) = gpx2svg($param, $$g);
-	  if ($ret === false ) {
-			      @unlink($outimage_orig);
-			      cli_error_out("gpx2svg fail: ". print_r($msg,true). print_r($param,true));
-		}
-		list ($ret,$msg) = svg2png($outsvg_big, $outimage);
-	   if ($ret === false ) {
-			      @unlink($outimage_orig);
-			      @unlink($outimage);
-	   	      cli_error_out("svg2png fail: $msg");
-    }
-	*/
 	cli_msglog("add GPX layer to PNG");
-    // version 2 直接從 gis 資料庫取得 svg
+    // 直接從 gis 資料庫取得 svg
     $bbox[0] =  array($startx * 1000,$starty * 1000);
     $bbox[1] =  array(($startx+$shiftx)*1000, ($starty-$shifty)*1000);
     $bbox[2] =  array($shiftx * 315, $shifty * 315);
@@ -234,18 +178,22 @@ if ($jump <= $stage ) {
 	} // end of -G
 	// 加上 grid
 	if (isset($opt['e'])) {
-		cli_msglog("add 100 grid to image...");
+		cli_msglog("add 100M grid to image...");
 		im_addgrid($outimage, 100, $version);
 		cli_msglog("ps%+3");
 	}
 	// happyman
 	cli_msglog("ps%40");
+	if ($keep_color==1) {
+	cli_msglog("keep colorful image...");
+	copy($outimage,$outimage_gray);
+	} else {
 	cli_msglog("grayscale image...");
 	// 產生灰階圖檔
 	im_file_gray($outimage, $outimage_gray, $version);
 	im_tagimage($outimage_gray,$startx,$starty);
+	}
 	cli_msglog("ps%45");
-	//cli_msglog("$outimage_gray created");
 	// 加上 tag
 	cli_msglog("add tag to image...");
 	im_tagimage($outimage,$startx,$starty);
