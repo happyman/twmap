@@ -63,6 +63,8 @@ function addremove_polygon(event) {
 
 	}
 	polygon.setMap(map);
+	// hide marker
+	centerMarker.setVisible(false);
 	return true;
 }
 

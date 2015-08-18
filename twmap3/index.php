@@ -28,6 +28,7 @@ $ver = trim(file_get_contents("VERSION"));
 	<script type="text/javascript" src="js/jquery.geolocation.js" charset="utf-8"></script>
 	<script type="text/javascript" src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
 	<script type="text/javascript" src="js/v3_ll_grat.js?v=<?=$ver?>"></script>
+	<script src="js/geolocationmarker-compiled.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
 	<link rel="stylesheet" type="text/css" href="css/main.css?v=<?=$ver?>" />
 <script>

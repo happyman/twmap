@@ -518,10 +518,10 @@ function permLinkURL(goto) {
 			return "<a href='?goto=" + goto + "&zoom="+ map.getZoom() +"&opacity="+ opacity + "&mapversion=" + ver + "&maptypeid="+ map.getMapTypeId() +"&show_label="+ show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker +"&roadmap="+ curMap+"&grid=" + curGrid +"&theme="+ theme +"'><img src='img/permlink.png' border=0/></a>";
 		}
 
-		var initial_meerkat = 1; // 第一次顯示
-		var last_pos = {};
-		function locInfo(newpos, callback, param){
-			// 1. 檢查圖層是否是 Gpx 圖層
+var initial_meerkat = 1; // 第一次顯示
+var last_pos = {};
+function locInfo(newpos, callback, param){
+	// 1. 檢查圖層是否是 Gpx 圖層
 	if (last_pos == newpos) {
 		console.log("position not change");
 		return;
@@ -563,7 +563,7 @@ function permLinkURL(goto) {
 			 	if (!elevator)
 			  		elevator = new google.maps.ElevationService();
 			  	elevator.getElevationForLocations({'locations': [ newpos ] }, function(results, status) {
-				  	if (status == google.maps.ElevationStatus.OK) {
+					if (status == google.maps.ElevationStatus.OK) {
 						if (results[0]) {
 							locInfo_show(newpos, results[0].elevation, {"callback": callback, "param": param, "close": close_infowin});
 						} else {
@@ -976,6 +976,7 @@ function initialmarkers() {
 	var listener;
 	var TW_Bounds;
 	var PH_Bounds;
+	var GeoMarker;
 	function initialize() {
 
 	geocoder = new google.maps.Geocoder();
@@ -999,7 +1000,23 @@ function initialmarkers() {
 		map.enableKeyDragZoom();
 		map.setOptions({disableDoubleClickZoom: false });
 	}
-	// 
+	// GeoMarker
+		GeoMarker = new GeolocationMarker();
+        GeoMarker.setCircleOptions({fillColor: '#808080', visible: false});
+
+        google.maps.event.addListener(GeoMarker, 'position_changed', function() {
+
+          // console.log('position changed GeoMarker');
+          // map.setCenter(this.getPosition());
+          // map.fitBounds(this.getBounds());
+        });
+
+        //google.maps.event.addListener(GeoMarker, 'geolocation_error', function(e) {
+        //  alert('There was an error obtaining your position. Message: ' + e.message);
+        //});
+
+        GeoMarker.setMap(map);
+    // GeoMarker
 	var moveDiv = document.createElement('div');
 	var myCustomControl2 = new curLocControl(moveDiv, map);
 	map.controls[google.maps.ControlPosition.RIGHT_TOP].push(moveDiv);
@@ -1095,6 +1112,7 @@ function initialmarkers() {
 		locInfo_name = "我的位置";
 		centerMarker.setPosition(newpos);
 		locInfo(newpos);
+		centerMarker.setVisible(true);
 	});
 	if (is_mobile){
 		google.maps.event.addListener(map,'dblclick', function(event){
@@ -1103,6 +1121,7 @@ function initialmarkers() {
 		locInfo_name = "我的位置";
 		centerMarker.setPosition(newpos);
 		locInfo(newpos);
+		centerMarker.setVisible(true);
 	});
 	} else{
 	google.maps.event.addListener(map, 'click', function(event) {
@@ -1407,24 +1426,22 @@ function initialmarkers() {
 				$("#goto").trigger('click');
 
 			}
+			else 
+			{
 			// 那就顯示一個點, 如果拿得到座標就到座標, 不然就任選一個興趣點
-			else {
 				console.log("getgeolocation");
 				var position_get = 0;
 				$.geolocation.get({ win: function(position) {
 					CurrentLocation(position);
 					position_get = 1;
-			//		var moveDiv = document.createElement('div');
-			//		var myCustomControl2 = new curLocControl(moveDiv, map);
-			//		map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(moveDiv);
 				}, fail: FeatureLocation, 
 				error: FeatureLocation
 				});
-				setTimeout(function() {
+			setTimeout(function() {
 					if (position_get == 0){
 						FeatureLocation();
 					}
-				}, 5000);
+				}, 4000);
 			}
 			// 最後處理手機的事情
 			if (is_mobile) {

@@ -191,8 +191,9 @@ if ($jump <= $stage ) {
 	cli_msglog("grayscale image...");
 	// 產生灰階圖檔
 	im_file_gray($outimage, $outimage_gray, $version);
-	im_tagimage($outimage_gray,$startx,$starty);
+	// im_tagimage($outimage_gray,$startx,$starty);
 	}
+	im_tagimage($outimage_gray,$startx,$starty);
 	cli_msglog("ps%45");
 	// 加上 tag
 	cli_msglog("add tag to image...");
