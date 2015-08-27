@@ -101,15 +101,24 @@ class gpxsvg {
 			foreach($arr['trk'] as $trk) {
 				if (!isset($arr['trk'][$i])) continue;
 				foreach($arr['trk'][$i]['trkseg']['trkseg'] as $trk_point) {
-					if ($trk_point['@attributes']['lon'] < $minlon) 
-						$minlon = $trk_point['@attributes']['lon'];
-					else if ($trk_point['@attributes']['lat'] < $minlat) 
-						$minlat = $trk_point['@attributes']['lat'];
+					if (isset($trk_point['@attributes']['lon'])) {
+						$_lon = $trk_point['@attributes']['lon'];
+						$_lat = $trk_point['@attributes']['lat'];
+					} else if (isset($trk_point['trkpt']['lon'])) {
+						$_lon = $trk_point['trkpt']['lon'];
+						$_lat = $trk_point['trkpt']['lat'];
+					} else {
+						continue;
+					}
+					if ($_lon < $minlon) 
+						$minlon =  $_lon; 
+					else if ($_lat < $minlat) 
+						$minlat = $_lat;
 
-					if ($trk_point['@attributes']['lon'] > $maxlon )
-						$maxlon = $trk_point['@attributes']['lon'];
-					else if ($trk_point['@attributes']['lat'] > $maxlat)  
-						$maxlat = $trk_point['@attributes']['lat'];
+					if ($_lon > $maxlon )
+						$maxlon = $_lon;
+					else if ($_lat > $maxlat)  
+						$maxlat = $_lat;
 				}
 				$i++;
 			}
@@ -257,6 +266,9 @@ $br = array( ceil($tx1 / 1000)*1000 + $expend, floor($ty1 / 1000)*1000 - $expend
 
 			$j=0;
 			foreach($arr['trk'][$i]['trkseg']['trkseg'] as $trk_point) {
+				// skip route/track without '@attributes'
+				if (!isset($trk_point['@attributes']['lon'])) continue;
+
 				if($trk_point['@attributes']['lon'] > $this->bound['br'][0] ||
 					$trk_point['@attributes']['lon']  < $this->bound['tl'][0] ||
 					$trk_point['@attributes']['lat'] > $this->bound['tl'][1] ||

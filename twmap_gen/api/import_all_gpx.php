@@ -22,14 +22,14 @@ $sql = sprintf("select max(mid) from gpx_wp");
 $rs = $db->getAll($sql);
 // 取出最大 map id
 $maxid = intval($rs[0][0])+1;
-$sql = sprintf("select mid,title,filename FROM \"map\" WHERE gpx=1 AND flag <> 2 AND mid > %d ORDER BY cdate",$maxid);
+$sql = sprintf("select mid,title,filename,keepon_id FROM \"map\" WHERE gpx=1 AND flag <> 2 AND mid > %d ORDER BY cdate",$maxid);
 $rs = $db->getAll($sql);
 printf("Total %d, from mid %d\n",count($rs),$maxid);
 // debug== $i=0;
 if (count($rs) > 0 ) {
 	foreach($rs as $row) {
 	// debug==	if ($i++ > 3) break;
-		printf("doing mid %d %-30s",$row['mid'],$row['title']);
+		printf("doing mid %d %-30s %s",$row['mid'],$row['title'],$row['keepon_id']);
 		if ($real_do == 1) {
 			$exist_mid = is_keepon_map_imported($row['mid']);
 			if ($exist_mid) {
