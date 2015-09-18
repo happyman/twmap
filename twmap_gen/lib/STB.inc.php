@@ -511,6 +511,8 @@ function request_curl($url, $method='GET', $params=array()) {
                 curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
                 curl_setopt($curl, CURLOPT_POST, true);
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+		// for ASP
+		curl_setopt($curl, CURLOPT_COOKIE, 'AspxAutoDetectCookieSupport=1');
                 curl_setopt($curl, CURLOPT_HTTPHEADER, array( 'Content-Type: application/json','Content-Length: ' . strlen($data_string)));
         } elseif ($method == 'HEAD') {
                 curl_setopt($curl, CURLOPT_HEADER, true);

@@ -972,7 +972,7 @@ function svg2png($insvg, $outimage,$resize=array()) {
 			$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
 			exec($cmd2, $out2, $ret);
 		}
-		return array(true, print_r($out, true));
+		return array(true, implode("+",$out+$out2));
 	}
-	return array(false, print_r($out, true));
+	return array(false, implode("+",$out));
 }

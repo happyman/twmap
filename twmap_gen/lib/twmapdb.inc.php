@@ -92,6 +92,14 @@ function keepon_map_exists($uid,$keepon_id){
 	if (count($rs) == 0 ) return false;
 	return $rs[0];
 }
+function keepon_map_exists2($uid,$mid){
+	$db=get_conn();
+	$sql = sprintf("SELECT * from  \"map\" WHERE \"uid\"='%s' AND \"mid\"='%s' AND \"flag\" <> 2",$uid,$mid);
+	$rs = $db->GetAll($sql);
+	logsql($sql,$rs);
+	if (count($rs) == 0 ) return false;
+	return $rs[0];
+}
 // TODO:
 function is_keepon_map_imported($mid) {
 	$db=get_conn();
@@ -533,12 +541,12 @@ function name_to_icon($map) {
 
 function kok_out($id, $msg, $url, $cdate=null) {
 	//soap_call(true, $id, $msg, $url, $cdate);
-	keepon_MapResult(true, $id, $msg, $url, $cdate);
+	keepon_MapResult(1, $id, $msg, $url, $cdate);
 }
 // 取代 soap_call
 function kerror_out($id,$msg) {
 	//soap_call(false, $id, $msg);
-	keepon_MapResult(false, $id, $msg);
+	keepon_MapResult(0, $id, $msg);
 }
 function keepon_MapResult($success, $id, $msg, $url=null, $cdate=null) {
 	$kurl = "http://www.keepon.com.tw/api/MapGenerator/MapResult";
@@ -551,7 +559,7 @@ function keepon_MapResult($success, $id, $msg, $url=null, $cdate=null) {
 		    'Message'=>$msg
  );
 	$result = request_curl($kurl, "POSTJSON", $params);
-	error_log("request $kurl with params".print_r($params,true) ."get $result");
+	//error_log("request $kurl with params".print_r($params,true) ."get $result");
 	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
 	return array(true, $result);
 
@@ -819,8 +827,12 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
 				fwrite($fq,$line);
 		} // while
 		@unlink($tmpsvg);
-		echo "$tmpsvg  created\n";
+		// optimize svg: fail safe
+		$cmd = sprintf("svgo %s",$outpath);
+		exec($cmd,$out,$ret);
+		echo "$outpath  created\n";
 		return array(true,"file written");
+		//
 	} // ret == 0
 	return array(false,"err exec $cmd");
 }
@@ -869,19 +881,20 @@ function tilestache_clean($mid){
 	else
 		return array(false,implode("\n",$out));
 }
+
 function remove_gpx_from_gis($mid){
 	$sql[] = sprintf("DELETE FROM gpx_wp WHERE mid=%d",$mid);
 	$sql[] = sprintf("DELETE FROM gpx_trk WHERE mid=%d",$mid);
 	$db=get_conn();
 	$db->StartTrans();
-               foreach ($sql as $sql_str) {
-                        $db->Execute($sql_str);
-                }
-   $result = $db->CompleteTrans();
-   if ($result === false) {
+    foreach ($sql as $sql_str) {
+        $db->Execute($sql_str);
+    }
+    $result = $db->CompleteTrans();
+   	if ($result === false) {
    	 return array(false,"sql transaction fail");
-   }
-   return array(true,"done");
+   	}
+   	return array(true,"done");
 }
 // 取得範圍內的 gpx waypoints
 function get_waypoint($x,$y,$r=10,$detail=0){

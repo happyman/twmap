@@ -3,7 +3,10 @@
 $uid = 1;
 require_once("../config.inc.php");
 
-$kid = isset($_GET['kid'])? $_GET['kid'] : null;
+if (php_sapi_name() == "cli")
+	$kid = $argv[1];
+else
+	$kid = isset($_GET['kid'])? $_GET['kid'] : null;
 
 if ($kid == null) {
 	echo "require kid";
