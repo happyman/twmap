@@ -6,30 +6,50 @@ if ($id != WWWRUN_UID ) {
         echo "Please run as wwwrun\n";
         exit;
 }
+$opt=getopt("rd:m:c:h");
+if (isset($opt['h'])){
+	echo $argv[0] . " [-c count] [-r][-d cache_dir][-m start_mid][-h]\n";
+	echo "      -c count: do how many records\n";
+	echo "      -r : real do\n";
+	echo "      -d dir: default to /home/nas/twmapcache/twmap_gpx\n";
+	echo "      -m mid: jump to do from this mid\n";
+	echo "      -h: this help\n";
+	exit(0);
+}
 
-
-$opt=getopt("rc:");
 if (isset($opt['r']))
 	$real_do = 1;
 else
 	$real_do = 0;
-if (isset($opt['c']))
-	$cache_dir = $opt['c'];
+if (isset($opt['d']))
+	$cache_dir = $opt['d'];
 else
 	$cache_dir = "/home/nas/twmapcache/twmap_gpx";
+if (isset($opt['m'])){
+	$start_mid = intval($opt['m']);
+}
+$do_count = 0;
+if (isset($opt['c'])){
+	$do_count = intval($opt['c']);
+} if ( $do_count <1 ) {
+	$do_count = 0;
+}
 $db=get_conn();
 $sql = sprintf("select max(mid) from gpx_wp");
 $rs = $db->getAll($sql);
 // 取出最大 map id
 $maxid = intval($rs[0][0])+1;
-$sql = sprintf("select mid,title,filename,keepon_id FROM \"map\" WHERE gpx=1 AND flag <> 2 AND mid > %d ORDER BY cdate",$maxid);
+if ($start_mid > $maxid)
+	$maxid = $start_mid;
+$sql = sprintf("select mid,title,filename,keepon_id FROM \"map\" WHERE gpx=1 AND flag <> 2 AND mid >= %d ORDER BY cdate",$maxid);
 $rs = $db->getAll($sql);
 printf("Total %d, from mid %d\n",count($rs),$maxid);
-// debug== $i=0;
+$i=1;
 if (count($rs) > 0 ) {
 	foreach($rs as $row) {
-	// debug==	if ($i++ > 3) break;
-		printf("doing mid %d %-30s %s",$row['mid'],$row['title'],$row['keepon_id']);
+	// debug==	三筆就好 if ($i++ > 3) break;
+		if ($do_count > 0 && $i > $do_count) break;
+		printf("%d doing mid %d %-30s %s",$i++, $row['mid'],$row['title'],$row['keepon_id']);
 		if ($real_do == 1) {
 			$exist_mid = is_keepon_map_imported($row['mid']);
 			if ($exist_mid) {
