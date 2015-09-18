@@ -660,6 +660,7 @@
         <zop></zop>
         <qop></qop>
     </onlinemapsource>
+    <!-- 主要加上 id 196,197 -->
     	<onlinemapsource uid="196">
 		<name>TWMAP 25000:1</name>
 		<url><![CDATA[http://rs.happyman.idv.tw/map/tw25k2001/zxy/{$z}_{$x}_{$y}.png]]></url>
@@ -678,5 +679,22 @@
 		<qop></qop>
 		<sop></sop>
 	</onlinemapsource>
+<onlinemapsource uid="197">
+        <name>TWMAP 25000:1 GPX</name>
+        <url><![CDATA[http://rs.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png]]></url>
+        <minzoom>11</minzoom>
+        <maxzoom>16</maxzoom>
+        <projection>MERCATORESFERICA</projection>
+        <httpparam name=""></httpparam>
+        <cacheable>1</cacheable>
+        <downloadable>1</downloadable>
+        <maxtilesday>0</maxtilesday>
+        <maxthreads>0</maxthreads>
+        <xop></xop>
+        <yop></yop>
+        <zop></zop>
+        <qop></qop>
+        <sop></sop>
+    </onlinemapsource>
 
 </onlinemapsources>
