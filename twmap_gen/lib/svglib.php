@@ -41,7 +41,21 @@ class gpxsvg {
 	function dump() {
 		print_r($this);
 	}
+	// 利用 geoPHP 取得 bbox, 不用自己 parse 半天
 	// 取得本圖的 bounds
+	function get_bbox($gpx_str){
+		require_once("geoPHP/geoPHP.inc");
+		$geom = geoPHP::load($gpx_str, 'gpx');
+		$bbox = $geom->getBBox();
+		$tl = $this->is_taiwan($bbox['minx'], $bbox['maxy']);
+		$br = $this->is_taiwan($bbox['maxx'], $bbox['miny']);
+		if ($tl != $br) $this->taiwan = 0;
+		$this->taiwan = $tl; // 0 or 1 or 2
+		//echo "lon $minlon $maxlon, lat $maxlat $minlat\n"; exit;
+		return array($bbox['minx'], $bbox['maxy'], $bbox['maxx'], $bbox['miny']);
+	}
+	
+	/* 掰掰
 	function get_bound(&$arr) {
 		// 1. 若已經輸入 tw67 左上右下
 		if (isset($this->input_bound67['x']) && isset($this->input_bound67['x1'])) {
@@ -131,6 +145,7 @@ class gpxsvg {
 		//echo "lon $minlon $maxlon, lat $maxlat $minlat\n"; exit;
 		return array($minlon, $maxlat, $maxlon, $minlat);
 	}
+	*/
 	function fit_a4($tl, $br) {
 
 		$x = ($br[0] - $tl[0])/1000;
@@ -184,13 +199,9 @@ class gpxsvg {
 		$xml = simplexml_load_file($this->gpx);
 		$arr = obj2array($xml);
 		// 1. 取得 bounds, 轉換成 twd67 最近的 bounds
-/*
-$x = $arr['bounds']['bounds']['minlon'];
-$y = $arr['bounds']['bounds']['maxlat'];
-$x1 = $arr['bounds']['bounds']['maxlon'];
-$y1 = $arr['bounds']['bounds']['minlat'];
- */
-		list($x,$y,$x1,$y1) = $this->get_bound($arr);
+
+		//list($x,$y,$x1,$y1) = $this->get_bound($arr);
+		list($x,$y,$x1,$y1) = $this->get_bbox(file_get_contents($this->gpx));
 
 		if ($this->taiwan == 0 ) {
 			$this->_err[] = "超出台澎範圍或檔案剖析有誤,請回報";
@@ -256,25 +267,44 @@ $br = array( ceil($tx1 / 1000)*1000 + $expend, floor($ty1 / 1000)*1000 - $expend
 
 
 		// 2. 取得所有 trk point 的高度 作為 colorize trk 的依據
-		//$this->dump();
+		// $this->dump();
+		// 像 oruxmap 會產生只有一層的 trk, 而不會有 trk 的 array => 為了不想重寫 parser, 放到 array 去
+		if (isset($arr['trk']['trkseg']))
+			$arr['trk'][0] = $arr['trk'];
 		// 共有多少 tracks?
 		$total_tracks = count($arr['trk']);
 		$min=8000;
 		$max=0;
 		for($i=0;$i<$total_tracks;$i++) {
+			if (!isset($arr['trk'][$i]['name'])) {
+				// skip track without "name"
+				// echo "no name:" . var_dump($arr['trk']);
+				continue;
+			}
 			$this->track[$i] = array("name"=> $arr['trk'][$i]['name']);
 
 			$j=0;
 			foreach($arr['trk'][$i]['trkseg']['trkseg'] as $trk_point) {
 				// skip route/track without '@attributes'
-				if (!isset($trk_point['@attributes']['lon'])) continue;
+				// echo "get point:";
+				// print_r($trk_point);
+				if (!isset($trk_point['@attributes']['lon'])){
+					if (!isset($trk_point['trkpt']['lon']))
+						continue;
+					else {
+						$trk_point['@attributes']['lon'] = $trk_point['trkpt']['lon'];
+						$trk_point['@attributes']['lat'] = $trk_point['trkpt']['lat'];
+					}
+
+				}
 
 				if($trk_point['@attributes']['lon'] > $this->bound['br'][0] ||
 					$trk_point['@attributes']['lon']  < $this->bound['tl'][0] ||
 					$trk_point['@attributes']['lat'] > $this->bound['tl'][1] ||
-					$trk_point['@attributes']['lat']  < $this->bound['br'][1] )
+					$trk_point['@attributes']['lat']  < $this->bound['br'][1] ){
+					// echo "oob!!!!!\n";	
 					continue;
-
+				}
 				if (isset($trk_point['ele'])) {
 					// 如果高度小於 0 
 					if ($trk_point['ele'] < 0 ) {
@@ -298,19 +328,21 @@ $br = array( ceil($tx1 / 1000)*1000 + $expend, floor($ty1 / 1000)*1000 - $expend
 		//$this->dump();
 		//$this->waypoint = $arr['wpt'];
 		$j = 0;
-		foreach($arr['wpt'] as $waypoint) {
-			if($waypoint['@attributes']['lon'] > $this->bound['br'][0] ||
-				$waypoint['@attributes']['lon']  < $this->bound['tl'][0] ||
-				$waypoint['@attributes']['lat'] > $this->bound['tl'][1] ||
-				$waypoint['@attributes']['lat']  < $this->bound['br'][1] )
-				continue;
-			$this->waypoint[$j] = $waypoint;
-			$this->waypoint[$j]['rel'] = $this->rel_px($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']);
-			if ($this->taiwan == 1)
-				$this->waypoint[$j]['tw67'] = proj_geto672(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']));
-			else
-				$this->waypoint[$j]['tw67'] = proj_geto672_ph(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']));
-			$j++;
+		if (isset($arr['wpt'])){
+			foreach($arr['wpt'] as $waypoint) {
+				if($waypoint['@attributes']['lon'] > $this->bound['br'][0] ||
+					$waypoint['@attributes']['lon']  < $this->bound['tl'][0] ||
+					$waypoint['@attributes']['lat'] > $this->bound['tl'][1] ||
+					$waypoint['@attributes']['lat']  < $this->bound['br'][1] )
+					continue;
+				$this->waypoint[$j] = $waypoint;
+				$this->waypoint[$j]['rel'] = $this->rel_px($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']);
+				if ($this->taiwan == 1)
+					$this->waypoint[$j]['tw67'] = proj_geto672(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']));
+				else
+					$this->waypoint[$j]['tw67'] = proj_geto672_ph(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']));
+				$j++;
+			}
 		}
 		unset($arr);
 		//$this->dump();
@@ -451,6 +483,7 @@ $br = array( ceil($tx1 / 1000)*1000 + $expend, floor($ty1 / 1000)*1000 - $expend
 
 	}
 	function out_waypoints() {
+		if (empty($this->waypoint)) return;
 		echo ' <g id="Waypoints">';
 		$j=1;
 		foreach($this->waypoint as $wpt) {
