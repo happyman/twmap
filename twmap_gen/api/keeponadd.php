@@ -75,6 +75,7 @@ $TODO['shifty'] = ($svg->bound_twd67['tl'][1] - $svg->bound_twd67['br'][1])/1000
 $TODO['ph'] = $svg->bound_twd67['ph'];
 
 // 2. 加入 queue
+/*
 require_once("../lib/memq.inc.php");
 
 $ret = MEMQ::enqueue("keepon", $TODO);
@@ -83,7 +84,18 @@ if ($ret === FALSE) {
 error_log("add to queue fail". print_r($TODO,true));
 	ajaxerr("system error");
 }
-
+*/
+// gearman code
+$gmclient= new GearmanClient();
+$gmclient->addServer(GEARMAN_SERVER);
+		//把 action 加入
+$workload = serialize($TODO);
+$job_handle = $gmclient->doBackground("keepon_worker", $workload, md5($workload));
+if ($gmclient->returnCode() != GEARMAN_SUCCESS)
+{
+	ajaxerr("5.add to queue error");
+}
+// gearman code
 $ret = array("time" => time(), "msg" => "accepted");
 error_log("add to queue");
 ajaxok($ret);

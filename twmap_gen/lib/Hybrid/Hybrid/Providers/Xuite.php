@@ -32,7 +32,6 @@ class Hybrid_Providers_Xuite extends Hybrid_Provider_Model_OAuth2
 		$this->api->token_url     = 'https://my.xuite.net/service/account/token.php';
 
 		$this->api->curl_authenticate_method  = "GET";
-  //  $this->api->access_token_expires_in = $this->token( "expire_in" );
 
 	}
 
