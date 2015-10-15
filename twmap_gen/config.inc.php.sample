@@ -96,8 +96,11 @@ else {
 ini_set("session.gc_maxlifetime", 86400);
 
 #
-define('MEMQ_POOL', '127.0.0.1:11211');
-define('MEMQ_TTL', 0);
+
+ini_set("session.gc_maxlifetime", 86400);
+
+# Keppon API : queue
+define('GEARMAN_SERVER','127.0.0.1');
 
 
 define('APE_HOST','0.ape.happyman.idv.tw');

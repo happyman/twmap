@@ -21,7 +21,7 @@ case 'yahoo':
 	$adapter = $hybridauth->authenticate( "OpenID", array( "openid_identifier" => "https://me.yahoo.com"));
 	break;
 case 'facebook':
-	$adapter = $hybridauth->authenticate( "Google" );
+	$adapter = $hybridauth->authenticate( "Facebook" );
 	break;
 case 'xuite':
 	$adapter = $hybridauth->authenticate( "Xuite" );

@@ -10,7 +10,7 @@ $ver = trim(file_get_contents("VERSION"));
 	<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=0">
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
-	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+	<script type="text/javascript" src="//maps.google.com/maps/api/js?sensor=false"></script>
 	<script type="text/javascript" src="js/keydragzoom-2.0.6.js"></script>
 	<script type="text/javascript" src="js/infobox.js"></script>
 	<script type="text/javascript" src='js/ExtDraggableObject.js'></script>
@@ -26,9 +26,9 @@ $ver = trim(file_get_contents("VERSION"));
 	<script type="text/javascript" src="js/functions.js" charset="utf-8"></script>
 	<script type="text/javascript" src="js/jquery-autoGrowInput.js" charset="utf-8"></script>
 	<script type="text/javascript" src="js/jquery.geolocation.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/geolocationmarker.js"></script>
 	<script type="text/javascript" src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
 	<script type="text/javascript" src="js/v3_ll_grat.js?v=<?=$ver?>"></script>
-	<script src="js/geolocationmarker-compiled.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
 	<link rel="stylesheet" type="text/css" href="css/main.css?v=<?=$ver?>" />
 <script>

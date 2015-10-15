@@ -1,4 +1,4 @@
-// $Id$
+	// $Id$
 var map;
 
 if (typeof console == "undefined") {
@@ -49,7 +49,7 @@ var kmlArrayMax = 50;
 var TaiwanMapV1Options = {
 	getTileUrl: function(a, b) {
 		var z = 17 - b;
-		return "http://rs.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
+		return "//rs.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 18,
@@ -59,7 +59,7 @@ var TaiwanMapV1Options = {
 }
 var TaiwanMapOptions = {
 	getTileUrl: function(coord, zoom) {
-		return "http://rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
+		return "//rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 16,
@@ -69,7 +69,7 @@ var TaiwanMapOptions = {
 }
 var TaiwanGpxMapOptions = {
 	getTileUrl: function(a, b) {
-		return 'http://rs.happyman.idv.tw/map/twmap_gpx/'+b+"_"+a.x+"_"+a.y+".png";
+		return '//rs.happyman.idv.tw/map/twmap_gpx/'+b+"_"+a.x+"_"+a.y+".png";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 16,
@@ -80,7 +80,7 @@ var TaiwanGpxMapOptions = {
 // 以下為前景圖層(透明背景可疊合)
 var GoogleNameOptions = {
 	getTileUrl: function(a, b) {
-		return "http://mts1.google.com/vt/lyrs=h@195026035&x=" + a.x + "&y=" + a.y +"&z=" + b;
+		return "//mts1.google.com/vt/lyrs=h@195026035&x=" + a.x + "&y=" + a.y +"&z=" + b;
 	},
 	tileSize: new google.maps.Size(256,256),
 	maxZoom: 20,
@@ -137,7 +137,7 @@ var Taiwan_General_2011_MapOptions = {
 
 var OSM_Options = {
 	getTileUrl: function(a, b) {
-		return  "http://otile1.mqcdn.com/tiles/1.0.0/map/"+ b + "/" + a.x + "/" + a.y +".jpg";
+		return  "//otile1.mqcdn.com/tiles/1.0.0/map/"+ b + "/" + a.x + "/" + a.y +".jpg";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 19,
@@ -146,7 +146,7 @@ var OSM_Options = {
 }
 var Darker_Options = {
 	getTileUrl: function(a, b) {
-		return "http://b.basemaps.cartocdn.com/dark_all/"+b + "/"+ a.x + "/" + a.y +".png";
+		return "//b.basemaps.cartocdn.com/dark_all/"+b + "/"+ a.x + "/" + a.y +".png";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 19,
@@ -198,7 +198,7 @@ var myInfoBoxOptions = {
 	    width: "200px"
   },
 	closeBoxMargin: "2px 2px 2px 2px",
-	closeBoxURL: "http://www.google.com/intl/en_us/mapfiles/close.gif",
+	closeBoxURL: "//www.google.com/intl/en_us/mapfiles/close.gif",
 	pane: "floatPane",
 	enableEventPropagation: false,
 	infoBoxClearance: "10px"
@@ -700,17 +700,16 @@ for (i = 0; i < availableTags.length; i++) {
 					draggable: true,
 					map: map,
 					zIndex: 10000
-					// icon: new google.maps.MarkerImage("http://sites.google.com/site/mcmarkers/gachapeg-20.png")
 				});
-			circle.bindTo('center',centerMarker, 'position');
-			google.maps.event.addListener(centerMarker, 'click', function() {
-			centerInfo.open(map, centerMarker);
-});
+				circle.bindTo('center',centerMarker, 'position');
+				google.maps.event.addListener(centerMarker, 'click', function() {
+				centerInfo.open(map, centerMarker);
+				});
 
-if (!centerInfo) {
-	centerInfo = new InfoBox(myInfoBoxOptions);
-}
-tagInfo(availableTagsLocation[i], availableTagsMeta[i].id);
+				if (!centerInfo) {
+					centerInfo = new InfoBox(myInfoBoxOptions);
+				}
+				tagInfo(availableTagsLocation[i], availableTagsMeta[i].id);
 			// 放入 cookie
 			$.cookie('twmap3_goto', name );
 			return true;
@@ -825,7 +824,6 @@ function showCenterMarker_real(loc, name) {
 		draggable: true,
 		map: map,
 		zIndex: 10000
-			//icon: new google.maps.MarkerImage("http://sites.google.com/site/mcmarkers/gachapeg-20.png")
 		});
 		circle.bindTo('center',centerMarker, 'position');
 
@@ -910,12 +908,12 @@ function initialmarkers() {
 	icon[3] = "http://map.happyman.idv.tw/kml/3-3ok.png";
 	iceon[5] = "http://map.happyman.idv.tw/kml/3-5new.png";
 	*/
-	icon[4] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_lev8.png';
-	icon[1] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_8res.png';
-	icon[2] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_6res.png';
-	icon[3] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_3res.png';
-	icon[6] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/helios_shard.png';
-	icon[5] = 'https://commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/neutral_icon.png';
+	icon[4] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_lev8.png';
+	icon[1] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_8res.png';
+	icon[2] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_6res.png';
+	icon[3] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_3res.png';
+	icon[6] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/helios_shard.png';
+	icon[5] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/neutral_icon.png';
 	var mysetIcon = function(i, isShadow) {
 		if (i > 0 && i <= 5) {
 			if (isShadow) return shadow;
@@ -928,8 +926,8 @@ function initialmarkers() {
 		if (type == "其他") {
 
 			if (isShadow)
-				return 	"http://maps.google.com/mapfiles/kml/pal4/icon24s.png";
-			return "http://maps.google.com/mapfiles/kml/pal4/icon24.png";
+				return 	"//maps.google.com/mapfiles/kml/pal4/icon24s.png";
+			return "//maps.google.com/mapfiles/kml/pal4/icon24.png";
 		}
 		if (isShadow)
 			return new google.maps.MarkerImage("http://map.happyman.idv.tw/icon/shadow-"+encodeURIComponent(type)+".png", null, new google.maps.Point(0, 0), new google.maps.Point(0, 19));
@@ -947,7 +945,7 @@ function initialmarkers() {
 			else
 				return icon[6];
 		} else {
-			return "http://map.happyman.idv.tw/icon/"+encodeURIComponent(type)+".png";
+			return "//map.happyman.idv.tw/icon/"+encodeURIComponent(type)+".png";
 		}
 	}
 
@@ -979,6 +977,7 @@ function initialmarkers() {
 	var GeoMarker;
 	function initialize() {
 
+	console.log('initialize');
 	geocoder = new google.maps.Geocoder();
 	resizeMap();
 	var init_latlng = new google.maps.LatLng(23.55080, 121.13220);
@@ -1000,23 +999,7 @@ function initialmarkers() {
 		map.enableKeyDragZoom();
 		map.setOptions({disableDoubleClickZoom: false });
 	}
-	// GeoMarker
-		GeoMarker = new GeolocationMarker();
-        GeoMarker.setCircleOptions({fillColor: '#808080', visible: false});
 
-        google.maps.event.addListener(GeoMarker, 'position_changed', function() {
-
-          // console.log('position changed GeoMarker');
-          // map.setCenter(this.getPosition());
-          // map.fitBounds(this.getBounds());
-        });
-
-        //google.maps.event.addListener(GeoMarker, 'geolocation_error', function(e) {
-        //  alert('There was an error obtaining your position. Message: ' + e.message);
-        //});
-
-        GeoMarker.setMap(map);
-    // GeoMarker
 	var moveDiv = document.createElement('div');
 	var myCustomControl2 = new curLocControl(moveDiv, map);
 	map.controls[google.maps.ControlPosition.RIGHT_TOP].push(moveDiv);
@@ -1251,7 +1234,7 @@ function initialmarkers() {
 				callmake = callmake + "&title=" + $('#inputtitle').val();
 
 				if (parent.location == window.location) {
-					url = "http://map.happyman.idv.tw/twmap/main.php?tab=0&" + callmake;
+					url = "//map.happyman.idv.tw/twmap/main.php?tab=0&" + callmake;
 				} else {
 					// for test url
 					var goto = parse_url(parent.location.href);
@@ -1410,18 +1393,19 @@ function initialmarkers() {
 			}
 
 			if (getParameterByName("goto")) {
-				//showCenterMarker(getParameterByName("goto"));
+				console.log("get goto parameter");
 				$("#tags").val(getParameterByName("goto"));
 				$("#goto").trigger('click');
 			}
 			// 顯示 external kml layer
 			else if (getParameterByName('kml')) {
-
+				console.log("get kml parameter");
 				GPSLayer = new google.maps.KmlLayer(getParameterByName('kml') + '?ts=' + (new Date()).getTime(), {
 					preserveViewport: false
 				});
 				GPSLayer.setMap(map);
 			} else if ($.cookie('twmap3_goto')) {
+				console.log("get location from cookie");
 				$("#tags").val($.cookie('twmap3_goto'));
 				$("#goto").trigger('click');
 
@@ -1499,7 +1483,32 @@ function curLocControl(controlDiv, map) {
 	controlDiv.appendChild(testBtn);
 	//
 	$(testBtn).click(function() {
-		navigator.geolocation.getCurrentPosition( CurrentLocation );
+		console.log("click on getCurrentPosition");
+		//navigator.geolocation.getCurrentPosition( CurrentLocation );
+		$.geolocation.get({ win: function(position) {
+				    CurrentLocation(position);
+					position_get = 1;
+					if (!GeoMarker) {
+						// GeoMarker
+					
+						GeoMarker = new GeolocationMarker();
+				        GeoMarker.setCircleOptions({fillColor: '#808080', visible: false});
+
+				        google.maps.event.addListener(GeoMarker, 'position_changed', function() {
+
+				          // console.log('position changed GeoMarker');
+				          // map.setCenter(this.getPosition());
+				          // map.fitBounds(this.getBounds());
+				        });
+
+				        //google.maps.event.addListener(GeoMarker, 'geolocation_error', function(e) {
+				        //  alert('There was an error obtaining your position. Message: ' + e.message);
+				        //});
+
+				        GeoMarker.setMap(map);
+				    // GeoMarker
+     				}
+		}});
 	});
 }
 

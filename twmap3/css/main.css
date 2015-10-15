@@ -180,7 +180,7 @@ font-size: 16px;
 color: #000000;
 }
 .close-meerkat {
-	background: url("http://meerkat.jarodtaylor.com/demo/images/close-x.png") no-repeat scroll 0 0 transparent;
+	background: url("../img/close-x.png") no-repeat scroll 0 0 transparent;
 	cursor: pointer;
 	display: block;
 	height: 18px;
@@ -191,7 +191,7 @@ color: #000000;
 	top: 10px;
 }
 .close-meerkat2{
-	background: url("http://meerkat.jarodtaylor.com/demo/images/close-x.png") no-repeat scroll 0 0 transparent;
+	background: url("../img/close-x.png") no-repeat scroll 0 0 transparent;
 	cursor: pointer;
 	position: absolute;
 	right: 10px;
