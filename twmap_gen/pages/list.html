@@ -6,7 +6,7 @@
 	 font-weight: bold;
  }
  #progressbar {
-	 float: right; 
+	 float: right;
 	 width: 300px;
 	 line-height: 22px;
  }
@@ -44,7 +44,7 @@ $(document).ready(function(){
 			{ "sTitle": "空間" },
 			{ "sTitle": "操作" , "bSortable": false }
 			]});
-	
+
 	$(window).resize(function() {
 	//	  console.log("resized");
 	//		dt.fnDraw(false);
@@ -60,22 +60,22 @@ $(document).ready(function(){
 
 });
 function map_action(action, mid) {
-	var $tabs = $('#tabs').tabs();
 	if (action == 'del') {
 		if (confirm("確定嘛?")){
-			$.blockUI({ css: { 
-				border: 'none', 
-					padding: '15px', 
-					backgroundColor: '#000', 
-					'-webkit-border-radius': '10px', 
-					'-moz-border-radius': '10px', 
-					opacity: .5, 
-					color: '#fff' 
-			} }); 
+			$.blockUI({ css: {
+				border: 'none',
+					padding: '15px',
+					backgroundColor: '#000',
+					'-webkit-border-radius': '10px',
+					'-moz-border-radius': '10px',
+					opacity: .5,
+					color: '#fff'
+			} });
 			$.post("backend_del.php", { mid: mid } ,function(data){
 				$.unblockUI();
 				if (data.status == "ok") {
-					$tabs.tabs('load',2);   
+					$( "#tabs").tabs("load",2);
+					$( "#tabs" ).tabs("option","active",2);
 				}
 				else
 					alert("error: "+data.error);
@@ -83,19 +83,20 @@ function map_action(action, mid) {
 		}
 	} else if (action == 'expire') {
 		if (confirm("確定空間回收嘛?")){
-			$.blockUI({ css: { 
-				border: 'none', 
-					padding: '15px', 
-					backgroundColor: '#000', 
-					'-webkit-border-radius': '10px', 
-					'-moz-border-radius': '10px', 
-					opacity: .5, 
-					color: '#fff' 
-			} }); 
+			$.blockUI({ css: {
+				border: 'none',
+					padding: '15px',
+					backgroundColor: '#000',
+					'-webkit-border-radius': '10px',
+					'-moz-border-radius': '10px',
+					opacity: .5,
+					color: '#fff'
+			} });
 			$.post("backend_del.php", { mid: mid , op: "recycle"} ,function(data){
 				$.unblockUI();
 				if (data.status == "ok") {
-					$tabs.tabs('load',2);   
+					$( "#tabs").tabs("load",2);
+					$("#tabs").tabs("option","active",2);
 				}
 				else
 					alert("error: "+data.error);
@@ -103,31 +104,20 @@ function map_action(action, mid) {
 		}
 
 	} else if (action == 'view') {
-		$tabs.tabs('url', 3, "show.php?tab=3&mid="+mid);
-		$tabs.tabs('select', 3);
+		$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=3&mid="+mid );
+		$("#tabs").tabs("option", "active", 3);
 	} else if (action == 'link') {
 		win=window.open("show.php?mid="+mid, "_blank","height=600,width=1024,toolbar=no,menubar=no,location=yes,status=yes,scrollbars=yes,resizable=yes");
 		win.focus();
 	} else if (action == 'recreate') {
-		$tabs.tabs('url',0, "mapform.php?recreate=1&"+ mid);
-		$tabs.tabs('select', 0);
+		$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php?recreate=1&"+mid);
+		$("#tabs").tabs("option", "active", 0);
 	} else if (action == 'recreate_gpx') {
-		$tabs.tabs('url',0, "mapform.php?recreate_gpx=1&"+ mid);
-		$tabs.tabs('select', 0);
+		$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php?recreate_gpx=1&"+ mid);
+		$("#tabs").tabs("option", "active", 0);
 	} else if (action == 'mapshow') {
-		// force change 
-		iframe_loaded = 0;
-		$("#tabs").tabs({
-			select: function(event, ui) {
-				if (ui.index == 1){ 
-					if (iframe_loaded == 0) {
-						$("#mapbrowse").attr('src',mid);
-						iframe_loaded = 1;
-					}
-				} 
-			}
-		});
-		$tabs.tabs('select', 1);
+		$("#mapbrowse").attr('src',mid);
+		$("#tabs").tabs("option", "active", 1);
 
 
 	}

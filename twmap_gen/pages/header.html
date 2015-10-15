@@ -20,21 +20,28 @@
 		{/if}
 		<meta property="og:description" content="{$description}登山前準備好地圖,快快樂樂上山,平平安安回家" />
 
-		<script type="text/javascript" src="js/jquery-1.4.4.min.js"></script>
-		<script type="text/javascript" src="js/jquery-ui-1.8.7.custom.min.js"></script>
-		<script type="text/javascript" src="js/jquery.blockUI.js"></script>
-		<script type="text/javascript" src="js/jquery.validate.min.js"></script>
-		<script type="text/javascript" src="js/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" src="js/jquery.tipTip.minified.js"></script>
-    <!-- show -->
-		<script type="text/javascript" src="pirobox/js/pirobox_extended_feb_2011.js"></script>
-		<script type="text/javascript" src="js/jquery.jeditable.js"></script>
+		<!--<script type="text/javascript" src="js/jquery-1.4.4.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.7.custom.min.js"></script>-->
+		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 
-	  <script type="text/javascript" src="js/jquery.panFullSize.js"></script>
-	  <script type="text/javascript" src="js/apeClient.js"></script>
+		<script src="js/jquery.blockUI.js"></script>
+		<script src="js/jquery.validate.min.js"></script>
+		<script src="js/jquery.dataTables.min.js"></script>
+		<script src="js/jquery.tipTip.minified.js"></script>
+    <!-- show -->
+		<script src="pirobox/js/pirobox_extended_feb_2011.js"></script>
+		<script src="js/jquery.jeditable.js"></script>
+
+		<script src='http://connect.facebook.net/en_US/all.js'></script>
+		<script src='/~happyman/twmap3/js/proj4js-combined.js'></script>
+		<script src='/~happyman/twmap3/js/functions.js'></script>
+   
+	  	<script type="text/javascript" src="js/jquery.panFullSize.js"></script>
+	  	<script type="text/javascript" src="js/apeClient.js"></script>
 
 		<link href="pirobox/style_5/style.css" rel="stylesheet" type="text/css" />
-		<link type="text/css" href="css/south-street/jquery-ui-1.8.7.custom.css" rel="Stylesheet" />	
+		<link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />	
 		<link type="text/css" href="css/tipTip.css" rel="Stylesheet" />	
 		<style type="text/css" title="currentStyle">
 			@import "css/dataTables.css?{$twmap_gen_version}";
@@ -89,6 +96,23 @@
 	   .step { background-color: yellow; border:2px solid; border-radius:30px; padding-right:5px; padding-left:5px;}
      .hp { cursor: pointer; }
 
+tabs-nohdr { 
+    padding: 0px; 
+    background: none; 
+    border-width: 0px; 
+} 
+tabs-nohdr .ui-tabs-nav { 
+    padding-left: 0px; 
+    background: transparent; 
+    border-width: 0px 0px 1px 0px; 
+    -moz-border-radius: 0px; 
+    -webkit-border-radius: 0px; 
+    border-radius: 0px; 
+} 
+tabs-nohdr .ui-tabs-panel { 
+    background: #f5f3e5 url(http://code.jquery.com/ui/1.8.23/themes/south-street/images/ui-bg_highlight-hard_100_f5f3e5_1x100.png) repeat-x scroll 50% top; 
+    border-width: 0px 1px 1px 1px; 
+}
 		</style>
 <script>
 	var timer = [];
@@ -100,10 +124,10 @@ function blinking(elm, action) {
 		}
 		return;
 	}
-  timer[elm] = setInterval(blink, 10);
+  timer[elm] = setInterval(blink, 400);
     function blink() {
-        $("#"+elm).fadeOut(400, function() {
-					$("#"+elm).fadeIn(400, function() {
+        $("#"+elm).fadeOut(200, function() {
+					$("#"+elm).fadeIn(200, function() {
 						if (!timer[elm])
 							$("#"+elm).hide();
 					});

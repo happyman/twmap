@@ -3,7 +3,7 @@
 	<div id="greeting" align=right><img src="{$user_icon}" width=32px /><span class="showtip" title="{$user_email}" >{$user_nickname}</span> 你好! 
 		&nbsp; <a href="{$logout_url}" id="logout">登出</a>
 	</div>
-	<div id=tabs>
+	<div id="tabs">
 		<ul>
 			<li><a href="mapform.php" class="showtip" title="輸入參數產生地圖">產生</a></li>
 			<li><a href="#browse" class="showtip" title="瀏覽地圖選取範圍">瀏覽</a></li>
@@ -33,6 +33,7 @@
 	var makeprogress;
 	var globalxdr; // mapform.php
 	$(function() {
+/*
 			$( "#tabs" ).tabs({
 					ajaxOptions: {
 						error: function( xhr, status, index, anchor ) {
@@ -42,27 +43,32 @@
 						success: function() {}
 					}
 			});
+*/
 			// 第一次切換的時候才 load 地圖瀏覽器
 			$("#tabs").tabs({
-					select: function(event, ui) {
-						if (ui.index == 1){ 
-							if (iframe_loaded == 0 ) {
+					activate: function(event, ui) {
+					    var index = $("#tabs").tabs('option','active');
+						if (index == 1){ 
+							if (iframe_loaded == 0 && $("#mapbrowse").attr('src') == '' ) {
+					    			console.log("loading twmap3 for first time");
 								$("#mapbrowse").attr('src',mapbrowse_url);
 								iframe_loaded = 1;
 							}
 						} 
 						// 更改一下 url
-					window.history.pushState({},'','main.php?tab='+ui.index);		
+					 window.history.pushState({},'','main.php?tab='+index);
 					},
+					
 					// http://www.datatables.net/examples/api/tabs_and_scrolling.html
-					"show": function(event, ui) {
-						var oTable = $('div.dataTables_scrollBody>table.display', ui.panel).dataTable();
+					create: function(event, ui) {
+						var oTable = $('div.dataTables_scrollBody>table.display', ui.newPanel).dataTable();
 						if ( oTable.length > 0 ) {
 							oTable.fnAdjustColumnSizing();
 						}
 					}
+					
 			});
-			$("#tabs").tabs("select", initial_tab);
+			$("#tabs").tabs("option", "active", initial_tab);
 			$(".showtip").tipTip();
 
 			$("#log_message").hide();
@@ -93,7 +99,7 @@
 					// note jquery ui 1.9 will change selected to active
 					// only show in mapform tab
 					// 第 0 個 tab 才處理.
-					if ($("#tabs").tabs("option", "selected") != 0 ) {
+					if ($("#tabs").tabs("option", "active") != 0 ) {
                 makeprogress.progressbar("value",0);
                 makeprogress.hide();
                 $("#log_message").text("").hide();

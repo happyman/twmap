@@ -162,12 +162,12 @@ $('#bt1').click(function() {
 		$("#create3").hide();
 		$(".gpx_recreate_mode").hide();
 		$("#mapform input[name=gps]").val(0);
-		$('#step_x').text("3");
-		$('#step_y').text("4");
-		$('#step_bound').text("5");
-		$('#step_area').text("6");
-		$('#step_version').text("7");
-		$('#step_go').text("8");
+		$('#step_x').text("2");
+		$('#step_y').text("3");
+		$('#step_bound').text("4");
+		$('#step_area').text("5");
+		$('#step_version').text("6");
+		$('#step_go').text("7");
 	}
 });
 $('#create').click(function() {
@@ -204,9 +204,9 @@ $('#create').click(function() {
 		if (data.status == "ok") {
 			clearProgress();
 			var $tabs = $('#tabs').tabs();
-			$tabs.tabs('url',3,"show.php?tab=1&mid="+data.id);
-			$tabs.tabs('url',0, "mapform.php");
-			$tabs.tabs('select',3);
+			$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php");
+			$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=1&mid="+data.id);
+			$tabs.tabs('option',"active",3);
 		}
 		else
 			alert("error: "+data.error);
@@ -257,9 +257,9 @@ $('#create3').click(function() {
 		if (data.status == "ok") {
 			clearProgress();
 			var $tabs = $('#tabs').tabs();
-			$tabs.tabs('url',3,"show.php?tab=1&mid="+data.id);
-			$tabs.tabs('url',0, "mapform.php");
-			$tabs.tabs('select',3);
+			$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php");
+			$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=1&mid="+data.id);
+			$tabs.tabs('option',"active",3);
 		}
 		else
 			alert("error: "+data.error);

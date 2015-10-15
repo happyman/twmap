@@ -324,7 +324,8 @@
 											});										
 										}
 										});
-									$('.zoomOut').live('click',function(h){
+									//$('.zoomOut').live('click',function(h){
+									$('.zoomOut').click(function(h){
 										h.preventDefault();
 										$('.immagine').css('cursor', 'auto');
 										if(opt.piro_drag == true){
@@ -336,7 +337,8 @@
 											$('.zoomIn').show();
 											$(img).animate({'width':  imgW , 'height': imgH, top:0, left:0 },600)
 										});
-									$('.zoomIn').live('click',function(w){
+									//$('.zoomIn').live('click',function(w){
+									$('.zoomIn').click(function(w){
 										w.preventDefault();
 										$('.zoomIn').add('.zoomOut').remove();
 										$('.h_c_c').append('<a href="#" class="zoomOut" title="">zoomOut</a>');
@@ -448,7 +450,7 @@
 			} 	
 		}
 	});
-	$('.immagine').live('click',function(){
+	$('.immagine').click(function(){
 		$('.caption').slideToggle(200);
 	});
 	function close_all (){
