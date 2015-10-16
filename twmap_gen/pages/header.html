@@ -7,11 +7,11 @@
 		<meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT" />
 		<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
 		<meta http-equiv="Pragma" content="no-cache">
-		<meta name="keywords" content="地圖產生器,台灣地圖,登山" />
+		<meta name="keywords" content="地圖產生器,台灣地圖,登山,Taiwan,hiking,coutour,map" />
 		<meta property="og:title" content="{$title} 地圖產生器" />
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content="http://{$smarty.server.HTTP_HOST}{$smarty.server.REQUEST_URI}" />
-		{if $ogimage}
+		{if isset($ogimage)}
 		{foreach from=$ogimage item=image}
 		<meta property="og:image" content="{$site_root_url}/{$image}" />
 		{/foreach}
