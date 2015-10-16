@@ -76,6 +76,7 @@ if (php_sapi_name() != "cli") {
 	require_once(__ROOT__."lib/smarty/Smarty.class.php");
 
 	$smarty = new Smarty();
+	$smarty->error_reporting = E_ALL & ~E_NOTICE;
 	$smarty->setTemplateDir(__ROOT__.'pages');
 	$smarty->setCompileDir($tmppath .'/smarty/tcache');
 	$smarty->setCacheDir($tmppath.'/smarty/cache');

@@ -16,7 +16,7 @@
 		}, opt);
 	$.fn.piroFadeIn = function(speed, callback) {
 		$(this).fadeIn(speed, function() {
-		if(jQuery.browser.msie)
+		if($.browser.msie())
 			$(this).get(0).style.removeAttribute('filter');
 		if(callback != undefined)
 			callback();
@@ -24,7 +24,7 @@
 	};
 	$.fn.piroFadeOut = function(speed, callback) {
 		$(this).fadeOut(speed, function() {
-		if(jQuery.browser.msie)
+		if($.browser.msie())
 			$(this).get(0).style.removeAttribute('filter');
 		if(callback != undefined)
 			callback();
@@ -292,7 +292,7 @@
 							$(img).addClass('immagine');
 							if(opt.piro_drag == true){
 								$('.immagine,.h_b_c,.h_t_c').css('cursor','move');
-								if ( $.browser.msie ) {
+								if ( $.browser.msie() ) {
 									wrapper.draggable({ handle:'.h_t_c,.h_b_c,.div_reg img'});
 								}else{
 									wrapper.draggable({ handle:'.h_t_c,.h_b_c,.div_reg img',opacity: 0.80});
@@ -461,7 +461,7 @@
 					wrapper.draggable({disabled:false});
 				}
 				var ie_sucks = wrapper;
-				if ( $.browser.msie ) {
+				if ( $.browser.msie() ) {
 					ie_sucks = div_reg.add(piro_bg);
 					$('.div_reg img').remove();
 				}else{
