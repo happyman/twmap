@@ -25,11 +25,15 @@ class xuiteAuth {
 		}
 	}
 	function getLoginURL($redir_url="") {
-		if (empty($redir_url))
-			$redir_url = urlencode($_SERVER['SCRIPT_URI']);
+		if (empty($redir_url)){
+			if (!isset($_SERVER['SCRIPT_URI']))
+				$redir_url = urlencode($_SERVER['REQUEST_URI']);
+			else
+				$redir_url = urlencode($_SERVER['SCRIPT_URI']);
+		}
 
 		$url=sprintf("http://my.xuite.net/service/account/authorize.php?response_type=code_and_token&client_id=%s&redirect_uri=%s",$this->api_key,$redir_url);
-		$this->debuglog("getLoginURL($redir_url)=$url");
+		//$this->debuglog("getLoginURL($redir_url)=$url");
 		return $url;
 	}
 	// todo: maybe buggy
@@ -37,7 +41,7 @@ class xuiteAuth {
 		if (empty($redir_url))
 			$redir_url = urlencode($_SERVER['SCRIPT_URI']);
 		$url=sprintf("http://my.xuite.net/service/account/token.php?grant_type=refresh_token&client_id=%s&client_secret=%s&redirect_uri=%s&refresh_token=%s",$this->api_key,$this->secret,$redir_url,$this->data['access_token']);
-		$this->debuglog("getRefreshURL($redir_url)=$url");
+		//$this->debuglog("getRefreshURL($redir_url)=$url");
 		return $url;
 
 	}

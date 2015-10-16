@@ -52,7 +52,7 @@ if ($html_head == 1 ) {
 		$smarty->assign("loggedin", 1);
 	} else { // 沒有登入
 		//require_once('lib/fb/facebook.php');
-		require_once('lib/xuite.php');
+		//require_once('lib/xuite.php');
 		$smarty->assign("lastest_mid", "&mid=$mid" );
 		$smarty->assign("initial_tab", 2 );
 		$smarty->assign("showing", true );

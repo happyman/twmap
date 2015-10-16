@@ -25,10 +25,12 @@
 		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 		<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 
+		<script src="js/iframeResizer.min.js"></script>
 		<script src="js/jquery.blockUI.js"></script>
-		<script src="js/jquery.validate.min.js"></script>
+		<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
 		<script src="js/jquery.dataTables.min.js"></script>
 		<script src="js/jquery.tipTip.minified.js"></script>
+		<script src="js/jquery.slidedrawer.js"></script>
     <!-- show -->
 		<script src="pirobox/js/pirobox_extended_feb_2011.js"></script>
 		<script src="pirobox/js/jqbrowser.js"></script>
@@ -37,103 +39,16 @@
 		<script src='http://connect.facebook.net/en_US/all.js'></script>
 		<script src='/~happyman/twmap3/js/proj4js-combined.js'></script>
 		<script src='/~happyman/twmap3/js/functions.js'></script>
-   
-	  	<script type="text/javascript" src="js/jquery.panFullSize.js"></script>
-	  	<script type="text/javascript" src="js/apeClient.js"></script>
+	  	<script src="js/jquery.panFullSize.js"></script>
+	  	<script src="js/apeClient.js"></script>
 
 		<link href="pirobox/style_5/style.css" rel="stylesheet" type="text/css" />
 		<link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />	
 		<link type="text/css" href="css/tipTip.css" rel="Stylesheet" />	
-		<style type="text/css" title="currentStyle">
+		<link href="css/twmap.css" type="text/css" rel="Stylesheet" />
+	    <style type="text/css" title="currentStyle">
 			@import "css/dataTables.css?{$twmap_gen_version}";
 		</style>
 
-		<style type="text/css">
-			{ font-family: Verdana; font-size: 1em; }
-			label { width: 10em; float: left; }
-			label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }
-			p { clear: both; }
-			.submit { margin-left: 12em; }
-			em { font-weight: bold; padding-right: 1em; vertical-align: top; }
-			img { image-rendering: -moz-crisp-edges; -ms-interpolation-mode:bicubic; }
-			.fbshare {
-					cursor:pointer;
-			}
-			#greeting {
-				display: block;
-				position: absolute;
-				right: 20px;
-				top: 10px;
-				text-shadow: 0 0 0, 0 1px 1px rgba(0, 0, 0, 0.5);
-				z-index: 100;
-				float: right;
-      }
-			#icon_browse {
-				background:url(icons/op_browse.png) no-repeat 0 0px; display:block; float:left; width:32px; height:32px; cursor:pointer;
-			}
-			#icon_delete {
-				background:url(icons/op_delete.png) no-repeat 0 0px; display:block; float:left; width:32px; height:32px; cursor:pointer;
-			}
-			#icon_view {
-				background:url(icons/op_view.png) no-repeat 0 0px; display:block; float:left; width:32px; height:32px; cursor:pointer;
-			}
-			#icon_recycle {
-				background:url(icons/op_recycle.png) no-repeat 0 0px; display:block; float:left; width:32px; height:32px; cursor:pointer;
-			}
-			#icon_save {
-				background:url(icons/op_save.png) no-repeat 0 0px; display:block; float:left; width:32px; height:32px; cursor:pointer;
-			}
-			#icon_save_link:hover {
-				background:url(icons/op_save.png) no-repeat 100px 0px; display:block; width:32px; height:32px; cursor:pointer; 
-				width: 80%;
-				}
 
-			#icon_recreate {
-				background:url(icons/op_recreate.png) no-repeat 0 0px; display:block; float:left; width:32px; height:32px; cursor:pointer;
-			}
-			#icon_mapshow {
-				background:url(icons/op_mapshow.png) no-repeat 0 0px; display:block; float:left; width:32px; height:32px; cursor:pointer;
-			}
-	   .step { background-color: yellow; border:2px solid; border-radius:30px; padding-right:5px; padding-left:5px;}
-     .hp { cursor: pointer; }
-
-tabs-nohdr { 
-    padding: 0px; 
-    background: none; 
-    border-width: 0px; 
-} 
-tabs-nohdr .ui-tabs-nav { 
-    padding-left: 0px; 
-    background: transparent; 
-    border-width: 0px 0px 1px 0px; 
-    -moz-border-radius: 0px; 
-    -webkit-border-radius: 0px; 
-    border-radius: 0px; 
-} 
-tabs-nohdr .ui-tabs-panel { 
-    background: #f5f3e5 url(http://code.jquery.com/ui/1.8.23/themes/south-street/images/ui-bg_highlight-hard_100_f5f3e5_1x100.png) repeat-x scroll 50% top; 
-    border-width: 0px 1px 1px 1px; 
-}
-		</style>
-<script>
-	var timer = [];
-function blinking(elm, action) {
-	if (action == 0 ){
-		if (timer[elm]){
-			clearInterval(timer[elm]);
-			delete timer[elm];
-		}
-		return;
-	}
-  timer[elm] = setInterval(blink, 400);
-    function blink() {
-        $("#"+elm).fadeOut(200, function() {
-					$("#"+elm).fadeIn(200, function() {
-						if (!timer[elm])
-							$("#"+elm).hide();
-					});
-        });
-  }
-}
-</script>
 	</head>

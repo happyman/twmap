@@ -4,7 +4,9 @@ if (!file_exists("config.inc.php")) {
 	exit("please create config.inc.php from config.inc.php.sample");
 }
 include_once("config.inc.php");
-session_start();
+if(!isset($_SESSION)) { 
+        session_start(); 
+} 
 
 if ( isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1) {
 	header("Location: main.php");

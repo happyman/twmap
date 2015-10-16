@@ -3,6 +3,7 @@ if(!ob_start("ob_gzhandler")) ob_start();
 session_start();
 $ver = trim(file_get_contents("VERSION"));
 ?>
+<!DOCTYPE html>
 <html>
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
@@ -10,25 +11,26 @@ $ver = trim(file_get_contents("VERSION"));
 	<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=0">
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
-	<script type="text/javascript" src="//maps.google.com/maps/api/js?sensor=false"></script>
-	<script type="text/javascript" src="js/keydragzoom-2.0.6.js"></script>
-	<script type="text/javascript" src="js/infobox.js"></script>
-	<script type="text/javascript" src='js/ExtDraggableObject.js'></script>
-	<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
-	<script type="text/javascript" src="js/label.js?v=<?=$ver?>"></script>
-	<script type="text/javascript" src="js/oms.min.js"></script>
-	<script type='text/javascript' src='js/proj4js-combined.js'></script>
-	<script type='text/javascript' src='js/jquery.blockUI.js'></script>
-	<script type='text/javascript' src='js/jquery.meerkat.1.3.min.js'></script>
-	<script type="text/javascript" src="js/jquery.cookie.js"></script>
-	<script type="text/javascript" src="js/geoxml3.js?v=<?=$ver?>"></script>
-	<script type="text/javascript" src="js/functions.js" charset="utf-8"></script>
-	<script type="text/javascript" src="js/jquery-autoGrowInput.js" charset="utf-8"></script>
-	<script type="text/javascript" src="js/jquery.geolocation.js" charset="utf-8"></script>
-	<script type="text/javascript" src="js/geolocationmarker.js"></script>
-	<script type="text/javascript" src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
-	<script type="text/javascript" src="js/v3_ll_grat.js?v=<?=$ver?>"></script>
+	<script  src="//maps.google.com/maps/api/js?sensor=false"></script>
+	<script  src="js/keydragzoom-2.0.6.js"></script>
+	<script  src="js/infobox.js"></script>
+	<script  src='js/ExtDraggableObject.js'></script>
+	<script  src="js/jquery-1.7.1.min.js"></script>
+	<script  src="js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script  src="js/label.js?v=<?=$ver?>"></script>
+	<script  src="js/oms.min.js"></script>
+	<script  src='js/proj4js-combined.js'></script>
+	<script  src='js/jquery.blockUI.js'></script>
+	<script  src='js/jquery.meerkat.1.3.min.js'></script>
+	<script  src="js/jquery.cookie.js"></script>
+	<script  src="js/geoxml3.js?v=<?=$ver?>"></script>
+	<script  src="js/functions.js" charset="utf-8"></script>
+	<script  src="js/jquery-autoGrowInput.js" charset="utf-8"></script>
+	<script  src="js/jquery.geolocation.js" charset="utf-8"></script>
+	<script  src="js/geolocationmarker.js"></script>
+	<script  src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
+	<script  src="js/v3_ll_grat.js?v=<?=$ver?>"></script>
+	<script  src="js/iframeResizer.contentWindow.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
 	<link rel="stylesheet" type="text/css" href="css/main.css?v=<?=$ver?>" />
 <script>
@@ -83,7 +85,7 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 			<button type=button class="ui-state-default ui-corner-all" id="goto" title="搜尋並定位">到</button>
 			<button id="kml_sw" class="ui-state-default ui-corner-all" title="山友登山軌跡(支援z=13到18)" type=button>行跡</button>
 			<button id="label_sw" class="ui-state-default ui-corner-all" title="三角點名稱"  type=button>標籤</button>
-			<button id="marker_reload"class="ui-state-default ui-corner-all" type=button>重載</button>
+			<button id="marker_reload" class="ui-state-default ui-corner-all" type=button>重載</button>
 			<select id="marker_sw_select" multiple="multiple">
       		<option selected="selected" value="a">全部</option>
 			<option selected="selected" value="1">一等</option>

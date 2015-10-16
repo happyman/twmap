@@ -979,7 +979,7 @@ function initialmarkers() {
 
 	console.log('initialize');
 	geocoder = new google.maps.Geocoder();
-	resizeMap();
+	// resizeMap();
 	var init_latlng = new google.maps.LatLng(23.55080, 121.13220);
 	map = new google.maps.Map(document.getElementById("map_canvas"), {
 		zoom: 14,
@@ -999,7 +999,6 @@ function initialmarkers() {
 		map.enableKeyDragZoom();
 		map.setOptions({disableDoubleClickZoom: false });
 	}
-
 	var moveDiv = document.createElement('div');
 	var myCustomControl2 = new curLocControl(moveDiv, map);
 	map.controls[google.maps.ControlPosition.RIGHT_TOP].push(moveDiv);
@@ -1449,6 +1448,7 @@ function initialmarkers() {
 			// remove 掉
 			google.maps.event.removeListener(map_is_ready);
 	}); // map is ready listener
+	console.log("done initialize");
 } // end of initialize
 function MyCustomControl(controlDiv, map) {
 	var control = this;
@@ -1467,7 +1467,7 @@ function MyCustomControl(controlDiv, map) {
 function resizeMap() {
 	var viewport_height = ($(window).height() < 460 )?  460 : $(window).height();
 	$("#map_canvas").height( viewport_height - 33+ "px");
-	if(map != null) {
+	if(map != null && markers_ready == 1 ) {
 		google.maps.event.trigger(map, 'resize');
 	}
 }
@@ -1538,6 +1538,10 @@ function updateView(type) {
 	if (type != "info_only")  {
 		showInsideMarkers();
 		//showInsideKML();
+	}
+	if (markers_ready == 0){
+		 console.log("updateView abort");
+		 return;
 	}
 	if ($('#changegrid') != 'None')
 		showGrid($('#changegrid').val());
