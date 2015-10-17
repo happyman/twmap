@@ -139,9 +139,9 @@ $('#bt1').click(function() {
 		$("#mapform button[name=bt1]").html('上傳航跡檔產生');
 		$(".gpx_mode").show();
 		$("#create2").show();
-		blinking('create2',1);
-		blinking('create3',0);
-		blinking('create',0);
+		//blinking('create2',1);
+		//blinking('create3',0);
+		//blinking('create',0);
 		$("#create").hide();
 		$("#create3").hide();
 		$(".normal_mode").hide();
@@ -155,9 +155,9 @@ $('#bt1').click(function() {
 		$(".gpx_mode").hide();
 		$(".normal_mode").show();
 		$("#create").show();
-		blinking('create',1);
-		blinking('create3',0);
-		blinking('create2',0);
+		//blinking('create',1);
+		//blinking('create3',0);
+		//blinking('create2',0);
 		$("#create2").hide();
 		$("#create3").hide();
 		$(".gpx_recreate_mode").hide();
@@ -283,14 +283,14 @@ $(document).ready(function(){
 	$('#step_area').text("5");
 	$('#step_version').text("6");
 	$('#step_go').text("7");
-	blinking('bt1',1);
+	// blinking('bt1',1);
 	if (called == 1 ) {
 		$(".method").hide();
 		$(".normal_note").hide();
 		$('#step_go').text("這裡");
-		blinking('create',1);
-		blinking('create2',0);
-		blinking('create3',0);
+		//blinking('create',1);
+		//blinking('create2',0);
+		//blinking('create3',0);
 		$("#create3").hide();
 		$("#create2").hide();
 	}
@@ -302,9 +302,9 @@ $(document).ready(function(){
 		$(".method").hide();
 		$(".normal_note").hide();
 		$("#create3").show();
-		blinking('create3',1);
-		blinking('create2',0);
-		blinking('create',0);
+		//blinking('create3',1);
+		//blinking('create2',0);
+		//blinking('create',0);
 		$("#create").hide();
 		$("#create2").hide();
 		//alert(called);
@@ -315,9 +315,9 @@ $(document).ready(function(){
 
 	} else {
 		$(".gpx_recreate_mode").hide();
-		blinking('create',1);
-		blinking('create2',0);
-		blinking('create3',0);
+		//blinking('create',1);
+		//blinking('create2',0);
+		//blinking('create3',0);
 		$("#create2").hide();
 		$("#create3").hide();
 	}

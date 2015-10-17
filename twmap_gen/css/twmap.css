@@ -47,6 +47,9 @@ background:url(../icons/op_mapshow.png) no-repeat 0 0px; display:block; float:le
 .step { background-color: yellow; border:2px solid; border-radius:30px; padding-right:5px; padding-left:5px;}
 .hp { cursor: pointer; }
 
+#create { font-size: 30px; padding: 10px; }
+#create2 { font-size: 30px; padding: 10px; }
+#create3  { font-size: 30px; padding: 10px; }
 /* jquery UI tabs */
 tabs-nohdr {
 padding: 0px;
@@ -67,11 +70,11 @@ background: #f5f3e5 url(http://code.jquery.com/ui/1.8.23/themes/south-street/ima
 }
 .normal_note {
     display: block;
-    width: 500px;
-    border-radius: 25px;
+    width: 700px;
+    border-radius: 10px;
     border: 2px solid #8AC007;
-    padding: 20px;
-    height: 160px;
+    padding: 10px;
+    height: 130px;
 }
 /* drawer.css */
 .drawer {
@@ -87,8 +90,8 @@ background: #f5f3e5 url(http://code.jquery.com/ui/1.8.23/themes/south-street/ima
 	background: #CCC9C8; /* add image if you want */
 	color: #ffffff;
 	display: block;
-	height: 25px;
-	line-height: 25px;
+	height: 10px;
+	line-height: 12px;
 	margin: auto;
 	overflow: hidden;
 	padding: 5px;
@@ -103,7 +106,7 @@ background: #f5f3e5 url(http://code.jquery.com/ui/1.8.23/themes/south-street/ima
 }
 
 .drawer-content {
-	background: url(../images/bg.png);
+	/* background: url(../images/bg.png); */
 	border-collapse: collapse;
 	border-top: 5px solid #CCC9C8;
 	height: 110px;

@@ -54,7 +54,7 @@ $(function() {
         });
     });
     client.addEvent('ready', function() {
-        client.core.join('{$user_email|md5}');
+        client.core.join(log_channel);
         client.onRaw('data', function(raw, pipe) {
             var pat = new RegExp("^([a-f0-9]{32}):(.*)$");
             var mat = [];
@@ -127,15 +127,44 @@ $(function() {
 	$("#mapbrowse").iFrameResize(
 	{ log: false,
           heightCalculationMethod: 'max', 
-	  minHeight: 750 
+	  minHeight: 750,
+	  maxHeight: 2000
 	});
-    // footer fold
-    $("#footer").slideDrawer({
-            showDrawer: false,
-            slideSpeed: 700,
-            slideTimeout: true,
-            slideTimeoutCount: 5000,
-        });
+
+$(window).bind("load", function() { 
+       
+       var footerHeight = 0,
+           footerTop = 0,
+           $footer = $("#footer");
+           
+       positionFooter();
+       
+       function positionFooter() {
+       
+                footerHeight = $footer.height();
+                footerTop = ($(window).scrollTop()+$(window).height()-footerHeight)+"px";
+		console.log("sT:"+$(window).scrollTop() + " wh=" + $(window).height() + " fh=" + footerHeight);
+       
+               if ( ($(document.body).height()+footerHeight) < $(window).height()) {
+                   $footer.css({
+                        position: "absolute"
+                   }).animate({
+                        top: footerTop
+                   })
+               } else {
+                   $footer.css({
+                        position: "static"
+                   })
+               }
+               
+       }
+
+       $(window)
+               .scroll(positionFooter)
+               .resize(positionFooter)
+               
+});
+
 }); // ready
 function clearProgress() {
     makeprogress.progressbar("value", 0);
