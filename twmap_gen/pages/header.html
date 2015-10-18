@@ -20,34 +20,35 @@
 		{/if}
 		<meta property="og:description" content="{$description}登山前準備好地圖,快快樂樂上山,平平安安回家" />
 
-		<!--<script type="text/javascript" src="js/jquery-1.4.4.min.js"></script>
-		<script type="text/javascript" src="js/jquery-ui-1.8.7.custom.min.js"></script>-->
+
+<!-- external js -->
 		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 		<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+		<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
+		<script src='http://connect.facebook.net/en_US/all.js'></script>
+		<script src='/~happyman/twmap3/js/proj4js-combined.js'></script>
+		<script src='/~happyman/twmap3/js/functions.js'></script>
 
+		<link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />	
+<!-- end of external -->
+		<!-- build:js js/main.js -->
 		<script src="js/iframeResizer.min.js"></script>
 		<script src="js/jquery.blockUI.js"></script>
-		<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
 		<script src="js/jquery.dataTables.min.js"></script>
 		<script src="js/jquery.tipTip.minified.js"></script>
     <!-- show -->
 		<script src="pirobox/js/pirobox_extended_feb_2011.js"></script>
 		<script src="pirobox/js/jqbrowser.js"></script>
 		<script src="js/jquery.jeditable.js"></script>
-
-		<script src='http://connect.facebook.net/en_US/all.js'></script>
-		<script src='/~happyman/twmap3/js/proj4js-combined.js'></script>
-		<script src='/~happyman/twmap3/js/functions.js'></script>
 	  	<script src="js/jquery.panFullSize.js"></script>
 	  	<script src="js/apeClient.js"></script>
 
+		<!-- endbuild -->
+		<!-- build:css css/main.css -->
 		<link href="pirobox/style_5/style.css" rel="stylesheet" type="text/css" />
-		<link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />	
 		<link type="text/css" href="css/tipTip.css" rel="Stylesheet" />	
+		<link href="css/dataTables.css" type="text/css" rel="Stylesheet" />
 		<link href="css/twmap.css" type="text/css" rel="Stylesheet" />
-	    <style type="text/css" title="currentStyle">
-			@import "css/dataTables.css?{$twmap_gen_version}";
-		</style>
-
+		<!-- endbuild -->
 
 	</head>
