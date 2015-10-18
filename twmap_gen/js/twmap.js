@@ -130,6 +130,10 @@ $(function() {
 	  minHeight: 750,
 	  maxHeight: 2000
 	});
+	$("#mapbrowse").on('load', function() {
+		$(window).resize();
+		console.log("iframe loaded and trigger resize");
+	});
 
 $(window).bind("load", function() { 
        

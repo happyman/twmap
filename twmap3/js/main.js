@@ -979,7 +979,6 @@ function initialmarkers() {
 
 	console.log('initialize');
 	geocoder = new google.maps.Geocoder();
-	// resizeMap();
 	var init_latlng = new google.maps.LatLng(23.55080, 121.13220);
 	map = new google.maps.Map(document.getElementById("map_canvas"), {
 		zoom: 14,
@@ -1083,8 +1082,12 @@ function initialmarkers() {
 	google.maps.event.addListener( map, 'maptypeid_changed', function() {
 		updateView("info_only");
 	});
+	// 真正載入完成
 	listener = google.maps.event.addListener(map, 'idle', function() {
-		$("#loading").hide();
+		if ($("#loading").is(":visible")) {
+			$("#loading").hide();
+			$(window).resize();
+		}
 		updateView('bounds_changed');
 	});
 
