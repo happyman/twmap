@@ -6,7 +6,7 @@
  * @license MIT
  */
 // overload jquery's onDomReady
-if ( jQuery.browser.mozilla || jQuery.browser.opera ) {
+if ( jQuery.browser.mozilla() || jQuery.browser.opera() ) {
 	document.removeEventListener( "DOMContentLoaded", jQuery.ready, false );
 	document.addEventListener( "DOMContentLoaded", function(){ jQuery.ready(); }, false );
 }

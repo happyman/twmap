@@ -551,10 +551,10 @@ function locInfo(newpos, callback, param){
 			locInfo_show(newpos, -10000, { "content": extra_info, "radius": radius });
 			last_pos = newpos;
 			// 如果已經打開
-			if (initial_meerkat || $("#meerkat-wrap").is(":visible")) {
-				showmeerkat(extra_url,{ 'width': '600'});
-				initial_meerkat = 0;
-			}
+		//	if (initial_meerkat || $("#meerkat-wrap").is(":visible")) {
+			showmeerkat(extra_url,{ 'width': '600'});
+			initial_meerkat = 0;
+		//	}
 
 			} else {
 				// 2. 非航點 -- 檢查高度,產生 infowin
@@ -1653,6 +1653,17 @@ function showmeerkat(url, options) {
 	if (opt.width > screenwidth)
 		opt.width = screenwidth-50;
 	opt.height = '100%';
+
+	if ($("#meerkat-wrap").is(":visible")){
+		$('#meerkat-wrap').hide().queue(function(){
+                                                                jQuery(this).destroyMeerkat();
+                });
+		console.log('close meerkat');
+	}else{
+		$('#meerkat').meerkat();
+		console.log('create meerkat');
+	}
+
 	$('#meerkat').meerkat({
 		background: '#ffffff',
 		height: opt.height,
@@ -1661,13 +1672,10 @@ function showmeerkat(url, options) {
 		close: '.close-meerkat',
 		dontShowAgain: '.dont-show',
 		animationIn: 'slide',
-		onMeerkatShow: function() {
-				//alert($('#meerkat').height());
-				$("#meerkatiframe").css('height', $('#meerkat').height());
-			},
-			animationSpeed: 500
+		animationOut: 'slide',
+		animationSpeed: 1000
 		}).removeClass('pos-left pos-bot pos-top').addClass('pos-right');
-	$(".meerkat-content").html("<iframe id=\"meerkatiframe\" align=\"middle\" scrolling=\"yes\" style=\"width:" + opt.width +"px;height:"+opt.height+"\"  frameborder=\"0\" allowtransparency=\"true\" hspace=\"0\" vspace=\"0\" marginheight=\"0\" marginwidth=\"0\"src='"+url+"'></iframe>");
+	$("#meerkat-content").html("<iframe id=\"meerkatiframe\" align=\"middle\" scrolling=\"yes\" style=\"width:" + opt.width +"px;height:"+opt.height+"\"  frameborder=\"0\" allowtransparency=\"true\" hspace=\"0\" vspace=\"0\" marginheight=\"0\" marginwidth=\"0\"src='"+url+"'></iframe>");
 }
 function showmeerkat2(options){
 	var screenwidth = (window.innerWidth > 0) ? window.innerWidth : screen.width;

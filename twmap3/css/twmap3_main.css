@@ -179,6 +179,11 @@ body {
 font-size: 16px;
 color: #000000;
 }
+#meerkat #meerkat-content {
+position:absolute; 
+height: 100%;
+
+}
 .close-meerkat {
 	background: url("../img/close-x.png") no-repeat scroll 0 0 transparent;
 	cursor: pointer;

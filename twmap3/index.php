@@ -27,7 +27,7 @@ $ver = trim(file_get_contents("VERSION"));
 	<script  src="js/label.js"></script>
 	<script  src="js/oms.min.js"></script>
 	<script  src='js/jquery.blockUI.js'></script>
-	<script  src='js/jquery.meerkat.1.3.min.js'></script>
+	<script  src='js/jquery.meerkat.1.3.js'></script>
 	<script  src="js/iframeResizer.contentWindow.min.js"></script>
 	<script  src="js/geolocationmarker.js"></script>
 	<script  src="js/v3_ll_grat.js"></script>
@@ -35,6 +35,7 @@ $ver = trim(file_get_contents("VERSION"));
 	<script  src="js/jquery.geolocation.js" charset="utf-8"></script>
 	<script  src="js/functions.js"></script>
 	<script  src="js/jquery.cookie.js"></script>
+	<script  src="js/jqbrowser.js"></script>
 	<script  src="js/geoxml3.js"></script>
 <!-- endbuild -->
 <!--
@@ -148,9 +149,9 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 			</ul>
 			Powered by <a href="https://developers.google.com/maps/documentation/javascript/reference?hl=zh-tw" target="_blank">Google Maps API</a>, 台灣經建版 25000:1 一版/三版, 國土測量中心地圖, coded by <a href="https://www.facebook.com/happyman.chiu" target="_blank">蚯蚓</a>,謝謝使用.
 		</div>
-<div id=meerkat>
+<div id="meerkat">
 	<a href="#" class="close-meerkat">close</a>
-	<div class="meerkat-content">
+	<div id="meerkat-content">
 				Here we go :*
 		</div>
 </div>
