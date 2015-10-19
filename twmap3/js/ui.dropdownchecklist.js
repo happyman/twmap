@@ -146,7 +146,7 @@
             
             // assign an ID 
             var baseID = sourceSelect.attr("id");
-            if ((baseID == null) || (baseID == "")) {
+            if ((baseID == null) || (baseID === "")) {
             	baseID = "ddcl-" + $.ui.dropdownchecklist.gIDCounter++;
             } else {
             	baseID = "ddcl-" + baseID;
@@ -196,8 +196,7 @@
 	                if (!self.disabled) {
 	                    control.addClass("ui-state-hover");
 	                }
-	            }
-	        , 	function() {
+	            } , 	function() {
 	                if (!self.disabled) {
 	                    control.removeClass("ui-state-hover");
 	                }
@@ -249,7 +248,7 @@
             // the text
             var label = $("<label for=" + id + "/>");
             label.addClass("ui-dropdownchecklist-text");
-            if ( optCss != null ) label.attr('style',optCss);
+            if ( optCss != null ) { label.attr('style',optCss); }
             label.css({ cursor: "default" });
             label.html(text);
 			if (indent) {
@@ -280,7 +279,7 @@
 				if (aCheckBox.hasClass("active") ) {
 					// Active checkboxes take active action
 	                var callback = self.options.onItemClick;
-	                if ($.isFunction(callback)) try {
+	                if ($.isFunction(callback)) { try {
                         callback.call(self,aCheckBox,sourceSelect.get(0));
                     } catch (ex) {
                         // reject the change on any error
@@ -288,6 +287,7 @@
 	                	self._syncSelected(aCheckBox);
                         return;
                     } 
+			}
 	                self._syncSelected(aCheckBox);
 	                self.sourceSelect.trigger("change", 'ddcl_internal');
 	                if (!self.isMultiple && options.closeRadioOnClick) {
@@ -328,14 +328,14 @@
 	                aCheckBox.prop("checked", !checked);
 	                
 	                var callback = self.options.onItemClick;
-	                if ($.isFunction(callback)) try {
+	                if ($.isFunction(callback)){ try {
                         callback.call(self,aCheckBox,sourceSelect.get(0));
                     } catch (ex) {
                         // reject the change on any error
                         aCheckBox.prop("checked",checked);
 	                	self._syncSelected(aCheckBox);
                         return;
-                    } 
+                    } }
 	                self._syncSelected(aCheckBox);
 	                self.sourceSelect.trigger("change", 'ddcl_internal');
 	                if (!checked && !self.isMultiple && options.closeRadioOnClick) {
@@ -428,7 +428,7 @@
                 } else if (opt.is("optgroup")) {
 					var disabled = opt.prop("disabled");
                     var text = opt.attr("label");
-                    if (text != "") {
+                    if (text !== "") {
 	                    var group = self._createGroupItem(text,disabled);
 	                    dropContainerDiv.append(group);
 	                }
@@ -455,7 +455,7 @@
             var self = this;
             // Note that the browsers destroy any html structure within the OPTION
             var text = option.html();
-            if ( (text != null) && (text != '') ) {
+            if ( (text != null) && (text !== '') ) {
             	var value = option.val();
             	var optCss = option.attr('style');
             	var selected = option.prop("selected");
@@ -478,7 +478,7 @@
             		// Initialization call with first item active
                     allCheckboxes.prop("checked", false);
                     $(allCheckboxes[0]).prop("checked", true);
-                } else if ((senderCheckbox != null) && (senderCheckbox.attr("index") == 0)) {
+                } else if ((senderCheckbox != null) && (senderCheckbox.attr("index") === 0)) {
                 	// Action on the first, so all other checkboxes NOT active
                 	var firstIsActive = senderCheckbox.prop("checked");
                     allCheckboxes.prop("checked", false);
@@ -507,7 +507,7 @@
             	if ((senderCheckbox == null) && $(selectOptions[0]).prop("selected") ) {
             		// Initialization call with first item active so force all to be active
                     allCheckboxes.prop("checked", true);
-                } else if ((senderCheckbox != null) && (senderCheckbox.attr("index") == 0)) {
+                } else if ((senderCheckbox != null) && (senderCheckbox.attr("index") === 0)) {
                 	// Check all checkboxes if the first one is checked
                     allCheckboxes.prop("checked", senderCheckbox.prop("checked"));
                 } else  {
@@ -533,7 +533,7 @@
             allCheckboxes.each(function(index) {
             	var anOption = $(selectOptions[index + empties]);
             	var optionText = anOption.html();
-            	if ( (optionText == null) || (optionText == '') ) {
+            	if ( (optionText == null) || (optionText === '') ) {
                     empties += 1;
                     anOption = $(selectOptions[index + empties]);
             	}
@@ -581,7 +581,7 @@
                 text = "";
                 selectOptions.each(function() {
                     if ($(this).prop("selected")) {
-                        if ( text != "" ) { text += ", "; }
+                        if ( text !== "" ) { text += ", "; }
                         /* NOTE use of .html versus .text, which can screw up ampersands for IE */
                         var optCss = $(this).attr('style');
                         var tempspan = $('<span/>');
@@ -594,7 +594,7 @@
                         }
                     }
                 });
-                if ( text == "" ) {
+                if ( text === "" ) {
                     text = (this.options.emptyText != null) ? this.options.emptyText : "&nbsp;";
                 }
             }
@@ -863,7 +863,7 @@
                     optionCount += 1;
                 } else if (opt.is("optgroup")) {
                     var text = opt.attr("label");
-                    if (text != "") {
+                    if (text !== "") {
                     	var aGroup = $(allGroups[groupCount]);
                     	self._refreshGroup(aGroup, disabled);
                     	groupCount += 1;

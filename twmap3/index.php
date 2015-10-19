@@ -11,15 +11,15 @@ $ver = trim(file_get_contents("VERSION"));
 	<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=0">
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
-	<script  src="//maps.google.com/maps/api/js?sensor=false"></script>
+	<script  src="//maps.google.com/maps/api/js?sensor=true&v=3"></script>
        <!--<script  src="js/jquery-1.7.1.min.js"></script>
        <script  src="js/jquery-ui-1.8.17.custom.min.js"></script>
 -->
 	        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
                 <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 	   <link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/sunny/jquery-ui.css" rel="Stylesheet" />  
-	<script  src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
 <!-- build:js js/vender.js -->
+	<script  src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
 	<script  src='js/proj4js-combined.js'></script>
 	<script  src="js/keydragzoom-2.0.6.js"></script>
 	<script  src="js/infobox.js"></script>
@@ -33,10 +33,10 @@ $ver = trim(file_get_contents("VERSION"));
 	<script  src="js/v3_ll_grat.js"></script>
 	<script  src="js/jquery-autoGrowInput.js" charset="utf-8"></script>
 	<script  src="js/jquery.geolocation.js" charset="utf-8"></script>
-	<script  src="js/functions.js"></script>
 	<script  src="js/jquery.cookie.js"></script>
 	<script  src="js/jqbrowser.js"></script>
 	<script  src="js/geoxml3.js"></script>
+	<script  src="js/functions.js"></script>
 <!-- endbuild -->
 <!--
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
