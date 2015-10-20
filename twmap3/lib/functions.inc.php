@@ -9,3 +9,13 @@ function is_admin() {
 	}
 	return true;
 }
+
+function login_info() {
+	global $CONFIG;
+	if (!isset($_SESSION['mylogin'])) return array(false,"not logged in");
+	return array(true, array(
+"user_icon"=> $CONFIG['site_twmap_html_root'] . 'imgs/icon_'.$_SESSION['mylogin']['type']. '.png',
+"user_email"=> $_SESSION['mylogin']['email'],
+"user_nickname"=>$_SESSION['mylogin']['nick'] ));
+
+}

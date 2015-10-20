@@ -9,7 +9,11 @@ if(!isset($_SESSION)) {
 } 
 
 if ( isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1) {
-	header("Location: main.php");
+	if ( isset($_SESSION['redirto'])) {
+		unset($_SESSION['redirto']);
+		header("Location: ". $_SESSION['redirto']);
+	} else
+		header("Location: main.php");
 	exit;
 }
 if (isset($_GET['mid'])){

@@ -6,6 +6,7 @@ $GLOBALS['db_pass'] = $db_pass;
 $GLOBALS['db_name'] = $db_name;
 $GLOBALS['out_root'] = $out_root;
 $GLOBALS['site_url'] = $site_url;
+$GLOBALS['site_html_root'] = $site_html_root;
 
 class keepon_worker
 {

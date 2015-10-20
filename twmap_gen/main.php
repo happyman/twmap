@@ -1,11 +1,20 @@
 <?php
 // $Id: main.php 297 2012-06-27 04:32:26Z happyman $
-session_start();
+require_once("config.inc.php");
+if (!$_SESSION)
+	session_start();
 if (empty($_SESSION['loggedin'])) {
 	// 如果從地圖瀏覽器導過來
-	$_SESSION['redirto'] = $_SERVER["REQUEST_URI"];
+	if (isset($_GET['return']) && $_GET['return'] == 'twmap3' ) {
+		$_SESSION['redirto'] = $TWMAP3URL;
+	}
 	header("Location: login.php");
 	exit(0);
+}
+// 如果加上 return=twmap3 則回到地圖瀏覽器
+if (isset($_GET['return']) && $_GET['return'] == 'twmap3' ) {
+	header("Location: $TWMAP3URL");
+	exit;
 }
 // 如果從地圖瀏覽器導過來
 if (isset($_GET['tab'])) {
@@ -18,7 +27,6 @@ if (isset($_GET['tab'])) {
 	exit;
 }
 
-require_once("config.inc.php");
 $smarty->assign("twmap_gen_version", $twmap_gen_version);
 $smarty->assign("site_root_url", $site_url . $site_html_root);
 echo $smarty->fetch("header.html");

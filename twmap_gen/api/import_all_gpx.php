@@ -3,16 +3,17 @@
 require_once("../config.inc.php");
 $id = `id -u`;
 if ($id != WWWRUN_UID ) {
-        echo "Please run as wwwrun\n";
+        echo "Please run as www user\n";
         exit;
 }
-$opt=getopt("rd:m:c:h");
+$opt=getopt("rd:m:c:hk");
 if (isset($opt['h'])){
 	echo $argv[0] . " [-c count] [-r][-d cache_dir][-m start_mid][-h]\n";
 	echo "      -c count: do how many records\n";
 	echo "      -r : real do\n";
 	echo "      -d dir: default to /home/nas/twmapcache/twmap_gpx\n";
 	echo "      -m mid: jump to do from this mid\n";
+	echo "      -k : keepon only\n";
 	echo "      -h: this help\n";
 	exit(0);
 }
@@ -25,9 +26,9 @@ if (isset($opt['d']))
 	$cache_dir = $opt['d'];
 else
 	$cache_dir = "/home/nas/twmapcache/twmap_gpx";
-if (isset($opt['m'])){
-	$start_mid = intval($opt['m']);
-}
+
+$start_mid = (isset($opt['m']))? intval($opt['m']) : 0;
+
 $do_count = 0;
 if (isset($opt['c'])){
 	$do_count = intval($opt['c']);
@@ -41,7 +42,8 @@ $rs = $db->getAll($sql);
 $maxid = intval($rs[0][0])+1;
 if ($start_mid > $maxid)
 	$maxid = $start_mid;
-$sql = sprintf("select mid,title,filename,keepon_id FROM \"map\" WHERE gpx=1 AND flag <> 2 AND mid >= %d ORDER BY cdate",$maxid);
+$keepon_only = (isset($opt['k']))? "AND keepon_id != 'NULL'" : "";
+$sql = sprintf("select mid,title,filename,keepon_id FROM \"map\" WHERE gpx=1 AND flag <> 2 AND mid >= %d %s ORDER BY cdate",$maxid,$keepon_only);
 $rs = $db->getAll($sql);
 printf("Total %d, from mid %d\n",count($rs),$maxid);
 $i=1;

@@ -8,6 +8,7 @@ $site_html_root = "/~happyman/twmap3/";
 $site_twmap_html_root = "/twmap/";
 // 
 
+$CONFIG['site_twmap_html_root'] = "/twmap/";
 $CONFIG['getkmlfrombounds_url'] = $site_twmap_html_root ."api/getkmlfrombounds.php";
 $CONFIG['geocodercache_url'] = $site_twmap_html_root ."api/geocoder.php";
 $CONFIG['pointdata_url'] = $site_html_root . "data/ajaxCRUD/pointdata2.php";

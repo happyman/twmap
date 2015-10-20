@@ -4,9 +4,13 @@ require_once("Hybrid/Auth.php");
 session_start();
 
 // 設定為開啟新視窗
-if ( $_REQUEST['action'] != "logout" && (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1)) {
-	out_ok("ok","../../main.php");
-	exit;
+if ( isset($_REQUEST['action']) && $_REQUEST['action'] != "logout" && (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1)) {
+
+if (isset($_SESSION['redirto']) && !empty($_SESSION['redirto'])) 
+	out_ok("redir", $_SESSION['redirto']);
+else
+	out_ok("ok", "../../main.php");
+	exit();
 }
 
 $hybridauth = new Hybrid_Auth( $config );
@@ -30,7 +34,7 @@ default:
 	out_err("不正確的登入種類");	
 	break;
 }
-if ($_REQUEST['action'] == 'logout' ) {
+if ( isset($_REQUEST['action']) && $_REQUEST['action'] == 'logout' ) {
 	$adapter->logout();
 	out_ok("登出","../../logout.php");
 	exit;
@@ -61,13 +65,16 @@ $_SESSION['uid'] = $row['uid'];
 $maps = map_get($row['uid']);
 foreach($maps as $map) {
   map_migrate($out_root, $row['uid'], $map['mid']);
-  }
-  if (isset($_SESSION['redirto'])) {
-      header("Location: ".$_SESSION['redirto']);
-      unset($_SESSION['redirto']);
-  } else {
-      header("Location: ../../main.php");
 }
+
+if (isset($_SESSION['redirto']) && !empty($_SESSION['redirto'])) {
+        out_ok("redir", $_SESSION['redirto']);
+	unset($_SESSION['redirto']);
+}
+else
+        out_ok("ok", "../../main.php");
+exit();
+
 
 function out_err($str="") {
 ?>

@@ -89,8 +89,9 @@ error_log("add to queue fail". print_r($TODO,true));
 $gmclient= new GearmanClient();
 $gmclient->addServer(GEARMAN_SERVER);
 		//把 action 加入
-$workload = serialize($TODO);
-$job_handle = $gmclient->doBackground("keepon_worker", $workload, md5($workload));
+workload = serialize($TODO);
+// 直接用 keepon id 帶入
+$job_handle = $gmclient->doBackground("keepon_worker", $workload, $id);
 if ($gmclient->returnCode() != GEARMAN_SUCCESS)
 {
 	ajaxerr("5.add to queue error");

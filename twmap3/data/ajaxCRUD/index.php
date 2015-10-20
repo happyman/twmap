@@ -10,7 +10,7 @@ if (!in_array($_SESSION['mylogin']['email'],$admin)){
 if (empty($_SESSION['loggedin'])) {
 	// 如果從地圖瀏覽器導過來
 	$_SESSION['redirto'] = $_SERVER["REQUEST_URI"];
-	header("Location: /twmap/login.php");
+	header("Location: ". $CONFIG['site_twmap_html_root'] . "login.php");
 	exit(0);
 }
 

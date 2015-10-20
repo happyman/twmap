@@ -51,13 +51,13 @@ if (is_admin())
 	echo "var admin_role = 1;\n";
 else {
 	// prepare login
-	$_SESSION['redirto'] = $_SERVER["REQUEST_URI"];
 	echo "var admin_role = 0;\n";
 }
 printf("var getkml_url = '%s';\n",$CONFIG['getkml_url']);
 printf("var geocodercache_url = '%s';\n",$CONFIG['geocodercache_url']);
 printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
-printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
+printf("var get_waypoints_url = '%s';\n",$CONFIG['get_waypoints_url']);
+printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php?tab=0&");
 ?>
 </script>
 	</head>
@@ -130,24 +130,6 @@ printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
 		</div>
 		<div id="mobile_setup">
 			<a href="#" class="close-meerkat2">close</a>
-		</div>
-		<div id="footer" title="About"  name="footer">
-			<div id="openwin"></div>
-			本程式功能
-			<ul>
-			<li>瀏覽台灣<a href="http://gissrv4.sinica.edu.tw/gis/twhgis.aspx" target="sinica">等高線地形圖</a>,以<a href="http://maps.nlsc.gov.tw/">衛星圖</a>套疊作為登山前參考
-			<li>選擇範圍以便使用<a href="/twmap/" target="twmap">地圖產生器</a>,<a href="/twmap/login.php">登入</a>
-			<li>歡迎<a href="https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168" target="_blank">建議或討論</a>
-			</ul>
-			小秘訣
-			<ul>
-			<li>按住 shift 可以框選縮放
-			<li>按右鍵可以顯示目前座標
-			<li>按左鍵可以選擇範圍
-			<li>搜尋框可打入山名,地標,座標 lon,lat 或 twd67 / twd97 座標 x,y
-				<li>參考 <a href="http://blog.yam.com/amimitea/article/48657866" target="_blank">介紹文</a>
-			</ul>
-			Powered by <a href="https://developers.google.com/maps/documentation/javascript/reference?hl=zh-tw" target="_blank">Google Maps API</a>, 台灣經建版 25000:1 一版/三版, 國土測量中心地圖, coded by <a href="https://www.facebook.com/happyman.chiu" target="_blank">蚯蚓</a>,謝謝使用.
 		</div>
 <div id="meerkat">
 	<a href="#" class="close-meerkat">close</a>

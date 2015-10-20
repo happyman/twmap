@@ -1077,14 +1077,9 @@ function initialize() {
         if ($("#inputtitle").val() != "") {
             ismakingmap = 0;
             $.unblockUI();
-            callmake = callmake + "&title=" + $('#inputtitle').val();
-            if (parent.location == window.location) {
-                url = "//map.happyman.idv.tw/twmap/main.php?tab=0&" + callmake;
-            } else {
-                // for test url
-                var goto = parse_url(parent.location.href);
-                url = goto['scheme'] + "://" + goto['host'] + goto['path'].replace(/\\/g, '/').replace(/\/[^\/]*$/, '') + "/main.php?tab=0&" + callmake;
-            }
+
+            url = callmake_url + callmake + "&title=" + $('#inputtitle').val();
+
             if (confirm("程式將會傳送參數給地圖產生器,確定嘛?")) {
                 if (parent.location != window.location) parent.location.href = url
                 else location.href = url;
@@ -1107,7 +1102,8 @@ function initialize() {
         });
     });
     $("#about").click(function() {
-        $("#footer").dialog();
+        //$("#footer").
+	showmeerkat('about.php',{ 'width': '600'} );
     });
     $("#kml_sw").click(function() {
         if (show_kml_layer == 1) {
@@ -1142,8 +1138,7 @@ function initialize() {
         }
         updateView("info_only");
     });
-    if (admin_role == 1) $("#marker_reload").show();
-    else $("#marker_reload").hide();
+    toggle_admin_role();
     // admin
     $("#marker_reload").click(function() {
         markerReload({
@@ -1363,7 +1358,8 @@ function MyCustomControl(controlDiv, map) {
     controlDiv.appendChild(testBtn);
     // wire up jquery click
     $(testBtn).click(function() {
-        $("#footer").dialog();
+        // $("#footer").dialog();
+	showmeerkat("about.php",{width: 600});
     });
 }
 
@@ -1739,4 +1735,11 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
         polylabel[k].setMap(null);
     }
     for (var j = i; j < poly.length; j++) poly[j].setMap(null);
+}
+function toggle_admin_role() {
+    if (admin_role == 1)
+        $("#marker_reload").show();
+    else
+        $("#marker_reload").hide();
+
 }
