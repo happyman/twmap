@@ -2,7 +2,7 @@
 var timer = [];
 
 function blinking(elm, action) {
-    if (action == 0) {
+    if (action === 0) {
         if (timer[elm]) {
             clearInterval(timer[elm]);
             delete timer[elm];
@@ -25,7 +25,7 @@ $(function() {
         activate: function(event, ui) {
             var index = $("#tabs").tabs('option', 'active');
             if (index == 1) {
-                if (iframe_loaded == 0 && $("#mapbrowse").attr('src') == '') {
+                if (iframe_loaded === 0 && $("#mapbrowse").attr('src') === '') {
                     console.log("loading twmap3 for first time");
                     $("#mapbrowse").attr('src', mapbrowse_url);
                     iframe_loaded = 1;
@@ -73,7 +73,7 @@ $(function() {
             // note jquery ui 1.9 will change selected to active
             // only show in mapform tab
             // 第 0 個 tab 才處理.
-            if ($("#tabs").tabs("option", "active") != 0) {
+            if ($("#tabs").tabs("option", "active") !== 0) {
                 makeprogress.progressbar("value", 0);
                 makeprogress.hide();
                 $("#log_message").text("").hide();
@@ -85,7 +85,7 @@ $(function() {
                 makeprogress.show();
             }
             var logmsg = mat[2];
-            if (logmsg.indexOf("ps%") == 0) {
+            if (logmsg.indexOf("ps%") === 0) {
                 var pst = logmsg.substr(logmsg.indexOf("%") + 1);
                 // 如果是新增的話 ps:+2
                 if (pst.substr(0, 1) == "+") {
@@ -110,7 +110,7 @@ $(function() {
             } else {
                 // console.log(raw.data);
                 $("#log_message").prepend(logmsg + "<br>\n");
-                if (logmsg.indexOf("err:") == 0) {
+                if (logmsg.indexOf("err:") === 0) {
                     // 出錯了 要 keep 嘛?
                     clearProgress();
                 }
@@ -154,18 +154,18 @@ $(window).bind("load", function() {
                         position: "absolute"
                    }).animate({
                         top: footerTop
-                   })
+                   });
                } else {
                    $footer.css({
                         position: "static"
-                   })
+                   });
                }
                
        }
 
        $(window)
                .scroll(positionFooter)
-               .resize(positionFooter)
+               .resize(positionFooter);
                
 });
 

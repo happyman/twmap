@@ -107,3 +107,4 @@ define('GEARMAN_SERVER','127.0.0.1');
 
 
 define('APE_HOST','0.ape.happyman.idv.tw');
+$CONFIG['admin'] = array();

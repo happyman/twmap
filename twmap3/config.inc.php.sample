@@ -16,5 +16,5 @@ $CONFIG['getkml_url'] = $site_twmap_html_root ."api/getkml.php";
 $CONFIG['get_waypoints_url'] = $site_twmap_html_root ."api/waypoints.php";
 // 資料庫連線參數
 $CONFIG['db'] = array('host'=> 'localhost', 'db' => 'twmap', 'user'=> 'user', 'pass' => 'password');
-// admin user 的 email 登入地圖產生器的帳號
-$CONFIG['admin'] = array("admin@user.com");
+// admin user 的 uid 為 登入地圖產生器的帳號
+$CONFIG['admin'] = array("");

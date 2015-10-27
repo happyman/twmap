@@ -56,7 +56,16 @@ pkg: grunt.file.readJSON('package.json'),
       options: {
         assetsDirs: ['dist/twmap_gen', 'dist/twmap3']
       }
-    }
+    },
+    jshint: {
+	all: [ 'twmap3/js/main.js', 'twmap3/js/functions.js', 'twmap_gen/js/twmap.js' ]
+    },
+phplint: {
+    options: {
+        swapPath: '/tmp'
+    },
+    all: [ 'twmap3/**/*.php', 'twmap_gen/**/*.php' ]
+	}
   });
 
   grunt.loadNpmTasks('grunt-usemin');
@@ -65,15 +74,19 @@ pkg: grunt.file.readJSON('package.json'),
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-filerev');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-phplint');
 
   grunt.registerTask('default', [
+      'jshint',
+      'phplint',
       'copy:generated',
       'useminPrepare',
       'concat',
       'uglify',
       'cssmin',
       'filerev',
-      'usemin'
+      'usemin',
   ]);
 };
 

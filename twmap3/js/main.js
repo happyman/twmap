@@ -152,6 +152,17 @@ var Fandi_Options = {
     alt: "日治五萬分之一蕃地地形圖",
     maxZoom: 17
 };
+
+var JM50K1924_Options = {
+    getTileUrl: function(a, b) {
+        var z = 17 - b;
+        return "http://gis.sinica.edu.tw/googlemap/JM50K_1924/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    name: "陸測",
+    alt: "日治五萬分之一(陸軍測量部)",
+    maxZoom: 17
+};
 // 前景
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
@@ -161,6 +172,7 @@ var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_20
 var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
 var FanDi_MapType = new google.maps.ImageMapType(Fandi_Options);
+var JM50K1924_MapType = new google.maps.ImageMapType(JM50K1924_Options);
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
@@ -337,7 +349,7 @@ function saveMapState() {
     var curGrid = $("#changegrid").val();
     var state = { "zoom": map.getZoom(), "opacity": opacity, "mapversion": ver, "maptypeid": map.getMapTypeId(),
                   "show_label": show_label, "show_kml_layer": show_kml_layer , "show_marker": show_marker, "roadmap": curMap, "grid": curGrid, "theme": theme,
-		  "goto": mapCenter.toUrlValue(5) }
+		  "goto": mapCenter.toUrlValue(5) };
     localStorage.setItem("twmap_state", JSON.stringify(state));
     console.log("mapState saved");
 } 
@@ -470,9 +482,9 @@ function locInfo_show(newpos, ele, extra) {
     content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
     if (ele > -1000) content += "<br>高度: " + ele.toFixed(2) + "M";
     content += "<br>座標: " + comment + "" + Math.round(p.x) + "," + Math.round(p.y);
-    if (admin_role == 1) {
-        if (locInfo_name == "我的位置") content += "<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=1&x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "&form=add',{});return false\">新增</a>";
-        else content += "<br><a href=# onClick=\"showmeerkat('data/ajaxCRUD/index.php?id=1&x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "&name=" + locInfo_name + "&form=add',{});return false\">新增</a>";
+    if (login_role == 1) {
+        if (locInfo_name == "我的位置") content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "',{});return false\">新增</a>";
+        else content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "&name=" + locInfo_name + "',{});return false\">新增</a>";
     }
     content += "</div>";
     centerInfo.setContent(content);
@@ -483,7 +495,7 @@ function locInfo_show(newpos, ele, extra) {
     showCenterMarker_id = "";
     // add extra
     if (extra.close && extra.close == 1) {
-        console.log("extra.close=" + extra.close)
+        console.log("extra.close=" + extra.close);
         centerInfo.close();
     }
     if (extra.callback) extra.callback(extra.param);
@@ -516,17 +528,27 @@ function tagInfo(newpos, id) {
         url: pointdata_url,
         data: {
             "id": id,
-            "beta": 1
         },
         success: function(data) {
+	    if (typeof data[0].name == "undefined") {
+                content = "<div class='infowin'><b>" + data[0].name + "</b>";
+		content += "id: " + id + "有誤";
+	        content += "</div>";
+	    } else {
             content = "<div class='infowin'><b>" + data[0].name + "</b>";
             content += permLinkURL(encodeURIComponent(data[0].name));
             content += "<br>座標: " + comment + "<br>" + Math.round(p.x) + "," + Math.round(p.y);
             content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
             content += data[0].story;
             content += "</div>";
+            }
             centerInfo.setContent(content);
             centerInfo.open(map, centerMarker);
+	    if (data[0].info){
+		toggle_user_role(1);
+	    } else {
+		toggle_user_role(0);
+	    }
         }
     });
     showCenterMarker_id = id;
@@ -546,8 +568,10 @@ function showCenterMarker(name) {
             fillColor: '#AA00000'
         });
     }
+    var got_name = 0;
     for (i = 0; i < availableTags.length; i++) {
         if (name == availableTags[i]) {
+	    got_name = 1;
             map.panTo(availableTagsLocation[i]);
             // 每次都建立一個 marker, 以免拉動之後消失
             // if (!centerMarker) {
@@ -560,17 +584,20 @@ function showCenterMarker(name) {
                 zIndex: 10000
             });
             circle.bindTo('center', centerMarker, 'position');
-            google.maps.event.addListener(centerMarker, 'click', function() {
-                centerInfo.open(map, centerMarker);
-            });
             if (!centerInfo) {
                 centerInfo = new InfoBox(myInfoBoxOptions);
             }
             tagInfo(availableTagsLocation[i], availableTagsMeta[i].id);
             // 放入 cookie
             $.cookie('twmap3_goto', name);
-            return true;
+	    break;
         }
+    }
+    if (got_name == 1) {
+            google.maps.event.addListener(centerMarker, 'click', function() {
+                centerInfo.open(map, centerMarker);
+            });
+            return true;
     }
     if (name === "" && centerMarker) {
         name = centerMarker.getPosition().toUrlValue(5);
@@ -618,7 +645,7 @@ function showCenterMarker(name) {
             success: function(data) {
                 if (data.ok === true) {
                     // alert("from cache");
-                    if (data.rsp.is_tw == 0) {
+                    if (data.rsp.is_tw === 0) {
                         alert('cached: 不在台澎範圍內');
                         return false;
                     }
@@ -734,9 +761,9 @@ function initialtags(opt) {
         dataType: 'json',
         cache: false,
         url: pointdata_url,
-        //data: {
-        //		filter: show_marker
-        //	},
+        data: {
+        	"id": "ALL"
+        },
         success: function(data) {
             for (var i = 0; i < data.length; i++) {
                 availableTags[i] = data[i].name;
@@ -747,7 +774,8 @@ function initialtags(opt) {
                     //sym: data[i].sym
                     type: data[i].type,
                     class: data[i].class,
-                    mt100: data[i].mt100
+                    mt100: data[i].mt100,
+		    owner: data[1].owner
                 };
             }
             $("#tags").autocomplete({
@@ -765,48 +793,27 @@ function initialtags(opt) {
         }
     });
 }
-
-function initialmarkers() {
-    var shadow = new google.maps.MarkerImage("img/shadow.png", new google.maps.Size(36.0, 18.0), new google.maps.Point(0, 0), new google.maps.Point(0, 19));
-    var icon = [];
-    /*
-    icon[4] = "http://map.happyman.idv.tw/kml/3-4ok.png";
-    icon[1] = "http://map.happyman.idv.tw/kml/3-1ok.png";
-    icon[2] = "http://map.happyman.idv.tw/kml/3-2ok.png";
-    icon[3] = "http://map.happyman.idv.tw/kml/3-3ok.png";
-    iceon[5] = "http://map.happyman.idv.tw/kml/3-5new.png";
-    */
+function mysetIcon2(type, isShadow) {
+    var icon=[];
     icon[4] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_lev8.png';
     icon[1] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_8res.png';
     icon[2] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_6res.png';
     icon[3] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_3res.png';
     icon[6] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/helios_shard.png';
     icon[5] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/neutral_icon.png';
-    var mysetIcon = function(i, isShadow) {
-        if (i > 0 && i <= 5) {
-            if (isShadow) return shadow;
-            return icon[i];
-        }
-        if (isShadow) return null;
-        return "img/pointer01.jpg";
+    if (theme == 'ingress') {
+        if (type == "一等點") return icon[1];
+        else if (type == "二等點") return icon[2];
+        else if (type == "三等點") return icon[3];
+        else if (type == "森林點") return icon[4];
+        else if (type == "未知森林點") return icon[5];
+        else return icon[6];
+    } else {
+        return "//map.happyman.idv.tw/icon/" + encodeURIComponent(type) + ".png";
     }
-    var mysetIcon2 = function(type, isShadow) {
-        if (type == "其他") {
-            if (isShadow) return "//maps.google.com/mapfiles/kml/pal4/icon24s.png";
-            return "//maps.google.com/mapfiles/kml/pal4/icon24.png";
-        }
-        if (isShadow) return new google.maps.MarkerImage("http://map.happyman.idv.tw/icon/shadow-" + encodeURIComponent(type) + ".png", null, new google.maps.Point(0, 0), new google.maps.Point(0, 19));
-        if (theme == 'ingress') {
-            if (type == "一等點") return icon[1];
-            else if (type == "二等點") return icon[2];
-            else if (type == "三等點") return icon[3];
-            else if (type == "森林點") return icon[4];
-            else if (type == "未知森林點") return icon[5];
-            else return icon[6];
-        } else {
-            return "//map.happyman.idv.tw/icon/" + encodeURIComponent(type) + ".png";
-        }
-    }
+}
+
+function initialmarkers() {
     if (!oms) oms = new OverlappingMarkerSpiderfier(map, {
         markersWontMove: true,
         markersWontHide: false
@@ -817,7 +824,7 @@ function initialmarkers() {
             //icon: iconWithColor(usualColor),
             title: availableTags[i],
             map: map,
-            shadow: mysetIcon2(availableTagsMeta[i].type, 1),
+            // shadow: mysetIcon2(availableTagsMeta[i].type, 1),
             position: availableTagsLocation[i]
         });
         oms.addMarker(allmarkers[i]);
@@ -847,7 +854,7 @@ function initialize() {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi', 'general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi', 'jm50k','general2011']
         }
     });
     if (!is_mobile) {
@@ -865,6 +872,7 @@ function initialize() {
     map.mapTypes.set('osm', OSM_MapType);
     map.mapTypes.set('darker', Darker_MapType);
     map.mapTypes.set('fandi', FanDi_MapType);
+    map.mapTypes.set('jm50k', JM50K1924_MapType);
     // 前景免設
     // 三版加底圖
     BackgroundMapType = TaiwanGpxMapType;
@@ -999,7 +1007,7 @@ function initialize() {
 
     function letsgo() {
         $("#tags").blur();
-        if (tags_ready == 0) {
+        if (tags_ready === 0) {
             setTimeout(letsgo, 2000);
         } else {
             showCenterMarker($.trim($("#tags").val()));
@@ -1027,7 +1035,7 @@ function initialize() {
     markers_ready = 1;
     // 切換舊版地圖
     $("#changemap").click(function() {
-        if (BackgroundMap == 0) {
+        if (BackgroundMap === 0) {
             BackgroundMapType = TaiwanMapV1MapType;
             BackgroundMapOptions = TaiwanMapV1Options;
             BackgroundMap = 1;
@@ -1074,14 +1082,14 @@ function initialize() {
     });
     $("#inputtitlebtn").click(function() {
         // console.log($("#inputtitle"));
-        if ($("#inputtitle").val() != "") {
+        if ($("#inputtitle").val() !== "") {
             ismakingmap = 0;
             $.unblockUI();
 
             url = callmake_url + callmake + "&title=" + $('#inputtitle').val();
 
             if (confirm("程式將會傳送參數給地圖產生器,確定嘛?")) {
-                if (parent.location != window.location) parent.location.href = url
+                if (parent.location != window.location) parent.location.href = url;
                 else location.href = url;
             }
         } else {
@@ -1089,7 +1097,7 @@ function initialize() {
         }
     });
     $("#generate").click(function() {
-        if (callmake == null) {
+        if (callmake === null) {
             alert("請選擇範圍");
             return;
         }
@@ -1113,7 +1121,7 @@ function initialize() {
             show_kml_layer = 1;
             $("#kml_sw").removeClass("disable");
         }
-        if (BackgroundMap == 0) {
+        if (BackgroundMap === 0) {
             $("#changemap").trigger('click');
             $("#changemap").trigger('click');
         }
@@ -1138,14 +1146,18 @@ function initialize() {
         }
         updateView("info_only");
     });
-    toggle_admin_role();
+   
+    $("#marker_reload").hide();
+    //toggle_admin_role();
     // admin
+    /*
     $("#marker_reload").click(function() {
         markerReload({
             msg: "載入完成"
         });
         // 重新顯示
     });
+    */
     // map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('locContainer'));
     // everything is ready
     $("#marker_sw_select").dropdownchecklist({
@@ -1154,13 +1166,13 @@ function initialize() {
         onComplete: function(selector) {
             var values = "";
             for (i = 0; i < selector.options.length; i++) {
-                if (selector.options[i].selected && (selector.options[i].value != "")) {
-                    if (values != "") values += ",";
+                if (selector.options[i].selected && (selector.options[i].value !== "")) {
+                    if (values !== "") values += ",";
                     values += selector.options[i].value;
                 }
             }
             if (values != show_marker) {
-                if (values == "") values = "0";
+                if (values === "") values = "0";
                 show_marker = values;
                 //markerReload({msg: "載入完成"});
                 markerFilter();
@@ -1320,7 +1332,7 @@ function initialize() {
                 error: FeatureLocation
             });
             setTimeout(function() {
-                if (position_get == 0) {
+                if (position_get === 0) {
                     FeatureLocation();
                 }
             }, 4000);
@@ -1366,7 +1378,7 @@ function MyCustomControl(controlDiv, map) {
 function resizeMap() {
     var viewport_height = ($(window).height() < 460) ? 460 : $(window).height();
     $("#map_canvas").height(viewport_height - 33 + "px");
-    if (map != null && markers_ready == 1) {
+    if (map !== null && markers_ready == 1) {
         google.maps.event.trigger(map, 'resize');
     }
 }
@@ -1439,7 +1451,7 @@ function updateView(type) {
     if (type != "info_only") {
         showInsideMarkers();
     }
-    if (markers_ready == 0) {
+    if (markers_ready === 0) {
         console.log("updateView abort");
         return;
     }
@@ -1454,7 +1466,7 @@ function updateView(type) {
             return;
         }
         // 就這樣
-        if (showCenterMarker_id == '') {
+        if (showCenterMarker_id === '') {
             locInfo(newpos);
         } else {
             tagInfo(newpos, showCenterMarker_id);
@@ -1463,17 +1475,106 @@ function updateView(type) {
     saveMapState();
     console.log("updateView "+type);
 }
-
+/**
+ * markerReloadSingle 只更新一筆 點位. 被 admin hook
+ * @param  opt {  id: point id, action: delete/ add/update
+ *                 meta: }
+ * @return  null
+ */
+function markerReloadSingle(opt){
+    // if update / delete
+    // 1.1 search  existing  availableTags for id
+    // 1.2. update availableTags, availableTagsLocation, availableTagsMeta
+    // 1.3. update autocomplete
+    // 1.4. update allmarkers
+    // 1.5. update oms
+    // 1.6. update inside markers
+    // else if add
+    // 2.1. add availableTags, availableTagsLocation, availableTagsMeta
+    // 2.2. add autocomplete
+    // 2.3. add allmarkers
+    // 2.4. add oms
+    // 2.5. update inside markers
+    var i;
+    var to_update_id = 0;
+    if (opt.action == 'update') {
+        for (i=0;i<availableTags.length;i++){
+            if (availableTagsMeta[i].id == opt.id) {
+                to_update_id = i;
+                break;
+            }
+        }
+        if (to_update_id === 0 ) return; // nothing to update
+        availableTags[to_update_id] = opt.meta.name;
+        availableTagsMeta[to_update_id] = {
+                    "id": opt.meta.id,
+                    "type": opt.meta.type,
+                    "class": opt.meta.class,
+                    "mt100": opt.meta.mt100,
+		    "owner": opt.meta.owner
+                };
+        availableTagsLocation[to_update_id] = new google.maps.LatLng(opt.meta.y, opt.meta.x);
+        oms.removeMarker(allmarkers[to_update_id]);
+        allmarkers[to_update_id].setOptions({ icon: mysetIcon2(availableTagsMeta[to_update_id].type, 0),
+            title: availableTags[to_update_id],
+            position: availableTagsLocation[to_update_id]});
+        oms.addMarker(allmarkers[to_update_id]);
+    } else if (opt.action == 'delete') {
+        for (i=0;i<availableTags.length;i++){
+            if (availableTagsMeta[i].id == opt.id) {
+                to_update_id = i;
+                break;
+            }
+        }
+        if (to_update_id === 0 ) return; // nothing to delete
+        availableTags.splice(to_update_id,1);
+        availableTagsMeta.splice(to_update_id,1);
+        availableTagsLocation.splice(to_update_id,1);
+        oms.removeMarker(allmarkers[to_update_id]);
+	allmarkers[to_update_id].setMap(null);
+        allmarkers.splice(to_update_id,1);
+    } else if (opt.action == 'add'){
+        to_update_id = availableTags.length;
+        availableTags[to_update_id] = opt.meta.name;
+        availableTagsLocation[to_update_id] = new google.maps.LatLng(opt.meta.y, opt.meta.x);
+	availableTagsMeta[to_update_id] = {
+                    "id": opt.meta.id,
+                    "type": opt.meta.type,
+                    "class": opt.meta.class,
+                    "mt100": opt.meta.mt100,
+		    "owner": opt.meta.owner
+        };
+        allmarkers[to_update_id] = new google.maps.Marker({
+            icon: mysetIcon2(availableTagsMeta[to_update_id].type, 0),
+	    map: map,
+            title: availableTags[to_update_id],
+            position: availableTagsLocation[to_update_id]});
+        oms.addMarker(allmarkers[to_update_id]);
+    }
+console.log(to_update_id);
+    $("#tags").autocomplete("option",{
+                source: availableTags
+    });
+    if (centerInfo) centerInfo.close();
+    if (show_label) {
+        for (i = 0; i < markerArrayMax; i++) {
+            markerArray[i].setMap(null);
+            labelArray[i].setMap(null);
+	}
+    }
+    showInsideMarkers();
+}
+/*
 function markerReload(opt) {
     // 清除 label
     if (show_label) {
-        for (var i = 0; i < markerArrayMax; i++) {
+        for (i = 0; i < markerArrayMax; i++) {
             markerArray[i].setMap(null);
             labelArray[i].setMap(null);
         }
     }
     // 清除 markers
-    if (show_marker != "0") {
+    if (show_marker !== "0") {
         for (i = 0; i < allmarkers.length; i++) allmarkers[i].setMap(null);
         oms.clearMarkers();
         allmarkers = [];
@@ -1482,7 +1583,7 @@ function markerReload(opt) {
     tags_ready = 0;
     initialtags(opt);
 }
-
+*/
 function markerFilter() {
     var s = show_marker.split(",");
     //console.log(s);
@@ -1515,12 +1616,12 @@ function markerFilter() {
                     want = 1;
                 }
             } else if (s[k] == '8') {
-                if (availableTagsMeta[i].class == 0 && (availableTagsMeta[i].type == '溫泉')) {
+                if (availableTagsMeta[i].class === 0 && (availableTagsMeta[i].type == '溫泉')) {
                     want = 1;
                 }
             } else if (s[k] == '7') {
                 // 其他
-                if (availableTagsMeta[i].class == 0) {
+                if (availableTagsMeta[i].class === 0) {
                     want = 1;
                 }
             } else {
@@ -1530,7 +1631,7 @@ function markerFilter() {
                 }
             }
         }
-        if (want == 0) {
+        if (want === 0) {
             allmarkers[i].setVisible(false);
         } else {
             allmarkers[i].setVisible(true);
@@ -1605,15 +1706,16 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
     var showlabel = 1;
     var adjusty = 0;
     var adjustx = 1;
+    var sstep;
     if (map.getZoom() < 9) {
-        var sstep = 25000;
+        sstep = 25000;
         xstep = sstep;
         ystep = sstep;
         endx = endx - (endx - startx) % sstep + sstep;
         endy = endy - (endy - starty) % sstep + sstep;
         showlabel = 0;
     } else if (curZoom >= 9 && curZoom <= 12) {
-        var sstep = 10000;
+        sstep = 10000;
         xstep = sstep;
         ystep = sstep;
         endx = endx - (endx - startx) % sstep + sstep;
@@ -1662,12 +1764,15 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
     var starty = Math.round(sw.y / ystep) * ystep;
     var endx = Math.round(ne.x / xstep) * xstep;
     var endy = Math.round(ne.y / ystep) * ystep;
+    var p;
+    var p1;
+    var lp;
     //console.log("x="+startx +"y="+ starty +"endx="+ endx + "endy="+ endy);
     for (var y = starty; y <= endy; y += ystep) {
-        var p = twd672lonlat(startx, y, ph);
-        var p1 = twd672lonlat(endx, y, ph);
+        p = twd672lonlat(startx, y, ph);
+        p1 = twd672lonlat(endx, y, ph);
         // 右邊一格
-        var lp = twd672lonlat(startx + xstep, y + adjusty, ph);
+        lp = twd672lonlat(startx + xstep, y + adjusty, ph);
         if (!poly[i]) poly[i] = new google.maps.Polyline({
             map: map,
             path: [new google.maps.LatLng(p.y, p.x), new google.maps.LatLng(p1.y, p1.x)],
@@ -1698,10 +1803,10 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
     }
     // x 軸
     for (var x = startx; x <= endx; x += xstep) {
-        var p = twd672lonlat(x, starty, ph);
-        var p1 = twd672lonlat(x, endy, ph);
+        p = twd672lonlat(x, starty, ph);
+        p1 = twd672lonlat(x, endy, ph);
         // 往上
-        var lp = twd672lonlat(x, starty + ystep * adjustx, ph);
+        lp = twd672lonlat(x, starty + ystep * adjustx, ph);
         if (!poly[i]) poly[i] = new google.maps.Polyline({
             map: map,
             path: [new google.maps.LatLng(p.y, p.x), new google.maps.LatLng(p1.y, p1.x)],
@@ -1734,12 +1839,13 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
     for (var k = j; k < polylabel.length; k++) {
         polylabel[k].setMap(null);
     }
-    for (var j = i; j < poly.length; j++) poly[j].setMap(null);
+    for (j = i; j < poly.length; j++) poly[j].setMap(null);
 }
-function toggle_admin_role() {
-    if (admin_role == 1)
-        $("#marker_reload").show();
-    else
-        $("#marker_reload").hide();
 
+function toggle_user_role(cur_role) {
+  login_role = cur_role;
+  if (login_role == 1)
+	$("#about").html("<img src='img/ico_user.png' height='20' />" + $("#about").text());
+  else
+	$("#about").html($("#about").text());
 }

@@ -5,10 +5,13 @@ require_once("lib/functions.inc.php");
   list($st, $info) = login_info();
                                 if ($st === false ) {
                                         $greetings = sprintf("歡迎光臨");
-                                        $greetings_admin = sprintf("<li>管理<a href='%s'>登入</a>",$CONFIG['site_twmap_html_root'] . "main.php?return=twmap3" );
+                                        $greetings_admin = sprintf("管理<a href='%s'>登入</a>",$CONFIG['site_twmap_html_root'] . "main.php?return=twmap3" );
                                 } else {
                                         $greetings = sprintf("歡迎 %s<img src='%s' />",$info['user_nickname'],$info['user_icon']);
-					$greetings_admin = "";
+					if (is_admin()) 
+					$greetings_admin = "你的身份是管理者";
+					else
+					$greetings_admin = "你的身份是使用者";
 					
                                 }
 
@@ -22,14 +25,7 @@ require_once("lib/functions.inc.php");
 </head>
 <script>
 $(document).ready(function() {
-	<?php
-			if (is_admin())
-				echo "parent.admin_role = 1;\n";
-			else
-				echo "parent.admin_role = 0;\n";
-	
-	?>
-	parent.toggle_admin_role();
+	parent.toggle_user_role();
 	if (window.parent.location.href != window.top.location.href) {
                 $('#openwin').html('<a href="<?php echo $site_html_root; ?>" target=_top>獨立視窗</a>');
         }
@@ -60,7 +56,7 @@ $(document).ready(function() {
 			<ul>
                         <li>參考 <a href="http://blog.yam.com/amimitea/article/48657866" target="_blank">介紹文</a>
                         <li><a href="https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168" target="_blank">建議或討論</a>
-			<?php echo $greetings_admin; ?>
+			<li><?php echo $greetings_admin; ?>
                         </ul>
                 </div>
 

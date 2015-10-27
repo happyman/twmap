@@ -47,9 +47,9 @@ background:url(../icons/op_mapshow.png) no-repeat 0 0px; display:block; float:le
 .step { background-color: yellow; border:2px solid; border-radius:30px; padding-right:5px; padding-left:5px;}
 .hp { cursor: pointer; }
 
-#create { font-size: 30px; padding: 10px; }
-#create2 { font-size: 30px; padding: 10px; }
-#create3  { font-size: 30px; padding: 10px; }
+#create { font-size: 30px; padding: 10px; width: 390px; }
+#create2 { font-size: 30px; padding: 10px; width: 390px; }
+#create3  { font-size: 30px; padding: 10px; width: 390px; }
 /* jquery UI tabs */
 tabs-nohdr {
 padding: 0px;

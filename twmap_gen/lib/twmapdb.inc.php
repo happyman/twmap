@@ -918,3 +918,32 @@ function get_AREA($wkt_str) {
 	echo $db->errorMsg();
 	return $rs;
 }
+
+function get_point($id='ALL',$is_admin=false) {
+	$db=get_conn();
+	if ($id !== 'ALL') 
+		$where = " WHERE id=$id";
+	else
+		$where = "";
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS y,ST_Y(coord) AS x,owner FROM point2 %s ORDER BY number,class DESC", $where);
+	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
+	return $db->getAll($sql);
+	
+}
+function userid() {
+        global $CONFIG;
+        //       $admin = $CONFIG['admin'];
+        if (!isset($_SESSION['mylogin'])|| !isset($_SESSION['uid']))
+                return array(false, "please login");
+        return array(true, $_SESSION['uid']);
+}
+
+function is_admin() {
+        global $CONFIG;
+        if (!isset($_SESSION['mylogin'])|| !isset($_SESSION['uid']))
+                return false;
+        if(in_array($_SESSION['uid'], $CONFIG['admin']))
+                return true;
+        return false;
+}
+

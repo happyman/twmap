@@ -17,7 +17,7 @@ $ver = trim(file_get_contents("VERSION"));
 -->
 	        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
                 <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
-	   <link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/sunny/jquery-ui.css" rel="Stylesheet" />  
+	   <link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />  
 <!-- build:js js/vender.js -->
 	<script  src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
 	<script  src='js/proj4js-combined.js'></script>
@@ -47,15 +47,18 @@ $ver = trim(file_get_contents("VERSION"));
 <script>
 <?php
 require_once("lib/functions.inc.php");
-if (is_admin())
-	echo "var admin_role = 1;\n";
-else {
-	// prepare login
-	echo "var admin_role = 0;\n";
+// 檢查是否登入
+list ($st, $info) = login_info();
+if ($st === true) {
+	echo "var login_role = 1;\n";
+	printf("var login_uid = %d\n",$info['uid']);
+} else {
+	echo "var login_role = 0;\n";
 }
 printf("var getkml_url = '%s';\n",$CONFIG['getkml_url']);
 printf("var geocodercache_url = '%s';\n",$CONFIG['geocodercache_url']);
 printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
+printf("var pointdata_admin_url = '%s';\n",$CONFIG['pointdata_admin_url']);
 printf("var get_waypoints_url = '%s';\n",$CONFIG['get_waypoints_url']);
 printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php?tab=0&");
 ?>

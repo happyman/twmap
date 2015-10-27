@@ -4,7 +4,7 @@ function addremove_polygon(event) {
     var point = event.latLng;
     var cc = is_taiwan(point.lat(), point.lng());
     // 不在台澎範圍
-    if (cc == 0) return;
+    if (cc === 0) return;
     var ph = (cc == 2) ? 1 : 0;
     var data = lonlat_getblock(point.lng(), point.lat(), ph);
     var minx = data[0].x;
@@ -23,7 +23,7 @@ function addremove_polygon(event) {
         if (maxy < maxiY) maxiY = maxy;
     }
     if ((maxiX - miniX < 0.0088) || (miniY - maxiY < 0.0088)) {
-        miniX = 9999, miniY = 0, maxiX = 0, maxiY = 9999;
+        miniX = 9999; miniY = 0; maxiX = 0; maxiY = 9999;
         if (polygon) polygon.setMap(null);
         $("#params").html("尚未選圖");
         callmake = null;
@@ -164,12 +164,12 @@ function getParameterByName(name) {
     var regexS = "[\\?&]" + name + "=([^&#]*)";
     var regex = new RegExp(regexS);
     var results = regex.exec(window.location.href);
-    if (results == null) return "";
+    if (results === null) return "";
     else return decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 function in_array(stringToSearch, arrayToSearch) {
-    if (arrayToSearch != null) {
+    if (arrayToSearch !== null) {
         for (s = 0; s < arrayToSearch.length; s++) {
             thisEntry = arrayToSearch[s].toString();
             if (thisEntry == stringToSearch) {
