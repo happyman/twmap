@@ -11,11 +11,6 @@ if (empty($_SESSION['loggedin'])) {
 	header("Location: login.php");
 	exit(0);
 }
-// 如果加上 return=twmap3 則回到地圖瀏覽器
-if (isset($_GET['return']) && $_GET['return'] == 'twmap3' ) {
-	header("Location: $TWMAP3URL");
-	exit;
-}
 // 如果從地圖瀏覽器導過來
 if (isset($_GET['tab'])) {
 	$jump = intval($_GET['tab']);

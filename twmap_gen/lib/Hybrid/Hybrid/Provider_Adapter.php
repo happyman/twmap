@@ -67,7 +67,7 @@ class Hybrid_Provider_Adapter {
 
 		# check the IDp id
 		if (!$this->id) {
-			throw new Exception("No provider ID specified.", 2);
+			throw new Exception("No provider ID specified. $this->id", 2);
 		}
 
 		# check the IDp config

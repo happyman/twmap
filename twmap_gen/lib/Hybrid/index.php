@@ -9,7 +9,8 @@
 //	HybridAuth End Point
 // ------------------------------------------------------------------------
 
-require_once( "Hybrid/Auth.php" );
-require_once( "Hybrid/Endpoint.php" );
+require_once("load.inc.php");
+//require_once( "Hybrid/Auth.php" );
+//require_once( "Hybrid/Endpoint.php" );
 
 Hybrid_Endpoint::process();

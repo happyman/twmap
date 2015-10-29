@@ -1,6 +1,7 @@
 /* for blink steps */
 var timer = [];
 
+/*
 function blinking(elm, action) {
     if (action === 0) {
         if (timer[elm]) {
@@ -19,8 +20,18 @@ function blinking(elm, action) {
         });
     }
 }
+*/
 /* ready function */
 $(function() {
+/* 如果被 twmap_gen 包在 iframe 中, 就把自己關閉 */
+if (loggedin == 1 ) {
+  if ($("#meerkat-wrap",window.parent.document).is(":visible"))  {
+  	$('#meerkat-wrap',window.parent.document).hide().queue(function() {
+		top.location.reload();
+	});
+	return;
+  }
+}
     $("#tabs").tabs({
         activate: function(event, ui) {
             var index = $("#tabs").tabs('option', 'active');

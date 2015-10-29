@@ -1,20 +1,6 @@
 <div id="greeting">
 	歡 迎 使 用 地 圖 產 生 器 <img src="{$user_icon}" width=32px />
 </div>
-{if !isset($showing) }
-<!-- facebook -->
-<script src="//connect.facebook.net/en_US/all.js"></script>
-<script type="text/javascript">
-FB.init({
-appId: {$fb_appid},
-xfbml: true, status: true, cookie: true,
-});
-FB.getLoginStatus(function (response) { // 有 fb 就 自動登入 fb
-if(response && response.status == 'connected') {
-if (confirm("您已經在 facebook 登入,請問是否用 facebook 身分登入?"))
-top.location.href='{$login_fb}'; } });
-</script>
-{/if}
 <!-- end of facebook -->
 <style>
 	.login_xuite { display: inline-block; background: url(imgs/openid-logos.png) repeat scroll -1px -187px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
@@ -56,11 +42,23 @@ top.location.href='{$login_fb}'; } });
 		<p>由於主機磁碟空間有限,請大家配合登入使用.
 	</div>
 </div> 
+{if !isset($showing) }
+<script src="//connect.facebook.net/en_US/all.js"></script>
+{/if}
 <script>
 	$(function(){
 		$('.login_xuite').click(function() { $('#provider').val('xuite'); $('form').submit(); });
 		$('.login_gmail').click(function() { $('#provider').val('google'); $('form').submit(); });
 		$('.login_yahoo').click(function() { $('#provider').val('yahoo'); $('form').submit(); });
 		$('.login_facebook').click(function() { $('#provider').val('facebook'); $('form').submit(); });
+{if !isset($showing) }
+		FB.init({ appId: {$fb_appid}, xfbml: true, status: true, cookie: true });
+		FB.getLoginStatus(function (response) { // 有 fb 就 自動登入 fb
+			if(response && response.status == 'connected') {
+			 	if (confirm("您已經在 facebook 登入,請問是否用 facebook 身分登入?"))
+					$('.login_facebook').trigger('click');
+				}});
+{/if}
+
 	});
 </script>

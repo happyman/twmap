@@ -1,6 +1,6 @@
 <?php
 $config = require("../../config-hybridauth.php");
-require_once("Hybrid/Auth.php");
+require_once("load.inc.php");
 session_start();
 
 // 設定為開啟新視窗
