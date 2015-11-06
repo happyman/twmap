@@ -10,14 +10,20 @@ function pointcrud($inp, $owner_uid, $admin) {
 	switch($inp['action']) {
 
 		case 'list':
+			$where=array();
 			if (isset($inp['id']) && !empty($inp['id'])) {
 				$where[] = "id = " . $inp['id'];
 			}
-			if ($admin == 1 ) 
-				$where[] = sprintf(' (owner=0 OR owner=%d)', $owner_uid);
-			else
+			if ($admin != 1 )  {
 				$where[] = sprintf(" owner = %d", $owner_uid);
-			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS y,ST_Y(coord) as x,owner,contribute FROM point2 WHERE %s ORDER BY %s OFFSET %d LIMIT %d",	implode(" AND ",$where), $inp['jtSorting'], $inp['jtStartIndex'], $inp['jtPageSize']);
+			}
+			// pending approval
+			if (isset($inp['contribute']) && $inp['contribute'] == 1 ) {
+				$where[] = "contribute=1";
+			}
+			$where_str = (count($where)>0)? "WHERE ".implode(" AND ",$where) : "";
+			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS y,ST_Y(coord) as x,owner,contribute FROM point2 %s ORDER BY %s OFFSET %d LIMIT %d", 
+			$where_str, $inp['jtSorting'], $inp['jtStartIndex'], $inp['jtPageSize']);
 			$db->SetFetchMode(ADODB_FETCH_ASSOC);
 			if (($rs = $db->GetAll($sql)) === false) {
 				$errmsg[] = "fail sql: $sql";

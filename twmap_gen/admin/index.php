@@ -1,5 +1,14 @@
 <?php
 require_once("header.inc");
+
+$params=array();
+if (isset($_GET['id'])) {
+	$params['id']=$_GET['id'];
+}
+if (isset($_GET['pending'])) {
+	$params['contribute'] = $_GET['pending'];
+}
+$params['action'] = 'list';
 ?>
 <html>
         <head>
@@ -33,7 +42,7 @@ $(document).ready(function () {
                                             hoverAnimation: true
                                 },
                                 actions: {
-                                        listAction: 'pointActions.php?action=list&id=<?php if (isset($_GET['id'])) echo $_GET['id']; ?>',
+                                        listAction: 'pointActions.php?<?php echo http_build_query($params); ?>',
                                         createAction: 'pointActions.php?action=create',
                                         updateAction: 'pointActions.php?action=update',
                                         deleteAction: 'pointActions.php?action=delete'
@@ -159,7 +168,11 @@ $(document).ready(function () {
 			?>
 });
 			        </script>
-
+	<?php
+	if (is_admin()) {
+		printf("<p><a href='?pending=1'>待審核</a>");
+	}
+	?>
 	<p>
 	Q: 如何將興趣點貢獻給系統? <br>
 	A: 將已建立的興趣點的 "投稿" 打勾, 確定狀態變成 "已投稿". <br>

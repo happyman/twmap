@@ -980,11 +980,13 @@ function initialize() {
     // 載入 Tags
     $("#tags").val("初始化中");
     // 搜尋框被 focus 跟 blur 的時候
+    /*
     $("input:text#tags").on('focus mouseover', function() {
         $(this).css('font-size', '3em');
     }).on('blur mouseout', function() {
         $(this).css('font-size', '1em');
     });
+*/
     // 按下 esc key
     $(document).keyup(function(e) {
         if (e.keyCode == 27) {

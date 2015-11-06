@@ -28,8 +28,10 @@ if (empty($detail) || $detail == 0 ){
 } else {
 	// web page
 	echo "<html>";
-	echo "<title>TWMAP waypoint detail</title><meta charset=\"UTF-8\">";
+	echo "<head><title>TWMAP waypoint detail</title><meta charset=\"UTF-8\">";
+	echo "<script src='https://code.jquery.com/jquery-2.1.4.min.js'></script>";
 	echo "<style>
+	<script src='https://code.jquery.com/jquery-2.1.4.min.js'></script>
 	/* Document level adjustments */
 html {
   font-size: 17px;
@@ -50,7 +52,7 @@ th {
     color: white;
 }
 
-</style>";
+</style></head>";
 	echo "<body><div id='wpt_info' align=center>";
 	echo "<hr>以下 GPS 航跡皆為山友無私貢獻分享,請大家上山前做好準備,快樂出門,平安回家!";
 	echo "<br>距座標點". $_REQUEST['r'] ."M 的範圍的航點資訊";
@@ -89,17 +91,33 @@ th {
 			} else {
 				$mid_to_show = $row['mid'];
 			}
-			$show_url = sprintf("<a href='/twmap/show.php?mid=%s' target=_blank>%s</a>",$mid_to_show,$row['title']);
-			printf("<tr><td>%s<td>%s<td><a href=# onclick='javascript:parent.showmapkml(%d,\"%s\",\"%s\");'>%s<td>%s<td>%s",$row['name'],$row['ele'],$mid_to_show,$row['title'],rawurlencode($show_url),$mid_to_show,$show_url,($found)?'<img src="/twmap/icons/op_mapshow.png">':"");
+			if ($row['flag'] != 2 ) {
+				$show_url = sprintf("<a href='/twmap/show.php?mid=%s' target=_blank>%s</a>",$mid_to_show,$row['title']);
+			printf("<tr><td>%s<td>%s<td><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a><td>%s<td>%s",
+			$row['name'],$row['ele'],
+			$mid_to_show,$row['title'],rawurlencode($show_url),$mid_to_show,
+			$show_url,($found)?'<img src="/twmap/icons/op_mapshow.png">':"");
+			} else {
+			printf("<tr><td>%s<td>%s<td>%s<td>%s<td><img src='/twmap/icons/op_delete.png'/>", $row['name'],$row['ele'], $mid_to_show, $row['title']);
+			}
 
 
 		}
 	}
-	echo "</table></div>";
-
-	echo "</html>";
-	//if (count($dup) > 0)
-	//	print_r($dup);
+?>
+<script>
+$('document').ready(function(){ 
+	$('.showkml').each(function(index) {
+		$(this).click(function(event) {
+			event.preventDefault();
+			parent.showmapkml($(this).data('id'),$(this).data('title'),$(this).data('link'));
+		});
+	});
+});
+</script>
+</table></div>
+	</html>
+<?php
 }
 
 /*
