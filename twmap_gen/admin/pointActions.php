@@ -69,7 +69,7 @@ function pointcrud($inp, $owner_uid, $admin) {
 			else
 				$checked = 0;
 			if (isset($inp['contribute']))
-				$contribute = 1; 
+				$contribute = intval($inp['contribute']);
 			else
 				$contribute = 0;
 			$pp = sprintf("ST_GeomFromText('SRID=4326;POINT(%f %f)')",$inp['y'],$inp['x']);

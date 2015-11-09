@@ -337,7 +337,7 @@ function permLinkURL(goto) {
     var ver = (BackgroundMap === 0) ? 3 : 1;
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
-    return "<a href='?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "'><img src='img/permlink.png' border=0/></a>";
+    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "'><img src='img/permlink.png' border=0/></a>";
 }
 
 var MapStateRestored = 0;
@@ -558,7 +558,8 @@ var circle;
 function showCenterMarker(name) {
     var i;
     if (name === '') {
-        alert("請輸入");
+       // alert("請輸入");
+	showmeerkat(pointdata_url + "?lastest=10&err=1" ,{ 'width': '600'} );
         return;
     }
     if (!circle) {
@@ -585,7 +586,7 @@ function showCenterMarker(name) {
             });
             circle.bindTo('center', centerMarker, 'position');
             if (!centerInfo) {
-                centerInfo = new InfoBox(myInfoBoxOptions);
+		initialCenterInfo();
             }
             tagInfo(availableTagsLocation[i], availableTagsMeta[i].id);
             // 放入 cookie
@@ -646,7 +647,8 @@ function showCenterMarker(name) {
                 if (data.ok === true) {
                     // alert("from cache");
                     if (data.rsp.is_tw === 0) {
-                        alert('cached: 不在台澎範圍內');
+                        //alert('cached: 不在台澎範圍內');
+			showmeerkat(pointdata_url + "?lastest=10&err=4" ,{ 'width': '600'} );
                         return false;
                     }
                     $.unblockUI();
@@ -667,7 +669,8 @@ function showCenterMarker(name) {
                             loc = results[0].geometry.location;
                             var p = is_taiwan(loc.lat(), loc.lng());
                             if (p === 0) {
-                                alert("不在台澎範圍");
+                                //alert("不在台澎範圍");
+				showmeerkat(pointdata_url + "?lastest=10&err=2" ,{ 'width': '600'} );
                                 return false;
                             }
                             //console.log(results);
@@ -693,7 +696,8 @@ function showCenterMarker(name) {
                         } else {
                             $.unblockUI();
                             // alert("Geocode was not successful for the following reason: " + status);
-                            alert("找不到喔! 請輸入 地址 或 座標格式: 1. t67 X,Y 如 310300,2703000 2. t97 X/Y 或者 3. 含小數點經緯度 lat,lon 24.430623,121.603503");
+                            //alert("找不到喔! 請輸入 地址 或 座標格式: 1. t67 X,Y 如 310300,2703000 2. t97 X/Y 或者 3. 含小數點經緯度 lat,lon 24.430623,121.603503");
+			    showmeerkat(pointdata_url + "?lastest=10&err=3" ,{ 'width': '600'} );
                             return false;
                         }
                     });
@@ -742,7 +746,7 @@ function showCenterMarker_real(loc, name) {
         centerInfo.open(map, centerMarker);
     });
     if (!centerInfo) {
-        centerInfo = new InfoBox(myInfoBoxOptions);
+	initialCenterInfo();
     }
     map.panTo(loc);
     locInfo_name = (typeof name === "undefined") ? loc.toUrlValue(5) : name;
@@ -751,20 +755,47 @@ function showCenterMarker_real(loc, name) {
     $.cookie('twmap3_goto', name);
     return true;
 }
+function initialCenterInfo() {
+	centerInfo = new InfoBox(myInfoBoxOptions);
+	google.maps.event.addListener(centerInfo, "domready", function() {
+			$('#permlinkurl').click(function(event) {
+				event.preventDefault();
+				$('#copylink').dialog();
+				$('#copylinkurl').val($(this).data('url'));
+				//$("#copylinlurl").select();
+				$('#copylinkurlshort').show();
+				//$('#copylinkurlgo').hide();
+				$('#copylinkurlgo').click(function() {
+					location.href=$('#copylinkurl').val();
+				});
+				$('#copylinkurlshort').click(function() {
+					var link = 'http://to.ly/api.php?json=0&longurl=' + encodeURIComponent($('#copylinkurl').val());
+					$.ajax({ url: link,dataType: 'html',
+						success: function(data){
+						$('#copylinkurl').val(data);
+						//$('#copylinkurlgo').show();
+						$("#copylinlurl").select();
+						}});
+					$('#copylinkurlshort').hide();
+					}); // end of click
+				});
+	});
+
+}
 
 function initialtags(opt) {
-    if (tags_ready == 1) return;
-    availableTags = [];
-    availableTagsLocation = [];
-    availableTagsMeta = [];
-    $.ajax({
-        dataType: 'json',
-        cache: false,
-        url: pointdata_url,
-        data: {
-        	"id": "ALL"
-        },
-        success: function(data) {
+	if (tags_ready == 1) return;
+	availableTags = [];
+	availableTagsLocation = [];
+	availableTagsMeta = [];
+	$.ajax({
+dataType: 'json',
+cache: false,
+url: pointdata_url,
+data: {
+"id": "ALL"
+},
+success: function(data) {
             for (var i = 0; i < data.length; i++) {
                 availableTags[i] = data[i].name;
                 //console.log(data[i][0]);

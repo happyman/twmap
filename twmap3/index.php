@@ -134,10 +134,15 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 		<div id="mobile_setup">
 			<a href="#" class="close-meerkat2">close</a>
 		</div>
-<div id="meerkat">
+	<div id="meerkat">
 	<a href="#" class="close-meerkat">close</a>
 	<div id="meerkat-content">
 				Here we go :*
+		</div>
+		<div id="copylink" title="複製連結">
+		<input id="copylinkurl"><br>
+			<button type="button" id="copylinkurlgo">Go</button>
+			<button type="button" id="copylinkurlshort">Shorten</button>
 		</div>
 </div>
 <script>

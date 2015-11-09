@@ -930,6 +930,12 @@ function get_point($id='ALL',$is_admin=false) {
 	return $db->getAll($sql);
 	
 }
+function get_lastest_point($num=5) {
+	$db=get_conn();
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS y,ST_Y(coord) AS x,owner FROM point2 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
+	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
+	return $db->getAll($sql);
+}
 function userid() {
         global $CONFIG;
         //       $admin = $CONFIG['admin'];

@@ -150,11 +150,12 @@ $(document).ready(function () {
 			<?php
 				if (is_admin()) {
 				printf('owner: { title: "owner", edit: true },');
-				printf("contribute: { title: '投稿', edit: true, type: 'checkbox', values: {'0': '不用', '1':'已投稿' } },");
+				printf("contribute: { title: '投稿', edit: true, options: {'0': '自己看', '1':'已投稿', '2':'來自投稿' } },");
+				} else {
+				printf("contribute: { title: '投稿' edit: true, type: 'checkbox', values: {'0': '自己看', '1':'已投稿' } },");
 				}
 			?>
 					comment: { title: "註解", edit: true },
-					contribute: { title: "投稿", edit: true, type: 'checkbox', values: {'0': '不用', '1':'已投稿' } }
 				}
 			});
 		$('#PointTableContainer').jtable('load');

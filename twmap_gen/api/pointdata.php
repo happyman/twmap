@@ -5,7 +5,47 @@ if(!ob_start("ob_gzhandler")) ob_start();
 
 $id = (isset($_REQUEST['id']))? $_REQUEST['id'] : NULL;
 // id == ALL
-$result = get_point($id);
+// lastest == 5
+if (isset($_REQUEST['lastest'])) {
+	$result = get_lastest_point(intval($_REQUEST['lastest']));
+	switch($_REQUEST['err']) {
+		case 1:
+		 $str="請輸入要尋找的地標";
+		  break;
+                case 2:
+		 $str="不在台澎範圍";
+		 break;
+                case 3:
+		 $str="找不到喔! 座標格式: <ul><li> twd67 X,Y 如 310300,2703000 <li> t97 X/Y 如 310321/2702000 <li>含小數點經緯度 lat,lon 24.430623,121.603503</ul>";
+		 break;
+                case 4:
+		 $str="cached: 不在台澎範圍";
+		 break;
+		default:
+		$str="";
+		break;
+	}
+	echo "<p align=right>最新興趣點<p><h2>$str</h2>";
+	for($i=0; $i<count($result); $i++) {
+		printf("<p><a href=#>%s</a>",$result[$i]['name']);
+	}
+	?>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+$('a').each(function(index) {
+       $(this).click(function(event) {
+                event.preventDefault();
+		var name=$(this).text();
+		$("#tags",parent.document).val(name);
+        	$("#goto",parent.document).trigger('click');
+	});
+});
+</script>
+	<?php
+	exit;
+} else {
+	$result = get_point($id);
+}
 
 /*
 角色

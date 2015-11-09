@@ -170,6 +170,12 @@ textarea:hover {
 #footer {
 	display:none;
 }
+#copylink {
+	display:none;
+}
+#copylinkurl {
+	width: 180px;
+}
 body {
 	border:1px;
 	solid gray;
