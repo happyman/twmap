@@ -11,7 +11,8 @@ $ver = trim(file_get_contents("VERSION"));
 	<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=0">
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
-	<script  src="//maps.google.com/maps/api/js?sensor=true&v=3"></script>
+	<!--<script src="//maps.google.com/maps/api/js?sensor=true&v=3"></script> -->
+	<script src="//maps.googleapis.com/maps/api/js?v=3&sensor=false&libraries=geometry"></script>
        <!--<script  src="js/jquery-1.7.1.min.js"></script>
        <script  src="js/jquery-ui-1.8.17.custom.min.js"></script>
 -->
@@ -37,6 +38,8 @@ $ver = trim(file_get_contents("VERSION"));
 	<script  src="js/jqbrowser.js"></script>
 	<script  src="js/geoxml3.js"></script>
 	<script  src="js/functions.js"></script>
+	<script  src="js/javascript.util.min.js"></script>
+	<script  src="js/jsts.min.js"></script>
 <!-- endbuild -->
 <!--
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
@@ -99,6 +102,7 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 			<button type=button class="ui-state-default ui-corner-all" id="goto" title="搜尋並定位">到</button>
 			<button id="kml_sw" class="ui-state-default ui-corner-all" title="山友登山軌跡(支援z=13到18)" type=button>行跡</button>
 			<button id="label_sw" class="ui-state-default ui-corner-all" title="三角點名稱"  type=button>標籤</button>
+			<button id="delaunay_sw" class="ui-state-default ui-corner-all disable" title="三角點連線"  type=button>連線</button>
 			<button id="marker_reload" class="ui-state-default ui-corner-all" type=button>重載</button>
 			<select id="marker_sw_select" multiple="multiple">
       		<option selected="selected" value="a">全部</option>

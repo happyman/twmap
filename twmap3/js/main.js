@@ -38,6 +38,7 @@ var theme = "default";
 // var show_kml = (getParameterByName("kml")) ? 1: 0;
 // 預設開啟 
 var show_kml_layer = 1;
+var show_delaunay = 0;
 var GPSLayer; // external kml layer
 // 以下為底圖
 var TaiwanMapV1Options = {
@@ -337,7 +338,7 @@ function permLinkURL(goto) {
     var ver = (BackgroundMap === 0) ? 3 : 1;
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
-    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "'><img src='img/permlink.png' border=0/></a>";
+    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "'><img src='img/permlink.png' border=0/></a>";
 }
 
 var MapStateRestored = 0;
@@ -349,16 +350,19 @@ function saveMapState() {
     var curGrid = $("#changegrid").val();
     var state = { "zoom": map.getZoom(), "opacity": opacity, "mapversion": ver, "maptypeid": map.getMapTypeId(),
                   "show_label": show_label, "show_kml_layer": show_kml_layer , "show_marker": show_marker, "roadmap": curMap, "grid": curGrid, "theme": theme,
-		  "goto": mapCenter.toUrlValue(5) };
+		  "goto": mapCenter.toUrlValue(5), "show_delaunay": show_delaunay };
     localStorage.setItem("twmap_state", JSON.stringify(state));
     console.log("mapState saved");
 } 
 function restoreMapState(state) {
-        if (state.show_label === 0)  $("#label_sw").trigger('click');
+        if (state.show_label === 0)  
+		$("#label_sw").trigger('click');
         if (state.show_marker) {
             show_marker = state.show_marker;
-            if (show_marker == '0') $("#marker_sw_select").val([]);
-            else $("#marker_sw_select").val(show_marker.split(","));
+            if (show_marker == '0') 
+			$("#marker_sw_select").val([]);
+            else 
+			$("#marker_sw_select").val(show_marker.split(","));
             $("#marker_sw_select").dropdownchecklist("refresh");
             markerFilter();
         }
@@ -379,6 +383,9 @@ function restoreMapState(state) {
            $("#goto").trigger('click');
 
         }
+	if (state.show_delaunay == 1 ) {
+	   $("#delaunay_sw").trigger('click');
+	}
 	MapStateRestored = 1;
 	console.log("mapState restored");
 }
@@ -818,11 +825,89 @@ success: function(data) {
             // 初始完畢, 顯示 lables
             initialmarkers();
             showInsideMarkers();
+        //
+	if (show_delaunay == 1 ) {
+	    drawDelaunayTriangulation(1, { strokeColor: "#FFFF00", strokeWeight: 3 });
+	    drawDelaunayTriangulation(2, { strokeColor: "#01DF01", strokeWeight: 2 });
+	    drawDelaunayTriangulation(3, { strokeColor: "#FF00FF", strokeWeight: 1 });
+        }
             if (opt.msg) {
                 alert(opt.msg + "共" + availableTagsLocation.length + "筆資料");
             }
         }
     });
+}
+// code from http://geocodezip.com/v3_GoogleMaps_triangulation.html
+function jsts2googleMaps(geometry, longestDistance) {
+  var coordArray = geometry.getCoordinates();
+  var distance = (typeof longestDistance === "undefined")? 9999 : longestDistance;
+  GMcoords = [];
+  for (var i = 0; i < coordArray.length; i++) {
+    GMcoords.push(new google.maps.LatLng(coordArray[i].y, coordArray[i].x));
+  }
+  // 過濾一下超過長度的 ploygon
+  for (i=0; i< GMcoords.length-1; i++) {
+	var dist = google.maps.geometry.spherical.computeDistanceBetween(GMcoords[i],GMcoords[i+1])/1000;
+	if (dist > distance )
+		return [];
+	//console.log("dist="+ dist);
+  }
+  return GMcoords;
+}
+var delaunayGMpolys = [];
+function drawDelaunayTriangulation(class_num, Options) {
+       // clean 一下
+       cleanDelaunayTriangulation(class_num);
+       // 重畫
+	var points = [];
+	var defaults = { strokeColor: "#FF0000", strokeWeight: 4, strokeOpacity: 0.8, fillOpacity: 0.0 , filterLongDistance: 90};
+	var InputOptions = jQuery.extend(defaults, Options);
+	
+	var j=0;
+	var geomFact = new jsts.geom.GeometryFactory();
+	// 1. filter points
+	for (var i = 0; i < availableTags.length; i++) {
+		if (availableTagsMeta[i].class == class_num ) {
+			points[j] = new jsts.geom.Coordinate(availableTagsLocation[i].lng(),availableTagsLocation[i].lat());
+		//	GMpoints[j] = availableTagsLocation[i];
+			j++;
+		}
+	}
+	// 2. draw
+    var input = geomFact.createMultiPoint(points);
+    
+    var builder = new jsts.triangulate.DelaunayTriangulationBuilder();
+    builder.setSites(input);
+    var delaunayResult = builder.getTriangles(geomFact);
+    delaunayGMpolys[class_num] = [];
+
+    console.log("drawdelaunayTriangulation result ploys:" + delaunayResult.getNumGeometries());
+    var area = 0;
+    for (i=0; i<delaunayResult.getNumGeometries(); i++) {
+       var jsts_geom = delaunayResult.getGeometryN(i);
+       var polygon_path = jsts2googleMaps(jsts_geom, InputOptions.filterLongDistance);
+       if (polygon_path.length === 0 )
+		continue;
+       delaunayGMpolys[class_num].push(new google.maps.Polygon({
+                     path: polygon_path,
+                     strokeWeight: InputOptions.strokeWeight,
+		     fillColor: InputOptions.fillColor,
+		     strokeColor: InputOptions.strokeColor,
+		     strokeOpacity: InputOptions.strokeOpacity,
+                     fillOpacity: InputOptions.fillOpacity,
+                     map: map
+                    }));
+	area += google.maps.geometry.spherical.computeArea( polygon_path );
+    }
+    // return area
+    return { "area" : area / 1000 / 1000 };
+	
+}
+function cleanDelaunayTriangulation(class_num) {
+	if (typeof delaunayGMpolys[class_num] === 'undefined') return;
+	for (var i =0; i< delaunayGMpolys[class_num].length; i++){
+		delaunayGMpolys[class_num][i].setMap(null);
+	}
 }
 function mysetIcon2(type, isShadow) {
     var icon=[];
@@ -864,6 +949,9 @@ function initialmarkers() {
         showCenterMarker(marker.title);
     });
     window.oms = oms;
+    // 防止 marker initial 之前 filter 已經被呼叫
+    markerFilter();
+    console.log("markers ready");
 }
 var listener;
 var TW_Bounds;
@@ -1179,6 +1267,23 @@ function initialize() {
         }
         updateView("info_only");
     });
+    $("#delaunay_sw").click(function() {
+	if (show_delaunay == 1 ) {
+		show_delaunay = 0;
+		cleanDelaunayTriangulation(1);
+		cleanDelaunayTriangulation(2);
+		cleanDelaunayTriangulation(3);
+            $("#delaunay_sw").addClass("disable");
+	} else {
+		show_delaunay = 1;
+            $("#delaunay_sw").removeClass("disable");
+	    drawDelaunayTriangulation(1, { strokeColor: "#FFFF00", strokeWeight: 3 });
+            drawDelaunayTriangulation(2, { strokeColor: "#01DF01", strokeWeight: 2 });
+            drawDelaunayTriangulation(3, { strokeColor: "#FF00FF", strokeWeight: 1 });
+
+	}
+        updateView("info_only");
+    });
    
     $("#marker_reload").hide();
     //toggle_admin_role();
@@ -1210,6 +1315,7 @@ function initialize() {
                 //markerReload({msg: "載入完成"});
                 markerFilter();
             }
+	    console.log("dropdownchecklist complete");
         }
     });
     $(".ui-dropdownchecklist-selector").addClass("ui-corner-all").css({
@@ -1237,6 +1343,7 @@ function initialize() {
         });
         $('#kml_sw').appendTo('#mobile_setup').hide();
         $('#label_sw').appendTo('#mobile_setup').hide();
+        $('#delaunay_sw').appendTo('#mobile_setup').hide();
         $('#opContainer').appendTo('#mobile_setup');
         $('#CGRID').appendTo('#mobile_setup').hide();
         $('#CGNAME').appendTo('#mobile_setup').hide();
@@ -1256,6 +1363,12 @@ function initialize() {
                 'position': 'absolute',
                 'top': '30px',
                 'left': '80px',
+                'font-size': '20px'
+            }).show();
+            $('#delaunay_sw').removeAttr('style').css({
+                'position': 'absolute',
+                'top': '30px',
+                'left': '150px',
                 'font-size': '20px'
             }).show();
             $('#CGRID').show();
@@ -1281,9 +1394,7 @@ function initialize() {
 // 1. 從 param restore
 	if (getParameterByName('kml')) {
             console.log("get kml parameter");
-            GPSLayer = new google.maps.KmlLayer(getParameterByName('kml') + '?ts=' + (new Date()).getTime(), {
-                preserveViewport: false
-            });
+            GPSLayer = new google.maps.KmlLayer(getParameterByName('kml') + '?ts=' + (new Date()).getTime(), { preserveViewport: false });
             GPSLayer.setMap(map);
 	    MapStateRestored = 1;
 	}  else if (getParameterByName("goto") && getParameterByName("maptypeid") && getParameterByName("zoom")) {
@@ -1295,46 +1406,12 @@ function initialize() {
 		   "grid":getParameterByName("grid"),
 		   "roadmap":getParameterByName("roadmap"),
 		   "mapversion":getParameterByName("mapversion"),
+		   "show_delaunay":getParameterByName("show_delaunay"),
 		   "goto":getParameterByName("goto") };
 
-	restoreMapState(st);
-/*
-        if (getParameterByName("show_label") && getParameterByName("show_label") == 0) {
-            $("#label_sw").trigger('click');
-        }
-        if (getParameterByName("show_marker")) {
-            show_marker = getParameterByName("show_marker");
-            if (show_marker == '0') $("#marker_sw_select").val([]);
-            else $("#marker_sw_select").val(show_marker.split(","));
-            $("#marker_sw_select").dropdownchecklist("refresh");
-            markerFilter();
-        }
-        if (getParameterByName("show_kml_layer") && getParameterByName("show_kml_layer") == 0) {
-            $("#kml_sw").trigger('click');
-        }
-        if (getParameterByName("zoom")) {
-            map.setZoom(parseInt(getParameterByName("zoom")));
-        }
-        if (getParameterByName("maptypeid")) {
-            map.setMapTypeId(getParameterByName("maptypeid"));
-        }
-        if (getParameterByName("roadmap")) {
-            $("#changegname").val(getParameterByName("roadmap"));
-            $("#changegname").change();
-        }
-        if (getParameterByName("grid")) {
-            $("#changegrid").val(getParameterByName("grid"));
-            $("#changegrid").change();
-        }
-        if (getParameterByName("mapversion")) {
-            if (getParameterByName("mapversion") == 1) $("#changemap").trigger('click');
-        }
-        if (getParameterByName("goto")) {
-            console.log("get goto parameter");
-            $("#tags").val(getParameterByName("goto"));
-            $("#goto").trigger('click');
-        }
-	*/
+	    restoreMapState(st);
+	    console.log("restore from GET");
+
      } else if (localStorage.getItem("twmap_state"))  {
 	   var state;
 	   try {
@@ -1342,8 +1419,10 @@ function initialize() {
 	   } catch(e) {
 	     state = null;
 	   }
-	   if (state)
+	   if (state) {
+	    console.log("restore from localStorage");
 	    restoreMapState(state);
+	   }
 	    
      }
      // 
@@ -1671,6 +1750,7 @@ function markerFilter() {
         }
     }
     //
+    console.log("markerFilter done");
     updateView("marker_switch");
 }
 

@@ -131,6 +131,9 @@ textarea:hover {
 #label_sw {
 	cursor: pointer;
 }
+#delaunay_sw {
+	cursor: pointer;
+}
 #marker_sw_select {
 	cursor: pointer;
 }
@@ -218,8 +221,7 @@ height: 100%;
 			display: none;
 }
 .disable{
-	background-color: #fff;
-	/*color: #fff;*/
+	background-color: gray;
 	background-image: none;
 
 }
