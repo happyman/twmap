@@ -14,6 +14,7 @@ $CONFIG['geocodercache_url'] = $site_twmap_html_root ."api/geocoder.php";
 $CONFIG['getkml_url'] = $site_twmap_html_root ."api/getkml.php";
 $CONFIG['get_waypoints_url'] = $site_twmap_html_root ."api/waypoints.php";
 $CONFIG['geocodercache_url'] = $site_twmap_html_root ."api/geocoder.php";
+$CONFIG['get_elev_url'] = $site_twmap_html_root ."api/getelev.php";
 //$CONFIG['pointdata_url'] = $site_html_root . "data/ajaxCRUD/pointdata2.php";
 $CONFIG['pointdata_url'] = $site_twmap_html_root . "api/pointdata.php";
 $CONFIG['pointdata_admin_url'] = $site_twmap_html_root . "admin/index.php";

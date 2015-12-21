@@ -33,7 +33,7 @@ var opacity = getParameterByName("opacity") ? getParameterByName("opacity") : 0.
 var got_geo = 0;
 // geocoding
 var geocoder;
-var elevator;
+// var elevator;
 var theme = "default";
 // var show_kml = (getParameterByName("kml")) ? 1: 0;
 // 預設開啟 
@@ -439,6 +439,23 @@ function locInfo(newpos, callback, param) {
         } else {
             // 2. 非航點 -- 檢查高度,產生 infowin
             var close_infowin = ((!callback) ? 0 : 1);
+	    $.ajax({
+		dataType: 'json',
+		url: get_elev_url,
+		data: {
+			"loc": newpos.lat() + "," + newpos.lng()
+		}
+	    }).done(function(data) {
+		var ele;
+		if (data.ok === true ) {
+			ele = Number(data.rsp.elevation);
+		} else {
+			ele = -20000;
+		}
+		// console.log(data);
+		locInfo_show(newpos, ele, { "callback": callback, "param": param, "close": close_infowin });
+	    });
+/*
             if (!elevator) elevator = new google.maps.ElevationService();
             elevator.getElevationForLocations({
                 'locations': [newpos]
@@ -465,6 +482,7 @@ function locInfo(newpos, callback, param) {
                     });
                 }
             });
+*/
         }
     }); // done
 }
@@ -487,7 +505,7 @@ function locInfo_show(newpos, ele, extra) {
     else content += permLinkURL(encodeURIComponent(locInfo_name));
     if (extra.content) content += extra.content;
     content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
-    if (ele > -1000) content += "<br>高度: " + ele.toFixed(2) + "M";
+    if (ele > -1000) content += "<br>高度: " + ele.toFixed(0) + "M";
     content += "<br>座標: " + comment + "" + Math.round(p.x) + "," + Math.round(p.y);
     if (login_role == 1) {
         if (locInfo_name == "我的位置") content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "',{});return false\">新增</a>";
@@ -743,10 +761,12 @@ function showCenterMarker_real(loc, name) {
     google.maps.event.addListener(centerMarker, "dragend", function(e) {
         //alert(centerMarker.getPosition());
         var newpos = centerMarker.getPosition();
+	console.log("centerMarker dragend");
         locInfo(newpos);
     });
     google.maps.event.addListener(centerMarker, "dragstart", function(e) {
         locInfo_name = "我的位置";
+	console.log("centerMarker dragstart");
         if (centerInfo) centerInfo.close();
     });
     google.maps.event.addListener(centerMarker, 'click', function() {

@@ -57,6 +57,18 @@ if ($id !== 'ALL') {
 	$result[0]['story'] = tell_story($result[0]);
 	if ($st === true) 
 		$result[0]['info'] = $info;
+	// 補上高度資料
+	if ($result[0]['ele'] == 0 ) {
+		$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
+		$ele = get_elev($twDEM_path, $result[0]['y'], $result[0]['x'], 1);
+		if ($ele > -1000 ) {
+			$result[0]['ele'] = $ele;
+		} else {
+			unset($result[0]['ele']);
+		}
+	}
+
+	
 } else {
 	
 }
@@ -83,8 +95,13 @@ exit(0);
 
 function tell_story($d) {
 	global $site_html_root;
-	$a = sprintf("<br>類別: %s", $d['type']);
-	// 如果是原點
+	
+	$a = "";
+	if (isset($d['ele'])) {
+		$a= sprintf("<br>高度: %s M",$d['ele']);
+	}
+
+	$a .= sprintf("<br>類別: %s", $d['type']);
 	if ($d['class'] > 1 && $d['class'] < 4 ) {
 		$a .= sprintf("%d-%d", $d['class'],$d['number']);
 	}

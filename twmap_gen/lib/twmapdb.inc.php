@@ -261,21 +261,21 @@ function map_file_exists($outimage, $ftype) {
 }
 function map_file_name($outimage, $ftype) {
 	switch($ftype) {
-	case 'pdf':
-		$fname = str_replace(".tag.png",".pdf",$outimage);
-		break;
-	case 'kmz':
-		$fname = str_replace(".png",".kmz",$outimage);
-		break;
-	case 'txt':
-		$fname = str_replace(".tag.png",".txt",$outimage);
-		break;
-	case 'gpx':
-		$fname = str_replace(".tag.png",".gpx",$outimage);
-		break;
-	case 'image':
-		$fname = $outimage;
-		break;
+		case 'pdf':
+			$fname = str_replace(".tag.png",".pdf",$outimage);
+			break;
+		case 'kmz':
+			$fname = str_replace(".png",".kmz",$outimage);
+			break;
+		case 'txt':
+			$fname = str_replace(".tag.png",".txt",$outimage);
+			break;
+		case 'gpx':
+			$fname = str_replace(".tag.png",".gpx",$outimage);
+			break;
+		case 'image':
+			$fname = $outimage;
+			break;
 	}
 	return $fname;
 
@@ -363,7 +363,7 @@ function map_expire($mid) {
 	if ($row === FALSE) return FALSE;
 	// $sql = "delete from map where mid=$mid";
 	// remove files
-$files = map_files($row['filename']);
+	$files = map_files($row['filename']);
 	foreach($files as $f) {
 		// 不刪除 gpx 檔案
 		if(strstr(basename($f),'.gpx')) continue;
@@ -418,24 +418,24 @@ function map_totalsize() {
 // still broken
 function mrtg($type) {
 	switch($type) {
-	case 'disk':
-		$size = map_totalsize();
-		return array($size);
-		break;
-	case 'map':
-	default:
-		$sql = sprintf("SELECT *
-			FROM map
-			WHERE TIME_TO_SEC( timediff( NOW( ) , cdate ) ) < %d
-			OR TIME_TO_SEC( timediff( NOW( ) , ddate ) ) < %d", 300,300);
-		$res = mysql_query($sql);
-		$c=0;$d=0;
-		while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
-			if ($row['flag'] == 2) $d++;
-			else if ($row['flag'] == 0) $c++;
-		}
-		return array($c,$d);
-		break;
+		case 'disk':
+			$size = map_totalsize();
+			return array($size);
+			break;
+		case 'map':
+		default:
+			$sql = sprintf("SELECT *
+					FROM map
+					WHERE TIME_TO_SEC( timediff( NOW( ) , cdate ) ) < %d
+					OR TIME_TO_SEC( timediff( NOW( ) , ddate ) ) < %d", 300,300);
+			$res = mysql_query($sql);
+			$c=0;$d=0;
+			while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
+				if ($row['flag'] == 2) $d++;
+				else if ($row['flag'] == 0) $c++;
+			}
+			return array($c,$d);
+			break;
 
 	}
 
@@ -459,9 +459,9 @@ function stats() {
 	logsql($sql,$rs);
 	$active_users = $rs[0]['num_user'];
 	/*
-	$res = mysql_query($sql);
-	$row = mysql_fetch_row($res);
-	$active_users = $row[0];
+	   $res = mysql_query($sql);
+	   $row = mysql_fetch_row($res);
+	   $active_users = $row[0];
 	 */
 	$sql = sprintf("select count(*) as count from \"user\"");
 	$rs2 = $db->GetAll($sql);
@@ -493,18 +493,18 @@ function hot_block($type=0, $target="_blank") {
 		//	$size = "1.0em";
 		//	$name = "最新地圖";
 		//	break;
-	case 1:
-		$maps1 = map_get_gpx(15);
-		$maps2 = map_get_lastest(20);
-		$maps = array_merge($maps1,$maps2);
-		$size = "1.0em";
-		$name = "最新地圖(gpx)";
-		break;
-	default:
-		$maps = map_get_hot(20);
-		$size = "1.2em";
-		$name = "熱門地圖";
-		break;
+		case 1:
+			$maps1 = map_get_gpx(15);
+			$maps2 = map_get_lastest(20);
+			$maps = array_merge($maps1,$maps2);
+			$size = "1.0em";
+			$name = "最新地圖(gpx)";
+			break;
+		default:
+			$maps = map_get_hot(20);
+			$size = "1.2em";
+			$name = "熱門地圖";
+			break;
 	}
 	$ret[0] = "<table style='width: 330px; '><tr>";
 	$ret[] = "<th>$name<tr><td>";
@@ -551,13 +551,13 @@ function kerror_out($id,$msg) {
 function keepon_MapResult($success, $id, $msg, $url=null, $cdate=null) {
 	$kurl = "http://www.keepon.com.tw/api/MapGenerator/MapResult";
 	$params = array(
-	    
-		    'Success'=> $success,
-		    'Identity'=> $id,
-		    'Date'=> ($cdate)? $cdate : date("Y-m-d H:i:s"),
-		    'ImageUrl'=> $url,
-		    'Message'=>$msg
- );
+
+			'Success'=> $success,
+			'Identity'=> $id,
+			'Date'=> ($cdate)? $cdate : date("Y-m-d H:i:s"),
+			'ImageUrl'=> $url,
+			'Message'=>$msg
+		       );
 	$result = request_curl($kurl, "POSTJSON", $params);
 	//error_log("request $kurl with params".print_r($params,true) ."get $result");
 	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
@@ -567,7 +567,7 @@ function keepon_MapResult($success, $id, $msg, $url=null, $cdate=null) {
 function keepon_MapDelete($id) {
 	$kurl = "http://www.keepon.com.tw/api/MapGenerator/MapDelete";
 	$params = array(
-		    'Identity'=> $id );
+			'Identity'=> $id );
 	$result = request_curl($kurl, "POSTJSON", $params);
 	error_log("request $kurl with params".print_r($params,true) ."get $result");
 	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
@@ -582,12 +582,12 @@ function soap_call($success, $id, $msg, $url=null, $cdate =null) {
 	//    // 變數名稱必需與Web Service的變數名稱相同
 	$params = array(
 
-		'Success'=> $success,
-		'Identity'=> $id,
-		'Date'=> ($cdate)? $cdate : date("Y-m-d H:i:s"),
-		'ImageUrl'=> $url,
-		'Message'=>$msg
-	);
+			'Success'=> $success,
+			'Identity'=> $id,
+			'Date'=> ($cdate)? $cdate : date("Y-m-d H:i:s"),
+			'ImageUrl'=> $url,
+			'Message'=>$msg
+		       );
 
 	try {	//                              //呼叫 MapResult 傳入$params
 
@@ -605,7 +605,7 @@ function soap_call($success, $id, $msg, $url=null, $cdate =null) {
 function soap_call_delete($id) {
 	$soap = new SoapClient("http://www.keepon.com.tw/KeeponWebService.asmx?WSDL");
 	$params = array(
-		'Identity'=> $id );
+			'Identity'=> $id );
 	try {
 		$result = $soap->MapDelete($params);
 		kcli_msglog(array($params,$result));
@@ -646,13 +646,13 @@ function ajaxok($response) {
  */
 function map_overlap($bounds, $gpx=1, $max=0){
 	// 四個端點  航跡圖的範圍落在 viewport  或者 viewport 落在航跡圖範圍裡頭
-	 /*
-	$sql = sprintf("SELECT * FROM map WHERE gpx=%d and (((locX BETWEEN %s AND %s) AND ((locY BETWEEN %s AND %s) OR (locY-shiftY*1000 BETWEEN %s AND %s))) OR ((locX+shiftX*1000 BETWEEN %s AND %s) AND ((locY BETWEEN %s AND %s) OR (locY-shiftY*1000 BETWEEN %s AND %s))) OR ((%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR
-		(%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY)))",
-		$gpx, $bounds['tlx'],$bounds['brx'],$bounds['bry'],$bounds['tly'], $bounds['bry'],$bounds['tly'], $bounds['tlx'],$bounds['brx'], $bounds['bry'], $bounds['tly'], $bounds['bry'], $bounds['tly'] ,
-		$bounds['tlx'],$bounds['tly'],$bounds['brx'],$bounds['bry'],$bounds['tlx'],$bounds['bry'],$bounds['brx'],$bounds['tly']);
+	/*
+	   $sql = sprintf("SELECT * FROM map WHERE gpx=%d and (((locX BETWEEN %s AND %s) AND ((locY BETWEEN %s AND %s) OR (locY-shiftY*1000 BETWEEN %s AND %s))) OR ((locX+shiftX*1000 BETWEEN %s AND %s) AND ((locY BETWEEN %s AND %s) OR (locY-shiftY*1000 BETWEEN %s AND %s))) OR ((%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR
+	   (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY) OR (%s BETWEEN  locX AND locX+shiftX*1000 AND %s BETWEEN locY-shiftY*1000 AND locY)))",
+	   $gpx, $bounds['tlx'],$bounds['brx'],$bounds['bry'],$bounds['tly'], $bounds['bry'],$bounds['tly'], $bounds['tlx'],$bounds['brx'], $bounds['bry'], $bounds['tly'], $bounds['bry'], $bounds['tly'] ,
+	   $bounds['tlx'],$bounds['tly'],$bounds['brx'],$bounds['bry'],$bounds['tlx'],$bounds['bry'],$bounds['brx'],$bounds['tly']);
 
-		*/
+	 */
 	// 聰明的條件滿足
 	//http://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
 	//return ((R1.BR.y <= R2.TL.y)
@@ -680,34 +680,34 @@ function map_overlap($bounds, $gpx=1, $max=0){
  * @return void
  */
 function geocoder($op, $data) {
-	 $db=get_conn();
-	 switch($op) {
-	 case 'get':
-		 $sql = sprintf("select * from \"geocoder\" where address='%s'",$data['address']);
-		 $res = $db->GetAll($sql);
-		 logsql($sql,$res);
-		 if (count($res) == 1)
-			return array(1, $res[0]);
-		 else if ($res === false)
-			 return array(-1, "error");
-		 else
-			 return array(0, 'no result' . $sql);
-		 break;
-	 case 'set':
-		 list ($ret, $msg )= geocoder('get', array('address' => $data['address']));
-		 if ($ret == 0)
-			 $sql = sprintf("Insert_ID into \"geocoder\" (\"address\",\"lat\",\"lng\",\"is_tw\",\"exact\",\"faddr\",\"name\") values ('%s',%f,%f,%d,%d,'%s','%s')",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
-		 else if ($ret == 1)
-			 $sql = sprintf("update \"geocoder\" set \"address\"='%s',\"lat\"=%f, \"lng\"=%d, \"is_tw\"=%d, \"exact\"=%d, \"faddr\"='%s', \"name\"='%s'",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
-		 else
-			 return array($ret, $msg);
-		 $res = $db->Execute($sql);
-		 logsql($sql,$res);
-		 if ($res == true )
-			 return array(1,"ok $sql");
-		 break;
-	 }
-	 return array(0,"no set / get ");
+	$db=get_conn();
+	switch($op) {
+		case 'get':
+			$sql = sprintf("select * from \"geocoder\" where address='%s'",$data['address']);
+			$res = $db->GetAll($sql);
+			logsql($sql,$res);
+			if (count($res) == 1)
+				return array(1, $res[0]);
+			else if ($res === false)
+				return array(-1, "error");
+			else
+				return array(0, 'no result' . $sql);
+			break;
+		case 'set':
+			list ($ret, $msg )= geocoder('get', array('address' => $data['address']));
+			if ($ret == 0)
+				$sql = sprintf("Insert_ID into \"geocoder\" (\"address\",\"lat\",\"lng\",\"is_tw\",\"exact\",\"faddr\",\"name\") values ('%s',%f,%f,%d,%d,'%s','%s')",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
+			else if ($ret == 1)
+				$sql = sprintf("update \"geocoder\" set \"address\"='%s',\"lat\"=%f, \"lng\"=%d, \"is_tw\"=%d, \"exact\"=%d, \"faddr\"='%s', \"name\"='%s'",$data['address'],$data['lat'],$data['lng'],$data['is_tw'],$data['exact'],$data['faddr'],$data['name']);
+			else
+				return array($ret, $msg);
+			$res = $db->Execute($sql);
+			logsql($sql,$res);
+			if ($res == true )
+				return array(1,"ok $sql");
+			break;
+	}
+	return array(0,"no set / get ");
 }
 function getCallingFunctionName($completeTrace=false) {
 	$trace=debug_backtrace();
@@ -736,10 +736,10 @@ function getCallingFunctionName($completeTrace=false) {
 	return $str;
 }
 /**
-	GIS functions
-	depends on mapnik (nik4), gdal (ocr2ocr)
-	測試 code:
-	因為目前 production server 的 postgres library 太舊, 只好借用別台 172.31.39.193
+  GIS functions
+  depends on mapnik (nik4), gdal (ocr2ocr)
+  測試 code:
+  因為目前 production server 的 postgres library 太舊, 只好借用別台 172.31.39.193
  */
 function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 	global $db_name,$db_user,$db_pass,$db_host;
@@ -759,13 +759,13 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 		//  沒辦法 因為 server 上 postgres library < 9.0 無法使用
 		//$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
 		$cmd = sprintf("ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
-			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type,$table);
+				$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type,$table);
 
 	} else {
 		// 1. append
 		//$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
 		$cmd = sprintf("ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
-			$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type, $table);
+				$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type, $table);
 	}
 	//echo $cmd . "\n";
 	exec($cmd,$out,$ret);
@@ -810,21 +810,21 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
 			return array(false, "unable to read remote svg");
 		}
 		while(!feof($fp)){
-				$line=fgets($fp);
-				if ($count == 0) {
-					if (!strstr($line,"xml")) {
-						@unlink($tmpsvg);
-						return array(false, "error get svg");
-					}
+			$line=fgets($fp);
+			if ($count == 0) {
+				if (!strstr($line,"xml")) {
+					@unlink($tmpsvg);
+					return array(false, "error get svg");
 				}
-				if ($count++==2) {
-					// 加上一行
-					$bgimg_line = sprintf('<g id="background image" opacity="1" transform="translate(0,0)"><image  id="background map" opacity="1" width="%d" height="%d" x="0" y="0" xlink:href="%s" /></g>',
+			}
+			if ($count++==2) {
+				// 加上一行
+				$bgimg_line = sprintf('<g id="background image" opacity="1" transform="translate(0,0)"><image  id="background map" opacity="1" width="%d" height="%d" x="0" y="0" xlink:href="%s" /></g>',
 						$imgsize[0],$imgsize[1],$background_image_path);
-					//echo "add one line: $bgimg_line\n";
-					fwrite($fq,$bgimg_line);
-				}
-				fwrite($fq,$line);
+				//echo "add one line: $bgimg_line\n";
+				fwrite($fq,$bgimg_line);
+			}
+			fwrite($fq,$line);
 		} // while
 		@unlink($tmpsvg);
 		// optimize svg: fail safe
@@ -850,26 +850,26 @@ function tilestache_clean($mid){
 	}
 	$tl = proj_67toge(array($row['locX'],$row['locY']));
 	$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
-	
+
 	//$cmd = sprintf("ssh 172.31.39.193 'tilestache-clean.py -c ~wwwrun/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1'",$tl[1],$tl[0],$br[1],$br[0]);
 	$cmd = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	error_log("tilestache_clean: ". $cmd);
 	/*
-利用 tilestache-clean 的 output 來砍另一層 cache 
+	   利用 tilestache-clean 的 output 來砍另一層 cache 
 
-10164 of 10192... twmap_gpx/18/219563/112348.png
-10165 of 10192... twmap_gpx/18/219564/112348.png
-10166 of 10192... twmap_gpx/18/219565/112348.png
-10167 of 10192... twmap_gpx/18/219566/112348.png
-10168 of 10192... twmap_gpx/18/219567/112348.png
-10169 of 10192... twmap_gpx/18/219568/112348.png
-10170 of 10192... twmap_gpx/18/219569/112348.png
-10171 of 10192... twmap_gpx/18/219570/112348.png
-10172 of 10192... twmap_gpx/18/219571/112348.png
-10173 of 10192... twmap_gpx/18/219572/112348.png
-10174 of 10192... twmap_gpx/18/219573/112348.png
-10175 of 10192... twmap_gpx/18/219574/112348.png
-*/
+	   10164 of 10192... twmap_gpx/18/219563/112348.png
+	   10165 of 10192... twmap_gpx/18/219564/112348.png
+	   10166 of 10192... twmap_gpx/18/219565/112348.png
+	   10167 of 10192... twmap_gpx/18/219566/112348.png
+	   10168 of 10192... twmap_gpx/18/219567/112348.png
+	   10169 of 10192... twmap_gpx/18/219568/112348.png
+	   10170 of 10192... twmap_gpx/18/219569/112348.png
+	   10171 of 10192... twmap_gpx/18/219570/112348.png
+	   10172 of 10192... twmap_gpx/18/219571/112348.png
+	   10173 of 10192... twmap_gpx/18/219572/112348.png
+	   10174 of 10192... twmap_gpx/18/219573/112348.png
+	   10175 of 10192... twmap_gpx/18/219574/112348.png
+	 */
 	exec($cmd,$out,$ret);
 	if ($ret == 0){
 		foreach($out as $line){
@@ -887,14 +887,14 @@ function remove_gpx_from_gis($mid){
 	$sql[] = sprintf("DELETE FROM gpx_trk WHERE mid=%d",$mid);
 	$db=get_conn();
 	$db->StartTrans();
-    foreach ($sql as $sql_str) {
-        $db->Execute($sql_str);
-    }
-    $result = $db->CompleteTrans();
-   	if ($result === false) {
-   	 return array(false,"sql transaction fail");
-   	}
-   	return array(true,"done");
+	foreach ($sql as $sql_str) {
+		$db->Execute($sql_str);
+	}
+	$result = $db->CompleteTrans();
+	if ($result === false) {
+		return array(false,"sql transaction fail");
+	}
+	return array(true,"done");
 }
 // 取得範圍內的 gpx waypoints
 function get_waypoint($x,$y,$r=10,$detail=0){
@@ -928,7 +928,7 @@ function get_point($id='ALL',$is_admin=false) {
 	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS y,ST_Y(coord) AS x,owner FROM point2 %s ORDER BY number,class DESC", $where);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
-	
+
 }
 function get_lastest_point($num=5) {
 	$db=get_conn();
@@ -937,19 +937,40 @@ function get_lastest_point($num=5) {
 	return $db->getAll($sql);
 }
 function userid() {
-        global $CONFIG;
-        //       $admin = $CONFIG['admin'];
-        if (!isset($_SESSION['mylogin'])|| !isset($_SESSION['uid']))
-                return array(false, "please login");
-        return array(true, $_SESSION['uid']);
+	global $CONFIG;
+	//       $admin = $CONFIG['admin'];
+	if (!isset($_SESSION['mylogin'])|| !isset($_SESSION['uid']))
+		return array(false, "please login");
+	return array(true, $_SESSION['uid']);
 }
 
 function is_admin() {
-        global $CONFIG;
-        if (!isset($_SESSION['mylogin'])|| !isset($_SESSION['uid']))
-                return false;
-        if(in_array($_SESSION['uid'], $CONFIG['admin']))
-                return true;
-        return false;
+	global $CONFIG;
+	if (!isset($_SESSION['mylogin'])|| !isset($_SESSION['uid']))
+		return false;
+	if(in_array($_SESSION['uid'], $CONFIG['admin']))
+		return true;
+	return false;
 }
 
+function get_elev($twDEM_path, $lat,$lon, $cache=1) {
+	if ($cache) {
+	$mem = new Memcached;
+	$mem->addServer('localhost',11211);
+	$key=sprintf("ele_%.06f_%.06f",$lat,$lon);
+	$ele = $mem->get($key);
+	if ($ele !== FALSE ) {
+		return $ele;
+	}
+	$cmd = sprintf("gdallocationinfo -valonly -geoloc %s %s %s",$twDEM_path, $lon, $lat);
+	exec($cmd, $out, $ret);
+	$ele = trim($out[0]);
+	if ($ret != 0) {
+		return -20000;
+	}
+	if (empty($ele)) $ele = -10000;
+	if ($cache)
+		$mem->set($key, $ele, 86400);
+	}
+	return $ele;
+}

@@ -1,0 +1,10 @@
+http://gis.rchss.sinica.edu.tw/qgis/?p=1619
+
+ 1   地面解析度約30公尺
+ 2   坐標為經緯度坐標
+ 3   輸出格式為16 bits的GeoTiff，大地基準使用WGS84/EGM96
+ 4   值-9999表示該像素為空，而水體則以值0表示
+
+請下載 http://gis.rchss.sinica.edu.tw/gps/wp-content/uploads/2012/02/20120201_twdtm_asterV2_30m.rar
+解開後將 tif 檔案放到此目錄下
+
