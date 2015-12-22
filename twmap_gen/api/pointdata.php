@@ -54,7 +54,6 @@ $('a').each(function(index) {
 */
 list($st,$info) = userid();
 if ($id !== 'ALL') {
-	$result[0]['story'] = tell_story($result[0]);
 	if ($st === true) 
 		$result[0]['info'] = $info;
 	// 補上高度資料
@@ -67,6 +66,7 @@ if ($id !== 'ALL') {
 			unset($result[0]['ele']);
 		}
 	}
+	$result[0]['story'] = tell_story($result[0]);
 
 	
 } else {

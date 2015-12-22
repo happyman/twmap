@@ -615,6 +615,10 @@ function showCenterMarker(name) {
             }
             tagInfo(availableTagsLocation[i], availableTagsMeta[i].id);
             // 放入 cookie
+// drag event
+    google.maps.event.addListener(centerMarker, "dragend", centerMarkerDragEnd );
+    google.maps.event.addListener(centerMarker, "dragstart", centerMarkerDragStart );
+//
             $.cookie('twmap3_goto', name);
 	    break;
         }
@@ -747,6 +751,17 @@ function showCenterMarker(name) {
     }
 }
 
+function centerMarkerDragEnd(e) {
+        var newpos = centerMarker.getPosition();
+        console.log("centerMarker dragend");
+        locInfo(newpos);
+}
+function centerMarkerDragStart(e) {
+        locInfo_name = "我的位置";
+        console.log("centerMarker dragstart");
+        if (centerInfo) centerInfo.close();
+
+}
 function showCenterMarker_real(loc, name) {
     //	console.log('fire showCenterMarker_real' + loc + name );
     if (centerMarker) centerMarker.setMap(null);
@@ -758,17 +773,8 @@ function showCenterMarker_real(loc, name) {
         zIndex: 10000
     });
     circle.bindTo('center', centerMarker, 'position');
-    google.maps.event.addListener(centerMarker, "dragend", function(e) {
-        //alert(centerMarker.getPosition());
-        var newpos = centerMarker.getPosition();
-	console.log("centerMarker dragend");
-        locInfo(newpos);
-    });
-    google.maps.event.addListener(centerMarker, "dragstart", function(e) {
-        locInfo_name = "我的位置";
-	console.log("centerMarker dragstart");
-        if (centerInfo) centerInfo.close();
-    });
+    google.maps.event.addListener(centerMarker, "dragend", centerMarkerDragEnd );
+    google.maps.event.addListener(centerMarker, "dragstart", centerMarkerDragStart );
     google.maps.event.addListener(centerMarker, 'click', function() {
         centerInfo.open(map, centerMarker);
     });
@@ -910,6 +916,7 @@ function drawDelaunayTriangulation(class_num, Options) {
 		continue;
        delaunayGMpolys[class_num].push(new google.maps.Polygon({
                      path: polygon_path,
+		     clickable: false,
                      strokeWeight: InputOptions.strokeWeight,
 		     fillColor: InputOptions.fillColor,
 		     strokeColor: InputOptions.strokeColor,
@@ -960,6 +967,7 @@ function initialmarkers() {
             //icon: iconWithColor(usualColor),
             title: availableTags[i],
             map: map,
+	    draggable: false,
             // shadow: mysetIcon2(availableTagsMeta[i].type, 1),
             position: availableTagsLocation[i]
         });
@@ -1162,7 +1170,7 @@ function initialize() {
             position: init_latlng,
             icon: "img/pointer01.jpg",
             title: "init",
-            draggable: true,
+            draggable: false,
             map: map
         });
         labelArray[i] = new Label({
