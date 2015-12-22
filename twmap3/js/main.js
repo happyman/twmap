@@ -1734,31 +1734,31 @@ function markerFilter() {
             // 其他則忽略
             if (s[k] == '0') continue;
             if (s[k] == '5') {
-                if (availableTagsMeta[i].mt100 & 1) {
+                if (parseInt(availableTagsMeta[i].mt100) & 1) {
                     want = 1;
                 }
             }
             // 小百岳
             if (s[k] == '6') {
-                if (availableTagsMeta[i].mt100 & 2) {
+                if (parseInt(availableTagsMeta[i].mt100) & 2) {
                     want = 1;
                 }
             } else if (s[k] == '9') {
-                if (availableTagsMeta[i].mt100 & 4) {
+                if (parseInt(availableTagsMeta[i].mt100) & 4) {
                     want = 1;
                 }
             } else if (s[k] == '8') {
-                if (availableTagsMeta[i].class === 0 && (availableTagsMeta[i].type == '溫泉')) {
+                if (availableTagsMeta[i].class == '0' && (availableTagsMeta[i].type == '溫泉')) {
                     want = 1;
                 }
             } else if (s[k] == '7') {
                 // 其他
-                if (availableTagsMeta[i].class === 0) {
+                if (availableTagsMeta[i].class == '0') {
                     want = 1;
                 }
             } else {
                 // 1-4 等
-                if (availableTagsMeta[i].class == s[k]) {
+                if (availableTagsMeta[i].class === s[k]) {
                     want = 1;
                 }
             }
