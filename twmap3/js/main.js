@@ -507,7 +507,7 @@ function locInfo_show(newpos, ele, extra) {
     }
     var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
     var content = "<div class='infowin'>" + locInfo_name + "";
-    if (locInfo_name == "我的位置" || locInfo_name == "GPS 航點資訊") content += permLinkURL(newpos.toUrlValue(5));
+    if (locInfo_name == "我的位置" || locInfo_name == "GPS 航跡資訊") content += permLinkURL(newpos.toUrlValue(5));
     else content += permLinkURL(encodeURIComponent(locInfo_name));
     if (extra.content) content += extra.content;
     content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
