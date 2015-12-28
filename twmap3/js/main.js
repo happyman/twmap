@@ -319,7 +319,7 @@ var skml;
 /* global geoXML3 */
 function showmapkml(mid, marker_desc, uri_enc) {
     if (skml && skml.mid > 0) {
-        if (skml.mid == mid) return;
+        if (skml.mid == mid || skml.loading == 1) return;
         skml.removeDocument(skml.docs[0]);
     }
     skml = new geoXML3.parser({
@@ -328,9 +328,11 @@ function showmapkml(mid, marker_desc, uri_enc) {
         additional_marker_desc: decodeURIComponent(uri_enc),
         zoom: false,
     });
+    skml.loading = 1;
     skml.parse(getkml_url + "?mid=" + mid);
     google.maps.event.addListener(skml, 'parsed', function() {
         skml.mid = mid;
+	skml.loading = 0;
     });
 }
 
@@ -414,17 +416,21 @@ function locInfo(newpos, callback, param) {
             "detail": 0
         }
     }).done(function(data) {
-        if (data.ok === true && data.rsp.length > 0) {
-            // console.log(data);
-            locInfo_name = "GPS 航點資訊";
+         //   console.log(data);
+        if (data.ok === true && data.rsp.wpt !== "undefined") {
+            locInfo_name = "GPS 航跡資訊";
             var extra = [];
-            for (var index = 0; index < data.rsp.length; ++index) {
-                extra.push("<b>" + data.rsp[index].name + "</b>");
+	    var index = 0;
+            for (index = 0; index < data.rsp.wpt.length; ++index) {
+                extra.push("<b>" + data.rsp.wpt[index].name + "</b>");
             }
-            var extra_info = "<br>" + extra.join();
+            for (index = 0; index < data.rsp.trk.length; ++index) {
+                extra.push("<b>" + data.rsp.trk[index].name + "</b>");
+            }
+            var extra_info = "<br>" + extra.splice(0,3).join();
             var extra_url = get_waypoints_url + "?x=" + newpos.lng() + "&y=" + newpos.lat() + "&r=" + radius + "&detail=1";
             extra_info += "<a href=# onClick=\"showmeerkat('" + extra_url + "',{ 'width': '600'} )\"><img src='img/icon-download.gif' border=0></a>";
-            locInfo_show(newpos, -10000, {
+            locInfo_show(newpos, Number(data.rsp.ele), {
                 "content": extra_info,
                 "radius": radius
             });

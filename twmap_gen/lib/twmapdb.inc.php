@@ -907,6 +907,18 @@ function get_waypoint($x,$y,$r=10,$detail=0){
 	$rs = $db->getAll($sql);	
 	return $rs;
 }
+function get_track($x,$y,$r=10,$detail=0){
+        $db=get_conn();
+        if ($detail == 0)
+                $sql = sprintf("SELECT DISTINCT on (wkb_geometry) \"gpx_trk.name\" AS name FROM gpx_trk WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry)", $x,$y,$r);
+
+        else
+                $sql = sprintf("SELECT DISTINCT on (A.wkb_geometry)  A.\"gpx_trk.name\" AS name,ST_AsText(A.wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title from gpx_trk A,map WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry) AND A.mid = map.mid ", $x,$y,$r);
+        // error_log($sql);
+        $rs = $db->getAll($sql);
+        return $rs;
+}
+
 
 // 取得面積
 // http://gis.stackexchange.com/questions/44914/how-do-i-getthe-area-of-a-wgs84-polygon-in-square-meters
