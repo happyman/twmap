@@ -134,6 +134,15 @@ var OSM_Options = {
     name: "OSM",
     alt: "Open Street Map"
 };
+/*var OSM_Cycle_Options = {
+    getTileUrl: function(a, b) {
+        return '//rs.happyman.idv.tw/map/twmap_contour/' + b + "_" + a.x + "_" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    name: "Contour",
+    alt: "地圖產生器 Hiking Map"
+};*/
 var Darker_Options = {
     getTileUrl: function(a, b) {
         return "//b.basemaps.cartocdn.com/dark_all/" + b + "/" + a.x + "/" + a.y + ".png";
@@ -171,6 +180,7 @@ var TaiwanGpxMapType = new google.maps.ImageMapType(TaiwanGpxMapOptions);
 //  背景
 var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_2011_MapOptions);
 var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
+// var OSM_Cycle_MapType = new google.maps.ImageMapType(OSM_Cycle_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
 var FanDi_MapType = new google.maps.ImageMapType(Fandi_Options);
 var JM50K1924_MapType = new google.maps.ImageMapType(JM50K1924_Options);
@@ -458,8 +468,12 @@ function locInfo(newpos, callback, param) {
 		} else {
 			ele = -20000;
 		}
+		var extra_info = "<br>" + data.rsp.admin;
+		if (data.rsp.nature){
+			 extra_info += "<br>" + data.rsp.nature;
+		}
 		// console.log(data);
-		locInfo_show(newpos, ele, { "callback": callback, "param": param, "close": close_infowin });
+		locInfo_show(newpos, ele, { "callback": callback, "content": extra_info ,"param": param, "close": close_infowin });
 	    });
 /*
             if (!elevator) elevator = new google.maps.ElevationService();
@@ -1023,6 +1037,7 @@ function initialize() {
     map.mapTypes.set('taiwan', TaiwanMapType);
     map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
     map.mapTypes.set('osm', OSM_MapType);
+    //map.mapTypes.set('cycle', OSM_Cycle_MapType);
     map.mapTypes.set('darker', Darker_MapType);
     map.mapTypes.set('fandi', FanDi_MapType);
     map.mapTypes.set('jm50k', JM50K1924_MapType);

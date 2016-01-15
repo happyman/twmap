@@ -937,14 +937,14 @@ function get_point($id='ALL',$is_admin=false) {
 		$where = " WHERE id=$id";
 	else
 		$where = "";
-	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS y,ST_Y(coord) AS x,owner FROM point2 %s ORDER BY number,class DESC", $where);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner FROM point3 %s ORDER BY number,class DESC", $where);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
 
 }
 function get_lastest_point($num=5) {
 	$db=get_conn();
-	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS y,ST_Y(coord) AS x,owner FROM point2 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner FROM point3 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
 }
@@ -985,4 +985,17 @@ function get_elev($twDEM_path, $lat,$lon, $cache=1) {
 		$mem->set($key, $ele, 86400);
 	}
 	return $ele;
+}
+function get_administration($x,$y,$type="town") {
+	$db=get_conn();
+	if ($type == "nature_park") {
+		$table = "nature_parks";
+	} else if ($type == "nature_reserve") {
+		$table = "nature_reserve";
+	} else {
+		$table = "tw_town_2014";
+	}
+	$sql = sprintf("select * from \"%s\" where ST_intersects(geom, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry)=true",$table, $x,$y,10);
+	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
+	return $db->getAll($sql);
 }
