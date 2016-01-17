@@ -326,3 +326,6 @@ height: 100%;
   .custom-iw .gm-style-iw>div>div {
       background-color:orange !important;
   }
+.weather-link, .weather-link:visited, .weather-link:hover, .weather-link:active {
+  color: inherit;
+}

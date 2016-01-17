@@ -468,9 +468,15 @@ function locInfo(newpos, callback, param) {
 		} else {
 			ele = -20000;
 		}
-		var extra_info = "<br>" + data.rsp.admin;
+		var extra_info;
+		if (data.rsp.admin) {
+			extra_info = "<br><a class='weather-link' href='" + data.rsp.weather_forcast_url + "' target=_blank>" + data.rsp.admin + "</a>";
+		}
 		if (data.rsp.nature){
 			 extra_info += "<br>" + data.rsp.nature;
+		}
+		if (data.rsp.tribe_weather) {
+			extra_info +="<br>原鄉: " + data.rsp.tribe_weather;
 		}
 		// console.log(data);
 		locInfo_show(newpos, ele, { "callback": callback, "content": extra_info ,"param": param, "close": close_infowin });
