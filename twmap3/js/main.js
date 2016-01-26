@@ -69,7 +69,7 @@ var TaiwanGpxMapOptions = {
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 16,
     minZoom: 10,
-    name: "台灣GPX",
+    name: "台灣經建三版+GPX",
     alt: 'Taiwan TW67 Map with GPX'
 };
 // 以下為前景圖層(透明背景可疊合)
@@ -159,7 +159,7 @@ var Fandi_Options = {
     },
     tileSize: new google.maps.Size(256, 256),
     name: "蕃地",
-    alt: "日治五萬分之一蕃地地形圖",
+    alt: "日治五萬分之一蕃地地形圖 1916",
     maxZoom: 17
 };
 
@@ -170,7 +170,17 @@ var JM50K1924_Options = {
     },
     tileSize: new google.maps.Size(256, 256),
     name: "陸測",
-    alt: "日治五萬分之一(陸軍測量部)",
+    alt: "日治五萬分之一(陸軍測量部 1924)",
+    maxZoom: 17
+};
+var TW50K1956_Options = {
+    getTileUrl: function(a,b) {
+ 	var z = 17-b;
+	return "http://gis.sinica.edu.tw/googlemap/TM50K_1956/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    name: "老5萬",
+    alt: "1956 台灣五萬分之一(依據美國陸軍製圖局 1951)",
     maxZoom: 17
 };
 // 前景
@@ -184,6 +194,7 @@ var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
 var FanDi_MapType = new google.maps.ImageMapType(Fandi_Options);
 var JM50K1924_MapType = new google.maps.ImageMapType(JM50K1924_Options);
+var TW50K1956_MapType = new google.maps.ImageMapType(TW50K1956_Options);
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
@@ -1027,7 +1038,7 @@ function initialize() {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi', 'jm50k','general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi', 'jm50k','tw50k', 'general2011']
         }
     });
     if (!is_mobile) {
@@ -1047,6 +1058,7 @@ function initialize() {
     map.mapTypes.set('darker', Darker_MapType);
     map.mapTypes.set('fandi', FanDi_MapType);
     map.mapTypes.set('jm50k', JM50K1924_MapType);
+    map.mapTypes.set('tw50k', TW50K1956_MapType);
     // 前景免設
     // 三版加底圖
     BackgroundMapType = TaiwanGpxMapType;
