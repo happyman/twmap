@@ -36,6 +36,7 @@ $ver = trim(file_get_contents("VERSION"));
 	<script  src="js/jquery.geolocation.js" charset="utf-8"></script>
 	<script  src="js/jquery.cookie.js"></script>
 	<script  src="js/jqbrowser.js"></script>
+	<script  src="js/ProjectedOverlay.js"></script>
 	<script  src="js/geoxml3.js"></script>
 	<script  src="js/functions.js"></script>
 	<script  src="js/javascript.util.min.js"></script>
@@ -127,6 +128,16 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 		<select title="切換 Grid" name="grid" id="changegrid" class="ui-corner-all">
 		<option value="TWD67" selected >TWD67 Grid</option><option value="TWD67PH">TWD67澎</option><option value="WGS84">經緯度</option><option value="None">無Grid</option>
 		<option value="TWD67_EXT">TWD67 EXT</option>
+		</select>
+		</div>
+		<div id="FORECAST">
+		<select title="雨量" name="rainfall" id="rainfall" class="ui-corner-all">
+		<option value="none" selected >雨量圖</option>
+		<option value="o2d" >前日</option>
+		<option value="o1d" >昨日</option>
+		<option value="now" >今日</option>
+		<option value="f12h" >未來12小時</option>
+		<option value="f24h" >未來24小時</option>
 		</select>
 		</div>
 

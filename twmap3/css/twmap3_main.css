@@ -170,6 +170,11 @@ textarea:hover {
 	font-size:11px;
 	cursor: pointer;
 }
+#rainfall {
+	position:absolute;top:5px;right:150px;
+	font-size:11px;
+	cursor: pointer;
+}
 #footer {
 	display:none;
 }

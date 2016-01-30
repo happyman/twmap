@@ -578,6 +578,7 @@ var coordListA = [];
       var colorNode = node.getElementsByTagName('color');
       if ( colorNode && colorNode.length && (colorNode.length > 0)) {
         groundOverlay.opacity = geoXML3.getOpacity(nodeValue(colorNode[0]));
+	console.log("got opacity from color tag");
       } else {
         groundOverlay.opacity = 0.45;
       }
@@ -857,6 +858,7 @@ var randomColor = function(){
         new google.maps.LatLng(groundOverlay.latLonBox.north, groundOverlay.latLonBox.east)
     );
     var overlayOptions = geoXML3.combineOptions(parserOptions.overlayOptions, {percentOpacity: groundOverlay.opacity*100});
+    console.log("groundOverlay.opacity="+groundOverlay.opacity*100);
     var overlay = new ProjectedOverlay(parserOptions.map, groundOverlay.icon.href, bounds, overlayOptions);
     
     if (!!doc) {

@@ -336,6 +336,30 @@ function showGrid(grid_type) {
         lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type);
     }
 }
+var rainkml;
+function showCWBRainfall(fcast_type) {
+	if (rainkml && rainkml.term) {
+		if (rainkml.term == fcast_type || rainkml.loading == 1 ) return;
+		rainkml.removeDocument(rainkml.docs[0]);
+	}
+	if (fcast_type == 'none') {
+		return;
+	}
+	rainkml =  new geoXML3.parser({
+        map: map,
+        singleInfoWindow: true,
+        //additional_marker_desc: decodeURIComponent(uri_enc),
+        zoom: false,
+    });
+	rainkml.loading = 1;
+        rainkml.parse('data/rainkml.php?term=' + fcast_type);
+
+    google.maps.event.addListener(rainkml, 'parsed', function() {
+        rainkml.term = fcast_type;
+	rainkml.loading = 0;
+    });
+	
+}
 var skml;
 /* global geoXML3 */
 function showmapkml(mid, marker_desc, uri_enc) {
@@ -361,7 +385,7 @@ function permLinkURL(goto) {
     var ver = (BackgroundMap === 0) ? 3 : 1;
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
-    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "'><img src='img/permlink.png' border=0/></a>";
+    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() +"'><img src='img/permlink.png' border=0/></a>";
 }
 
 var MapStateRestored = 0;
@@ -373,7 +397,7 @@ function saveMapState() {
     var curGrid = $("#changegrid").val();
     var state = { "zoom": map.getZoom(), "opacity": opacity, "mapversion": ver, "maptypeid": map.getMapTypeId(),
                   "show_label": show_label, "show_kml_layer": show_kml_layer , "show_marker": show_marker, "roadmap": curMap, "grid": curGrid, "theme": theme,
-		  "goto": mapCenter.toUrlValue(5), "show_delaunay": show_delaunay };
+		  "goto": mapCenter.toUrlValue(5), "show_delaunay": show_delaunay , "rainfall": $("#rainfall").val()};
     localStorage.setItem("twmap_state", JSON.stringify(state));
     console.log("mapState saved");
 } 
@@ -400,6 +424,10 @@ function restoreMapState(state) {
                 $("#changegrid").val(state.grid);
                 $("#changegrid").change();
         }
+	if (state.rainfall) {
+                $("#rainfall").val(state.rainfall);
+                $("#rainfall").change();
+	}
         if (state.mapversion == 1)  $("#changemap").trigger('click');
         if (state.goto) {
            $("#tags").val(state.goto);
@@ -1264,6 +1292,10 @@ function initialize() {
         showGrid('None');
         showGrid($('#changegrid').val());
     });
+    $('#rainfall').change(function() {
+	showCWBRainfall('none');
+	showCWBRainfall($('#rainfall').val());
+    });
     $("#inputtitlebtn2").click(function() {
         ismakingmap = 0;
         $.unblockUI();
@@ -1414,6 +1446,7 @@ function initialize() {
         $('#opContainer').appendTo('#mobile_setup');
         $('#CGRID').appendTo('#mobile_setup').hide();
         $('#CGNAME').appendTo('#mobile_setup').hide();
+        $('#FORECAST').appendTo('#mobile_setup').hide();
         $('#setup').click(function() {
             showmeerkat2({
                 width: 600,
@@ -1440,6 +1473,7 @@ function initialize() {
             }).show();
             $('#CGRID').show();
             $('#CGNAME').show();
+            $('#FORECAST').show();
             $('#changegname').css({
                 'left': '10px',
                 'top': '80px',
@@ -1448,6 +1482,11 @@ function initialize() {
             $('#changegrid').css({
                 'left': '10px',
                 'top': '120px',
+                'font-size': '20px'
+            }).addClass('ui-state-default ui-corner-all').show();
+            $('#rainfall').css({
+                'left': '150px',
+                'top': '80px',
                 'font-size': '20px'
             }).addClass('ui-state-default ui-corner-all').show();
         });
@@ -1461,8 +1500,17 @@ function initialize() {
 // 1. 從 param restore
 	if (getParameterByName('kml')) {
             console.log("get kml parameter");
-            GPSLayer = new google.maps.KmlLayer(getParameterByName('kml') + '?ts=' + (new Date()).getTime(), { preserveViewport: false });
-            GPSLayer.setMap(map);
+            //GPSLayer = new google.maps.KmlLayer(getParameterByName('kml') + '?ts=' + (new Date()).getTime(), { preserveViewport: false });
+            //GPSLayer.setMap(map);
+	GPSLayer = new geoXML3.parser({
+        map: map,
+        singleInfoWindow: true,
+        //additional_marker_desc: decodeURIComponent(uri_enc),
+        zoom: false,
+    });
+	GPSLayer.parse(getParameterByName('kml'));
+
+	    
 	    MapStateRestored = 1;
 	}  else if (getParameterByName("goto") && getParameterByName("maptypeid") && getParameterByName("zoom")) {
 	var st = { "show_label": getParameterByName("show_label"),
@@ -1474,6 +1522,7 @@ function initialize() {
 		   "roadmap":getParameterByName("roadmap"),
 		   "mapversion":getParameterByName("mapversion"),
 		   "show_delaunay":getParameterByName("show_delaunay"),
+		   "rainfall":getParameterByName("rainfall"),
 		   "goto":getParameterByName("goto") };
 
 	    restoreMapState(st);
@@ -1635,6 +1684,7 @@ function updateView(type) {
         return;
     }
     if ($('#changegrid') != 'None') showGrid($('#changegrid').val());
+    if ($('#rainfall') != 'none') showCWBRainfall($('#rainfall').val());
     // 如果已經關閉就不用重開
     if (centerInfo && centerInfo.getMap()) {
         var newpos = centerMarker.getPosition();
