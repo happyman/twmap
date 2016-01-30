@@ -343,6 +343,7 @@ function showCWBRainfall(fcast_type) {
 		rainkml.removeDocument(rainkml.docs[0]);
 	}
 	if (fcast_type == 'none') {
+		if (rainkml) rainkml.removeDocument(rainkml.docs[0]);
 		return;
 	}
 	rainkml =  new geoXML3.parser({
@@ -1684,7 +1685,6 @@ function updateView(type) {
         return;
     }
     if ($('#changegrid') != 'None') showGrid($('#changegrid').val());
-    if ($('#rainfall') != 'none') showCWBRainfall($('#rainfall').val());
     // 如果已經關閉就不用重開
     if (centerInfo && centerInfo.getMap()) {
         var newpos = centerMarker.getPosition();
