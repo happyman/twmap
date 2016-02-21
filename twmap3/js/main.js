@@ -1506,12 +1506,18 @@ function initialize() {
 	GPSLayer = new geoXML3.parser({
         map: map,
         singleInfoWindow: true,
-        //additional_marker_desc: decodeURIComponent(uri_enc),
-        zoom: false,
+        additional_marker_desc: "",
+        zoom: true,
+	
     });
 	GPSLayer.parse(getParameterByName('kml'));
+	 google.maps.event.addListener(GPSLayer, 'parsed', function() {
+	// 避免沒有 centerMarker 
+	$("#tags").val(map.getCenter().toUrlValue(5));
+            $("#goto").trigger('click');
 
 	    
+	  });
 	    MapStateRestored = 1;
 	}  else if (getParameterByName("goto") && getParameterByName("maptypeid") && getParameterByName("zoom")) {
 	var st = { "show_label": getParameterByName("show_label"),

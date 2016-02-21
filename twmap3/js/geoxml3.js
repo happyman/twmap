@@ -387,9 +387,15 @@ var coordListA = [];
         placemark = {
           name:  geoXML3.nodeValue(placemarkname),
 					// happyman
-					description: geoXML3.nodeValue(node.getElementsByTagName('description')[0] + parserOptions.additional_desc),
+	// description: geoXML3.nodeValue(node.getElementsByTagName('description')[0].firstChild) + parserOptions.additional_marker_desc,
           styleUrl: geoXML3.nodeValue(node.getElementsByTagName('styleUrl')[0])
         };
+
+	if (node.getElementsByTagName('description')[0] && node.getElementsByTagName('description')[0].firstChild)
+		placemark.description =  geoXML3.nodeValue(node.getElementsByTagName('description')[0].firstChild) + parserOptions.additional_marker_desc;
+	else
+		placemark.description =  geoXML3.nodeValue(node.getElementsByTagName('description')[0]) +  parserOptions.additional_marker_desc;
+
         placemark.style = doc.styles[placemark.styleUrl] || clone(defaultStyle);
         // inline style overrides shared style
         var inlineStyles = node.getElementsByTagName('Style');
@@ -398,9 +404,10 @@ var coordListA = [];
 	  processStyleID(style);
 	  if (style) placemark.style = style;
         }
-        if (/^https?:\/\//.test(placemark.description)) {
-          placemark.description = ['<a href="', placemark.description, '">', placemark.description, '</a>'].join('');
-        }
+	//console.log(node.getElementsByTagName('description')[0].firstChild.nodeValue);
+       // if (/^https?:\/\//.test(placemark.description)) {
+       //   placemark.description = ['<a href="', placemark.description, '">', placemark.description, '</a>'].join('');
+       // }
 
         // process MultiGeometry
         var GeometryNodes = node.getElementsByTagName('coordinates');
@@ -756,8 +763,8 @@ var randomColor = function(){
 	// happyman change default style of image
         // Init the style object with a standard KML icon
         style.icon =  new google.maps.MarkerImage(
-         // style.href,
-				"img/3122.png",
+          style.href,
+	//			"img/3122.png",
           //new google.maps.Size(32*style.scale, 32*style.scale),
           new google.maps.Size(16*style.scale, 16*style.scale),
           // zeroPoint,
