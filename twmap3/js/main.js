@@ -24,6 +24,8 @@ var labelArray = [];
 var tags_ready = 0;
 var markers_ready = 0;
 var availableTags = [];
+var availableAlias = [];
+var availableAliasMap = [];
 var availableTagsLocation = [];
 var availableTagsMeta = [];
 var showCenterMarker_id = "";
@@ -661,6 +663,14 @@ function showCenterMarker(name) {
         });
     }
     var got_name = 0;
+    for (i = 0; i < availableAlias.length; i++) {
+	if (name == availableAlias[i]) {
+		// 直接 mapping 置換 alias
+		name = availableAliasMap[i];
+		console.log("got alias " + availableAlias[i] + "=" + name);
+		break;
+        }
+    }
     for (i = 0; i < availableTags.length; i++) {
         if (name == availableTags[i]) {
 	    got_name = 1;
@@ -887,6 +897,8 @@ function initialtags(opt) {
 	availableTags = [];
 	availableTagsLocation = [];
 	availableTagsMeta = [];
+	availableAlias = [];
+	availableAliasMap = [];
 	$.ajax({
 dataType: 'json',
 cache: false,
@@ -895,8 +907,14 @@ data: {
 "id": "ALL"
 },
 success: function(data) {
+          var j = 0;
             for (var i = 0; i < data.length; i++) {
                 availableTags[i] = data[i].name;
+		if (data[i].alias) {
+		   availableAlias[j] = data[i].alias;	
+		   availableAliasMap[j] = data[i].name;	
+		   j++;
+		}
                 //console.log(data[i][0]);
                 availableTagsLocation[i] = new google.maps.LatLng(data[i].y, data[i].x);
                 availableTagsMeta[i] = {
@@ -909,7 +927,7 @@ success: function(data) {
                 };
             }
             $("#tags").autocomplete({
-                source: availableTags
+                source: availableTags.concat(availableAlias)
             });
             $("#search_text").html("搜尋");
             $("#tags").prop('disabled', false);

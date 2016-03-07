@@ -78,7 +78,7 @@ function update_params(ph) {
     } else {
         page = total + " 張 A4";
     }
-    $("#params").html("X: " + data.x + " Y:" + data.y + " 東 " + data.shiftx + "km 南 " + data.shifty + "km 共 " + page);
+    $("#params").html("X:" + data.x + "Y:" + data.y + " 東:" + data.shiftx + " 南:" + data.shifty + " km 共 " + page);
     callmake = "x=" + data.x + "&y=" + data.y + "&shiftx=" + data.shiftx + "&shifty=" + data.shifty + "&ph=" + ph;
     return data;
 }
