@@ -5,7 +5,7 @@ require_once("lib/functions.inc.php");
   list($st, $info) = login_info();
                                 if ($st === false ) {
                                         $greetings = sprintf("歡迎光臨");
-                                        $greetings_admin = sprintf("管理<a href='%s'>登入</a>",$CONFIG['site_twmap_html_root'] . "main.php" );
+                                        $greetings_admin = sprintf("管理<a href='%s' target=_top >登入</a>",$CONFIG['site_twmap_html_root'] . "main.php?return=twmap3" );
                                 } else {
                                         $greetings = sprintf("歡迎 %s<img src='%s' />",$info['user_nickname'],$info['user_icon']);
 					if (is_admin()) 

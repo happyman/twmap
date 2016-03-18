@@ -1310,10 +1310,12 @@ function initialize() {
     $('#changegrid').change(function() {
         showGrid('None');
         showGrid($('#changegrid').val());
+        updateView("info_only");
     });
     $('#rainfall').change(function() {
 	showCWBRainfall('none');
 	showCWBRainfall($('#rainfall').val());
+        updateView("info_only");
     });
     $("#inputtitlebtn2").click(function() {
         ismakingmap = 0;
