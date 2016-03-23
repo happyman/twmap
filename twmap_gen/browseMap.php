@@ -1,6 +1,7 @@
 <?php
 // 1x1 km tile cache browser
 // use with lib/cli_tile_regen.php
+require 'config.inc.php';
 
 if (php_sapi_name() == "cli") {
 	$x=$argv[1];
@@ -41,7 +42,7 @@ body, html {
 			border: 0px none;
 					}
 </style>
-	<script type="text/javascript" src="js/jquery-1.4.4.min.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <body>
 <?
 // time xvfb-run  -a -s "-screen 0 640x480x16" wkhtmltoimage  --format png 
@@ -76,7 +77,8 @@ $(".reload").click(function(){
 </body></html>";
 <?php
 function outimage($x,$y,$ph) {
-	$path = sprintf("/mnt/twmapcache/cache/16/%s/%d/%d_%d.png",($ph==1)?"ph":"tw",$x,$x,$y);
+	global  $tilecachepath;
+	$path = sprintf("%s/16/%s/%d/%d_%d.png",$tilecachepath, ($ph==1)?"ph":"tw",$x,$x,$y);
 	if (file_exists($path)) {
 		header("Content-type: image/png");
 		header("X-file-location: $path");
@@ -87,9 +89,10 @@ function outimage($x,$y,$ph) {
 	}
 }
 function outimage2($ix,$iy,$ph=0) {
+	global  $tilecachepath;
 	$x=$ix+150;
 	$y=2800-$iy;
-	$path = sprintf("/mnt/twmapcache/cache/16/%s/%d/%d_%d.png",($ph==1)?"ph":"tw",$x,$x,$y);
+	$path = sprintf("%s/16/%s/%d/%d_%d.png",$tilecachepath, ($ph==1)?"ph":"tw",$x,$x,$y);
 	if (file_exists($path)) {
 		header("Content-type: image/png");
 		header("X-file-location: $path");

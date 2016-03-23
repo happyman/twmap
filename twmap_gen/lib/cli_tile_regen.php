@@ -36,7 +36,7 @@ function warn($x,$y) {
 	global $tilepath;
 	global $debug; 
 	// 2 force regen
-	list ($ret, $img, $cached) = img_from_tiles($tilepath, $x, $y, 1, 1, 16, 0, $debug, "/dev/shm","/mnt/twmapcache/cache", 2);
+	list ($ret, $img, $cached) = img_from_tiles($tilepath, $x, $y, 1, 1, 16, 0, $debug,  $tmppath, $tilecachepath,  2);
 	if ($ret === true ) {
 		//@unlink($img);
 		if ($cached == "cached") return;

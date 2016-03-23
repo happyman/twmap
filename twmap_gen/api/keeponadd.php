@@ -59,7 +59,7 @@ error_log("keepon add: unable to download");
 	ajaxerr("3:unable to download gpx");
 }
 // 1.1 把參數抓出來
-$svg = new gpxsvg(array("gpx"=>$tmp_gpx, "width"=>1024, "fit_a4" => 1,
+$svg = new gpxsvg(array("gpx"=>$tmp_gpx, "width"=>1024, "fit_a4" => 1, "auto_shrink" => 1,
 	"show_label_trk" => 0, "show_label_wpt" => 2));
 $ret = $svg->process();
 // msglog("svg get_bound processed");

@@ -21,6 +21,7 @@ class gpxsvg {
 	var $do_fit_a4 = 1;
 	var $colorize = 1;
 	var $initparams; // 初始參數
+	var $auto_shrink = 0; // 1 表示自動更縮小到可以產生的範圍, 在 keepon 有大範圍地圖適用
 	var $limit = array("km_x" => 24001, "km_y" => 24001); // 24x24 格
 	var $_err;
 
@@ -35,6 +36,7 @@ class gpxsvg {
 		$this->logotext = (isset($params['logotext']))? $params['logotext'] : "";
 		$this->initparams = array("width"=>$this->width, "bgimg"=> $this->bgimg, "logotext" => $this->logotext , "gpx"=>$this->gpx , "input_bound67"=> $this->input_bound67, "show_label_trk"=>$this->show_label_trk, "show_label_wpt" =>  $this->show_label_wpt , "do_fit_a4" => $this->do_fit_a4 );
 		$this->colorize = (isset($params['colorize']))? $params['colorize'] : "";
+		$this->auto_shrink = (isset($params['auto_shrink']))? $params['auto_shrink'] : 0;
 
 
 	}
@@ -49,103 +51,14 @@ class gpxsvg {
 		$bbox = $geom->getBBox();
 		$tl = $this->is_taiwan($bbox['minx'], $bbox['maxy']);
 		$br = $this->is_taiwan($bbox['maxx'], $bbox['miny']);
-		if ($tl != $br) $this->taiwan = 0;
-		$this->taiwan = $tl; // 0 or 1 or 2
+		if ($tl != $br) 
+			$this->taiwan = 0;
+		else
+			$this->taiwan = $tl; // 0 or 1 or 2
 		//echo "lon $minlon $maxlon, lat $maxlat $minlat\n"; exit;
 		return array($bbox['minx'], $bbox['maxy'], $bbox['maxx'], $bbox['miny']);
 	}
 	
-	/* 掰掰
-	function get_bound(&$arr) {
-		// 1. 若已經輸入 tw67 左上右下
-		if (isset($this->input_bound67['x']) && isset($this->input_bound67['x1'])) {
-			if ($this->input_bound67['ph'] == 1 ) {
-				list ($minlon, $maxlat) = proj_67toge2_ph(array($this->input_bound67['x'], $this->input_bound67['y']));
-				list ($maxlon, $minlat) = proj_67toge2_ph(array($this->input_bound67['x1'], $this->input_bound67['y1']));
-			} else {
-				list ($minlon, $maxlat) = proj_67toge2(array($this->input_bound67['x'], $this->input_bound67['y']));
-				list ($maxlon, $minlat) = proj_67toge2(array($this->input_bound67['x1'], $this->input_bound67['y1']));
-			}
-
-		} else {
-			// scan all tracks, skip markers
-			// [trk] => Array
-			//         (
-			//            [0] => Array
-			//              (
-			//                [name] => 000 下溪d1
-			//                [trkseg] => Array
-			//                 (
-			//                  [trkseg] => Array
-			//                        (
-			//                         [0] => Array
-			//                            (
-			//                         [@attributes] => Array
-			//                            (
-			//                              [lat] => 24.009436006
-			//                                [lon] => 121.383369975
-			//
-			//                                或者
-			//   [trk] => Array
-			//           (
-			//              [name] => 20121231-太木山
-			//                 [trkseg] => Array
-			//                    (
-			//                     [trkseg] => Array
-			//                       (
-			//                       [0] => Array
-			//                            (
-			//                          [@attributes] => Array
-			//                              (
-			//                            [lat] => 24.276301386
-			//                       [lon] => 121.136678914
-			//
-			$i=0;
-			$maxlon = 0;
-			$minlon = 1000; 
-			$minlat = 1000;
-			$maxlat = 0;
-			// 只有一層
-			if (isset($arr['trk']['name']) && isset($arr['trk']['trkseg'])) {
-				$arr['trk'][0] = $arr['trk'];
-				unset($arr['trk']['trkseg']);
-				unset($arr['trk']['name']);
-				// print_r($arr['trk']);
-			}
-			foreach($arr['trk'] as $trk) {
-				if (!isset($arr['trk'][$i])) continue;
-				foreach($arr['trk'][$i]['trkseg']['trkseg'] as $trk_point) {
-					if (isset($trk_point['@attributes']['lon'])) {
-						$_lon = $trk_point['@attributes']['lon'];
-						$_lat = $trk_point['@attributes']['lat'];
-					} else if (isset($trk_point['trkpt']['lon'])) {
-						$_lon = $trk_point['trkpt']['lon'];
-						$_lat = $trk_point['trkpt']['lat'];
-					} else {
-						continue;
-					}
-					if ($_lon < $minlon) 
-						$minlon =  $_lon; 
-					else if ($_lat < $minlat) 
-						$minlat = $_lat;
-
-					if ($_lon > $maxlon )
-						$maxlon = $_lon;
-					else if ($_lat > $maxlat)  
-						$maxlat = $_lat;
-				}
-				$i++;
-			}
-		}
-		// 判定範圍
-		$tl = $this->is_taiwan($minlon, $maxlat);
-		$br = $this->is_taiwan($maxlon, $minlat);
-		if ($tl != $br) $this->taiwan = 0;
-		$this->taiwan = $tl; // 0 or 1 or 2
-		//echo "lon $minlon $maxlon, lat $maxlat $minlat\n"; exit;
-		return array($minlon, $maxlat, $maxlon, $minlat);
-	}
-	*/
 	function fit_a4($tl, $br) {
 
 		$x = ($br[0] - $tl[0])/1000;
@@ -227,17 +140,26 @@ class gpxsvg {
 			else
 				$expend = 0;
 
-/* 四邊都 expend
-$tl = array( floor($tx / 1000)*1000 - $expend, ceil($ty / 1000)*1000 + $expend);
-$br = array( ceil($tx1 / 1000)*1000 + $expend, floor($ty1 / 1000)*1000 - $expend);
- */
-		// 只在右手邊 expend
-		$tl = array( floor($tx / 1000)*1000, ceil($ty / 1000)*1000);
-		$br = array( ceil($tx1 / 1000)*1000 + $expend, floor($ty1 / 1000)*1000);
+			/* 四邊都 expend
+			   $tl = array( floor($tx / 1000)*1000 - $expend, ceil($ty / 1000)*1000 + $expend);
+			   $br = array( ceil($tx1 / 1000)*1000 + $expend, floor($ty1 / 1000)*1000 - $expend);
+			 */
+			// 只在右手邊 expend
+			$tl = array( floor($tx / 1000)*1000, ceil($ty / 1000)*1000);
+			$br = array( ceil($tx1 / 1000)*1000 + $expend, floor($ty1 / 1000)*1000);
 
-		if ($this->do_fit_a4 == 1 ) {
-			list($tl,$br) = $this->fit_a4($tl,$br);
-		}
+			// 如果自動縮放, 過大範圍自動調整 br 的座標
+			if ($this->auto_shrink == 1 ) {
+				if ($br[0] - $tl[0] >= $this->limit['km_x']) {
+					$br[0] = $tl[0] + 20000;
+				}
+				if ($tl[1] - $br[1] >= $this->limit['km_y']) {
+					$br[1] = $tl[1] - 20000;
+				}
+			}
+			if ($this->do_fit_a4 == 1 ) {
+				list($tl,$br) = $this->fit_a4($tl,$br);
+			}
 		}
 		// 檢查一下是不是太大範圍
 		if ($br[0] - $tl[0] >= $this->limit['km_x'] || $tl[1] - $br[1] >= $this->limit['km_y'] ) {
