@@ -100,12 +100,12 @@ function keepon_map_exists2($uid,$mid){
 	if (count($rs) == 0 ) return false;
 	return $rs[0];
 }
-// TODO:
-function is_keepon_map_imported($mid) {
+// TODO? maybe still buggy
+function is_gpx_imported($mid) {
 	$db=get_conn();
 	$row = map_get_single($mid);
 	$title = str_replace("-GPX自動轉檔","%",$row['title']);
-	$sql = sprintf("SELECT \"mid\",\"title\" FROM \"map\" WHERE \"mid\" NOT IN (SELECT DISTINCT \"mid\" FROM \"gpx_wp\") AND \"mid\" <> %d AND \"locX\"=%d AND \"locY\"=%d AND \"shiftX\"=%d and \"shiftY\"=%d and \"version\"=%d and \"gpx\"=1 AND \"title\" LIKE '%s'",$mid, $row['locX'],$row['locY'],$row['shiftX'],$row['shiftY'],$row['version'],pg_escape_string($title));
+	$sql = sprintf("SELECT \"mid\",\"title\" FROM \"map\" WHERE \"mid\" IN (SELECT DISTINCT \"mid\" FROM \"gpx_wp\") AND \"mid\" <> %d AND \"locX\"=%d AND \"locY\"=%d AND \"shiftX\"=%d and \"shiftY\"=%d and \"version\"=%d and \"gpx\"=1 AND \"title\" LIKE '%s'",$mid, $row['locX'],$row['locY'],$row['shiftX'],$row['shiftY'],$row['version'],pg_escape_string($title));
 	$rs = $db->GetAll($sql);
 	logsql($sql,$rs);
 	if (count($rs) == 0 ) return false;

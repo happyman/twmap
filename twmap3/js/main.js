@@ -129,7 +129,7 @@ var Taiwan_General_2011_MapOptions = {
 //}
 var OSM_Options = {
     getTileUrl: function(a, b) {
-        return "//otile1.mqcdn.com/tiles/1.0.0/map/" + b + "/" + a.x + "/" + a.y + ".jpg";
+        return "http://otile1.mqcdn.com/tiles/1.0.0/map/" + b + "/" + a.x + "/" + a.y + ".jpg";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -147,7 +147,7 @@ var OSM_Options = {
 };*/
 var Darker_Options = {
     getTileUrl: function(a, b) {
-        return "//b.basemaps.cartocdn.com/dark_all/" + b + "/" + a.x + "/" + a.y + ".png";
+        return "http://b.basemaps.cartocdn.com/dark_all/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -365,7 +365,8 @@ function showCWBRainfall(fcast_type) {
 }
 var skml;
 /* global geoXML3 */
-function showmapkml(mid, marker_desc, uri_enc) {
+// zoom == true 則會移到地圖位置
+function showmapkml(mid, marker_desc, uri_enc, zoom) {
     if (skml && skml.mid > 0) {
         if (skml.mid == mid || skml.loading == 1) return;
         skml.removeDocument(skml.docs[0]);
@@ -374,7 +375,7 @@ function showmapkml(mid, marker_desc, uri_enc) {
         map: map,
         singleInfoWindow: true,
         additional_marker_desc: decodeURIComponent(uri_enc),
-        zoom: false,
+        zoom: zoom,
     });
     skml.loading = 1;
     skml.parse(getkml_url + "?mid=" + mid);

@@ -64,6 +64,7 @@ th {
 	echo "<table>";
 	echo "<tr><th width=30%>名稱<th>高度(M)<th>顯示<th>下載<th>地圖";
 	$ans = array();
+	$to_show = array();
 	foreach($data as $row){
 		if (isset($ans[$row['name']][$row['ele']]) && $ans[$row['name']][$row['ele']][0] == $row['title']){
 					$row['dup'] = 1;
@@ -125,16 +126,32 @@ th {
 		}
 	}
 	echo "</table>";
+	echo "<hr>";
+	if (is_admin()) {
+?>
+	mid:<input type=text id='kmlshowmid' name='kmlshowmid'><input type=button value="Show" id='kmlbtnshow'>
+<?php
+	}
 ?>
 <script>
 $('document').ready(function(){ 
 		$('.showkml').each(function(index) {
 			$(this).click(function(event) {
 				event.preventDefault();
-				parent.showmapkml($(this).data('id'),$(this).data('title'),$(this).data('link'));
+				parent.showmapkml($(this).data('id'),$(this).data('title'),$(this).data('link'),false);
 				});
 			});
+		$('#kmlbtnshow').click(function() {
+			console.log("display mid:" + $("#kmlshowmid").val());
+			if ($("#kmlshowmid").val()) 
+				parent.showmapkml($("#kmlshowmid").val(),"","",true);
+			});
 		});
+		 $('#kmlshowmid').keypress(function(e){
+      if(e.keyCode==13)
+      $('#kmlbtnshow').click();
+    });
+		
 </script>
 </div>
 </html>

@@ -9,21 +9,25 @@ if (empty($loc)) {
 	ajaxerr("insufficent parameters");
 }
 list($lat,$lon)=explode(",",$_REQUEST['loc']);
-
+// 取得高度
 $ele = get_elev($twDEM_path, $lat, $lon, 1);
 $data['elevation'] = $ele;
-
+// 取得行政區
 $towns = get_administration($lon,$lat, "town");
-foreach($towns as $town) {
-	$town_name[] = sprintf("%s%s%s",$town['C_Name'],$town['T_Name'],($town['permit']=='t')? "(入山)" : "" );
+if ($towns || count($towns) > 0 ) {
+	foreach($towns as $town) {
+		$town_name[] = sprintf("%s%s%s",$town['C_Name'],$town['T_Name'],($town['permit']=='t')? "(入山)" : "" );
+	}
+	$data["admin"] = implode(",",$town_name);
+	$data["weather_forcast_url"] = sprintf("http://www.cwb.gov.tw/V7/forecast/town368/towns/%s.htm?type=Weather&time=7Day",$town['Town_ID']);
+	if (!empty($town['cwb_tribe_code'])) {
+		$data["tribe_weather"] = get_tribe_weather($town['cwb_tribe_code']);
+	}
 }
-$data["admin"] = implode(",",$town_name);
-$data["weather_forcast_url"] = sprintf("http://www.cwb.gov.tw/V7/forecast/town368/towns/%s.htm?type=Weather&time=7Day",$town['Town_ID']);
-if (!empty($town['cwb_tribe_code'])) {
-	$data["tribe_weather"] = get_tribe_weather($town['cwb_tribe_code']);
-}
+// 取得是否在國家公園內
 $nps = get_administration($lon,$lat, "nature_park");
 $nrs = get_administration($lon,$lat, "nature_reserve");
+$np_name = array();
 if (count($nps) > 0 ) {
 	foreach($nps as $np) {
 		$np_name[] = $np['name'];
@@ -39,7 +43,7 @@ if (count($np_name) > 0 ) {
 }
 
 ajaxok($data);
-
+// 取得原鄉天氣的預報網址, depends on CWB
 function get_tribe_weather($code) {
 	$tribe=array(
 			"007"=>"泰雅族",
