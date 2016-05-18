@@ -29,7 +29,7 @@ if ($block_msg != null ) {
 }
 
 // 4. 真的刪除/回收
-if ($_inp['op'] && $_inp['op'] == 'recycle') 
+if (isset($_inp['op']) && $_inp['op'] == 'recycle') 
 	$ok = map_expire($_inp['mid']);
 else
 	$ok = map_del($_inp['mid']);

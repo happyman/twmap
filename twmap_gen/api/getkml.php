@@ -4,8 +4,7 @@ $uid = 1;
 require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
 
-$mid = $_REQUEST['mid'];
-$zoom = $_REQUEST['zoom'];
+$mid = (isset($_REQUEST['mid']))? $_REQUEST['mid'] : null;
 
 if (empty($mid)) {
 	ajaxerr("insufficent parameters");

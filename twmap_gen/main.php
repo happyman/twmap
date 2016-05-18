@@ -1,7 +1,7 @@
 <?php
 // $Id: main.php 297 2012-06-27 04:32:26Z happyman $
 require_once("config.inc.php");
-if (!$_SESSION)
+if (!isset($_SESSION))
 	session_start();
 if (empty($_SESSION['loggedin'])) {
 	// 如果從地圖瀏覽器導過來
@@ -27,6 +27,7 @@ $smarty->assign("site_root_url", $site_url . $site_html_root);
 echo $smarty->fetch("header.html");
 
 // main body
+$lastest_mid = "";
 if (isset($_SESSION['makeparam']['mid'])){
 	    $lastest_mid = "&mid=".$_SESSION['makeparam']['mid'];
 } else {

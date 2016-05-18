@@ -38,7 +38,7 @@ if (strstr($map['filename'],'v3p')) {
 $smarty->assign("title","檢視地圖:". $map['title']);
 $smarty->assign("description",sprintf("%s 地圖資訊: %dx%d-%dx%d. ", $map['title'],$map['locX'],$map['locY'],$map['shiftX'],$map['shiftY']));
 $smarty->assign("site_root_url", $site_url . $site_html_root);
-$smarty->assign("ogimage", array("thumb.php?mid=$mid&size=s", "thumb.php?mid=$mid&size=m", "thumb.php?mid=$mid&size=l"));
+// $smarty->assign("ogimage", array("thumb.php?mid=$mid&size=s", "thumb.php?mid=$mid&size=m", "thumb.php?mid=$mid&size=l"));
 $smarty->assign("html_head", $html_head);
 if ($html_head == 1 ) {
 	echo $smarty->fetch("header.html");

@@ -218,6 +218,8 @@ $outx = ceil($shiftx / $tiles[$type]['x']);
 $outy = ceil($shifty / $tiles[$type]['y']);
 if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
     $save_gpx = 1;
+} else {
+    $save_gpx = 0;
 }
 $mid = map_add($_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx);
 

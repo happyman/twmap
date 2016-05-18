@@ -25,6 +25,7 @@ else {
 
 	$start = $_REQUEST['iDisplayStart'];
 	$limit = $_REQUEST['iDisplayLength'];
+	$result_map = array();
 	for($i=$start; $i< $start + $limit; $i++) {
 		if (isset($maps[$i]))
 			$result_map[] = $maps[$i];
@@ -39,6 +40,7 @@ else {
 }
 function create_rows($maps,$startsn=0) {
 	global $TWMAP3URL;
+	$td = array();
 	for($i=0;$i<count($maps);$i++) {
 		if ($maps[$i]['gpx'] == 1) {
 			// 產生瀏覽連結
@@ -73,7 +75,7 @@ function create_rows($maps,$startsn=0) {
 				$op[] = sprintf("<span id='icon_recreate' title=\"mid=%d 重新產生\" 
 					onclick=\"map_action('recreate_gpx','%s')\"></span>", $maps[$i]['mid'],$param);
 			} else {
-				$param = sprintf("x=%d&y=%d&shiftx=%d&shifty=%d&title=%s&version=%d&ph=%d",$maps[$i]['locX']/1000,$maps[$i]['locY']/1000,$maps[$i]['shiftX'],$maps[$i]['shiftY'],$maps[$i]['title'],$maps[$i]['version'],$ph);
+				$param = sprintf("x=%d&y=%d&shiftx=%d&shifty=%d&title=%s&version=%d&ph=%d",$maps[$i]['locX']/1000,$maps[$i]['locY']/1000,$maps[$i]['shiftX'],$maps[$i]['shiftY'],urlencode($maps[$i]['title']),$maps[$i]['version'],$ph);
 				$op[] = sprintf("<span id='icon_recreate' title=\"mid=%d 重新產生\" 
 					onclick=\"map_action('recreate','%s')\"></span>",$maps[$i]['mid'],  $param);
 
