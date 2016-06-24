@@ -89,10 +89,14 @@ $(document).ready(function () {
 						title: "別名",
 						edit: true,
 					},
+					alias2: {
+						title: "其他名稱",
+						edit: true,
+					},
 			<?php
 			if (isset($_GET['x']) && isset($_GET['y'])) {
-					printf('x: { title: "lon", edit: true, defaultValue: "%s" },', $_GET['x']);
-					printf('y: { title: "lat", edit: true, defaultValue: "%s" },', $_GET['y']);
+					printf('x: { title: "lon", edit: true,  defaultValue: "%s" },', $_GET['x']);
+					printf('y: { title: "lat", edit: true,  defaultValue: "%s" },', $_GET['y']);
 
 			} else {
 			?>
@@ -101,7 +105,7 @@ $(document).ready(function () {
 			<?php
 			}
 			?>
-					type: { title: "種類", edit: true, options: [    '一等點',
+					type: { title: "種類", edit: true, options: [    '其他','一等點',
     '二等點',
     '三等點',
     '森林點',
@@ -126,7 +130,6 @@ $(document).ready(function () {
     '階梯',
     '岩石',
     '崩壁',
-    '其他',
     '山屋',
     '吊橋'],
 	display: function(data) {
@@ -149,7 +152,7 @@ $(document).ready(function () {
 					checked: { title: "檢查", edit: true, type: 'checkbox', values: { '0': '還沒', '1': 'done' }, width: "2%" },
 			<?php
 				if (is_admin()) {
-				printf('owner: { title: "owner", edit: true },');
+				printf('owner: { title: "who", edit: true },');
 				printf("contribute: { title: '投稿', edit: true, options: {'0': '自己看', '1':'已投稿', '2':'來自投稿' } },");
 				} else {
 				printf("contribute: { title: '投稿', edit: true, type: 'checkbox', values: {'0': '自己看', '1':'已投稿' } },");

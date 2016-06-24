@@ -999,3 +999,13 @@ function get_administration($x,$y,$type="town") {
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
 }
+function ogr2ogr_export_points($fpath, $owner=0) {
+		global $db_name,$db_user,$db_pass,$db_host;
+		if (empty($fpath)) return array(false, "file can't be empty");
+		if (file_exists($fpath)) return array(false, "file exists");
+		
+		$cmd = sprintf("ogr2ogr -f GeoJSON -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s  PG:\"host=%s dbname=%s user=%s password=%s\" -where \"owner=%d\"  point3",$fpath, $db_host, $db_name, $db_user, $db_pass, $owner);
+		exec($cmd, $out, $ret);
+		if ($ret == 0 ) return array(true, "ok");
+		else return array(false, implode( "", $out ));
+}

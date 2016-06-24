@@ -1,4 +1,4 @@
-<?
+<?php
 // $$id$
 function AA_getLatLongXYZ($x, $y, $zoom) { 
 	$debug = $_GET['debug']; 

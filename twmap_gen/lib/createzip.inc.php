@@ -1,4 +1,4 @@
-<?
+<?php
 
 class createZip {
 	var $compressedData = array(); 
