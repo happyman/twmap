@@ -50,7 +50,7 @@ function pointcrud($inp, $owner_uid, $admin) {
 			$pp = sprintf("ST_GeomFromText('SRID=4326;POINT(%f %f)')",$inp['x'],$inp['y']);
 			$inp['number'] = (empty($inp['number']))? "NULL": intval($inp['number']);
 			$inp['ele'] = (empty($inp['ele']))? "NULL": intval($inp['ele']);
-			$sql = sprintf("insert into point3 (id, name,alias,type,class,number,status,ele,mt100,checked,comment,coord,owner,contribute) values ( DEFAULT, '%s','%s','%s','%s',%s
+			$sql = sprintf("insert into point3 (id, name,alias,type,class,number,status,ele,mt100,checked,comment,coord,owner,contribute,alias2) values ( DEFAULT, '%s','%s','%s','%s',%s
 				,'%s', %s,'%s','%s','%s',%s, %d, %d, '%s') returning id",
 					$inp['name'],$inp['alias'],$inp['type'],$inp['class'], $inp['number'],
 					$inp['status'],$inp['ele'],$inp['mt100'],$checked,pg_escape_string($inp['comment']),$pp, $owner_uid, $contribute, $inp['alias2'] );
