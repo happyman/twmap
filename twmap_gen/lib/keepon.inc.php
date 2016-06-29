@@ -213,7 +213,7 @@ function GPX_bbox($gpxurl) {
 		$svg = new gpxsvg(array("gpx"=> $gpxurl, "width"=>1024, "fit_a4" => 0, "auto_shrink" => 0,	"show_label_trk" => 0, "show_label_wpt" => 2));
 		return $svg->detect_bbox();
 }
-function GPX_enqueue($keepon_id,$title,$gpxurl){
+function GPX_enqueue($keepon_id,$title,$gpxurl,$auto_shrink=0){
 	// 1. download gpx
 		$tmp_gpx = tempnam("/tmp","GPX") . ".gpx";
 		try {
@@ -224,7 +224,7 @@ function GPX_enqueue($keepon_id,$title,$gpxurl){
 		}
 		file_put_contents($tmp_gpx, $data);
 	// 2. parse params
-	$svg = new gpxsvg(array("gpx"=>$tmp_gpx, "width"=>1024, "fit_a4" => 1, "auto_shrink" => 1,	"show_label_trk" => 0, "show_label_wpt" => 2));
+	$svg = new gpxsvg(array("gpx"=>$tmp_gpx, "width"=>1024, "fit_a4" => 1, "auto_shrink" => $auto_shrink,	"show_label_trk" => 0, "show_label_wpt" => 2));
 	$ret = $svg->process();
 	if ($ret === false ) {
 		@unlink($tmp_gpx);
