@@ -104,6 +104,30 @@ class gpxsvg {
 		return array($tl, $br);
 
 	}
+	// 偵測到底 gpx 範圍多大
+	function detect_bbox(){
+			list($x,$y,$x1,$y1) = $this->get_bbox(file_get_contents($this->gpx));
+			if ($this->taiwan == 0)
+				return array(false,"not in Taiwan or Pong Hu");
+			if ($this->taiwan == 1 ) {
+			list($tx, $ty) = proj_geto672(array($x,$y));
+			list($tx1, $ty1) = proj_geto672(array($x1,$y1));
+			} else {
+			list($tx, $ty) = proj_geto672_ph(array($x,$y));
+			list($tx1, $ty1) = proj_geto672_ph(array($x1,$y1));
+			}
+			// get tl and br
+			$tl = array( floor($tx / 1000)*1000, ceil($ty / 1000)*1000);
+			$br = array( ceil($tx1 / 1000)*1000, floor($ty1 / 1000)*1000);
+			//  
+			$this->bound_twd67 = array("tl" => $tl, "br" => $br , "ph"=> ($this->taiwan==2)?1:0);
+			if ($br[0] - $tl[0] >= $this->limit['km_x'] || $tl[1] - $br[1] >= $this->limit['km_y'] ) {
+				$over = 1;
+			} else {
+				$over = 0;
+			}
+			return array(true, array("x"=> ($br[0] - $tl[0])/1000 , "y"=> ($tl[1] - $br[1])/1000, "over" => $over));
+	}
 	function process() {
 		if (!isset($this->gpx) || !file_exists($this->gpx)) {
 			$this->_err[] = "no gpx file input";

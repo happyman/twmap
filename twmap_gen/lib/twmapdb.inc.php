@@ -92,14 +92,7 @@ function keepon_map_exists($uid,$keepon_id){
 	if (count($rs) == 0 ) return false;
 	return $rs[0];
 }
-function keepon_map_exists2($uid,$mid){
-	$db=get_conn();
-	$sql = sprintf("SELECT * from  \"map\" WHERE \"uid\"='%s' AND \"mid\"='%s' AND \"flag\" <> 2",$uid,$mid);
-	$rs = $db->GetAll($sql);
-	logsql($sql,$rs);
-	if (count($rs) == 0 ) return false;
-	return $rs[0];
-}
+
 // TODO? maybe still buggy
 function is_gpx_imported($mid) {
 	$db=get_conn();
@@ -538,7 +531,7 @@ function name_to_icon($map) {
 	return $img;
 }
 // keepon functions
-
+/*
 function kok_out($id, $msg, $url, $cdate=null) {
 	//soap_call(true, $id, $msg, $url, $cdate);
 	keepon_MapResult(1, $id, $msg, $url, $cdate);
@@ -617,6 +610,7 @@ function soap_call_delete($id) {
 	}
 
 }
+
 function kcli_msglog($msg){
 	if (is_array($msg))
 		$str = print_r($msg, true);
@@ -625,6 +619,9 @@ function kcli_msglog($msg){
 	syslog(LOG_INFO, $str);
 	printf("%s\n",$str);
 }
+*/
+require_once("keepon.inc.php");
+
 function ajaxerr($msg) {
 	$ret['ok'] = false;
 	$ret['rsp'] = array('msg' => $msg );

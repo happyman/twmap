@@ -1,14 +1,27 @@
 
 module.exports = function(grunt) {
   grunt.initConfig({
-    copy: {
-      generated: {
-	files: [
-        { cwd: 'twmap_gen/', src: ['**'], dest: 'dist/twmap_gen',expand: true },
-	{ cwd: 'twmap3/', src: ['**'], dest: 'dist/twmap3',expand: true } 
-	]
-      },
-    },
+    //copy: {
+    //  generated: {
+	//files: [
+    //    { cwd: 'twmap_gen/', src: ['**'], dest: 'dist/twmap_gen',expand: true },
+	//{ cwd: 'twmap3/', src: ['**'], dest: 'dist/twmap3',expand: true } 
+	//]
+    //  },
+    //},
+	rsync: {
+		options: {
+			args: ["-av"],
+			exclude: [".git*","*.scss","node_modules"],
+			recursive: true
+		},
+		generated: {
+			options: {
+			src: ['twmap_gen','twmap3'], 
+			dest: 'dist/'
+			}
+		}
+	},
     filerev: {
       options: {
         encoding: 'utf8',
@@ -69,7 +82,8 @@ phplint: {
   });
 
   grunt.loadNpmTasks('grunt-usemin');
-  grunt.loadNpmTasks('grunt-contrib-copy');
+  //grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-rsync');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
@@ -80,7 +94,8 @@ phplint: {
   grunt.registerTask('default', [
       'jshint',
       'phplint',
-      'copy:generated',
+     // 'copy:generated',
+	  'rsync:generated',
       'useminPrepare',
       'concat',
       'uglify',

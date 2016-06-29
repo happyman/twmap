@@ -483,9 +483,10 @@ Class STB2 extends STB {
 	}
 } //eo class
 
-function request_curl($url, $method='GET', $params=array()) {
+function request_curl($url, $method='GET', $params=array(),$hdr=array()) {
 	$params_line = http_build_query($params, '', '&');
 	$curl = curl_init($url . ($method == 'GET' && $params_line ? '?' . $params_line : ''));
+	$headers = array();
 	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
 	curl_setopt($curl, CURLOPT_HEADER, false);
 	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
@@ -511,17 +512,19 @@ function request_curl($url, $method='GET', $params=array()) {
                 curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
                 curl_setopt($curl, CURLOPT_POST, true);
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
-		// for ASP
-		curl_setopt($curl, CURLOPT_COOKIE, 'AspxAutoDetectCookieSupport=1');
-                curl_setopt($curl, CURLOPT_HTTPHEADER, array( 'Content-Type: application/json','Content-Length: ' . strlen($data_string)));
+				// for Keepon API
+				curl_setopt($curl, CURLOPT_COOKIE, 'AspxAutoDetectCookieSupport=1');
+				$headers =  array( 'Content-Type: application/json','Content-Length: ' . strlen($data_string),'Accept: application/json');
         } elseif ($method == 'HEAD') {
                 curl_setopt($curl, CURLOPT_HEADER, true);
                 curl_setopt($curl, CURLOPT_NOBODY, true);
-        } else {
+				curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+		} else {
                 curl_setopt($curl, CURLOPT_HTTPGET, true);
         }
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array_merge($hdr , $headers) );
+	
         $response = curl_exec($curl);
-
 	if($method == 'HEAD') {
 		$headers = array();
 		foreach(explode("\n", $response) as $header) {
@@ -531,7 +534,7 @@ function request_curl($url, $method='GET', $params=array()) {
 		}
 		return $headers;
 	}
-	error_log("curl $method $url");
+	// error_log("curl $method $url" . print_r(array_merge($hdr,$headers),true));
 
 	if (curl_errno($curl)) {
 		throw new ErrorException(curl_error($curl), curl_errno($curl));
