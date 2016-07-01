@@ -2,15 +2,15 @@
 
 require_once("config.inc.php");
 
+$opt = getopt("m:r");
 $id = `id -u`;
-if ($id != 0) {
-	echo "Please run as root\n";
-	exit;
+if ($id != WWWRUN_UID ) {
+        echo "Please run as www user\n";
+        exit;
 }
-$opt = getopt("rm:");
 
 if (!isset($opt['m'])){
-	echo "Usage: $argv[0] -m 4 -d\n";
+	echo "Usage: $argv[0] -m 4 -r\n";
 	echo "       -r: real run, default is dry run\n";
 	echo "       -m map id: expire certain map id\n";
 	exit(0);

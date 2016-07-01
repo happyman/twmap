@@ -43,10 +43,10 @@ $sql = sprintf("select max(mid) from gpx_wp");
 $rs = $db->getAll($sql);
 // 取出最大 map id
 $maxid = intval($rs[0][0])+1;
-if ($start_mid > $maxid)
+if ($start_mid < $maxid)
 	$maxid = $start_mid;
 $keepon_only = (isset($opt['k']))? "AND keepon_id != 'NULL'" : "";
-$sql = sprintf("select mid,title,filename,keepon_id FROM \"map\" WHERE gpx=1 AND flag <> 2 AND mid >= %d %s ORDER BY cdate",$maxid,$keepon_only);
+$sql = sprintf("select mid,title,filename,keepon_id FROM \"map\" WHERE gpx=1 AND flag = 0  AND mid >= %d %s ORDER BY cdate",$maxid,$keepon_only);
 $rs = $db->getAll($sql);
 printf("Total %d, from mid %d\n",count($rs),$maxid);
 $i=1;
@@ -54,7 +54,11 @@ if (count($rs) > 0 ) {
 	foreach($rs as $row) {
 	// debug==	三筆就好 if ($i++ > 3) break;
 		if ($do_count > 0 && $i > $do_count) break;
-		printf("%d %d %-30s http://www.keepon.com.tw/redirectMap-%s.html",$i++, $row['mid'],$row['title'],$row['keepon_id']);
+		if ($row['keepon_id'] != 'NULL')
+			$url = keepon_Id_to_Url($row['keepon_id']);
+		else
+			$url = '';
+		printf("%d %d %-30s %s",$i++, $row['mid'],$row['title'],$url);
 		if ($real_do == 1) {
 			$exist_mid = is_gpx_imported($row['mid']);
 			if ($exist_mid !== false) {
