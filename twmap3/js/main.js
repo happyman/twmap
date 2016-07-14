@@ -46,7 +46,7 @@ var GPSLayer; // external kml layer
 var TaiwanMapV1Options = {
     getTileUrl: function(a, b) {
         var z = 17 - b;
-        return "//rs.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
+        return "http://rs.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 18,
@@ -56,7 +56,7 @@ var TaiwanMapV1Options = {
 };
 var TaiwanMapOptions = {
     getTileUrl: function(coord, zoom) {
-        return "//rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
+        return "http://rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 16,
@@ -66,7 +66,7 @@ var TaiwanMapOptions = {
 };
 var TaiwanGpxMapOptions = {
     getTileUrl: function(a, b) {
-        return '//rs.happyman.idv.tw/map/twmap_gpx/' + b + "_" + a.x + "_" + a.y + ".png";
+        return 'http://rs.happyman.idv.tw/map/twmap_gpx/' + b + "_" + a.x + "_" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 16,
@@ -129,7 +129,7 @@ var Taiwan_General_2011_MapOptions = {
 //}
 var OSM_Options = {
     getTileUrl: function(a, b) {
-        return "http://otile1.mqcdn.com/tiles/1.0.0/map/" + b + "/" + a.x + "/" + a.y + ".jpg";
+        return "http://a.tile.openstreetmap.org/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
