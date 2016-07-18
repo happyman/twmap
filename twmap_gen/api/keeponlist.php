@@ -6,11 +6,11 @@ exit("cli only");
 }
 
 $debug = 1;
-$opt = getopt("a:k:m:t:s:e:rg:u:");
+$opt = getopt("a:k:m:t:s:e:rg:u:c:f");
 $action = (isset($opt['a'])) ? $opt['a'] : '';
 if (empty($action)) {
 	printf("%s -a listall|enqueue|list|delete [-k keepon_id] [-t thread_id] [-m 0|1]\n",$argv[0]);
-	printf("	listall -s 'Y-m-d' -e 'Y-m-d' -m 0 : start, end, mapgenerated [-r]: do queue -\n");
+	printf("	listall -s 'Y-m-d' -e 'Y-m-d' -m 0 : start, end, mapgenerated [-r]: do queue [-c]: count\n");
 	printf("	enqueue -k keepon_id -t thread_id [-f]: force auto_shrink\n");
 	printf("	listt -t thread_id\n");
 	printf("	listk -k keepon_id\n");
@@ -27,6 +27,7 @@ case 'listall':
 	/* list all default: this month*/
 	$start = (isset($opt['s']))? strtotime($opt['s']) : strtotime(date('01-m-Y',strtotime('this month')));
 	$end = (isset($opt['e'])) ? strtotime($opt['e']) :  strtotime('yesterday') ;
+	$docount = (isset($opt['c']))? intval($opt['c']) : 100;
 	list ($st,$res) =  keepon_List($start,$end,1,100);
 	$data = Keepon_Data_Format($res);
 	$map_exists = 2;
@@ -37,13 +38,20 @@ case 'listall':
 	foreach($data as $d) {
 		if ($d['MapGenerated'] == $map_exists || $map_exists == 2) {
 			printf("%d:\n",++$count);
+			if ($count > $docount)  {
+				echo "count reached.. break\n";
+				break;
+			}
 			print_r($d);
 			if (isset($opt['r'])) {
 				if ($d['MapGenerated'] == 1) {
 					echo "skip $kid\n";
 					continue;
 				}
-			GPX_enqueue($d['Id'], str_replace(".gpx","",$d['Title']),$d['GpxUrl']);
+			list ($enq_ret, $msg ) = GPX_enqueue($d['Id'], str_replace(".gpx","",$d['Title']),$d['GpxUrl']);
+			if ($enq_ret === true ) {
+				echo "[1;33menqueued[m\n";
+			}
 			}
 		}
 	}

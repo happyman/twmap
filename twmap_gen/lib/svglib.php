@@ -126,7 +126,7 @@ class gpxsvg {
 			} else {
 				$over = 0;
 			}
-			return array(true, array("x"=> ($br[0] - $tl[0])/1000 , "y"=> ($tl[1] - $br[1])/1000, "over" => $over));
+			return array(true, array("x"=> ($br[0] - $tl[0])/1000 , "y"=> ($tl[1] - $br[1])/1000, "over" => $over, "bbox" => "$y $x $y1 $x1"));
 	}
 	function process() {
 		if (!isset($this->gpx) || !file_exists($this->gpx)) {

@@ -534,6 +534,10 @@ function request_curl($url, $method='GET', $params=array(),$hdr=array()) {
 		}
 		return $headers;
 	}
+	$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+	if ($httpCode != 200 ) {
+		throw new ErrorException("HTTP return $httpCode", $httpCode );
+	}
 	// error_log("curl $method $url" . print_r(array_merge($hdr,$headers),true));
 
 	if (curl_errno($curl)) {

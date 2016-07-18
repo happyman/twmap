@@ -30,7 +30,7 @@ if (isset($opt['d']))
 else
 	$cache_dir = "/home/nas/twmapcache/twmap_gpx";
 
-$start_mid = (isset($opt['m']))? intval($opt['m']) : 0;
+$start_mid = (isset($opt['m']))? intval($opt['m']) : -1;
 
 $do_count = 0;
 if (isset($opt['c'])){
@@ -43,8 +43,10 @@ $sql = sprintf("select max(mid) from gpx_wp");
 $rs = $db->getAll($sql);
 // 取出最大 map id
 $maxid = intval($rs[0][0])+1;
-if ($start_mid < $maxid)
+
+if ($start_mid > 0)
 	$maxid = $start_mid;
+
 $keepon_only = (isset($opt['k']))? "AND keepon_id != 'NULL'" : "";
 $sql = sprintf("select mid,title,filename,keepon_id FROM \"map\" WHERE gpx=1 AND flag = 0  AND mid >= %d %s ORDER BY cdate",$maxid,$keepon_only);
 $rs = $db->getAll($sql);

@@ -202,16 +202,17 @@ function keepon_Data_Format($res) {
 						"ThreadId" => $data['ThreadId'],
 						"Title" => $data['Description'],
 						"GpxUrl" => $baseurl . $data['FileUrl'],
+						"ArticleUrl" => keepon_Tid_to_URL($data['ThreadId']),
 						"MapGenerated" => $data['MapGenerated'],
-						"MapUrl" => $data['MapUrl'],
-						"ArticleUrl" => keepon_Tid_to_URL($data['ThreadId'])
+						"MapUrl" => $data['MapUrl']
 					);
 	}
-	return $ret;
+	return array_reverse($ret);
 }
 function GPX_bbox($gpxurl) {
 		$svg = new gpxsvg(array("gpx"=> $gpxurl, "width"=>1024, "fit_a4" => 0, "auto_shrink" => 0,	"show_label_trk" => 0, "show_label_wpt" => 2));
-		return $svg->detect_bbox();
+		$ret =  $svg->detect_bbox();
+		return $ret;
 }
 function GPX_enqueue($keepon_id,$title,$gpxurl,$auto_shrink=0){
 	// 1. download gpx
@@ -228,8 +229,8 @@ function GPX_enqueue($keepon_id,$title,$gpxurl,$auto_shrink=0){
 	$ret = $svg->process();
 	if ($ret === false ) {
 		@unlink($tmp_gpx);
-		kcli_msglog("unable to parse gpx");
-		return array(false,"parse gpx error");
+		kcli_msglog("unable to parse gpx: ". $svg->_err[0]);
+		return array(false,"parse gpx error:" . $svg->_err[0]);
 	}
 	$TODO['gpx'] = $tmp_gpx;
 	$TODO['url'] = $gpxurl;
