@@ -389,7 +389,7 @@ function permLinkURL(goto) {
     var ver = (BackgroundMap === 0) ? 3 : 1;
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
-    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() +"'><img src='img/permlink.png' border=0/></a>";
+    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() +"'><img src='img/permalink.png' width=30 border=0/></a>";
 }
 
 var MapStateRestored = 0;
@@ -577,8 +577,10 @@ function locInfo_show(newpos, ele, extra) {
     if (ele > -1000) content += "<br>高度: " + ele.toFixed(0) + "M";
     content += "<br>座標: " + comment + "" + Math.round(p.x) + "," + Math.round(p.y);
     if (login_role == 1) {
-        if (locInfo_name == "我的位置") content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "',{});return false\">新增</a>";
-        else content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "&name=" + locInfo_name + "',{});return false\">新增</a>";
+        if (locInfo_name == "我的位置") 
+			content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "',{});return false\">新增</a>";
+        else 
+			content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "&name=" + locInfo_name + "',{});return false\">新增</a>";
     }
     content += "</div>";
     centerInfo.setContent(content);
@@ -625,27 +627,68 @@ function tagInfo(newpos, id) {
         },
         success: function(data) {
 	    if (typeof data[0].name == "undefined") {
-                content = "<div class='infowin'><b>" + data[0].name + "</b>";
-		content += "id: " + id + "有誤";
-	        content += "</div>";
-	    } else {
-            content = "<div class='infowin'><b>" + data[0].name + "</b>";
-            content += permLinkURL(encodeURIComponent(data[0].name));
-            content += "<br>座標: " + comment + "<br>" + Math.round(p.x) + "," + Math.round(p.y);
-            content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
-            content += data[0].story;
-            content += "</div>";
-            }
-            centerInfo.setContent(content);
-            centerInfo.open(map, centerMarker);
-	    if (data[0].info){
-		toggle_user_role(1);
-	    } else {
-		toggle_user_role(0);
-	    }
-        }
+				content = "<div class='infowin'><b>" + data[0].name + "</b>";
+				content += "id: " + id + "有誤";
+				content += "</div>";
+			} else {
+				content = "<div class='infowin'><b>" + data[0].name + "</b>";
+				content += permLinkURL(encodeURIComponent(data[0].name));
+				content += "<br>座標: " + comment + "<br>" + Math.round(p.x) + "," + Math.round(p.y);
+				content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
+				content += data[0].story;
+				content += "<br>通視模擬: <a href=# onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img src=img/eye.png width=32/></a>";
+				content += "</div>";
+			}
+			centerInfo.setContent(content);
+			centerInfo.open(map, centerMarker);
+			if (data[0].info){
+				toggle_user_role(1);
+			} else {
+				toggle_user_role(0);
+			}
+		}
     });
     showCenterMarker_id = id;
+}
+var line_of_sight_lines = [];
+function show_line_of_sight(y,x,z){
+	var names = [];
+	$.ajax({
+		dataType: 'json', 
+		url: viewshed_url, 
+		data: { "x": x,	"y": y, "z": z },
+		success: function(data){
+				if (data.ok !== true){
+					console.log("error show_line_of_sight response" + data);
+					return;
+				}
+					
+				// 1. clean line_of_sight_lines
+				for(var i=0; i< line_of_sight_lines.length; i++){
+					if (line_of_sight_lines[i])
+						line_of_sight_lines[i].setMap(null);
+				}
+				// 2. draw lines
+				
+				for(i=0;i < data.rsp.length; i++){
+					var d = data.rsp[i];
+					//if (d[0] === true && d[3] > 3000)
+					//	names[i] = d[2];
+					
+					line_of_sight_lines[i] = new google.maps.Polyline({
+						path: [new google.maps.LatLng(y, x), new google.maps.LatLng(d[1][1],d[1][0])],
+						map: map,
+						geodesic: true,
+						strokeColor: (d[0] === true) ? '#FF0000' : "#FF00FF",
+						strokeOpacity: 1.0,
+						strokeWeight: (d[0] === true) ? 2 : 1
+					});
+				}
+				// 3. done
+				// console.log(names);
+				console.log("done show_line_of_sight");
+		}
+	});
 }
 var circle;
 
@@ -938,16 +981,27 @@ success: function(data) {
             showInsideMarkers();
         //
 	if (show_delaunay == 1 ) {
+		/*
 	    drawDelaunayTriangulation(1, { strokeColor: "#FFFF00", strokeWeight: 3 });
 	    drawDelaunayTriangulation(2, { strokeColor: "#01DF01", strokeWeight: 2 });
 	    drawDelaunayTriangulation(3, { strokeColor: "#FF00FF", strokeWeight: 1 });
+		*/
+		create_survey_network(3);
+		create_survey_network(2);
+		create_survey_network(1);
         }
             if (opt.msg) {
                 alert(opt.msg + "共" + availableTagsLocation.length + "筆資料");
             }
         }
+		
     });
 }
+
+/* ------ 
+ will remove 
+ ---- */
+ 
 // code from http://geocodezip.com/v3_GoogleMaps_triangulation.html
 function jsts2googleMaps(geometry, longestDistance) {
   var coordArray = geometry.getCoordinates();
@@ -965,6 +1019,39 @@ function jsts2googleMaps(geometry, longestDistance) {
   }
   return GMcoords;
 }
+
+function GMapPolygonToWKT(poly)
+{
+// Start the Polygon Well Known Text (WKT) expression
+ var wkt = "POLYGON(";
+
+ var paths = poly.getPaths();
+ for(var i=0; i<paths.getLength(); i++)
+ {
+  var path = paths.getAt(i);
+
+  // Open a ring grouping in the Polygon Well Known Text
+  wkt += "(";
+  for(var j=0; j<path.getLength(); j++)
+  {
+    // add each vertice and anticipate another vertice (trailing comma)
+    wkt += path.getAt(j).lng().toFixed(5) +" "+ path.getAt(j).lat().toFixed(5) +",";
+  }
+  
+  // Google's approach assumes the closing point is the same as the opening
+  // point for any given ring, so we have to refer back to the initial point
+  // and append it to the end of our polygon wkt, properly closing it.
+  //
+  // Also close the ring grouping and anticipate another ring (trailing comma)
+  wkt += path.getAt(0).lng().toFixed(5) + " " + path.getAt(0).lat().toFixed(5) + "),";
+}
+
+// resolve the last trailing "," and close the Polygon
+ wkt = wkt.substring(0, wkt.length - 1) + ")";
+
+ return wkt;
+}
+
 var delaunayGMpolys = [];
 function drawDelaunayTriangulation(class_num, Options) {
        // clean 一下
@@ -980,7 +1067,6 @@ function drawDelaunayTriangulation(class_num, Options) {
 	for (var i = 0; i < availableTags.length; i++) {
 		if (availableTagsMeta[i].class == class_num ) {
 			points[j] = new jsts.geom.Coordinate(availableTagsLocation[i].lng(),availableTagsLocation[i].lat());
-		//	GMpoints[j] = availableTagsLocation[i];
 			j++;
 		}
 	}
@@ -1021,6 +1107,16 @@ function cleanDelaunayTriangulation(class_num) {
 		delaunayGMpolys[class_num][i].setMap(null);
 	}
 }
+function dumpDelaunayTriangulation(){
+	for (var k =1; k <= 3; k++) {
+		class_num = k;
+		for (var i =0; i< delaunayGMpolys[class_num].length; i++){
+			console.log("k=" + k  + " " + GMapPolygonToWKT(delaunayGMpolys[class_num][i]));
+		}
+	}
+	return "OK";
+}
+
 function mysetIcon2(type, isShadow) {
     var icon=[];
     icon[4] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_lev8.png';
@@ -1391,16 +1487,27 @@ function initialize() {
     $("#delaunay_sw").click(function() {
 	if (show_delaunay == 1 ) {
 		show_delaunay = 0;
+		/*
 		cleanDelaunayTriangulation(1);
 		cleanDelaunayTriangulation(2);
-		cleanDelaunayTriangulation(3);
+		cleanDelaunayTriangulation(3); 
+		*/
+		remove_survey_network(1);
+		remove_survey_network(2);
+		remove_survey_network(3);
+		
             $("#delaunay_sw").addClass("disable");
 	} else {
 		show_delaunay = 1;
             $("#delaunay_sw").removeClass("disable");
-	    drawDelaunayTriangulation(1, { strokeColor: "#FFFF00", strokeWeight: 3 });
+			/*
+			drawDelaunayTriangulation(1, { strokeColor: "#FFFF00", strokeWeight: 3 });
             drawDelaunayTriangulation(2, { strokeColor: "#01DF01", strokeWeight: 2 });
             drawDelaunayTriangulation(3, { strokeColor: "#FF00FF", strokeWeight: 1 });
+			*/
+			create_survey_network(3);
+			create_survey_network(2);
+			create_survey_network(1);
 
 	}
         updateView("info_only");
@@ -2106,3 +2213,92 @@ function toggle_user_role(cur_role) {
   else
 	$("#about").html($("#about").text());
 }
+
+var line_class_arr = [ [],[], [], [] ];
+var poly_class_arr = [ [],[], [], [] ];
+
+function create_survey_network(class_num) {
+  // 1. class 1
+ var color = [ "##" ,  "#FFFF00" ,  "#01DF01",  "#FF00FF" ];
+ var colorbg = [ "##", "#FFFE01",   "#01EF01",  "#FE00FE" ];
+ var strokeW = [ 0, 1, 1, 1];
+ var PstrokeW = [ 0, 2, 1, 1];
+
+ if (theme == 'ingress') {
+	 fillcolor = '#01ef01';
+	 fillop = 0.1;
+ }else {
+	 // not fill
+   fillcolor = colorbg[class_num];
+   fillop = 0;
+ } 
+ console.log("create survey network " + class_num);
+ var k = class_num;
+	for(var i=0; i < line_class[k].length; i++) {
+		line_class_arr[k][i]= new google.maps.Polyline({
+		path:  line_class[k][i], 
+		strokeOpacity: 0.5,
+		strokeColor: color[k],
+		strokeWeight: strokeW[k],   
+		map: map
+		});
+	}
+	// draw polygons
+	for(i=0; i < poly_class[k].length; i++) {
+		poly_class_arr[k][i]= new google.maps.Polygon({
+		path:  poly_class[k][i], 
+		strokeOpacity: 1,
+		strokeColor: color[k],
+		strokeWeight: PstrokeW[k],   
+		fillColor: fillcolor,
+		fillOpacity: fillop,
+		map: map
+		});
+	}
+}
+
+function remove_survey_network(class_num) {
+	console.log("remove survey network " + class_num);
+	// if (typeof line_class_arr[class_num] === 'undefined') return;
+    for(var i=0; i < line_class_arr[class_num].length; i++) {
+		line_class_arr[class_num][i].setMap(null);
+
+    } 
+    for( i=0; i < poly_class_arr[class_num].length; i++) {
+		poly_class_arr[class_num][i].setMap(null);
+    } 
+}
+
+
+/*
+var badline_arr = [];
+function create_badline(){
+	  var lineSymbol = {
+    path: 'M 0,-1 0,1',
+    strokeOpacity: 1,
+    scale: 4
+  };
+
+  // Create the polyline, passing the symbol in the 'icons' property.
+  // Give the line an opacity of 0.
+  // Repeat the symbol at intervals of 20 pixels to create the dashed effect.
+  for(var i=0; i < badlines.length; i++) {
+  badline_arr[i]= new google.maps.Polyline({
+    path: [{ lng: parseFloat(badlines[i][0].lng),lat: parseFloat(badlines[i][0].lat)},
+	       {  lng: parseFloat(badlines[i][1].lng),lat: parseFloat(badlines[i][1].lat) } ],
+    strokeOpacity: 0,
+    icons: [{
+      icon: lineSymbol,
+      offset: '0',
+      repeat: '20px'
+    }],
+    map: map
+  });
+  }
+}
+function remove_badline() {
+  f(r(var i=0; i < badline_arr.length; i++) {
+		badline_arr[i].setMap(null);
+	  }
+}
+*/

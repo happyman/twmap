@@ -939,6 +939,23 @@ function get_point($id='ALL',$is_admin=false) {
 	return $db->getAll($sql);
 
 }
+// 取出　class_num 等基石, 官方點
+function get_point_by_class($class_num) {
+	$db=get_conn();
+	$where = sprintf("WHERE class='%d' AND owner=0",$class_num);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner FROM point3 %s ORDER BY number,ST_XMin(coord)", $where);
+	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
+	// echo $sql;
+	return $db->getAll($sql);
+}
+/* 取出範圍內所有 features, 官方點 */
+function get_points_from_center($center, $r_in_meters) {
+	$db = get_conn();
+	$sql = sprintf("SELECT id,name,class,number,ele,ST_X(coord) AS x, ST_Y(coord) AS y FROM point3 WHERE owner = 0 AND ST_DWithin(coord, ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY number,ST_XMin(coord)",$center[0],$center[1],$r_in_meters/1000/111.325);
+	// echo $sql;
+	$db->SetFetchMode(ADODB_FETCH_ASSOC);
+        return $db->getAll($sql);
+}
 function get_lastest_point($num=5) {
 	$db=get_conn();
 	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner FROM point3 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
@@ -982,6 +999,106 @@ function get_elev($twDEM_path, $lat,$lon, $cache=1) {
 		$mem->set($key, $ele, 86400);
 	}
 	return $ele;
+}
+function get_elev_multi($twDEM_path, $points ) {
+/* space seperated */
+	foreach($points as $pp) {
+		$p = explode(" ",$pp);
+		$data[] = sprintf("%f %f",$p[0],$p[1]);
+	}
+	$cmd = sprintf("printf \"%s\n\" | gdallocationinfo -valonly -wgs84 %s", implode("\\n",$data),$twDEM_path);
+	// echo $cmd;
+	exec($cmd, $out, $ret);
+	if ($ret == 0 ) {
+		return $out;
+	}
+	return false;
+}
+
+function get_distance_postgis($a,$b) {
+	$db = get_conn();
+	$sql = sprintf("SELECT ST_distance_Sphere(ST_setSRID(ST_makepoint(%f,%f),4326),ST_setSRID(ST_makepoint(%f,%f),4326)) as distance",
+			$a[0],$a[1],$b[0],$b[1]);
+	//echo $sql;
+	$db->SetFetchMode(ADODB_FETCH_ASSOC);
+	$result = $db->getAll($sql);
+	//print_r($result);
+	return $result[0]['distance'];
+}
+function get_distance($a,$b) {
+ $lat1 = $a[1];
+ $lon1 = $a[0];
+ $lat2 = $b[1]; $lon2 = $b[0];
+  $rad = M_PI / 180;
+  return acos(sin($lat2*$rad) * sin($lat1*$rad) + cos($lat2*$rad) * cos($lat1*$rad) * cos($lon2*$rad - $lon1*$rad)) * 6371 * 1000;// meters
+}
+function line_of_sight($a, $b, $distance_limit = 32000, $cache = 1) {
+	$debug = 0;
+	$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
+	$db = get_conn();
+	// 1. get distance between p and p1
+	$distance = get_distance($a, $b);
+	$start_ele = (isset($a[2]) && $a[2]>0) ? $a[2] : get_elev($twDEM_path, $a[1], $a[0], 1);
+	$end_ele = (isset($b[2]) && $b[2]>0) ? $b[2] : get_elev($twDEM_path, $b[1], $b[0], 1);
+	if ($distance == 0 )
+		return array(false,$a, "same point");
+	else if ($distance > $distance_limit)
+		return array(false,$a, "exceed distance limit");
+	// plus 2, human height
+	$start_ele+=2;
+	// load from cache
+	if ($cache) {
+		$mem = new Memcached;
+		$mem->addServer('localhost',11211);
+		$key=sprintf("los_%.06f_%.06f_%d-%.06f_%.06f_%d-%d",$a[0],$a[1],$start_ele,$b[0],$b[1],$end_ele,$distance_limit);
+		$answer = $mem->get($key);
+		// $answer = FALSE;
+		if ($answer !== FALSE ) {
+			// echo "[cached] ";
+			return $answer;
+		}
+	}
+	$Y = $end_ele - $start_ele;
+	$ratio = $Y / $distance;
+	if ($debug) {
+		echo "distance: $distance\n";
+		echo "ratio: $ratio\n";
+	}
+	$step = 60.0 / 1000 / 111.325;
+
+	$sql = sprintf("select st_astext( ST_Segmentize(st_makeline(ST_setSRID(ST_makepoint(%f,%f),4326),ST_setSRID(ST_makepoint(%f,%f),4326)), %f)) as linestring" ,$a[0],$a[1],$b[0],$b[1],$step);
+	//echo $sql;
+	$db->SetFetchMode(ADODB_FETCH_ASSOC);
+	$res = $db->getAll($sql);
+	//print_r($res);
+	if (!preg_match("/LINESTRING\((.*)\)/",$res[0]['linestring'],$mat)) {
+		return array(false, $a, "error query $sql ".print_r($res,true));
+	}
+	$points = explode(",",$mat[1]);
+		$elev_data = get_elev_multi($twDEM_path, $points);
+	
+	for($i=1;$i<count($points);$i++) {
+		$point = explode(" ",$points[$i]);
+		$ele = $elev_data[$i];
+		$dist = get_distance($a, $point);
+		//$dist = $i * 60;
+		$expect_ele = round($dist * $ratio + $start_ele);
+		if ($debug)
+			printf("%.06f,%.06f => dist: $dist ele: $ele, expect: $expect_ele\n",$point[1],$point[0]);
+		if ($ele > round($expect_ele)) {
+		// echo "ERR\n";
+		$ret = array(false, $point, "stop");
+		if ($cache) 
+			$mem->set($key, $ret, 86400);
+		return $ret;
+		break;
+		}
+	}
+	$ret = array(true, $b, "OK");
+	if ($cache)
+		$mem->set($key, $ret, 86400);
+	return $ret;
+
 }
 function get_administration($x,$y,$type="town") {
 	$db=get_conn();

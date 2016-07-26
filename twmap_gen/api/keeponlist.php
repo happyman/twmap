@@ -95,7 +95,7 @@ case 'listm':
 		echo "not enough params\n";
 		exit(1);
 	}
-	$data = keepon_map_exists(1, $kid);
+	$data = keepon_map_exists(14803, $kid);
 	// print_r($data);
 	$html_root = $out_html_root . str_replace($out_root, "", dirname($data['filename']));
 	$url =  $site_url . $html_root . "/" . basename($data['filename']);

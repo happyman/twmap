@@ -41,6 +41,7 @@ $ver = trim(file_get_contents("VERSION"));
 	<script  src="js/functions.js"></script>
 	<script  src="js/javascript.util.min.js"></script>
 	<script  src="js/jsts.min.js"></script>
+	<script  src="js/triangle.js"></script>
 <!-- endbuild -->
 <!--
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
@@ -65,6 +66,7 @@ printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 printf("var pointdata_admin_url = '%s';\n",$CONFIG['pointdata_admin_url']);
 printf("var get_waypoints_url = '%s';\n",$CONFIG['get_waypoints_url']);
 printf("var get_elev_url = '%s';\n",$CONFIG['get_elev_url']);
+printf("var viewshed_url = '%s';\n",$CONFIG['viewshed_url']);
 printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php?tab=0&");
 ?>
 </script>
