@@ -636,7 +636,7 @@ function tagInfo(newpos, id) {
 				content += "<br>座標: " + comment + "<br>" + Math.round(p.x) + "," + Math.round(p.y);
 				content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
 				content += data[0].story;
-				content += "<br>通視模擬: <a href=# onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img src=img/eye.png width=32/></a>";
+				content += "<br>通視模擬: <a href=# onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
 				content += "</div>";
 			}
 			centerInfo.setContent(content);
@@ -651,13 +651,18 @@ function tagInfo(newpos, id) {
     showCenterMarker_id = id;
 }
 var line_of_sight_lines = [];
+var line_of_sight_running = 0;
 function show_line_of_sight(y,x,z){
 	var names = [];
+	if (line_of_sight_running == 1 ) return;
+	$('#los_eye_img').attr('src',"img/eye_a.gif");
+	line_of_sight_running = 1;
 	$.ajax({
 		dataType: 'json', 
 		url: viewshed_url, 
 		data: { "x": x,	"y": y, "z": z },
 		success: function(data){
+				
 				if (data.ok !== true){
 					console.log("error show_line_of_sight response" + data);
 					return;
@@ -686,6 +691,8 @@ function show_line_of_sight(y,x,z){
 				}
 				// 3. done
 				// console.log(names);
+				line_of_sight_running = 0;
+				$('#los_eye_img').attr('src',"img/eye.png");
 				console.log("done show_line_of_sight");
 		}
 	});
