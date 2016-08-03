@@ -636,7 +636,7 @@ function tagInfo(newpos, id) {
 				content += "<br>座標: " + comment + "<br>" + Math.round(p.x) + "," + Math.round(p.y);
 				content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
 				content += data[0].story;
-				content += "<br>通視模擬: <a href=# onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
+				content += "<br>通視模擬: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
 				content += "</div>";
 			}
 			centerInfo.setContent(content);
@@ -646,8 +646,7 @@ function tagInfo(newpos, id) {
 			} else {
 				toggle_user_role(0);
 			}
-		}
-    });
+	}});
     showCenterMarker_id = id;
 }
 var line_of_sight_lines = [];
@@ -1707,6 +1706,18 @@ function initialize() {
                 }
             }, 4000);
         }
+     }
+     // 
+     // if show_line_of_sight == 1
+     if (getParameterByName("show_line_of_sight") == 1) {
+
+          var checkExist = setInterval(function() {
+               if ($('#los_link').length) {
+                $('#los_link')[0].click();
+                clearInterval(checkExist);
+          }
+          }, 100); // check every 100ms
+
      }
         // 最後處理手機的事情
       if (is_mobile) {
