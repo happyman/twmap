@@ -189,3 +189,20 @@ var is_mobile = false;
 function ConvertDDToDMS(D) {
     return [0 | D, 'd', 0 | (D < 0 ? D = -D : D) % 1 * 60, "'", 0 | D * 60 % 1 * 60, '"'].join('');
 }
+/*
+https://github.com/happyman/twmap/issues/12
+
+*/
+var cover_overlay;
+var coverage = {"cht":{"bound":{"north":25.554136,"south":21.635736302326,"east":124.43445758443,"west":115.76012294636},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/4g_tw.png"},"twn":{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.26714358482,"east":122.1162269718},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/4G\/TW.png?r=2016081"},"fet":{"bound":{"north":27.109534289724,"south":19.921522519575,"west":114.52355246805,"east":127.14196021948},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage4G.png"}}
+
+function coverage_overlay(op, action ) {
+
+if (typeof coverage_overlay.setMap !== 'undefined') {
+     cover_overlay.setMap(null);
+}
+if (action == 1) {
+     cover_overlay = new google.maps.GroundOverlay(coverage[op].img, coverage[op].bound, {      opacity:0.7  } );
+     cover_overlay.setMap(map);
+}
+}

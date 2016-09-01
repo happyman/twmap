@@ -24,7 +24,10 @@ function kerror_out($id,$msg) {
 	return;
 }
 function keepon_MapDelete($id) {
-	keepon_Update($id, 0, '');
+	list ($st, $msg) = keepon_Update($id, 0, '');
+ 	if ($st === false ){
+		echo "MapDelete update failed\n";
+	}
 }
 function kcli_msglog($msg){
 	global $debug;
@@ -136,7 +139,13 @@ function keepon_Update($keepon_id, $status, $mapurl='' ) {
 		'MapUrl' => $mapurl
 	);
 	
+	try {
 	$result = request_curl($kurl, "POSTJSON", $params);
+	} catch (Exception $e) {
+                        kcli_msglog("keepon_id $keepon_id update $status failed");
+                        return array(false,"update failed");
+        }
+
 	//error_log("request $kurl with params".print_r($params,true) ."get $result");
 	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
 	return array(true, $result);

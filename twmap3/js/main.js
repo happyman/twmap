@@ -576,6 +576,10 @@ function locInfo_show(newpos, ele, extra) {
     content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
     if (ele > -1000) content += "<br>高度: " + ele.toFixed(0) + "M";
     content += "<br>座標: " + comment + "" + Math.round(p.x) + "," + Math.round(p.y);
+    /* allow from all points
+    if (ele > -1000) 
+	content += "<br>通視模擬: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
+    */
     if (login_role == 1) {
         if (locInfo_name == "我的位置") 
 			content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "',{});return false\">新增</a>";
@@ -653,7 +657,10 @@ var line_of_sight_lines = [];
 var line_of_sight_running = 0;
 function show_line_of_sight(y,x,z){
 	var names = [];
-	if (line_of_sight_running == 1 ) return;
+	if (line_of_sight_running == 1 ) {
+		alert("搓到眼睛．．好痛");
+		 return;
+	}
 	$('#los_eye_img').attr('src',"img/eye_a.gif");
 	line_of_sight_running = 1;
 	$.ajax({
@@ -1172,6 +1179,7 @@ var listener;
 var TW_Bounds;
 var PH_Bounds;
 var GeoMarker;
+
 
 function initialize() {
     console.log('initialize');
@@ -1719,6 +1727,7 @@ function initialize() {
           }, 100); // check every 100ms
 
      }
+
         // 最後處理手機的事情
       if (is_mobile) {
             // 隱藏 navigator bar
