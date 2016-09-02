@@ -124,7 +124,6 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 			</form>
 		</div>
 		<div id="params"></div>
-		<button type="button" id="generate" name="generate" title="將參數傳送到地圖產生器" class="ui-state-default ui-corner-all" >產生</button>
 		<button type="button" id="setup" name="setup" style='display:none' class="ui-state-default ui-corner-all">設定</button>
 		<div id="CGRID">
 		<select title="切換 Grid" name="grid" id="changegrid" class="ui-corner-all">
@@ -138,8 +137,22 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 		<option value="o2d" >前日</option>
 		<option value="o1d" >昨日</option>
 		<option value="now" >今日</option>
-		<option value="f12h" >未來12小時</option>
-		<option value="f24h" >未來24小時</option>
+		<option value="f12h" >未來12h</option>
+		<option value="f24h" >未來24h</option>
+		</select>
+		</div>
+		<div id="MCOVERAGE">
+		<select title="訊號" mame="mcover" id="mcover" class="ui-corner-all">
+		<option value="none" selected>訊號</option>
+		<option value="cht2G">cht2G</option>
+		<option value="cht3G">cht3G</option>
+		<option value="cht">cht4G</option>
+		<option value="twn2G">twn2G</option>
+		<option value="twn3G">twn3G</option>
+		<option value="twn">twn4G</option>
+		<option value="fet2G">fet2G</option>
+		<option value="twn3G">fet3G</option>
+		<option value="fet">fet4G</option>
 		</select>
 		</div>
 

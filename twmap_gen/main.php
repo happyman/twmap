@@ -3,8 +3,19 @@
 require_once("config.inc.php");
 if (!isset($_SESSION))
 	session_start();
+
+
+
+if (isset($_GET['tab'])) {
+        $jump = intval($_GET['tab']);
+        if ($jump < 0 || $jump > 5 ) $jump = 1;
+
+        $_SESSION['makeparam'] = $_GET;
+        $_SESSION['initial_tab'] = $jump;
+}
+
 if (empty($_SESSION['loggedin'])) {
-	// 如果從地圖瀏覽器導過來
+	// 如果從地圖瀏覽器導登入過來
 	if (isset($_GET['return']) && $_GET['return'] == 'twmap3' ) {
 		$_SESSION['redirto'] = $TWMAP3URL;
 	}
@@ -12,15 +23,7 @@ if (empty($_SESSION['loggedin'])) {
 	exit(0);
 }
 // 如果從地圖瀏覽器導過來
-if (isset($_GET['tab'])) {
-	$jump = intval($_GET['tab']);
-	if ($jump < 0 || $jump > 5 ) $jump = 1;
-
-	$_SESSION['makeparam'] = $_GET;
-	$_SESSION['initial_tab'] = $jump;
-	echo '<script>location.replace("main.php")</script>';
-	exit;
-}
+// echo  '<script>location.replace("main.php")</script>';
 
 $smarty->assign("twmap_gen_version", $twmap_gen_version);
 $smarty->assign("site_root_url", $site_url . $site_html_root);

@@ -78,10 +78,26 @@ function update_params(ph) {
     } else {
         page = total + " 張 A4";
     }
-    $("#params").html("X:" + data.x + "Y:" + data.y + " 東:" + data.shiftx + " 南:" + data.shifty + " km 共 " + page);
+    $("#params").html("X:" + data.x + "Y:" + data.y + " 東:" + data.shiftx + " 南:" + data.shifty + " km 共 " + page + 
+                '<button type="button" id="generate" name="generate" title="將參數傳送到地圖產生器" class="ui-state-default ui-corner-all" >產生</button>');
     callmake = "x=" + data.x + "&y=" + data.y + "&shiftx=" + data.shiftx + "&shifty=" + data.shifty + "&ph=" + ph;
+	$("#generate").click(generate_btn_click);
     return data;
 }
+function generate_btn_click() {
+        if (callmake === null) {
+            alert("請選擇範圍");
+            return;
+        }
+        // 置中
+        if (centerInfo) centerInfo.close();
+        map.setCenter(new google.maps.LatLng(miniY + (maxiY - miniY) / 2, miniX + (maxiX - miniX) / 2));
+        ismakingmap = 1;
+        $.blockUI({
+            message: $('#inputtitleform')
+        });
+}
+
 
 // proj function
 Proj4js.defs["EPSG:3828"] = "+title=二度分帶：TWD67 TM2 台灣 +proj=tmerc  +towgs84=-752,-358,-179,-.0000011698,.0000018398,.0000009822,.00002329 +lat_0=0 +lon_0=121 +x_0=250000 +y_0=0 +k=0.9999 +ellps=aust_SA  +units=公尺";
@@ -194,18 +210,29 @@ https://github.com/happyman/twmap/issues/12
 
 */
 var cover_overlay;
-var coverage = {"cht":{"bound":{"north":25.554136,"south":21.635736302326,"east":124.43445758443,"west":115.76012294636},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/4g_tw.png"},"twn":{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.26714358482,"east":122.1162269718},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/4G\/TW.png?r=2016081"},"fet":{"bound":{"north":27.109534289724,"south":19.921522519575,"west":114.52355246805,"east":127.14196021948},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage4G.png"}, "cht2G":{"bound":{"north":27.015288659839,"south":21.614440279186,"east":122.470147573768,"west":117.924277900237},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/2g_tw.png"},
+
+function coverage_overlay(op) {
+
+	console.log("coverage_overlay(" + op + ")");
+	var coverage = {
+"cht":{"bound":{"north":25.554136,"south":21.635736302326,"east":124.43445758443,"west":115.76012294636},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/4g_tw.png"},
+"twn":{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.26714358482,"east":122.1162269718},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/4G\/TW.png?r=2016081"},
+"fet":{"bound":{"north":27.109534289724,"south":19.921522519575,"west":114.52355246805,"east":127.14196021948},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage4G.png"}, 
+"cht2G":{"bound":{"north":27.015288659839,"south":21.614440279186,"east":122.470147573768,"west":117.924277900237},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/2g_tw.png"},
 "twn2G":{"bound":{"north":25.444259664518,"south":21.764367841649,"west":119.146827678062,"east":122.253772190656},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/2G\/TW.png"},
- "fet2G":{"bound":{"north":26.322813780907,"south":20.912682441736,"west":116.322882125754,"east":124.708821581148},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverageVoice.png"}};
+"fet2G":{"bound":{"north":26.322813780907,"south":20.912682441736,"west":116.322882125754,"east":124.708821581148},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverageVoice.png"},
+"cht3G":{"bound":{"north":26.7914806875,"south":21.514686195825,"east":125.955588822744,"west":114.224310037633},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/3g_tw.png"},
+"twn3G":{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.267143584823,"east":122.116226971802},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/3G\/TW.png"},
+"fet3G":{"bound":{"north":26.515893187443,"south":21.813526812557,"west":117.496893247948,"east":122.704393752052},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage3.5G.png"}};
 
 
-function coverage_overlay(op, action ) {
 
-if (typeof coverage_overlay.setMap !== 'undefined') {
-     cover_overlay.setMap(null);
-}
-if (action == 1) {
-     cover_overlay = new google.maps.GroundOverlay(coverage[op].img, coverage[op].bound, {      opacity:0.7  } );
-     cover_overlay.setMap(map);
-}
+	if (typeof cover_overlay == "object") {
+		cover_overlay.setMap(null);
+		console.log('cover_overlay set null');
+	}
+	if (op != 'none') {
+		cover_overlay = new google.maps.GroundOverlay(coverage[op].img, coverage[op].bound, {      opacity:0.7  } );
+		cover_overlay.setMap(map);
+	}
 }

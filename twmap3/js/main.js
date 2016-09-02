@@ -389,7 +389,7 @@ function permLinkURL(goto) {
     var ver = (BackgroundMap === 0) ? 3 : 1;
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
-    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() +"'><img src='img/permalink.png' width=30 border=0/></a>";
+    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() + "&mcover=" + $("#mcover").val() +"'><img src='img/permalink.png' width=30 border=0/></a>";
 }
 
 var MapStateRestored = 0;
@@ -401,7 +401,7 @@ function saveMapState() {
     var curGrid = $("#changegrid").val();
     var state = { "zoom": map.getZoom(), "opacity": opacity, "mapversion": ver, "maptypeid": map.getMapTypeId(),
                   "show_label": show_label, "show_kml_layer": show_kml_layer , "show_marker": show_marker, "roadmap": curMap, "grid": curGrid, "theme": theme,
-		  "goto": mapCenter.toUrlValue(5), "show_delaunay": show_delaunay , "rainfall": $("#rainfall").val()};
+		  "goto": mapCenter.toUrlValue(5), "show_delaunay": show_delaunay , "rainfall": $("#rainfall").val(), "mcover": $('#mcover').val() };
     localStorage.setItem("twmap_state", JSON.stringify(state));
     console.log("mapState saved");
 } 
@@ -431,6 +431,10 @@ function restoreMapState(state) {
 	if (state.rainfall) {
                 $("#rainfall").val(state.rainfall);
                 $("#rainfall").change();
+	}
+	if (state.mcover) {
+                $("#mcover").val(state.mcover);
+                $("#mcover").change();
 	}
         if (state.mapversion == 1)  $("#changemap").trigger('click');
         if (state.goto) {
@@ -1428,6 +1432,10 @@ function initialize() {
 	showCWBRainfall($('#rainfall').val());
         updateView("info_only");
     });
+    $("#mcover").change(function() {
+	coverage_overlay($('#mcover').val());
+        updateView("info_only");
+    });
     $("#inputtitlebtn2").click(function() {
         ismakingmap = 0;
         $.unblockUI();
@@ -1448,6 +1456,7 @@ function initialize() {
             alert("請輸入地圖標題");
         }
     });
+/*
     $("#generate").click(function() {
         if (callmake === null) {
             alert("請選擇範圍");
@@ -1461,6 +1470,7 @@ function initialize() {
             message: $('#inputtitleform')
         });
     });
+*/
     $("#about").click(function() {
         //$("#footer").
 	showmeerkat('about.php',{ 'width': '600'} );
@@ -1590,6 +1600,7 @@ function initialize() {
         $('#CGRID').appendTo('#mobile_setup').hide();
         $('#CGNAME').appendTo('#mobile_setup').hide();
         $('#FORECAST').appendTo('#mobile_setup').hide();
+        $('#MCOVERAGE').appendTo('#mobile_setup').hide();
         $('#setup').click(function() {
             showmeerkat2({
                 width: 600,
@@ -1617,6 +1628,7 @@ function initialize() {
             $('#CGRID').show();
             $('#CGNAME').show();
             $('#FORECAST').show();
+            $('#MCOVERAGE').show();
             $('#changegname').css({
                 'left': '10px',
                 'top': '80px',
@@ -1630,6 +1642,11 @@ function initialize() {
             $('#rainfall').css({
                 'left': '150px',
                 'top': '80px',
+                'font-size': '20px'
+            }).addClass('ui-state-default ui-corner-all').show();
+            $('#mcover').css({
+                'left': '150px',
+                'top': '120px',
                 'font-size': '20px'
             }).addClass('ui-state-default ui-corner-all').show();
         });
@@ -1672,6 +1689,7 @@ function initialize() {
 		   "mapversion":getParameterByName("mapversion"),
 		   "show_delaunay":getParameterByName("show_delaunay"),
 		   "rainfall":getParameterByName("rainfall"),
+		   "mcover":getParameterByName("mcover"),
 		   "goto":getParameterByName("goto") };
 
 	    restoreMapState(st);

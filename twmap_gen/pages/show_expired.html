@@ -8,6 +8,10 @@
 				{if isset($gpx_link)}
 				<li>下載GPX: <a href='{$gpx_link}'>{$gpx_link}</a>
 				{/if}
+			     {if $map.keepon_id && $map.keepon_id != 'NULL' && !is_numeric($map.keepon_id)}
+                                <li>紀錄: <a href='http://www.keepon.com.tw/redirectMap-{$map.keepon_id}.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>
+                                {/if}
+
 				<li>左上角座標 X={$map.locX},Y={$map.locY}
 				<li>延伸東方 {$map.shiftX} 與 南方 {$map.shiftY} 公里
 				<li>共需要 {$map.pageX * $map.pageY} 張 A4 列印

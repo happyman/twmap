@@ -141,7 +141,7 @@ textarea:hover {
 	position:absolute;top:6px;right:95px; width:380px; font-size: 12px;
 }
 #generate {
-	position:absolute;top:5px;right:10px;
+/*	position:absolute;top:5px;right:10px; */
 	cursor: pointer;
 }
 #setup {
@@ -166,12 +166,17 @@ textarea:hover {
 	cursor: pointer;
 }
 #changegrid {
-	position:absolute;top:5px;right:60px;
+	position:absolute;top:5px;right:10px;
 	font-size:11px;
 	cursor: pointer;
 }
 #rainfall {
-	position:absolute;top:5px;right:150px;
+	position:absolute;top:5px;right:100px;
+	font-size:11px;
+	cursor: pointer;
+}
+#mcover {
+	position:absolute;top:5px;right:170px;
 	font-size:11px;
 	cursor: pointer;
 }
