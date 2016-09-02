@@ -151,7 +151,7 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 		<option value="twn3G">twn3G</option>
 		<option value="twn">twn4G</option>
 		<option value="fet2G">fet2G</option>
-		<option value="twn3G">fet3G</option>
+		<option value="fet3G">fet3G</option>
 		<option value="fet">fet4G</option>
 		</select>
 		</div>
