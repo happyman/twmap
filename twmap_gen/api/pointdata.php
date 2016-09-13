@@ -58,8 +58,8 @@ if ($id !== 'ALL') {
 		$result[0]['info'] = $info;
 	// 補上高度資料
 	if ($result[0]['ele'] == 0 ) {
-		$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
-		$ele = get_elev($twDEM_path, $result[0]['y'], $result[0]['x'], 1);
+		//$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
+		$ele = get_elev(twDEM_path, $result[0]['y'], $result[0]['x'], 1);
 		if ($ele > -1000 ) {
 			$result[0]['ele'] = $ele;
 		} else {

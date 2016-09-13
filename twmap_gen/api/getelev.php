@@ -2,7 +2,7 @@
 
 require_once("../config.inc.php");
 
-$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
+// $twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
 $loc = $_REQUEST['loc'];
 
 if (empty($loc)) {
@@ -10,7 +10,7 @@ if (empty($loc)) {
 }
 list($lat,$lon)=explode(",",$_REQUEST['loc']);
 // 取得高度
-$ele = get_elev($twDEM_path, $lat, $lon, 1);
+$ele = get_elev(twDEM_path, $lat, $lon, 1);
 $data['elevation'] = $ele;
 // 取得行政區
 $towns = get_administration($lon,$lat, "town");

@@ -1,79 +1,91 @@
 <?php 
-
-
-require_once("../config.inc.php");
 /*
- export all points from database: point3  and convert to KML format
+ export points from database: point3  and convert to KML format
  */
+require_once("../config.inc.php");
 
 if (php_sapi_name() != "cli")
 	exit("must run from CLI");
+$opt = getopt("o:b:h");
 
-$fpath = "/tmp/pp.json";
-@unlink($fpath);
-list($status, $reason) = ogr2ogr_export_points($fpath);
+$owner = (isset($opt['o']))? $opt['o'] : 0;
+if (isset($opt['b'])) {
+	$bound = explode(",",$opt['b']);
+	$outfname = sprintf("/tmp/pp-%d_%.06f_%.06f_%.06f_%.06f.json",$owner, $bound[0],$bound[1],$bound[1],$bound[2]);
+	$bound_str = sprintf("範圍:%.06f,%.06f,%.06f,%.06f", $bound[0],$bound[1],$bound[1],$bound[2]);
+} else { 
+	$bound = array(); 
+	$outfname = sprintf("/tmp/pp-%d.json",$owner);
+	$bound_str = sprintf("全");
+}
+
+list($status, $reason) = ogr2ogr_export_points($outfname, $bound, $owner);
 if ($status != true) 
 	exit(sprintf("error export points: $reason"));
 
 //print_r($re);
-$content = file_get_contents($fpath);
+$content = file_get_contents($outfname);
 $ret  = json_decode($content, true);
-
+$res = array();
 foreach($ret['features'] as $val) {
-	// type
-	//print_r($val);
-	$type = $val['properties']['type'];
-	//if ($type == '森林點') {
-	//	$type .= $val['properties']['status'];
-	//}
-	$val['properties']['point'] = $val['geometry']['coordinates'];
-	unset($val['properties']['owner']);
-	unset($val['properties']['contribute']);
-	$d = $val['properties']['mt100'];
-	if ($d > 0 ) {
-		$astr = array();
-		if ($d &1 ) $astr[] = '百岳';
-		if ($d &2 ) $astr[] = '小百岳';	
-		if ($d &4 ) $astr[] = '百名山';
-		$val['properties']['mt100_desc'] =   sprintf("%s",implode(",",$astr));
-	} else {
-		$val['properties']['mt100_desc'] = "";
-	}
-	$dd = $val['properties']['class'];
-	if ($dd > 1 && $dd < 4 ) { // 2-4
-		$val['properties']['stone'] = sprintf("%d-%d",$dd, $val['properties']['number']);
-	} else {
-		$val['properties']['stone'] = "";
-	}
-	/* update sql for empty ele
-	if (intval($val['properties']['ele']) == 0){
-		$val['properties']['ele']  =  get_elev("/home/happyman/github/twmap/dist/twmap_gen/db/DEM/twdtm_asterV2_30m.tif", $val['properties']['point'][1],$val['properties']['point'][0]);
-		printf("update point3 set ele = %d where name = '%s' and type = '%s' and status='%s';\n", $val['properties']['ele'],$val['properties']['name'], $val['properties']['type'], $val['properties']['status']);
-	}
-	*/
-	$res[$type][]= $val['properties'];
+		// type
+		//print_r($val);
+		$type = $val['properties']['type'];
+		//if ($type == '森林點') {
+		//	$type .= $val['properties']['status'];
+		//}
+		$val['properties']['point'] = $val['geometry']['coordinates'];
+		unset($val['properties']['owner']);
+		unset($val['properties']['contribute']);
+		$d = $val['properties']['mt100'];
+		if ($d > 0 ) {
+			$astr = array();
+			if ($d &1 ) $astr[] = '百岳';
+			if ($d &2 ) $astr[] = '小百岳';	
+			if ($d &4 ) $astr[] = '百名山';
+			$val['properties']['mt100_desc'] =   sprintf("%s",implode(",",$astr));
+		} else {
+			$val['properties']['mt100_desc'] = "";
+		}
+		$dd = $val['properties']['class'];
+		if ($dd > 1 && $dd < 4 ) { // 2-4
+			$val['properties']['stone'] = sprintf("%d-%d",$dd, $val['properties']['number']);
+		} else {
+			$val['properties']['stone'] = "";
+		}
+		/* update sql for empty ele
+		if (intval($val['properties']['ele']) == 0){
+			$val['properties']['ele']  =  get_elev("/home/happyman/github/twmap/dist/twmap_gen/db/DEM/twdtm_asterV2_30m.tif", $val['properties']['point'][1],$val['properties']['point'][0]);
+			printf("update point3 set ele = %d where name = '%s' and type = '%s' and status='%s';\n", $val['properties']['ele'],$val['properties']['name'], $val['properties']['type'], $val['properties']['status']);
+		}
+		*/
+		$res[$type][]= $val['properties'];
 
 
 
-}
-$i=0;
-foreach($res as $key => $val) {
-	// //map.happyman.idv.tw/icon/%s.png 
-	$sid = sprintf("s%0d",$i++);
-	$data[$sid]['name'] = sprintf("%s (%d)",$key,count($val));
-	$data[$sid]['icon'] = sprintf("http://map.happyman.idv.tw/icon/%s.png", urlencode($key));
-	//echo $key . "\n";
-	usort($val, "ele_sort");
-	$data[$sid]['markers'] = $val;
-	
-}
+	}
+
+if (count($res)>0) {
+	$i=0;
+	foreach($res as $key => $val) {
+		// //map.happyman.idv.tw/icon/%s.png 
+		$sid = sprintf("s%0d",$i++);
+		$data[$sid]['name'] = sprintf("%s (%d)",$key,count($val));
+		$data[$sid]['icon'] = sprintf("http://map.happyman.idv.tw/icon/%s.png", urlencode($key));
+		//echo $key . "\n";
+		usort($val, "ele_sort");
+		$data[$sid]['markers'] = $val;
+		
+	}
 //print_r($data);
-
-// 輸出
-head(time());
-style($data);
-foreach($data as $style => $val) {
-	folder($style,$val);
+}
+// 輸出 KML
+head(filemtime($outfname),$bound_str);
+if (count($res) > 0){
+	style($data);
+	foreach($data as $style => $val) {
+		folder($style,$val);
+	}
 }
 footer();
 /*
@@ -153,16 +165,21 @@ function placemark($val,$style) {
 <?php
 }
 
-function head($lastupdate) {
+function head($lastupdate,$desc) {
 
 echo '<?xml version="1.0" encoding="UTF-8"?>';
 ?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
 <Document>
-	        <name>地圖產生器圖資</name>
-		<description>三角點小花2010,蚯蚓更新轉檔 KML 檔</description>
-        <Snippet maxLines="2">Created <?php echo date("Y-m-d H:i:s",$lastupdate);?></Snippet>
-        <LookAt>
+	        <name>地圖產生器圖資(<?php echo $desc; ?>)</name>
+		<description>以小花2010日治原點為基礎,蚯蚓維護更新</description>
+        <Snippet maxLines="2">產生日期: <?php echo date("Y-m-d H:i:s",$lastupdate);?></Snippet>
+
+<?php
+// not use anymore 
+function lookAt() {
+	?>
+	        <LookAt>
                 <longitude>121.174528</longitude>
                 <latitude>23.545206</latitude>
                 <altitude>4000</altitude>
@@ -170,7 +187,8 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
                 <tilt>60</tilt>
                 <heading>0</heading>
         </LookAt>
-<?php
+	<?php
+}
 }
 function style($style_arr) {
 	foreach($style_arr as $key => $val) {

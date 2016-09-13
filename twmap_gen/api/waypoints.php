@@ -25,8 +25,8 @@ if ($data === false || (count($data)==0 && count($trk_data)==0)) {
 }
 if (empty($detail) || $detail == 0 ){
 // 傳回高度
-                $twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
-                $ele = get_elev($twDEM_path, $y, $x, 1);
+                //$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
+                $ele = get_elev(twDEM_path, $y, $x, 1);
 
 	header('Access-Control-Allow-Origin: *');
 	ajaxok(array("wpt"=>$data,"trk"=>$trk_data,"ele"=>$ele));

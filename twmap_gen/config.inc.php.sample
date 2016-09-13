@@ -108,3 +108,7 @@ define('GEARMAN_SERVER','127.0.0.1');
 
 define('APE_HOST','0.ape.happyman.idv.tw');
 $CONFIG['admin'] = array();
+//  gdalwarp -t_srs EPSG:4326 dem_20m.tif dem_20m-latlong.tif
+//  source: http://data.gov.tw/node/35430
+define('twDEM_path', __ROOT__ ."db/DEM/dem_20m-latlong.tif");
+

@@ -406,7 +406,7 @@ function saveMapState() {
     console.log("mapState saved");
 } 
 function restoreMapState(state) {
-        if (state.show_label === 0)  
+        if (state.show_label == '0')  
 		$("#label_sw").trigger('click');
         if (state.show_marker) {
             show_marker = state.show_marker;
@@ -770,6 +770,9 @@ function showCenterMarker(name) {
         name = centerMarker.getPosition().toUrlValue(5);
         // alert(name);
     }
+    // google earth type
+    name = name.replace("°","");
+
     // 如果沒找到, 看看格式對不對, 移動到座標
     var posxy = name.match(/^(\d+\.?\d+)\s*,\s*(\d+\.\d+)$/);
     var posxy1 = name.match(/^(\d+\.?\d+)\s+(\d+\.\d+)$/);
@@ -1489,6 +1492,7 @@ function initialize() {
         }
     });
     $("#label_sw").click(function() {
+	console.log("label_sw triggerred: " + show_label);
         if (show_label == 1) {
             show_label = 0;
             // remove all markers
@@ -1507,6 +1511,7 @@ function initialize() {
             $('.ui-dropdownchecklist-selector').removeClass('disable');
         }
         updateView("info_only");
+	console.log("label_sw trigger end" + show_label);
     });
     $("#delaunay_sw").click(function() {
 	if (show_delaunay == 1 ) {

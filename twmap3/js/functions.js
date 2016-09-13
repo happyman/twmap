@@ -54,6 +54,9 @@ function addremove_polygon(event) {
             fillOpacity: 0.2
         });
         google.maps.event.addListener(polygon, 'click', addremove_polygon);
+        google.maps.event.addListener(polygon, 'rightclick', function () {
+			export_points(miniX,miniY,maxiX,maxiY);
+		});
     }
     polygon.setMap(map);
     // hide marker
@@ -231,8 +234,12 @@ function coverage_overlay(op) {
 		cover_overlay.setMap(null);
 		console.log('cover_overlay set null');
 	}
-	if (op != 'none') {
+	if (op != 'none' && typeof coverage[op] != 'undefined') {
 		cover_overlay = new google.maps.GroundOverlay(coverage[op].img, coverage[op].bound, {      opacity:0.7  } );
 		cover_overlay.setMap(map);
 	}
+}
+function export_points(xmin,ymin,xmax,ymax){
+	var url = exportkml_url + "?bound=" + xmin + "," + ymin + "," + xmax + "," + ymax;
+	showmeerkat(url ,{ 'width': '600'} );
 }

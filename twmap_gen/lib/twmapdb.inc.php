@@ -937,7 +937,6 @@ function get_point($id='ALL',$is_admin=false) {
 	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner FROM point3 %s ORDER BY number,class DESC", $where);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
-
 }
 // 取出　class_num 等基石, 官方點
 function get_point_by_class($class_num) {
@@ -1113,12 +1112,34 @@ function get_administration($x,$y,$type="town") {
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
 }
-function ogr2ogr_export_points($fpath, $owner=0) {
+// use to export points to KML 
+// fpath is output geojson file. 
+// bound is xmin,ymin,xmax,ymax: bounding box
+// owner 
+function ogr2ogr_export_points($fpath, $bound, $owner=0) {
 		global $db_name,$db_user,$db_pass,$db_host;
 		if (empty($fpath)) return array(false, "file can't be empty");
-		if (file_exists($fpath)) return array(false, "file exists");
-		
-		$cmd = sprintf("ogr2ogr -f GeoJSON -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s  PG:\"host=%s dbname=%s user=%s password=%s\" -where \"owner=%d\"  point3",$fpath, $db_host, $db_name, $db_user, $db_pass, $owner);
+		// 如果 output already exists, 檢查是否為最新, 否的話更新. output file permission not check.
+		if (file_exists($fpath)){
+			$db=get_conn();
+			$sql = sprintf("select * from point3 where owner=0 AND mdate >= '%s'",date('Y-m-d H:i:s',filemtime($fpath)));
+			$result = $db->getAll($sql);
+			if (count($result) > 0 )
+				unlink($fpath);
+			else
+				return array(true, "ok from cache");
+		}
+		if ($owner > 0) {
+			$owner_str = sprintf("(owner = 0 OR owner = %d )",$owner);
+		} else {
+			$owner_str = sprintf("owner = 0");
+		}
+		if (isset($bound[0])){
+			//$spat = sprintf("-spat %.06f %.06f %.06f %.06f",$bound[0],$bound[1],$bound[2],$bound[3]);
+			$spat = sprintf('AND (coord &&  ST_MakeEnvelope(%.06f,%.06f,%.06f,%.06f))',$bound[0],$bound[1],$bound[2],$bound[3]);
+		} else $spat = "";
+		$cmd = sprintf("ogr2ogr -f GeoJSON -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s  PG:\"host=%s dbname=%s user=%s password=%s\" -where \"%s %s\"  point3 ", $fpath, $db_host, $db_name, $db_user, $db_pass, $owner_str, $spat);
+		// echo $cmd;
 		exec($cmd, $out, $ret);
 		if ($ret == 0 ) return array(true, "ok");
 		else return array(false, implode( "", $out ));
