@@ -23,7 +23,7 @@ else
 
 if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
 	// output kml format
-	$cmd = sprintf("php cli_point2kml.php -b %s -o %d",($bound)?$bound_str:"",$owner);
+	$cmd = sprintf("php cli_point2kml.php %s -o %d",($bound)?" -b $bound_str" : "",$owner);
 	if (!isset($_REQUEST['debug'])) {
 		header('Content-type: application/vnd.google-earth.kml+xml');
 		header('Cache-Control: ');  //leave blank to avoid IE errors
