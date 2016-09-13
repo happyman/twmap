@@ -13,10 +13,12 @@ if (isset($opt['b'])) {
 	$bound = explode(",",$opt['b']);
 	$outfname = sprintf("/tmp/pp-%d_%.06f_%.06f_%.06f_%.06f.json",$owner, $bound[0],$bound[1],$bound[1],$bound[2]);
 	$bound_str = sprintf("範圍:%.06f,%.06f,%.06f,%.06f", $bound[0],$bound[1],$bound[1],$bound[2]);
+	$full = 0;
 } else { 
 	$bound = array(); 
 	$outfname = sprintf("/tmp/pp-%d.json",$owner);
 	$bound_str = sprintf("全");
+	$full = 1;
 }
 
 list($status, $reason) = ogr2ogr_export_points($outfname, $bound, $owner);
@@ -82,6 +84,8 @@ if (count($res)>0) {
 // 輸出 KML
 head(filemtime($outfname),$bound_str);
 if (count($res) > 0){
+	if ($full == 1)
+		lookAt();
 	style($data);
 	foreach($data as $style => $val) {
 		folder($style,$val);
@@ -176,7 +180,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
         <Snippet maxLines="2">產生日期: <?php echo date("Y-m-d H:i:s",$lastupdate);?></Snippet>
 
 <?php
-// not use anymore 
 function lookAt() {
 	?>
 	        <LookAt>
