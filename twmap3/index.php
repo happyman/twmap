@@ -165,7 +165,11 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 		</div>
 		<div id="mobile_setup">
 			<a href="#" class="close-meerkat2">close</a>
+			<div id="mobile_export_kml">
+			<button id="export_kml" class="ui-state-default ui-corner-all">下載圖資</button>
+			</div>
 		</div>
+		
 	<div id="meerkat">
 	<a href="#" class="close-meerkat">close</a>
 	<div id="meerkat-content">

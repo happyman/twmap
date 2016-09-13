@@ -1606,6 +1606,13 @@ function initialize() {
         $('#CGNAME').appendTo('#mobile_setup').hide();
         $('#FORECAST').appendTo('#mobile_setup').hide();
         $('#MCOVERAGE').appendTo('#mobile_setup').hide();
+		// export kml button
+		$('#export_kml').click(function(){
+			var bounds = map.getBounds();
+			var ne = bounds.getNorthEast(); // LatLng of the north-east corner
+			var sw = bounds.getSouthWest(); // LatLng of the south-west corder
+			export_points(sw.lng().toFixed(6),sw.lat().toFixed(6),ne.lng().toFixed(6),ne.lat().toFixed(6));
+		});
         $('#setup').click(function() {
             showmeerkat2({
                 width: 600,
