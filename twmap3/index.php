@@ -42,12 +42,13 @@ $ver = trim(file_get_contents("VERSION"));
 	<script  src="js/javascript.util.min.js"></script>
 	<script  src="js/jsts.min.js"></script>
 	<script  src="js/triangle.js"></script>
-<!-- endbuild -->
+	<!-- endbuild -->
 <!--
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
 -->
 <!-- build:css css/twmap3.css -->
 	<link rel="stylesheet" type="text/css" href="css/twmap3_main.css" />
+
 <!-- endbuild -->
 <script>
 <?php
@@ -180,7 +181,10 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 			<button type="button" id="copylinkurlgo">Go</button>
 			<button type="button" id="copylinkurlshort">Shorten</button>
 		</div>
-</div>
+	</div>
+	<div id="ranking">
+	<iframe id="ranking_iframe" frameborder="0" marginwidth="0" marginheight="0"  width="100%" height="100%" allowfullscreen></iframe>
+	</div>
 <script>
 	var _gaq = _gaq || [];
 	_gaq.push(['_setAccount', 'UA-19949015-1']);

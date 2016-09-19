@@ -76,6 +76,15 @@ function login_user($mylogin) {
 	//
 	return fetch_user($mylogin);
 }
+function get_user($uid){
+	$db=get_conn();
+	$sql = sprintf("select * from \"user\" where uid=%s",$uid);
+	$rs = $db->getAll($sql);
+	if (count($rs) == 1 )
+		return $rs[0];
+	else
+		return array();
+}
 function map_exists($uid,$startx,$starty,$shiftx,$shifty,$version,$gpx=0) {
 	$db = get_conn();
 	$sql = sprintf("SELECT \"mid\" from \"map\" WHERE \"uid\"='%s' AND \"locX\"=%d AND \"locY\"=%d AND \"shiftX\"=%d and \"shiftY\"=%d and \"version\"=%d and \"gpx\"=%d",$uid,$startx,$starty,$shiftx,$shifty,$version,$gpx);
@@ -408,31 +417,7 @@ function map_totalsize() {
 	logsql($sql,$res);
 	return $res[0]['totalsize'];
 }
-// still broken
-function mrtg($type) {
-	switch($type) {
-		case 'disk':
-			$size = map_totalsize();
-			return array($size);
-			break;
-		case 'map':
-		default:
-			$sql = sprintf("SELECT *
-					FROM map
-					WHERE TIME_TO_SEC( timediff( NOW( ) , cdate ) ) < %d
-					OR TIME_TO_SEC( timediff( NOW( ) , ddate ) ) < %d", 300,300);
-			$res = mysql_query($sql);
-			$c=0;$d=0;
-			while($row = mysql_fetch_array($res, MYSQL_ASSOC)){
-				if ($row['flag'] == 2) $d++;
-				else if ($row['flag'] == 0) $c++;
-			}
-			return array($c,$d);
-			break;
 
-	}
-
-}
 function stats() {
 	$size = 0;
 	$total_maps = 0;
@@ -531,95 +516,6 @@ function name_to_icon($map) {
 	return $img;
 }
 // keepon functions
-/*
-function kok_out($id, $msg, $url, $cdate=null) {
-	//soap_call(true, $id, $msg, $url, $cdate);
-	keepon_MapResult(1, $id, $msg, $url, $cdate);
-}
-// 取代 soap_call
-function kerror_out($id,$msg) {
-	//soap_call(false, $id, $msg);
-	keepon_MapResult(0, $id, $msg);
-}
-function keepon_MapResult($success, $id, $msg, $url=null, $cdate=null) {
-	$kurl = "http://www.keepon.com.tw/api/MapGenerator/MapResult";
-	$params = array(
-
-			'Success'=> $success,
-			'Identity'=> $id,
-			'Date'=> ($cdate)? $cdate : date("Y-m-d H:i:s"),
-			'ImageUrl'=> $url,
-			'Message'=>$msg
-		       );
-	$result = request_curl($kurl, "POSTJSON", $params);
-	//error_log("request $kurl with params".print_r($params,true) ."get $result");
-	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
-	return array(true, $result);
-
-}
-function keepon_MapDelete($id) {
-	$kurl = "http://www.keepon.com.tw/api/MapGenerator/MapDelete";
-	$params = array(
-			'Identity'=> $id );
-	$result = request_curl($kurl, "POSTJSON", $params);
-	error_log("request $kurl with params".print_r($params,true) ."get $result");
-	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
-	return array(true, $result);
-
-}
-function soap_call($success, $id, $msg, $url=null, $cdate =null) {
-	//建立SOAP
-	// URL = http://www.keepon.com.tw/KeeponWS/Service1.asmx
-	$soap = new SoapClient("http://www.keepon.com.tw/KeeponWebService.asmx?WSDL");
-	//
-	//    // 變數名稱必需與Web Service的變數名稱相同
-	$params = array(
-
-			'Success'=> $success,
-			'Identity'=> $id,
-			'Date'=> ($cdate)? $cdate : date("Y-m-d H:i:s"),
-			'ImageUrl'=> $url,
-			'Message'=>$msg
-		       );
-
-	try {	//                              //呼叫 MapResult 傳入$params
-
-		$result = $soap->MapResult($params);
-		//取得回傳值
-		kcli_msglog(array($params,$result));
-		return array(true, $result);
-
-	} catch (SoapFault $exception) {
-		//
-		kcli_msglog(array($params,"expection: $exception"));
-		return array(false,$exception);
-	}
-}
-function soap_call_delete($id) {
-	$soap = new SoapClient("http://www.keepon.com.tw/KeeponWebService.asmx?WSDL");
-	$params = array(
-			'Identity'=> $id );
-	try {
-		$result = $soap->MapDelete($params);
-		kcli_msglog(array($params,$result));
-		return array(true, $result);
-	} catch (SoapFault $exception) {
-		//
-		kcli_msglog(array($params,"expection: $exception"));
-		return array(false,$exception);
-	}
-
-}
-
-function kcli_msglog($msg){
-	if (is_array($msg))
-		$str = print_r($msg, true);
-	else
-		$str = $msg;
-	syslog(LOG_INFO, $str);
-	printf("%s\n",$str);
-}
-*/
 require_once("keepon.inc.php");
 
 function ajaxerr($msg) {
@@ -899,7 +795,7 @@ function get_waypoint($x,$y,$r=10,$detail=0){
 	if ($detail == 0)
 		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name from gpx_wp WHERE ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY name",$x,$y,$r/1000/111.325);
 	else
-		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name,\"gpx_wp.ele\" AS ele,ST_AsText(wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title from gpx_wp A, map WHERE  ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) AND A.mid = map.mid  ORDER BY map.title",$x,$y,$r/1000/111.325);
+		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name,\"gpx_wp.ele\" AS ele,ST_AsText(wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename from gpx_wp A, map WHERE  ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) AND A.mid = map.mid  ORDER BY map.title",$x,$y,$r/1000/111.325);
 	// error_log($sql);
 	$rs = $db->getAll($sql);	
 	return $rs;
@@ -910,7 +806,7 @@ function get_track($x,$y,$r=10,$detail=0){
                 $sql = sprintf("SELECT DISTINCT on (wkb_geometry) \"gpx_trk.name\" AS name FROM gpx_trk WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry)", $x,$y,$r);
 
         else
-                $sql = sprintf("SELECT DISTINCT on (A.wkb_geometry)  A.\"gpx_trk.name\" AS name,ST_AsText(A.wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title from gpx_trk A,map WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry) AND A.mid = map.mid ", $x,$y,$r);
+                $sql = sprintf("SELECT DISTINCT on (A.wkb_geometry)  A.\"gpx_trk.name\" AS name,ST_AsText(A.wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename from gpx_trk A,map WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry) AND A.mid = map.mid ", $x,$y,$r);
         // error_log($sql);
         $rs = $db->getAll($sql);
         return $rs;
@@ -1143,4 +1039,77 @@ function ogr2ogr_export_points($fpath, $bound, $owner=0) {
 		exec($cmd, $out, $ret);
 		if ($ret == 0 ) return array(true, "ok");
 		else return array(false, implode( "", $out ));
+}
+
+function ogr2ogr_export_gpx($mid, $merged_gpx) {
+	global $db_name,$db_user,$db_pass,$db_host;
+	$trk_gpx =  tempnam("/tmp","EXPT") . ".gpx";
+	$cmd = sprintf("ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES %s PG:\"host=%s dbname=%s user=%s password=%s\" -where \"mid=%d\" gpx_trk ", $trk_gpx, $db_host, $db_name, $db_user, $db_pass, $mid);
+	// echo $cmd;
+	exec($cmd, $out, $ret);
+	if ($ret != 0 ) return array(false, "export trk failed");
+	$wpt_gpx =  tempnam("/tmp","EXPW") . ".gpx";
+	$cmd2 = sprintf("ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES %s PG:\"host=%s dbname=%s user=%s password=%s\" -where \"mid=%d\" gpx_wp ", $wpt_gpx, $db_host, $db_name, $db_user, $db_pass, $mid);
+	// echo $cmd2;
+	exec($cmd2, $out, $ret);
+	if ($ret != 0 ) return array(false, "export wpt failed");
+	// $merged_gpx = tempnam("/tmp","EXPM") . ".gpx";
+	$cmd3 = sprintf("gpsbabel -i gpx -f %s -f %s -o gpx,gpxver=1.1 -F %s",$trk_gpx,$wpt_gpx,$merged_gpx);
+	exec($cmd3, $out, $ret);
+	if ($ret != 0 ) return array(false, "merge gpx failed: $cmd3");
+	unlink($wpt_gpx);unlink($trk_gpx);
+	return array(true, "ok");
+}
+// map ranking system
+class map_rank {
+	var $score_text = array("無","糟糕","不佳","普通","好","精選");
+	function get_rank($mid,$uid){
+		$db=get_conn();
+		$sql = sprintf("select * from map_rank WHERE mid=%d AND uid=%d",$mid,$uid);
+		return $db->getAll($sql);
+	}
+	function del_rank($mid,$uid){
+		$db=get_conn();
+		$sql = sprintf("delete from map_rank where mid=%d AND uid=%d",$mid,$uid);
+		// echo $sql;
+		return $db->Execute($sql);
+	}
+	function set_rank($mid,$uid,$score,$comment) {
+		$db=get_conn();
+		$ret=$this->get_rank($mid,$uid);
+		if ($ret && count($ret) > 0 ) {
+			$sql = sprintf("update map_rank SET score=%f, comment='%s', rdate=now() WHERE mid=%d AND uid=%d",$score,pg_escape_string($comment),$mid,$uid);
+		} else {
+			$sql = sprintf("insert into map_rank(\"uid\",\"mid\",\"score\",\"comment\") VALUES (%d,%d,%f,'%s')",$uid,$mid,$score,pg_escape_string($comment));
+		}
+		$rs = $db->Execute($sql);
+		if (!$rs)
+			return array(false,"fail $sql");
+		else
+			return array(true,$this->get_rank($mid,$uid));
+	}
+	function stats($mid){
+		$db=get_conn();
+		$sql = sprintf("select COUNT(*) as count, AVG(score) as score FROM map_rank WHERE mid=%d",$mid);
+		$avg = $db->getAll($sql);
+		// $score_text = array("無","糟糕","不佳","普通","好","精選");
+		if ($avg[0]['count'] == 0) {
+			return array("count"=>0,"score"=>NULL,"text"=>"無", "icon"=>"rate_0.png");
+		} else {
+			return array("count"=>$avg[0]['count'],"score"=>$avg[0]['score'],"text"=>$this->score_text[round($avg[0]['score'])], "icon"=> "rate_".round($avg[0]['score']) . ".png" );
+		}
+	}
+	function get_comment($mid){
+		$db=get_conn();
+		$sql = sprintf("select A.uid,A.type,A.name,A.email,B.score,B.comment FROM \"user\" A, map_rank B WHERE B.mid = %s AND A.uid=B.uid",$mid);
+		$res  = $db->getAll($sql);
+		if (count($res) > 0 ){
+			foreach($res as $row){
+				$row['text'] = $this->score_text[round($row['score'])];
+				$res2[] = $row;
+			}
+			return $res2;
+		}
+		return array();
+	}
 }

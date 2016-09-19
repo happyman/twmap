@@ -11,18 +11,28 @@ if (empty($mid)) {
 }
 
 list ($status,$msg)=make_kml($mid);
-	 if ($status == true) {
-		 readfile($msg);
+if ($status == true) {
+	header('Content-type: application/vnd.google-earth.kml+xml');
+	header('Cache-Control: ');  //leave blank to avoid IE errors
+	header('Pragma: ');  //leave blank to avoid IE errors
+	header('Content-Disposition: attachment; filename="' . sprintf("twmap_%d.kml",$mid) .'"');
+	header('Content-Transfer-Encoding: binary');	
+	readfile($msg);
 }
 function make_kml($mid) {
 	$map = map_get_single($mid);
-
+	
 	if ($map === false)  {
 		return array(false, "no such map");
 	}
 
 	// 把地圖拿出來換成 kml
-	$gpx = str_replace(".tag.png", ".gpx", $map['filename']);
+	$gpx = map_file_name($map['filename'],'gpx');
+	if (!file_exists($gpx)) {
+		header(sprintf("Location: export_mid_gpx.php?mid=%d&kml=1",$mid));
+		exit(0);
+	}
+		
 	// test kml happyman add test path
 	$cachefile = sprintf("/srv/www/htdocs/map/gpxtmp/test/%06d/%d/%s",$map['uid'], $map['mid'], basename(str_replace(".gpx", ".kml", $gpx)));
 	if (file_exists($gpx)) {

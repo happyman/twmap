@@ -368,8 +368,17 @@ var skml;
 // zoom == true 則會移到地圖位置
 function showmapkml(mid, marker_desc, uri_enc, zoom) {
     if (skml && skml.mid > 0) {
-        if (skml.mid == mid || skml.loading == 1) return;
-        skml.removeDocument(skml.docs[0]);
+        if (skml.loading == 1) {
+			console.log("showmapkml: kml is loading return");
+			return;
+		}
+		if (skml.mid == mid) {
+			skml.removeDocument(skml.docs[0]);
+			skml.mid = 0;
+			console.log("showmapkml: remove kml");
+			return;
+		}
+		skml.removeDocument(skml.docs[0]);
     }
     skml = new geoXML3.parser({
         map: map,
@@ -497,6 +506,7 @@ function locInfo(newpos, callback, param) {
             showmeerkat(extra_url, {
                 'width': '600'
             });
+			map.panTo(newpos);
             initial_meerkat = 0;
             //	}
         } else {
@@ -1591,6 +1601,16 @@ function initialize() {
     $('#changegname').removeClass('ui-widget-content ui-corner-all');
     $('#changegrid').menu();
     $('.close-meerkat2').hide();
+	// ranking dialog
+	$('#ranking').dialog({ 
+		autoOpen: false,
+		zIndex: 500,
+        modal: true,
+        resizable: false,
+		resize: "auto",
+        width: "auto",
+		height: "auto"
+    });
     if (is_mobile) {
         // 產生 setup menu
         $('#changegname').removeAttr('style');
@@ -2326,7 +2346,21 @@ function remove_survey_network(class_num) {
     } 
 }
 
-
+function open_ranking_dialog(mid,link,backurl){
+	$('#ranking_iframe').attr('src',link);
+	$('#ranking_iframe').load(function() {
+		$('#ranking').dialog("option", 
+			{"title": mid,
+			"close": function () {
+            // $('#ranking_iframe').attr("src", "");
+			// alert(backurl);
+			// reload frame
+			showmeerkat(backurl,{ width: 600 });
+			// $('#ranking').dialog('close');
+			}}
+		).dialog("open");
+	});
+}
 /*
 var badline_arr = [];
 function create_badline(){
