@@ -4,7 +4,8 @@ if(!ob_start("ob_gzhandler")) ob_start();
 
 $mid = $_REQUEST['mid'];
 $score = $_REQUEST['score'];
-$comment = $_REQUEST['comment'];
+// prevent XSS
+$comment = htmlspecialchars($_REQUEST['comment'], ENT_QUOTES, 'utf-8');
 
 if (empty($mid)) {
 	echo "需要 mid 喔";
