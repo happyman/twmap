@@ -1148,14 +1148,24 @@ function dumpDelaunayTriangulation(){
 }
 
 function mysetIcon2(type, isShadow) {
-    var icon=[];
+    var icon_tmp=[];
+	/*
     icon[4] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_lev8.png';
     icon[1] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_8res.png';
     icon[2] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_6res.png';
     icon[3] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/enl_3res.png';
     icon[6] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/helios_shard.png';
     icon[5] = '//commondatastorage.googleapis.com/ingress.com/img/map_icons/marker_images/neutral_icon.png';
-    if (theme == 'ingress') {
+	*/
+	var allicon = [];
+	allicon.ingress = ['', 'img/ingress/enl_8res.png','img/ingress/enl_6res.png', 'img/ingress/enl_3res.png', 'img/ingress/enl_lev8.png', 'img/ingress/helios_shard.png', 'img/ingress/neutral_icon.png'];
+	allicon.pokemon =[ '','img/pokemon/143.png','img/pokemon/003.png','img/pokemon/007.png', 'img/pokemon/025.png', 'img/pokemon/010.png' , 'img/pokemon/pokegym.png'];
+	// 'img/pokemon/pokeshop.png'
+	if (theme == 'pokemon'){
+		return 'img/pokemon/' + pad( Math.floor((Math.random() * 151) + 1), 3) + '.png';
+	}
+    if (theme == 'ingress' || theme == 'pokemon') {
+		var icon = allicon[theme];
         if (type == "一等點") return icon[1];
         else if (type == "二等點") return icon[2];
         else if (type == "三等點") return icon[3];
@@ -1166,7 +1176,11 @@ function mysetIcon2(type, isShadow) {
         return "//map.happyman.idv.tw/icon/" + encodeURIComponent(type) + ".png";
     }
 }
-
+function pad(num, size) {
+    var s = num+"";
+    while (s.length < size) s = "0" + s;
+    return s;
+}
 function initialmarkers() {
     if (!oms) oms = new OverlappingMarkerSpiderfier(map, {
         markersWontMove: true,
@@ -1213,9 +1227,14 @@ function initialize() {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi', 'jm50k','tw50k', 'general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "darker", 'fandi', 'jm50k','tw50k','green', 'general2011']
         }
     });
+
+	var green_styles = [{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#7f2200"},{"visibility":"off"}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"color":"#87ae79"}]},{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#495421"}]},{"featureType":"administrative","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"},{"visibility":"on"},{"weight":4.1}]},{"featureType":"administrative.neighborhood","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"geometry.fill","stylers":[{"color":"#abce83"}]},{"featureType":"poi","elementType":"geometry.fill","stylers":[{"color":"#769E72"}]},{"featureType":"poi","elementType":"labels.text.fill","stylers":[{"color":"#7B8758"}]},{"featureType":"poi","elementType":"labels.text.stroke","stylers":[{"color":"#EBF4A4"}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"visibility":"simplified"},{"color":"#8dab68"}]},{"featureType":"road","elementType":"geometry.fill","stylers":[{"visibility":"simplified"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#5B5B3F"}]},{"featureType":"road","elementType":"labels.text.stroke","stylers":[{"color":"#ABCE83"}]},{"featureType":"road","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#EBF4A4"}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#d2ec5f"},{"weight":"4"},{"visibility":"simplified"}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#e0ef9e"},{"visibility":"simplified"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"geometry","stylers":[{"visibility":"on"},{"color":"#aee2e0"}]}];
+	map.setOptions({styles: green_styles});
+	var GreenstyledMap = new google.maps.StyledMapType(green_styles,{name: "Green"});
+
     if (!is_mobile) {
         map.enableKeyDragZoom();
         map.setOptions({
@@ -1234,6 +1253,7 @@ function initialize() {
     map.mapTypes.set('fandi', FanDi_MapType);
     map.mapTypes.set('jm50k', JM50K1924_MapType);
     map.mapTypes.set('tw50k', TW50K1956_MapType);
+	map.mapTypes.set('green', GreenstyledMap);
     // 前景免設
     // 三版加底圖
     BackgroundMapType = TaiwanGpxMapType;
@@ -1355,9 +1375,13 @@ function initialize() {
         } // esc
     });
     tags_ready = 0;
-    if (getParameterByName("theme") && getParameterByName("theme") == 'ingress') {
+    if (getParameterByName("theme")) {
+		if (getParameterByName("theme") == 'ingress') {
         theme = 'ingress';
-    }
+		} else if (getParameterByName("theme") == "pokemon"){
+			theme = 'pokemon';
+		}
+    } 
     initialtags({});
     $("#gotoform").submit(function() {
         $("#goto").trigger('click');

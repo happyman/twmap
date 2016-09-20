@@ -86,7 +86,8 @@ $("#rate").bind('rated', function (event, value) { $('#rate_text').text('我給�
 				 type: 'POST',
 				 success: function (data) {
 					 $('#response').append('<li>' + data + '</li>');
-					  $('#submit').hide();
+					 $('#submit').hide();
+					 setTimeout(function(){window.parent.jQuery('#ranking').dialog('close');},2000);
 				 },
 				 error: function (jxhr, msg, err) {
 					 $('#response').append('<li style="color:red">' + msg + '</li>');
