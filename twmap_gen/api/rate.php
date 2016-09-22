@@ -38,11 +38,16 @@ if (count($st) == 1){
 	printf("<div id='rate' data-rateit-step=1  data-rateit-starwidth=32 data-rateit-starheight=32 class=\"rateit bigstars\"></div>");
 }
 ?>
-<span id='hover_text'></span>
-<p id='rate_text'></p>
+<span id='hover_text'></span><br>
+<span id='rate_text'></span>
 <br>
 評語: <input type='text' id='comment' value='<?php echo 	htmlspecialchars($comment)	; ?>'></input>
 <button id='submit'>送出</button>
+<?php
+if(is_admin()){
+	echo "<button id='gpxdel'>刪除</button>";
+}
+?>
 <br><span id="response"></span>
 <p>
 <?php
@@ -58,8 +63,9 @@ if (count($stat)>0) {
  $(function () {
 	var mid = <?php echo $mid; ?>;
 	var rateurl = "<?php printf("%s/api/rateset.php",$site_html_root);?>";
-var rate_txt = [ "無", "糟糕","不佳","普通","好","精選"];
-$("#rate").bind('rated', function (event, value) { $('#rate_text').text('我給他評價: ' + rate_txt[Math.round(value)]); });
+	var twmap_gpx_url = "<?php printf("%s/api/twmap_gpx.php",$site_html_root);?>";
+	var rate_txt = [ "無", "糟糕","不佳","普通","好","精選"];
+	$("#rate").bind('rated', function (event, value) { $('#rate_text').text('我給他評價: ' + rate_txt[Math.round(value)]); });
     $("#rate").bind('reset', function () { 
 		$('#rate_text').text('我不給評價');
 		$('#comment').val('');
@@ -95,6 +101,34 @@ $("#rate").bind('rated', function (event, value) { $('#rate_text').text('我給�
 			 });
 		 
 	 });
+		 <?php 
+	if (is_admin()) {
+	?>
+	$('#gpxdel').click(function() {
+			console.log("del gpx mid:" + mid);
+			if (mid){
+				 $.ajax({
+				 url: twmap_gpx_url, 
+				 data: { action: "del", mid: mid},
+				 type: 'POST',
+				 success: function (data) {
+					if (data.ok === true){
+						$('#response').append('<li>' + data.rsp + '</li>');
+						setTimeout(function(){window.parent.jQuery('#ranking').dialog('close');},2000);
+					}
+					else
+						$('#response').append('<li style="color:red">' + data.rsp + '</li>');
+				 },
+				 error: function (jxhr, msg, err) {
+					 $('#response').append('<li style="color:red">' + msg + '</li>');
+				 }
+				 });
+			}
+		});
+	
+	<?php		
+	}
+	?>
  });
 
  </script>

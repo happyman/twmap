@@ -942,10 +942,25 @@ function gpx2svg($param,$outsvg) {
 	}
 	return array(true, "$outsvg created");
 }
-function svg2png($insvg, $outimage,$resize=array()) {
+// use inkscape: buggy
+function svg2png_inkscape($insvg, $outimage,$resize=array()) {
 	$cmd = sprintf("inkscape -e '%s' %s 2>&1", $outimage, $insvg);
 	exec($cmd, $out, $ret);
 	if (strstr($out[count($out)-1],"saved")) {
+		// 再 resize 一下
+		if (!empty($resize) && $resize[0] >= 315 && $resize[1] >= 315) {
+			$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
+			exec($cmd2, $out2, $ret);
+		}
+		return array(true, implode("+",$out+$out2));
+	}
+	return array(false, implode("+",$out));
+}
+// use convert 
+function svg2png($insvg, $outimage,$resize=array()) {
+	$cmd = sprintf("convert 'svg:%s' %s", $insvg, $outimage);
+	exec($cmd, $out, $ret);
+	if ($ret == 0) {
 		// 再 resize 一下
 		if (!empty($resize) && $resize[0] >= 315 && $resize[1] >= 315) {
 			$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);

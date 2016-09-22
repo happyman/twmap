@@ -734,10 +734,9 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
  * @param  [type] $mid [description]
  * @return [type]      [description]
  */
-function tilestache_clean($mid){
+function tilestache_clean($mid, $realdo = 0,$cachedir="/home/nas/twmapcache/twmap_gpx"){
 	$row = map_get_single($mid);
 	//print_r($row);
-	echo "clean ". $row['title'] . "\n";
 	if ($row==null){
 		return array(false,"no such map");
 	}
@@ -768,6 +767,14 @@ function tilestache_clean($mid){
 		foreach($out as $line){
 			list($a,$png) = preg_split("/\.\.\./",$line);
 			$clean[] = trim($png);
+		}
+		// real delete cache
+		if ($realdo == 1) {
+			foreach($clean as $line){
+			$del = $cache_dir . "/". $line;
+			@unlink($del);
+			}
+			return array(true,$row['title'] ."cleaned");
 		}
 		return array(true,$clean);
 	}

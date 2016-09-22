@@ -4,10 +4,6 @@
 */
 require_once("../config.inc.php");
 $id = `id -u`;
-if ($id != WWWRUN_UID ) {
-        echo "Please run as www user\n";
-        exit;
-}
 $opt=getopt("rd:m:c:hk");
 if (isset($opt['h'])){
 	echo $argv[0] . " [-c count] [-r][-d cache_dir][-m start_mid][-h]\n";
@@ -30,6 +26,10 @@ if (isset($opt['d']))
 else
 	$cache_dir = "/home/nas/twmapcache/twmap_gpx";
 
+if ($realdo == 1 && $id != WWWRUN_UID ) {
+        echo "Please run as www user\n";
+        exit;
+}
 $start_mid = (isset($opt['m']))? intval($opt['m']) : -1;
 
 $do_count = 0;

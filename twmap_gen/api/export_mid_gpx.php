@@ -31,7 +31,7 @@ if (!(file_exists($merged_gpx) && (time() - filemtime($merged_gpx) < 86400*15)))
 if ($to_kml) {
 	$kml = str_replace(".gpx",".kml",$merged_gpx);
 	if (!file_exists($kml)) {
-		$cmd = sprintf("gpsbabel -i gpx -f %s -x nuketypes,points -o kml,lines=1,points=0,line_width=3.line_color=FFFF00EF -F %s", $merged_gpx, $kml);
+		$cmd = sprintf("gpsbabel -i gpx -f %s -x nuketypes,points -o kml,lines=1,points=0,line_width=3,line_color=FFFF00EF -F %s", $merged_gpx, $kml);
 		exec($cmd);
 	}
 header('Content-type: application/vnd.google-earth.kml+xml');

@@ -212,7 +212,8 @@ th {
 	echo "<hr>";
 	if (is_admin()) {
 ?>
-	mid:<input type=text id='kmlshowmid' name='kmlshowmid'><input type=button value="Show" id='kmlbtnshow'>
+	mid:<input type=text id='kmlshowmid' name='kmlshowmid'><input type=button value="Show" id='kmlbtnshow'><input type=button value="add" id='gpximport'>
+	<br><span id="response"></span>
 <?php
 	}
 ?>
@@ -246,6 +247,28 @@ $('document').ready(function(){
 			if ($("#kmlshowmid").val()) 
 				parent.showmapkml($("#kmlshowmid").val(),"","",true);
 			});
+		});
+		
+		$('#gpximport').click(function() {
+			var mid = $("#kmlshowmid").val();
+			console.log("import mid:" + mid);
+			if (mid){
+				var twmap_gpx_url = "<?php printf("%s/api/twmap_gpx.php",$site_html_root);?>";
+				 $.ajax({
+				 url: twmap_gpx_url, 
+				 data: { "action": "add", "mid": mid},
+				 type: 'POST',
+				 success: function (data) {
+					 if (data.ok === true)
+						$('#response').append('<li>' + data.rsp + '</li>');
+					else
+						$('#response').append('<li style="color:red">' + data.rsp.msg + '</li>')
+				 },
+				 error: function (jxhr, msg, err) {
+					 $('#response').append('<li style="color:red">' + msg + '</li>');
+				 }
+				 });
+			}
 		});
 		 $('#kmlshowmid').keypress(function(e){
       if(e.keyCode==13)
