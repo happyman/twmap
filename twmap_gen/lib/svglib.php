@@ -956,9 +956,11 @@ function svg2png_inkscape($insvg, $outimage,$resize=array()) {
 	}
 	return array(false, implode("+",$out));
 }
-// use convert 
-function svg2png($insvg, $outimage,$resize=array()) {
-	$cmd = sprintf("convert 'svg:%s' %s", $insvg, $outimage);
+// use convert .. 
+// http://map.happyman.idv.tw/map/out/000003/90912/276000x2677000-5x7-v3.svg2
+// http://map.happyman.idv.tw/map/out/000003/90912/test.png
+function svg2png_magick($insvg, $outimage,$resize=array()) {
+	$cmd = sprintf("convert 'msvg:%s' %s", $insvg, $outimage);
 	exec($cmd, $out, $ret);
 	if ($ret == 0) {
 		// 再 resize 一下
@@ -969,4 +971,12 @@ function svg2png($insvg, $outimage,$resize=array()) {
 		return array(true, implode("+",$out+$out2));
 	}
 	return array(false, implode("+",$out));
+}
+// wrap it
+function svg2png($in, $out, $resize=array()) {
+	list ($st, $msg) = svg2png_magick($in,$out,$resize);
+	if ($st === false)
+		return svg2png_inkscape($in,$out,$resize);
+	else
+	 	return array($st, $msg);   
 }
