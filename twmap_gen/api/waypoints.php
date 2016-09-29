@@ -82,7 +82,7 @@ th {
 				printf("<tr><td>%s%s</tr>",$wpt_icon, $row['name']);
 				continue;
 			}
-			$show_url = sprintf("<a href='%s/show.php?mid=%s' target=_blank><img src='%s/icons/op_mapshow.png'>%s</a>",$site_html_root,$site_html_root,$mid_to_show);
+			$show_url = sprintf("<a href='%s/show.php?mid=%s' target=_blank><img src='%s/icons/op_mapshow.png'>%s</a>",$site_html_root,$mid_to_show, $site_html_root,$mid_to_show);
 			$rs = $rank->stats($mid_to_show);
 			list ($login, $uid) = userid();
 			if ($login === false){
