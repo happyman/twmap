@@ -25,8 +25,8 @@ $stat = $rank->get_comment($mid);
 <!-- <script src='https://rawgit.com/gjunge/rateit.js/master/scripts/jquery.rateit.js'></script>
  <link href="https://rawgit.com/gjunge/rateit.js/master/scripts/rateit.css" rel="stylesheet" type="text/css">
  -->
- <script  src="/~happyman/twmap3_dev/js/jquery.rateit.js"></script>
- 	<link rel="stylesheet" type="text/css" href="/~happyman/twmap3_dev/css/rateit/rateit.css" />
+ <script  src="<?php echo $TWMAP3_html_root; ?>/js/jquery.rateit.js"></script>
+ 	<link rel="stylesheet" type="text/css" href="<?php echo $TWMAP3_html_root; ?>/css/rateit/rateit.css" />
  </head>
  <body>
 <?php

@@ -89,7 +89,7 @@ th {
 				$rank_str = sprintf("<a href='%s/main.php?return=twmap3' target=_top title='登入給予評價'><img src='%s/icons/%s' alt='%s' /></a>",$site_html_root,$site_html_root, $rs['icon'],$rs['text']);
 			} else {
 				$rank_str = sprintf("<a href='#' data-id='%d'  data-title='%s' data-link='%s' data-ratelink='%s/api/rate.php?mid=%d' data-backurl='%s' class='rating'><img src='%s/icons/%s' alt='%s' /></a>",
-				$mid_to_show, $row['title'],$show_url, $site_html_root, $mid_to_show, $_SERVER['REQUEST_URI'], $site_html_root, $rs['icon'], $rs['text']);
+				$mid_to_show, $row['title'], "", $site_html_root, $mid_to_show, $_SERVER['REQUEST_URI'], $site_html_root, $rs['icon'], $rs['text']);
 			}
 			if ( !empty($row['keepon_id']) &&  $row['keepon_id'] != 'NULL' && !is_numeric($row['keepon_id']))
 				$record_str = sprintf("<a href='http://www.keepon.com.tw/redirectMap-%s.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>",$row['keepon_id']);
