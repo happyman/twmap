@@ -51,7 +51,7 @@ if (!empty($_FILES)) {
 		$tid = track_add(array("name"=>$_FILES['file']['name'],
 		"uid"=>$uid, "status"=> $st, "path"=> sprintf("%s/%06d/track/",$out_root, $uid), 
 		"md5name"=> $fname, "size"=>$meta['size'],
-		"bbox"=>$meta['bbox'], "km_x"=>$meta['km_x'], "km_y"=> $meta['km_y']));
+		"bbox"=>$meta['bbox'], "km_x"=>$meta['km_x'], "km_y"=> $meta['km_y'], "is_taiwan"=>$meta['is_taiwan']));
 		if (intval($tid) == 0 ){
 			header("HTTP/1.0 500 Internal Server Error");
 			echo "sql insert error";
