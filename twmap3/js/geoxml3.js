@@ -37,7 +37,7 @@ geoXML3.parser = function (options) {
     singleInfoWindow: false,
     processStyles: true,
 		//additional_marker_desc: "<a href='http://map.happyman.idv.tw/twmap/'>地圖產生器</a>",
-		//additional_path_desc: "<a href='http://map.happyman.idv.tw/twmap/'>地圖產生器</a>",
+		additional_path_desc: "@地圖產生器",
     zoom: true
   });
   var docs = []; // Individual KML documents
@@ -832,7 +832,7 @@ var randomColor = function(){
     if (!parserOptions.suppressInfoWindows) {
       var infoWindowOptions = geoXML3.combineOptions(parserOptions.infoWindowOptions, {
         content: '<div class="geoxml3_infowindow"><h3>' + placemark.name + 
-                 '</h3><div>' + placemark.description + parserOptions.additional_marker_desc +'</div></div>',
+                 '</h3><div>' + placemark.description +'</div></div>',
         pixelOffset: new google.maps.Size(0, 2)
       });
       if (parserOptions.infoWindow) {

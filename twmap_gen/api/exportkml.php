@@ -55,6 +55,7 @@ if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
 	}
 	?>
 	</ul>
+	<a href="uploadpage.php">上傳行跡</a>(beta)
 	</body>
 	</html>
 	<?php

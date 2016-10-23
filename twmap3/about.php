@@ -2,10 +2,10 @@
 if (!isset($_SESSION))
 	session_start();
 require_once("lib/functions.inc.php");
-  list($st, $info) = login_info();
+list($st, $info) = login_info();
                                 if ($st === false ) {
                                         $greetings = sprintf("歡迎光臨");
-                                        $greetings_admin = sprintf("管理<a href='%s' target=_top >登入</a>",$CONFIG['site_twmap_html_root'] . "main.php?return=twmap3" );
+                                        $greetings_admin = sprintf("請<a href='%s' target=_top >登入</a>",$CONFIG['site_twmap_html_root'] . "main.php?return=twmap3" );
                                 } else {
                                         $greetings = sprintf("歡迎 %s<img src='%s' />",$info['user_nickname'],$info['user_icon']);
 					if (is_admin()) 
@@ -39,9 +39,9 @@ $(document).ready(function() {
 			使用方法:
                         <ul>
                         <li>瀏覽台灣<a href="http://gissrv4.sinica.edu.tw/gis/twhgis.aspx" target="sinica">等高線地形圖</a>,以<a href="http://maps.nlsc.gov.tw/" target="nlsc">衛星圖</a>套疊作為登山前參考
-                        <li>選擇範圍以便使用<a href="<?php echo $CONFIG['site_twmap_html_root']; ?>main.php" target="twmap">地圖產生器</a>
+                        <li>選擇範圍以便使用<a href="<?php echo $CONFIG['site_twmap_html_root']; ?>main.php" target="twmap">地圖產生器</a>產生方便列印的地圖, 或者下載登山相關興趣點圖資。
                         </ul>
-                        小秘訣:
+            小秘訣:
                         <ul>
                         <li>按住 shift 可以框選縮放
                         <li>按右鍵可以顯示目前座標
@@ -51,7 +51,13 @@ $(document).ready(function() {
                                 <li>twd67 座標  : x,y
 				<li>twd97 座標  : x/y
                                 </ul>
-			</ul>
+						<li>下載點位圖資: 按左鍵選擇範圍, 然後按右鍵選擇下載(kml)
+						<li>點選行跡可下載行跡檔。(kml/gpx)
+						<li>上載行跡(beta): 請
+						<?php if ($st === false) echo "上載."; else {
+							?><a href='<?php echo $site_twmap_html_root;?>/api/uploadpage.php'>上載</a>行跡檔.	
+						<?php } ?>
+			</ul>	
 			其他:
 			<ul>
                         <li>參考 <a href="http://blog.yam.com/amimitea/article/48657866" target="_blank">介紹文</a>

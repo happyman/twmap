@@ -102,7 +102,7 @@ function keepon_map_exists($uid,$keepon_id){
 	return $rs[0];
 }
 
-// TODO? maybe still buggy
+// TODO? maybe still buggy, to remove
 function is_gpx_imported($mid) {
 	$db=get_conn();
 	$row = map_get_single($mid);
@@ -631,8 +631,6 @@ function getCallingFunctionName($completeTrace=false) {
 /**
   GIS functions
   depends on mapnik (nik4), gdal (ocr2ocr)
-  測試 code:
-  因為目前 production server 的 postgres library 太舊, 只好借用別台 172.31.39.193
  */
 function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 	global $db_name,$db_user,$db_pass,$db_host;
@@ -649,14 +647,11 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 		$sql = sprintf("DELETE FROM \"%s\" WHERE mid=%s",$table,$mid);
 		$db->Execute($sql);
 		// 2. add data by ogr2ogr
-		//  沒辦法 因為 server 上 postgres library < 9.0 無法使用
-		//$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
 		$cmd = sprintf("ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
 				$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type,$table);
 
 	} else {
 		// 1. append
-		//$cmd = sprintf("ssh 172.31.39.193 'ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"'",
 		$cmd = sprintf("ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
 				$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type, $table);
 	}
@@ -670,12 +665,20 @@ function import_gpx_to_gis($mid){
 	// table gpx_waypoints
 	global $db_name,$db_user,$db_pass,$db_host;
 	// 0. 先檢查 gpx 存在與否
+	if ($mid > 0 ){
 	$row = map_get_single($mid);
-	if ($row==null) 
-		return array(false, "mid incorrect");
-	$gpx_file = map_file_name($row['filename'], 'gpx');
-	// check 172.31.39.193 mount path
-	// $gpx_file = str_replace("/srv/www/htdocs/","/mnt/nas/",$gpx_file);
+		if ($row==null) 
+			return array(false, "mid incorrect");
+		$gpx_file = map_file_name($row['filename'], 'gpx');
+	} else {
+		// 找出對應的 gpx file
+		$tid = -1 * $mid;
+		$rs = track_get_single($tid);
+		if ($rs !== null ){
+			$gpx_file = sprintf("%s/%d/%s_p.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
+		} else 
+			return array(false, "tid incorrect");
+	}
 	if (!file_exists($gpx_file))
 		return array(false, "$gpx_file  not exists");
 	$ret1 = ogr2ogr_import_gpx($mid, $gpx_file, 'waypoints');
@@ -690,7 +693,6 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
 	$br = proj_67toge($tw67_bbox[1]);
 	$imgsize = $tw67_bbox[2];
 	$tmpsvg = tempnam("/tmp","SVG") . ".svg";
-	//$cmd = sprintf('ssh 172.31.39.193 "nik4.py -b %s %s %s %s -x %d %d ~wwwrun/etc/gpx.xml %s && cat %s && rm %s" > %s',$tl[0],$tl[1],$br[0],$br[1],$imgsize[0],$imgsize[1],$tmpsvg,$tmpsvg,$tmpsvg,$tmpsvg);
 	$cmd = sprintf('nik4.py -b %s %s %s %s -x %d %d ~www-data/etc/gpx.xml %s',$tl[0],$tl[1],$br[0],$br[1],$imgsize[0],$imgsize[1],$tmpsvg);
 	exec($cmd,$out,$ret);
 	if ($ret == 0) {
@@ -731,19 +733,24 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
 }
 /**
  * [tilestache_clean 新增/刪除 mid 的時候 hook
- * @param  [type] $mid [description]
- * @return [type]      [description]
  */
-function tilestache_clean($mid, $realdo = 0,$cachedir="/home/nas/twmapcache/twmap_gpx"){
-	$row = map_get_single($mid);
-	//print_r($row);
-	if ($row==null){
-		return array(false,"no such map");
-	}
-	$tl = proj_67toge(array($row['locX'],$row['locY']));
-	$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
-
-	//$cmd = sprintf("ssh 172.31.39.193 'tilestache-clean.py -c ~wwwrun/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1'",$tl[1],$tl[0],$br[1],$br[0]);
+function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twmap_gpx"){
+	if ($mid < 0 ){
+		$rs = track_get_single($tid);
+		if ($rs === null ){
+			return array(false, "no such track");
+		}
+		// 直接將 bound 從 db 取出
+		list ($tl[1],$tl[0],$br[1],$br[0]) = preg_split("/\s",$rs['bbox']);
+	} else {
+		$row = map_get_single($mid);
+		//print_r($row);
+		if ($row==null){
+			return array(false,"no such map");
+		}
+		$tl = proj_67toge(array($row['locX'],$row['locY']));
+		$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
+		}
 	$cmd = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	error_log("tilestache_clean: ". $cmd);
 	/*
@@ -810,10 +817,10 @@ function get_waypoint($x,$y,$r=10,$detail=0){
 function get_track($x,$y,$r=10,$detail=0){
         $db=get_conn();
         if ($detail == 0)
-                $sql = sprintf("SELECT DISTINCT on (wkb_geometry) \"gpx_trk.name\" AS name FROM gpx_trk WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry)", $x,$y,$r);
+                $sql = sprintf("SELECT \"gpx_trk.name\" AS name FROM gpx_trk WHERE ST_Crosses(wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry)", $x,$y,$r);
 
         else
-                $sql = sprintf("SELECT DISTINCT on (A.wkb_geometry)  A.\"gpx_trk.name\" AS name,ST_AsText(A.wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename from gpx_trk A,map WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry) AND A.mid = map.mid ", $x,$y,$r);
+                $sql = sprintf("SELECT A.\"gpx_trk.name\" AS name,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename from gpx_trk A,map WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry) AND A.mid = map.mid ", $x,$y,$r);
         // error_log($sql);
         $rs = $db->getAll($sql);
         return $rs;
@@ -1041,7 +1048,7 @@ function ogr2ogr_export_points($fpath, $bound, $owner=0) {
 			//$spat = sprintf("-spat %.06f %.06f %.06f %.06f",$bound[0],$bound[1],$bound[2],$bound[3]);
 			$spat = sprintf('AND (coord &&  ST_MakeEnvelope(%.06f,%.06f,%.06f,%.06f))',$bound[0],$bound[1],$bound[2],$bound[3]);
 		} else $spat = "";
-		$cmd = sprintf("ogr2ogr -f GeoJSON -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s  PG:\"host=%s dbname=%s user=%s password=%s\" -where \"%s %s\"  point3 ", $fpath, $db_host, $db_name, $db_user, $db_pass, $owner_str, $spat);
+		$cmd = sprintf("ogr2ogr -f GeoJSON 	-dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s  PG:\"host=%s dbname=%s user=%s password=%s\" -where \"%s %s\"  point3 ", $fpath, $db_host, $db_name, $db_user, $db_pass, $owner_str, $spat);
 		// echo $cmd;
 		exec($cmd, $out, $ret);
 		if ($ret == 0 ) return array(true, "ok");
@@ -1120,3 +1127,6 @@ class map_rank {
 		return array();
 	}
 }
+// track table handling functions
+// 
+require_once("track.inc.php");

@@ -10,16 +10,32 @@ if (empty($mid)) {
 	ajaxerr("insufficent parameters");
 }
 
-list ($status,$msg)=make_kml($mid);
-if ($status == true) {
-	header('Content-type: application/vnd.google-earth.kml+xml');
-	header('Cache-Control: ');  //leave blank to avoid IE errors
-	header('Pragma: ');  //leave blank to avoid IE errors
-	header('Content-Disposition: attachment; filename="' . sprintf("twmap_%d.kml",$mid) .'"');
-	header('Content-Transfer-Encoding: binary');	
-	readfile($msg);
+if ($mid < 0 ){
+	// -的 mid 代表 track. see also: uploadpage.php
+	$tid = $mid * -1;
+	$rs = track_get_single($tid);
+	$file = sprintf("%s/%d/%s_p.kml",$rs['path'],$rs['tid'],$rs['md5name']);
+	if (file_exists($file)){
+        header('Content-type: application/vnd.google-earth.kml+xml');
+        header('Cache-Control: ');  //leave blank to avoid IE errors
+        header('Pragma: ');  //leave blank to avoid IE errors
+        header('Content-Disposition: attachment; filename="' . sprintf("twmap_track_%d.kml",$tid) .'"');
+        header('Content-Transfer-Encoding: binary');
+        readfile($file);
+	}
+} else {
+	list ($status,$msg)=make_kml($mid);
+	if ($status == true) {
+		header('Content-type: application/vnd.google-earth.kml+xml');
+		header('Cache-Control: ');  //leave blank to avoid IE errors
+		header('Pragma: ');  //leave blank to avoid IE errors
+		header('Content-Disposition: attachment; filename="' . sprintf("twmap_%d.kml",$mid) .'"');
+		header('Content-Transfer-Encoding: binary');	
+		readfile($msg);
+	}
 }
 function make_kml($mid) {
+	
 	$map = map_get_single($mid);
 	
 	if ($map === false)  {

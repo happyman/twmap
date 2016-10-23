@@ -5,17 +5,18 @@ if (php_sapi_name() != "cli"){
 exit("cli only");
 }
 
-$debug = 1;
+$debug = 0;
 $opt = getopt("a:k:m:t:s:e:rg:u:c:f");
 $action = (isset($opt['a'])) ? $opt['a'] : '';
 if (empty($action)) {
 	printf("%s -a listall|enqueue|list|delete [-k keepon_id] [-t thread_id] [-m 0|1]\n",$argv[0]);
-	printf("	listall -s 'Y-m-d' -e 'Y-m-d' -m 0 : start, end, mapgenerated [-r]: do queue [-c]: count\n");
-	printf("	enqueue -k keepon_id -t thread_id [-f]: force auto_shrink\n");
-	printf("	listt -t thread_id\n");
-	printf("	listk -k keepon_id\n");
-	printf("	listm -k keepon_id [-r]: -r renotify\n");
-	printf("	detect -g gpxurl\n");
+	printf("	-a listall -s 'Y-m-d' -e 'Y-m-d' -m 0 : start, end, mapgenerated [-r]: do queue [-c]: count\n");
+	printf("	-a enqueue -k keepon_id -t thread_id [-f]: force auto_shrink\n");
+	printf("	-a listt -t thread_id\n");
+	printf("	-a listk -k keepon_id\n");
+//	printf("	-a listm -k keepon_id [-r]: -r renotify\n");
+	printf("    -a mupdate -k keepon_id -u url\n");
+	printf("	-a detect -g gpxurl\n");
 	exit(0);
 }
 
@@ -89,13 +90,14 @@ case 'listk':
 	list ($st, $res) = keepon_List_by_Id($kid);
 	print_r($res);
 	break;
+	/*
 case 'listm':
 	$kid = (isset($opt['k'])) ? $opt['k'] : '';
 	if (empty($kid)) {
 		echo "not enough params\n";
 		exit(1);
 	}
-	$data = keepon_map_exists(14803, $kid);
+	$data = keepon_map_exists(0, $kid);
 	// print_r($data);
 	$html_root = $out_html_root . str_replace($out_root, "", dirname($data['filename']));
 	$url =  $site_url . $html_root . "/" . basename($data['filename']);
@@ -109,6 +111,7 @@ case 'listm':
 		}
 	}
 	break;
+	*/
 case 'enqueue':
 	$kid = (isset($opt['k']))? $opt['k'] : '';
 	$tid = (isset($opt['t']))? $opt['t'] : '';

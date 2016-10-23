@@ -366,8 +366,9 @@ function showCWBRainfall(fcast_type) {
 var skml;
 /* global geoXML3 */
 // zoom == true 則會移到地圖位置
-function showmapkml(mid, marker_desc, uri_enc, zoom) {
-    if (skml && skml.mid > 0) {
+var top_noty;
+function showmapkml(mid, marker_desc, additional_marker_desc, zoom, need_center_marker) {
+    if (skml) {
         if (skml.loading == 1) {
 			console.log("showmapkml: kml is loading return");
 			return;
@@ -375,22 +376,33 @@ function showmapkml(mid, marker_desc, uri_enc, zoom) {
 		if (skml.mid == mid) {
 			skml.removeDocument(skml.docs[0]);
 			skml.mid = 0;
+			skml.title = '';
+			skml.additional_marker_desc = '';
 			console.log("showmapkml: remove kml");
 			return;
 		}
 		skml.removeDocument(skml.docs[0]);
     }
+	console.log("showmmapkml: mid=" + mid );
     skml = new geoXML3.parser({
         map: map,
         singleInfoWindow: true,
-        additional_marker_desc: decodeURIComponent(uri_enc),
+        additional_marker_desc: decodeURIComponent(additional_marker_desc),
         zoom: zoom,
     });
     skml.loading = 1;
+	topnoty = noty({text: 'kml 載入中...', layout:'top'});
     skml.parse(getkml_url + "?mid=" + mid);
     google.maps.event.addListener(skml, 'parsed', function() {
         skml.mid = mid;
-	skml.loading = 0;
+		skml.title = marker_desc;
+		skml.additional_marker_desc = additional_marker_desc;
+		skml.loading = 0;
+		if (need_center_marker){
+				$("#tags").val(map.getCenter().toUrlValue(5));
+				$("#goto").trigger('click');
+		}
+		topnoty.close();
     });
 }
 
@@ -398,7 +410,11 @@ function permLinkURL(goto) {
     var ver = (BackgroundMap === 0) ? 3 : 1;
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
-    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() + "&mcover=" + $("#mcover").val() +"'><img src='img/permalink.png' width=30 border=0/></a>";
+	var skml_param = "";
+	if (typeof skml !== 'undefined' && typeof skml.mid !== 'undefined' && skml.mid !== 0){
+		skml_param = '&skml_id=' + skml.mid;
+	}
+    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity.toFixed(4) + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() + "&mcover=" + $("#mcover").val() + skml_param + "'><img src='img/permalink.png' width=30 border=0/></a>";
 }
 
 var MapStateRestored = 0;
@@ -410,7 +426,9 @@ function saveMapState() {
     var curGrid = $("#changegrid").val();
     var state = { "zoom": map.getZoom(), "opacity": opacity, "mapversion": ver, "maptypeid": map.getMapTypeId(),
                   "show_label": show_label, "show_kml_layer": show_kml_layer , "show_marker": show_marker, "roadmap": curMap, "grid": curGrid, "theme": theme,
-		  "goto": mapCenter.toUrlValue(5), "show_delaunay": show_delaunay , "rainfall": $("#rainfall").val(), "mcover": $('#mcover').val() };
+	"goto": mapCenter.toUrlValue(5), "show_delaunay": show_delaunay , "rainfall": $("#rainfall").val(), "mcover": $('#mcover').val()};
+	
+
     localStorage.setItem("twmap_state", JSON.stringify(state));
     console.log("mapState saved");
 } 
@@ -445,14 +463,58 @@ function restoreMapState(state) {
                 $("#mcover").val(state.mcover);
                 $("#mcover").change();
 	}
-        if (state.mapversion == 1)  $("#changemap").trigger('click');
-        if (state.goto) {
-           $("#tags").val(state.goto);
-           $("#goto").trigger('click');
+    if (state.mapversion == 1)  $("#changemap").trigger('click');
 
-        }
 	if (state.show_delaunay == 1 ) {
 	   $("#delaunay_sw").trigger('click');
+	}
+	var need_center_marker = 1;
+	var initial_loc = 0;
+	console.log("goto: " + state.goto);
+	if (state.goto) {
+        $("#tags").val(state.goto);
+        $("#goto").trigger('click');
+		need_center_marker = 0;
+		initial_loc = 1;
+    }
+	if (state.kml) {
+		    console.log("get kml parameter");
+			GPSLayer = new geoXML3.parser({
+			map: map,
+			singleInfoWindow: true,
+			additional_marker_desc: "",
+			zoom: true,
+		});
+		GPSLayer.parse(state.kml);
+			google.maps.event.addListener(GPSLayer, 'parsed', function() {
+			// 避免沒有 centerMarker 
+			if (need_center_marker){
+				$("#tags").val(map.getCenter().toUrlValue(5));
+				$("#goto").trigger('click');
+			}
+			});
+			initial_loc = 1;
+	} else if (state.skml_id && state.skml_id !==0){
+		showmapkml(state.skml_id, "", "" , true, need_center_marker);
+		initial_loc = 1;
+	} 
+	// 最後都沒有移動位置, 就試試看取得現在位置, 不然就跳到特殊點
+	if (initial_loc === 0){
+		   console.log("getgeolocation");
+            var position_get = 0;
+            $.geolocation.get({
+                win: function(position) {
+                    CurrentLocation(position);
+                    position_get = 1;
+                },
+                fail: FeatureLocation,
+                error: FeatureLocation
+            });
+            setTimeout(function() {
+                if (position_get === 0) {
+                    FeatureLocation();
+                }
+            }, 4000);
 	}
 	MapStateRestored = 1;
 	console.log("mapState restored");
@@ -677,6 +739,7 @@ function show_line_of_sight(y,x,z){
 	}
 	$('#los_eye_img').attr('src',"img/eye_a.gif");
 	line_of_sight_running = 1;
+	topnoty = noty({text: '通視模擬計算中.....', layout:'top'});
 	$.ajax({
 		dataType: 'json', 
 		url: viewshed_url, 
@@ -712,6 +775,7 @@ function show_line_of_sight(y,x,z){
 				// 3. done
 				// console.log(names);
 				line_of_sight_running = 0;
+				topnoty.close();
 				$('#los_eye_img').attr('src',"img/eye.png");
 				console.log("done show_line_of_sight");
 		}
@@ -766,7 +830,7 @@ function showCenterMarker(name) {
     google.maps.event.addListener(centerMarker, "dragend", centerMarkerDragEnd );
     google.maps.event.addListener(centerMarker, "dragstart", centerMarkerDragStart );
 //
-            $.cookie('twmap3_goto', name);
+           // $.cookie('twmap3_goto', name);
 	    break;
         }
     }
@@ -827,7 +891,7 @@ function showCenterMarker(name) {
                     // alert("from cache");
                     if (data.rsp.is_tw === 0) {
                         //alert('cached: 不在台澎範圍內');
-			showmeerkat(pointdata_url + "?lastest=10&err=4" ,{ 'width': '600'} );
+						showmeerkat(pointdata_url + "?lastest=10&err=4" ,{ 'width': '600'} );
                         return false;
                     }
                     $.unblockUI();
@@ -849,7 +913,7 @@ function showCenterMarker(name) {
                             var p = is_taiwan(loc.lat(), loc.lng());
                             if (p === 0) {
                                 //alert("不在台澎範圍");
-				showmeerkat(pointdata_url + "?lastest=10&err=2" ,{ 'width': '600'} );
+								showmeerkat(pointdata_url + "?lastest=10&err=2" ,{ 'width': '600'} );
                                 return false;
                             }
                             //console.log(results);
@@ -876,7 +940,7 @@ function showCenterMarker(name) {
                             $.unblockUI();
                             // alert("Geocode was not successful for the following reason: " + status);
                             //alert("找不到喔! 請輸入 地址 或 座標格式: 1. t67 X,Y 如 310300,2703000 2. t97 X/Y 或者 3. 含小數點經緯度 lat,lon 24.430623,121.603503");
-			    showmeerkat(pointdata_url + "?lastest=10&err=3" ,{ 'width': '600'} );
+							showmeerkat(pointdata_url + "?lastest=10&err=3" ,{ 'width': '600'} );
                             return false;
                         }
                     });
@@ -893,7 +957,8 @@ function showCenterMarker(name) {
     if (tmploc) {
         var p = is_taiwan(tmploc.y, tmploc.x);
         if (p === 0) {
-            alert("不在台澎範圍");
+            // alert("不在台澎範圍");
+			noty({	text: '不在台澎範圍', type: 'alert',  closeWith   : ['click','timeout'], timeout     :5000 });
             return false;
         }
         loc = new google.maps.LatLng(tmploc.y, tmploc.x);
@@ -935,7 +1000,7 @@ function showCenterMarker_real(loc, name) {
     locInfo_name = (typeof name === "undefined") ? loc.toUrlValue(5) : name;
     locInfo(loc);
     // save cookie
-    $.cookie('twmap3_goto', name);
+    // $.cookie('twmap3_goto', name);
     return true;
 }
 function initialCenterInfo() {
@@ -1211,7 +1276,16 @@ var TW_Bounds;
 var PH_Bounds;
 var GeoMarker;
 
+function showUploadPanel(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  $('#drop-container').show();
+  return false;
+}
 
+function hideUploadPanel(e) {
+  $('#drop-container').hide();
+}
 function initialize() {
     console.log('initialize');
     geocoder = new google.maps.Geocoder();
@@ -1337,6 +1411,7 @@ function initialize() {
         locInfo(newpos);
         centerMarker.setVisible(true);
     });
+	
     if (is_mobile) {
         google.maps.event.addListener(map, 'dblclick', function(event) {
             console.log("left click fired");
@@ -1490,24 +1565,11 @@ function initialize() {
                 else location.href = url;
             }
         } else {
-            alert("請輸入地圖標題");
+            // alert("請輸入地圖標題");
+			noty({	text: '請輸入地圖標題', type: 'alert',  closeWith   : ['click','timeout'], timeout     :5000 });
         }
     });
-/*
-    $("#generate").click(function() {
-        if (callmake === null) {
-            alert("請選擇範圍");
-            return;
-        }
-        // 置中
-        if (centerInfo) centerInfo.close();
-        map.setCenter(new google.maps.LatLng(miniY + (maxiY - miniY) / 2, miniX + (maxiX - miniX) / 2));
-        ismakingmap = 1;
-        $.blockUI({
-            message: $('#inputtitleform')
-        });
-    });
-*/
+
     $("#about").click(function() {
         //$("#footer").
 	showmeerkat('about.php',{ 'width': '600'} );
@@ -1560,8 +1622,10 @@ function initialize() {
 		remove_survey_network(3);
 		
             $("#delaunay_sw").addClass("disable");
+			topnoty.close();
 	} else {
 		show_delaunay = 1;
+		topnoty = noty({text: '三角點通視計算中....', layout:'top'});
             $("#delaunay_sw").removeClass("disable");
 			/*
 			drawDelaunayTriangulation(1, { strokeColor: "#FFFF00", strokeWeight: 3 });
@@ -1713,28 +1777,14 @@ function initialize() {
     var map_is_ready = google.maps.event.addListener(map, "bounds_changed", function() {
         console.log("bounds_changed");
 // restore state
-// 1. 從 param restore
-	if (getParameterByName('kml')) {
-            console.log("get kml parameter");
-            //GPSLayer = new google.maps.KmlLayer(getParameterByName('kml') + '?ts=' + (new Date()).getTime(), { preserveViewport: false });
-            //GPSLayer.setMap(map);
-	GPSLayer = new geoXML3.parser({
-        map: map,
-        singleInfoWindow: true,
-        additional_marker_desc: "",
-        zoom: true,
-	
-    });
-	GPSLayer.parse(getParameterByName('kml'));
-	 google.maps.event.addListener(GPSLayer, 'parsed', function() {
-	// 避免沒有 centerMarker 
-	$("#tags").val(map.getCenter().toUrlValue(5));
-            $("#goto").trigger('click');
-
-	    
-	  });
-	    MapStateRestored = 1;
-	}  else if (getParameterByName("goto") && getParameterByName("maptypeid") && getParameterByName("zoom")) {
+// 1. restore params
+// 1.1 restore from localstorage
+   var state;
+	try {
+	     state = JSON.parse(localStorage.getItem("twmap_state"));
+	} catch(e) {
+	     state = {};
+	}
 	var st = { "show_label": getParameterByName("show_label"),
 		   "show_marker": getParameterByName("show_marker"),
  		   "show_kml_layer":getParameterByName("show_kml_layer"),
@@ -1746,50 +1796,13 @@ function initialize() {
 		   "show_delaunay":getParameterByName("show_delaunay"),
 		   "rainfall":getParameterByName("rainfall"),
 		   "mcover":getParameterByName("mcover"),
-		   "goto":getParameterByName("goto") };
+		   "goto":getParameterByName("goto"),
+		   "kml": getParameterByName("kml"),
+		   "skml_id":getParameterByName("skml_id")
+	};	   
+	$.extend(true,state,st);
+	restoreMapState(state);
 
-	    restoreMapState(st);
-	    console.log("restore from GET");
-
-     } else if (localStorage.getItem("twmap_state"))  {
-	   var state;
-	   try {
-	     state = JSON.parse(localStorage.getItem("twmap_state"));
-	   } catch(e) {
-	     state = null;
-	   }
-	   if (state) {
-	    console.log("restore from localStorage");
-	    restoreMapState(state);
-	   }
-	    
-     }
-     // 
-     if (MapStateRestored === 0 ) {
-        if ($.cookie('twmap3_goto')) {
-            console.log("get location from cookie");
-            $("#tags").val($.cookie('twmap3_goto'));
-            $("#goto").trigger('click');
-        } else {
-            // 那就顯示一個點, 如果拿得到座標就到座標, 不然就任選一個興趣點
-            console.log("getgeolocation");
-            var position_get = 0;
-            $.geolocation.get({
-                win: function(position) {
-                    CurrentLocation(position);
-                    position_get = 1;
-                },
-                fail: FeatureLocation,
-                error: FeatureLocation
-            });
-            setTimeout(function() {
-                if (position_get === 0) {
-                    FeatureLocation();
-                }
-            }, 4000);
-        }
-     }
-     // 
      // if show_line_of_sight == 1
      if (getParameterByName("show_line_of_sight") == 1) {
 

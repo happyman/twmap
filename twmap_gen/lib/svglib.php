@@ -107,8 +107,8 @@ class gpxsvg {
 	// 偵測到底 gpx 範圍多大
 	function detect_bbox(){
 			list($x,$y,$x1,$y1) = $this->get_bbox(file_get_contents($this->gpx));
-			if ($this->taiwan == 0)
-				return array(false,"not in Taiwan or Pong Hu");
+			//if ($this->taiwan == 0)
+			//	return array(false,"not in Taiwan or Pong Hu");
 			if ($this->taiwan == 1 ) {
 			list($tx, $ty) = proj_geto672(array($x,$y));
 			list($tx1, $ty1) = proj_geto672(array($x1,$y1));
@@ -126,7 +126,8 @@ class gpxsvg {
 			} else {
 				$over = 0;
 			}
-			return array(true, array("x"=> ($br[0] - $tl[0])/1000 , "y"=> ($tl[1] - $br[1])/1000, "over" => $over, "bbox" => "$y $x $y1 $x1"));
+			return array(true, array("is_taiwan"=> $this->taiwan,
+			"x"=> ($br[0] - $tl[0])/1000 , "y"=> ($tl[1] - $br[1])/1000, "over" => $over, "bbox" => "$y $x $y1 $x1"));
 	}
 	function process() {
 		if (!isset($this->gpx) || !file_exists($this->gpx)) {

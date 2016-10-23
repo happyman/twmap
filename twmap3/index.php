@@ -42,6 +42,7 @@ $ver = trim(file_get_contents("VERSION"));
 	<script  src="js/javascript.util.min.js"></script>
 	<script  src="js/jsts.min.js"></script>
 	<script  src="js/triangle.js"></script>
+	<script  src="js/jquery.noty.js"></script>
 	<!-- endbuild -->
 <!--
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />

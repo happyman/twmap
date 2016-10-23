@@ -112,7 +112,10 @@ class GPX extends GeoAdapter
           $components[] = new Point($lon, $lat);
         }
       }
-      if ($components) {$lines[] = new LineString($components);}
+      if ($components) {
+		  // happyman: avoid  "Cannot construct a LineString with a single point" exception
+		  if (count($components) > 1 )
+			  $lines[] = new LineString($components);}
     }
     return $lines;
   }

@@ -19,14 +19,14 @@ if (isset($opt['h'])){
 
 if (isset($opt['r']))
 	$real_do = 1;
-else
+else	
 	$real_do = 0;
 if (isset($opt['d']))
 	$cache_dir = $opt['d'];
 else
 	$cache_dir = "/home/nas/twmapcache/twmap_gpx";
 
-if ($realdo == 1 && $id != WWWRUN_UID ) {
+if ($real_do == 1 && $id != WWWRUN_UID ) {
         echo "Please run as www user\n";
         exit;
 }
@@ -62,24 +62,16 @@ if (count($rs) > 0 ) {
 			$url = '';
 		printf("%d %d %-30s %s",$i++, $row['mid'],$row['title'],$url);
 		if ($real_do == 1) {
-			$exist_mid = is_gpx_imported($row['mid']);
-			if ($exist_mid !== false) {
-				printf("skip.. ".$exist_mid[0]['mid']."\n");
-				continue;
-			}
+			//$exist_mid = is_gpx_imported($row['mid']);
+			//if ($exist_mid !== false) {
+			//	printf("skip.. ".$exist_mid[0]['mid']."\n");
+			//	continue;
+			//}
 			printf(" *\n");
 			list($ret,$msg) = import_gpx_to_gis($row['mid']);
 			if ($ret === true){
 			// clean tile cache
-				list($st, $toclean) = tilestache_clean($row['mid']);
-				if($st == true) {
-					foreach($toclean as $line){
-						$del = $cache_dir . "/" . $line;
-						// if need debug, uncomment
-						// echo "rm $del\n";
-						@unlink($del);
-					}
-				}
+				list($st, $toclean) = tilestache_clean($row['mid'], 1);
 				printf("%d %s imported ok\n",$row['mid'],$row['title']);
 			}
 			else
