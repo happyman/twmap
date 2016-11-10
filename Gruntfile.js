@@ -43,7 +43,7 @@ pkg: grunt.file.readJSON('package.json'),
     uglify: {
         options: {
            banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
-            '<%= grunt.template.today("yyyy-mm-dd") %> */'
+            '<%= grunt.template.today("yyyy-mm-dd") %> \n' + grunt.file.read('buddha.txt') + '\n*/'
         }
     },
     useminPrepare: {
