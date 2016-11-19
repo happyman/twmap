@@ -32,9 +32,7 @@ if (($handle = fopen("coastmt_108.csv", "r")) !== FALSE) {
 {
 	padding: 12px;
 	font-weight: normal;
-	font-size: 14px;
 	color: #039;
-	background: lightgreen;
 }
 #newspaper-b tbody
 {
@@ -51,12 +49,16 @@ if (($handle = fopen("coastmt_108.csv", "r")) !== FALSE) {
 	color: #339;
 	background: #d0dafd;
 }
+#newspaper-b tbody tr:hover th
+{
+	color: #339;
+	background: lightgreen;
 
-
+}
 </style>
 </head>
 <h2>海岸山脈 108 基石暨 12 名峰</h2>
-郭水明(Kaku)先生提供，蚯蚓整理(2016.11)。
+由 2011 年完成的郭水明(Kaku)先生提供，蚯蚓整理(2016.11)。
 <table id=newspaper-b>
 
 <?php
