@@ -30,10 +30,11 @@ if (($handle = fopen("coastmt_108.csv", "r")) !== FALSE) {
 }
 #newspaper-b th
 {
-	padding: 15px 10px 10px 10px;
+	padding: 12px;
 	font-weight: normal;
 	font-size: 14px;
 	color: #039;
+	background: lightgreen;
 }
 #newspaper-b tbody
 {
