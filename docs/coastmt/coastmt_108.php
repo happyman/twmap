@@ -15,7 +15,7 @@ if (($handle = fopen("coastmt_108.csv", "r")) !== FALSE) {
 }
 ?>
 <head>
-<title>海岸山脈 108 基石 (KaKu)</title>
+<title>海岸山脈 108 基石 暨 12 名峰(共 110 座)(KaKu)</title>
 <style>
 
 #newspaper-b
@@ -54,16 +54,20 @@ if (($handle = fopen("coastmt_108.csv", "r")) !== FALSE) {
 
 </style>
 </head>
-<h2>海岸山脈 108 基石</h2>
+<h2>海岸山脈 108 基石暨 12 名峰</h2>
 郭水明(Kaku)先生提供，蚯蚓整理(2016.11)。
 <table id=newspaper-b>
 
 <?php
 foreach($lines as $row){
 	echo "<tr>";
+	if (strstr($row[9], '12峰'))
+		$td = '<th>'; 
+	else
+		$td = '<td>';
 	 for ($c=0; $c < count($row); $c++) {
-            //echo $data[$c] . "<br />\n";
-			echo "<td>" . $row[$c];
+
+			echo $td. $row[$c];
         }
 	
 	echo "</tr>";
