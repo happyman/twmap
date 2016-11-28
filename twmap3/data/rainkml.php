@@ -65,12 +65,12 @@ switch($term) {
 		break;
 		case 'o2d':
 			$name = '前日雨量';
-			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hk%s000.jpg', date("nd",strtotime("-1 day")));
+			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s000.jpg', date("d",strtotime("-1 day")));
 			$type = 'observation';
 		break;
 		case 'o1d':
 			$name = '前日雨量';
-			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hk%s000.jpg', date("nd",strtotime("today")));
+			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s000.jpg', date("d",strtotime("today")));
 			$type = 'observation';
 		break;
 		case 'now':

@@ -47,7 +47,7 @@ $(document).ready(function() {
                         <li>按右鍵可以顯示目前座標
                         <li>按左鍵可以選擇範圍
                         <li>搜尋框可打入山名,地標,座標: 
-				<ul><li>lon,lat :經度,緯度
+				<ul><li>lat,lng :緯度,緯度
                                 <li>twd67 座標  : x,y
 				<li>twd97 座標  : x/y
                                 </ul>
