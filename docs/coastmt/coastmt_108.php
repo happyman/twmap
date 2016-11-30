@@ -59,6 +59,7 @@ if (($handle = fopen("coastmt_108.csv", "r")) !== FALSE) {
 </head>
 <h2>海岸山脈 108 基石暨 12 名峰</h2>
 由 2011 年完成的郭水明(Kaku)先生提供，蚯蚓整理(2016.11)。
+12 峰源自莊錦豐(小花)兄依照地表突起度(prominence)選擇的的台灣中級山/郊山獨立峰列表。
 <table id=newspaper-b>
 
 <?php
