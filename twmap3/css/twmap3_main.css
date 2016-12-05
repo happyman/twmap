@@ -152,15 +152,21 @@ textarea:hover {
 #marker_reload {
 	cursor: pointer;
 }
+// google dropdown menu of mapstyle select
+.gm-style-mtc > div:first-child {
+	font-size:11px;
+	padding: 0px;
+}
 #changemap {
-	width: 80px;
-	font-weight: bold;
+	/* width: 80px;
+	font-weight: bold; */
 	position: absolute;
-	left: 100px;
+	left: 210px;
+	font-size:11px;
 	cursor: pointer;
 }
 #changegname {
-	position: absolute; left:290px;
+	position: absolute; left:280px;
 	top:0px;
 	font-size:11px;
 	cursor: pointer;

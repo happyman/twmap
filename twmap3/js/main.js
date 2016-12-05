@@ -46,14 +46,16 @@ var GPSLayer; // external kml layer
 var TaiwanMapV1Options = {
     getTileUrl: function(a, b) {
         var z = 17 - b;
-        return "http://rs.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
+        // return "http://rs.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
+		return "http://gis.sinica.edu.tw/googlemap/TM25K_1989/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
     },
     tileSize: new google.maps.Size(256, 256),
-    maxZoom: 18,
-    minZoom: 13,
+    maxZoom: 17,
+    // minZoom: 13, ## fcgi 13-18
     name: '經建1',
-    alt: 'sunriver tile map'
+    alt: '經建一'	
 };
+
 var TaiwanMapOptions = {
     getTileUrl: function(coord, zoom) {
         return "http://rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
@@ -61,7 +63,7 @@ var TaiwanMapOptions = {
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 16,
     minZoom: 10,
-    name: "台灣",
+    name: "經建3",
     alt: 'Taiwan TW67 Map'
 };
 var TaiwanGpxMapOptions = {
@@ -136,15 +138,43 @@ var OSM_Options = {
     name: "OSM",
     alt: "Open Street Map"
 };
-var MOI_OSM_TWMAP_Options = {
+var MOI_OSM_Options = {
     getTileUrl: function(a, b) {
-        return 'http://rs.happyman.idv.tw/MOI_OSM/' + b + "/" + a.x + "/	" + a.y + ".png";
+        return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
     name: "OSM",
     alt: "MOI_OSM @Rudy"
 };
+var MOI_OSM_TWMAP_Options = {
+    getTileUrl: function(a, b) {
+        return "http://rs.happyman.idv.tw/MOI_OSM/" + b + "/" + a.x + "/" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    name: "OSM",
+    alt: "MOI_OSM @Rudy"
+};
+var Hillshading_Options = {
+    getTileUrl: function(a, b) {
+        return 'http://rs.happyman.idv.tw/map/hillshading/' + b + "/" + a.x + "/	" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    name: "陰影",
+    alt: "Taiwan hillshading"
+};
+var MOI_OSM_GPX_Options = {
+    getTileUrl: function(a, b) {
+        return 'http://rs.happyman.idv.tw/map/moi_osm_gpx/' + b + "/" + a.x + "/	" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    name: "OSM_GPX",
+    alt: "MOI_OSM +GPX"
+};
+
 var Darker_Options = {
     getTileUrl: function(a, b) {
         return "http://b.basemaps.cartocdn.com/dark_all/" + b + "/" + a.x + "/" + a.y + ".png";
@@ -189,17 +219,25 @@ var TW50K1956_Options = {
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
 var TaiwanGpxMapType = new google.maps.ImageMapType(TaiwanGpxMapOptions);
+var MOI_OSM_GPX_MapType = new google.maps.ImageMapType(MOI_OSM_GPX_Options);
+var MOI_OSM_TWMAP_MapType = new google.maps.ImageMapType(MOI_OSM_TWMAP_Options);
 //  背景
 var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_2011_MapOptions);
 var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
-var MOI_OSM_TWMAP_MapType = new google.maps.ImageMapType(MOI_OSM_TWMAP_Options);
+var MOI_OSM_MapType = new google.maps.ImageMapType(MOI_OSM_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
 var FanDi_MapType = new google.maps.ImageMapType(Fandi_Options);
 var JM50K1924_MapType = new google.maps.ImageMapType(JM50K1924_Options);
 var TW50K1956_MapType = new google.maps.ImageMapType(TW50K1956_Options);
+
+
+
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
+var Hillshading_MapType = new google.maps.ImageMapType(Hillshading_Options);
+
+// 
 var BackgroundMapType;
 var BackgroundMapOptions;
 var BackgroundMap = 0;
@@ -407,7 +445,8 @@ function showmapkml(mid, marker_desc, additional_marker_desc, zoom, need_center_
 }
 
 function permLinkURL(goto) {
-    var ver = (BackgroundMap === 0) ? 3 : 1;
+    // var ver = (BackgroundMap === 0) ? 3 : 1;
+	var ver = $("#changemap").val();
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
 	var skml_param = "";
@@ -421,7 +460,8 @@ var MapStateRestored = 0;
 function saveMapState() { 
     if (MapStateRestored === 0) return;
     var mapCenter=map.getCenter();  
-    var ver = (BackgroundMap === 0) ? 3 : 1;
+    // var ver = (BackgroundMap === 0) ? 3 : 1;
+	var ver = $("#changemap").val();
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
     var state = { "zoom": map.getZoom(), "opacity": opacity, "mapversion": ver, "maptypeid": map.getMapTypeId(),
@@ -463,7 +503,12 @@ function restoreMapState(state) {
                 $("#mcover").val(state.mcover);
                 $("#mcover").change();
 	}
-    if (state.mapversion == 1)  $("#changemap").trigger('click');
+    // if (state.mapversion == 1)  $("#changemap").trigger('click');
+	 if (state.mapversion) {
+                $("#changemap").val(state.mapversion);
+                $("#changemap").change();
+     }
+       
 
 	if (state.show_delaunay == 1 ) {
 	   $("#delaunay_sw").trigger('click');
@@ -1301,7 +1346,7 @@ function initialize() {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "theme", 'fandi', 'jm50k','tw50k','general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "theme", 'fandi', 'jm50k','tw50k','hillshading', 'general2011']
         }
     });
 
@@ -1322,11 +1367,13 @@ function initialize() {
     map.mapTypes.set('taiwan', TaiwanMapType);
     map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
     map.mapTypes.set('osm', OSM_MapType);
-    map.mapTypes.set('moi_osm', MOI_OSM_TWMAP_MapType);
-
+    map.mapTypes.set('moi_osm', MOI_OSM_MapType);
+	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);
     map.mapTypes.set('fandi', FanDi_MapType);
     map.mapTypes.set('jm50k', JM50K1924_MapType);
     map.mapTypes.set('tw50k', TW50K1956_MapType);
+	map.mapTypes.set('moi_osm_gpx', MOI_OSM_GPX_MapType);
+	map.mapTypes.set('hillshading', Hillshading_MapType);
 	if (getParameterByName("theme") == 'ingress')
 		map.mapTypes.set('theme', Darker_MapType);
 	else
@@ -1500,31 +1547,43 @@ function initialize() {
         labelArray[i].bindTo('text', markerArray[i], 'title');
     }
     markers_ready = 1;
-    // 切換舊版地圖
-    $("#changemap").click(function() {
-        if (BackgroundMap === 0) {
-            BackgroundMapType = TaiwanMapV1MapType;
-            BackgroundMapOptions = TaiwanMapV1Options;
-            BackgroundMap = 1;
-            $("#changemap").addClass("disable");
-            $("#changemap").text("經建一");
-        } else {
-            if (show_kml_layer == 1) {
-                BackgroundMapType = TaiwanGpxMapType;
+ 
+	 $("#changemap").change(function() {
+		 var curMapType = BackgroundMapType;
+		 var newMap = $("#changemap").val();
+		 if (newMap == 'tw25k_v3' || newMap == '3') {
+			 if (show_kml_layer == 1) {
+				BackgroundMapType = TaiwanGpxMapType;
                 BackgroundMapOptions = TaiwanGpxMapOptions;
-            } else {
-                BackgroundMapType = TaiwanMapType;
-                BackgroundMapOptions = TaiwanMapOptions;
-            }
-            BackgroundMap = 0;
-            $("#changemap").removeClass("disable");
-            $("#changemap").text("經建三");
-        }
-        map.overlayMapTypes.removeAt(0, BackgroundMapType);
+				
+			 } else {
+				BackgroundMapType = TaiwanMapType;
+                BackgroundMapOptions = TaiwanMapOptions; 
+			 }
+			 BackgroundMap = 'tw25k_v3';
+		} else if (newMap == 'tw25k_v1' || newMap == '1') {
+			BackgroundMapType = TaiwanMapV1MapType;
+            BackgroundMapOptions = TaiwanMapV1Options;
+			BackgroundMap = 'tw25k_v1';
+		} else {
+			if (show_kml_layer == 1) {
+				BackgroundMapType = MOI_OSM_GPX_MapType;
+				BackgroundMapOptions = MOI_OSM_GPX_Options;
+			} else {
+				BackgroundMapType = MOI_OSM_TWMAP_MapType;
+				BackgroundMapOptions = MOI_OSM_TWMAP_Options;
+			}
+			BackgroundMap = 'moi_osm';
+		}	
+		 if (curMapType == BackgroundMapType) {
+			 console.log('skip change');
+			 return true;
+		} 	
+		map.overlayMapTypes.removeAt(0, BackgroundMapType);
         map.overlayMapTypes.insertAt(0, BackgroundMapType);
         updateView("info_only");
         changeBackgroundOpacity(opacity);
-    });
+	 });
     // 切換前景圖
     $('#changegname').change(function() {
         var curMap = (map.overlayMapTypes.length == 2) ? map.overlayMapTypes.getArray()[1].name : 'None';
@@ -1534,9 +1593,17 @@ function initialize() {
             map.overlayMapTypes.removeAt(1);
             return true;
         }
-        if (curMap != 'None') map.overlayMapTypes.removeAt(1);
-        if (newMap == 'GoogleNames') map.overlayMapTypes.insertAt(1, GoogleNameMapType);
-        else map.overlayMapTypes.insertAt(1, NLSCNameMapType);
+        if (curMap != 'None') {
+			map.overlayMapTypes.removeAt(1);
+		}
+        if (newMap == 'GoogleNames') {
+			map.overlayMapTypes.insertAt(1, GoogleNameMapType);
+			map.overlayMapTypes[1].setOpacity(1);
+		}
+        else if (newMap == 'NLSCNames') {
+			map.overlayMapTypes.insertAt(1, NLSCNameMapType);
+			map.overlayMapTypes[1].setOpacity(1);
+		}
         updateView("info_only");
     });
     $('#changegrid').change(function() {
@@ -1587,10 +1654,7 @@ function initialize() {
             show_kml_layer = 1;
             $("#kml_sw").removeClass("disable");
         }
-        if (BackgroundMap === 0) {
-            $("#changemap").trigger('click');
-            $("#changemap").trigger('click');
-        }
+		$("#changemap").change();
     });
     $("#label_sw").click(function() {
 	console.log("label_sw triggerred: " + show_label);
@@ -1688,9 +1752,6 @@ function initialize() {
         "margin": "1px"
     });
     //$("#ddcl-marker_sw_select").css({"top": "5px"});
-    $('#changemap').css({
-        'left': '210px'
-    });
     $('#changegname').menu();
     $('#changegname').removeClass('ui-widget-content ui-corner-all');
     $('#changegrid').menu();
@@ -1830,7 +1891,10 @@ function initialize() {
             // 隱藏一些 button
             $("#about").hide();
             $("#generate").hide();
-            $("#changemap").removeAttr('style');
+            // $("#changemap").removeAttr('style');
+			    $('#changemap').css({
+        'left': '110px'
+    });
             $("#search_text").hide();
             $("#loc").hide();
             google.maps.event.clearListeners(map, 'click');
