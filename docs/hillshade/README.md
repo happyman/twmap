@@ -1,19 +1,19 @@
 # 地圖產生器的 hillshading 圖層產生方式
 
-## 1. download Taiwan's 20M DEM
-Thanks to Rex. we have ready-to-use tiff. [1][2]
+## 1. download Taiwan's 20M DEM [1] [2]
+Thanks to Rex. we have ready-to-use tiff. 
 
 ```
 unzip dem_20m-wgs840-lzw.tiff.zip
 ln -s dem_20m-wgs840-lzw.tiff raw.tiff
 ```
-## 2. Wrap the image into better resolution (gdal > 1.7) [5][7]
-note: use bilinear resampling
+## 2. Wrap the image into better resolution (gdal > 1.7) [5] [7]
+note: use bilinear resampling  
 
 ```
 gdalwarp  -wt Float32 -ot Float32  -co BIGTIFF=YES -co TILED=YES -co COMPRESS=LZW -co PREDICTOR=2 -t_srs "+proj=merc +ellps=sphere +R=6378137 +a=6378137 +units=m" -r bilinear -tr 10 10 raw.tiff wraped.tif
 ```
-3. create hillshade tiff [6][9]
+## 3. create hillshade tiff [6] [9]
 
 ```
 echo doing hillshade by gdaldem
@@ -30,7 +30,7 @@ cat shade.rmap
 129 255 255 255 0
 255 255 255 255 192
 ```
-4. serve it with mapnik [9]
+## 4. serve it with mapnik [9]
 
 this is my xml for reference.
 
@@ -70,13 +70,13 @@ this is my xml for reference.
 ```
 
 ## 5. reference
-1. http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/
-2. https://drive.google.com/drive/folders/0B7mj_CQDLqFCUzdRazk5TFRNWDg
-3. http://blog.mastermaps.com/2012/06/creating-color-relief-and-slope-shading.html
-4. http://blog.mastermaps.com/2012/07/terrain-mapping-with-mapnik.html
-5. http://wiki.openstreetmap.org/wiki/Mapnik/Hillshading_using_Mapnik,_GDAL_and_SRMT_data
-6. https://github.com/der-stefan/OpenTopoMap/blob/master/mapnik/HOWTO_DEM
-7. http://www.gdal.org/gdalwarp.html
-8. http://wiki.openstreetmap.org/wiki/Shaded_relief_maps_using_mapnik
-9. http://www.gdal.org/gdaldem.html
+[1]: http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/
+[2]: https://drive.google.com/drive/folders/0B7mj_CQDLqFCUzdRazk5TFRNWDg
+[3]: http://blog.mastermaps.com/2012/06/creating-color-relief-and-slope-shading.html
+[4]: http://blog.mastermaps.com/2012/07/terrain-mapping-with-mapnik.html
+[5]: http://wiki.openstreetmap.org/wiki/Mapnik/Hillshading_using_Mapnik,_GDAL_and_SRMT_data
+[6]: https://github.com/der-stefan/OpenTopoMap/blob/master/mapnik/HOWTO_DEM
+[7]: http://www.gdal.org/gdalwarp.html
+[8]: http://wiki.openstreetmap.org/wiki/Shaded_relief_maps_using_mapnik
+[9]: http://www.gdal.org/gdaldem.html
 
