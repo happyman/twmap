@@ -1,7 +1,8 @@
 <?php
 $ha3a = array(
-'Hybrid/thirdparty/Facebook/facebook.php',
-'Hybrid/thirdparty/Facebook/base_facebook.php',
+//'Hybrid/thirdparty/Facebook/facebook.php',
+//'Hybrid/thirdparty/Facebook/base_facebook.php',
+'Hybrid/thirdparty/Facebook/autoload.php',
 'Hybrid/Auth.php',
 'Hybrid/Endpoint.php',
 'Hybrid/Error.php',
