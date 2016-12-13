@@ -140,7 +140,8 @@ var OSM_Options = {
 };
 var MOI_OSM_Options = {
     getTileUrl: function(a, b) {
-        return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
+      //  return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
+	return "http://rudy.tile.basecamp.tw/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
