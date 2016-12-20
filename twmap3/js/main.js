@@ -698,10 +698,10 @@ function locInfo_show(newpos, ele, extra) {
     content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
     if (ele > -1000) content += "<br>高度: " + ele.toFixed(0) + "M";
     content += "<br>座標: " + comment + "" + Math.round(p.x) + "," + Math.round(p.y);
-    /* allow from all points
+   // /* allow from all points
     if (ele > -1000) 
 	content += "<br>通視模擬: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
-    */
+    //*/
     if (login_role == 1) {
         if (locInfo_name == "我的位置") 
 			content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "',{});return false\">新增</a>";
@@ -899,8 +899,12 @@ function showCenterMarker(name) {
     var postw67 = name.match(/^(\d+)\s*,\s*(\d+)$/);
     var postw671 = name.match(/^(\d+)\s+(\d+)$/);
     var postw97 = name.match(/^(\d+)\s*\/\s*(\d+)$/);
+	// Cadastral coordinates
+    var  cm = name.match(/^cm:\s*(\-?\d+\.?\d+)\s*,\s*(\-?\d+\.\d+)$/);
+    var  cj = name.match(/^cj:\s*(\-?\d+\.?\d+)\s*,\s*(\-?\d+\.\d+)$/);
     var loc;
     var tmploc;
+    var tt;
     if (posxy) {
         tmploc = {
             x: posxy[2],
@@ -917,6 +921,12 @@ function showCenterMarker(name) {
         tmploc = twd672lonlat(postw671[1], postw671[2], 0);
     } else if (postw97) {
         tmploc = twd972lonlat(postw97[1], postw97[2], 0);
+    } else if (cm) {
+	tt = cad2twd67(cm[1],cm[2],'m');
+        tmploc = twd672lonlat(tt[0], tt[1], 0);
+    } else if (cj) {
+	tt = cad2twd67(cj[1],cj[2],'j');
+        tmploc = twd672lonlat(tt[0], tt[1], 0);
     } else {
         // geocoding
         $.blockUI({
@@ -1850,6 +1860,8 @@ function initialize() {
    var state;
 	try {
 	     state = JSON.parse(localStorage.getItem("twmap_state"));
+	     if (state === null )
+		state = {};
 	} catch(e) {
 	     state = {};
 	}
@@ -1869,6 +1881,7 @@ function initialize() {
 		   "skml_id":getParameterByName("skml_id")
 	};	   
 	$.extend(true,state,st);
+	//console.log(state);
 	restoreMapState(state);
 
      // if show_line_of_sight == 1
