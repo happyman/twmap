@@ -37,14 +37,7 @@ if ($realdo) {
 	list ($status, $msg) =  remove_gpx_from_gis($mid);
 	if ($status == true){
 		// clean tile cache
-		list($st, $toclean) = tilestache_clean($mid);
-		if($st == true) {
-			foreach($toclean as $line){
-				$del = $cache_dir . "/" . $line;
-				echo "rm $del\n";
-				@unlink($del);
-			}
-		}
+		list($st, $toclean) = tilestache_clean($mid,1);
 	}
 } else {
 	$status = true;

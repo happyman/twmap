@@ -50,6 +50,8 @@ $(document).ready(function() {
 				<ul><li>lat,lng :緯度,緯度
                                 <li>twd67 座標  : x,y
 				<li>twd97 座標  : x/y
+				<li>地籍座標(間): cj: x.x,y.y
+				<li>地籍座標(公尺) cm: x.x,y.y
                                 </ul>
 						<li>下載點位圖資: 按左鍵選擇範圍, 然後按右鍵選擇下載(kml)
 						<li>點選行跡可下載行跡檔。(kml/gpx)

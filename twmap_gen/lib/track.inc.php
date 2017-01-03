@@ -4,9 +4,9 @@
 // db handles
 function track_add($data){
 	$db=get_conn();
-	$sql = sprintf('insert into "track" ("uid","name","md5name","path","status","cdate","size","km_x","km_y","bbox","is_taiwan") values(%d,\'%s\',\'%s\',\'%s\',%d, now(),%d,%s,%s,\'%s\',\'%s\') returning tid',
+	$sql = sprintf('insert into "track" ("uid","name","md5name","path","status","cdate","size","km_x","km_y","bbox","is_taiwan","keepon_id") values(%d,\'%s\',\'%s\',\'%s\',%d, now(),%d,%s,%s,\'%s\',\'%s\',\'%s\') returning tid',
 	$data['uid'],pg_escape_string($data['name']),$data['md5name'],pg_escape_string($data['path']),$data['status'],$data['size'],
-	$data['km_x'],$data['km_y'],pg_escape_string($data['bbox']),($data['is_taiwan']==1)? 't':'f');
+	$data['km_x'],$data['km_y'],pg_escape_string($data['bbox']),($data['is_taiwan']==1)? 't':'f', $data['keepon_id']);
 	// error_log($sql);
 	$rs = $db->getAll($sql);
 	return $rs[0]['tid'];

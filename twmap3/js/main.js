@@ -84,6 +84,7 @@ var GoogleNameOptions = {
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 20,
     minZoom: 0,
+	opacity: 1,
     name: 'GoogleNames'
 };
 var NLSCNameOptions = {
@@ -92,6 +93,7 @@ var NLSCNameOptions = {
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
+	opacity: 1,
     name: 'NLSCNames'
 };
 // 以下為背景圖
@@ -516,13 +518,7 @@ function restoreMapState(state) {
 	}
 	var need_center_marker = 1;
 	var initial_loc = 0;
-	console.log("goto: " + state.goto);
-	if (state.goto) {
-        $("#tags").val(state.goto);
-        $("#goto").trigger('click');
-		need_center_marker = 0;
-		initial_loc = 1;
-    }
+	
 	if (state.kml) {
 		    console.log("get kml parameter");
 			GPSLayer = new geoXML3.parser({
@@ -543,7 +539,13 @@ function restoreMapState(state) {
 	} else if (state.skml_id && state.skml_id !==0){
 		showmapkml(state.skml_id, "", "" , true, need_center_marker);
 		initial_loc = 1;
-	} 
+	} else if (state.goto) {
+		console.log("goto: " + state.goto);
+        $("#tags").val(state.goto);
+        $("#goto").trigger('click');
+		// need_center_marker = 0;
+		initial_loc = 1;
+    }
 	// 最後都沒有移動位置, 就試試看取得現在位置, 不然就跳到特殊點
 	if (initial_loc === 0){
 		   console.log("getgeolocation");
@@ -1609,11 +1611,11 @@ function initialize() {
 		}
         if (newMap == 'GoogleNames') {
 			map.overlayMapTypes.insertAt(1, GoogleNameMapType);
-			map.overlayMapTypes[1].setOpacity(1);
+			//map.overlayMapTypes[1].setOpacity(1);
 		}
         else if (newMap == 'NLSCNames') {
 			map.overlayMapTypes.insertAt(1, NLSCNameMapType);
-			map.overlayMapTypes[1].setOpacity(1);
+			//map.overlayMapTypes[1].setOpacity(1);
 		}
         updateView("info_only");
     });
@@ -1988,6 +1990,7 @@ function CurrentLocation(position) {
     // user 提供資訊
     got_geo = 1;
     var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+	console.log('goto currentLocation');
     $("#tags").val(pos.toUrlValue(5));
     $("#goto").trigger('click');
     MapStateRestored = 1;
@@ -1995,6 +1998,7 @@ function CurrentLocation(position) {
 
 function FeatureLocation() {
     var feature = ["三角錐山", "南二子山北峰", "敷島山", "大檜山", "武陵山", "佐久間山", "錐錐谷", "丹錐山", "霧頭山", "出雲山", "西巴杜蘭", "公山", "大分山"];
+	console.log('goto featureLocation');
     $("#tags").val(feature[Math.floor(Math.random() * feature.length)]);
     $("#goto").trigger('click');
     MapStateRestored = 1;

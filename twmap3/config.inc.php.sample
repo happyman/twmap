@@ -25,3 +25,4 @@ $CONFIG['exportkml_url'] = $site_twmap_html_root . "api/exportkml.php";
 $CONFIG['db'] = array('host'=> 'localhost', 'db' => 'twmap', 'user'=> 'user', 'pass' => 'password');
 // admin user 的 uid 為 登入地圖產生器的帳號
 $CONFIG['admin'] = array("");
+$CONFIG['gmap_api_key'] = '';

@@ -5,7 +5,7 @@ if (php_sapi_name() != "cli"){
 exit("cli only");
 }
 
-$debug = 0;
+$debug = 1;
 $opt = getopt("a:k:m:t:s:e:rg:u:c:f");
 $action = (isset($opt['a'])) ? $opt['a'] : '';
 if (empty($action)) {

@@ -23,6 +23,12 @@ if ($wpt_data === false || (count($wpt_data)==0 && count($trk_data)==0)) {
 	header('Access-Control-Allow-Origin: *');
 	ajaxerr("empty result");
 }
+function mid_show($id){
+	if ($id < 0 )
+		return sprintf("t%d",$id * -1);
+	else
+		return $id;
+}
 if (empty($detail) || $detail == 0 ){
 // 傳回高度
     $ele = get_elev(twDEM_path, $y, $x, 1);
@@ -82,7 +88,7 @@ th {
 				printf("<tr><td>%s%s</tr>",$wpt_icon, $row['name']);
 				continue;
 			}
-			$show_url = sprintf("<a href='%s/show.php?mid=%s' target=_blank><img src='%s/icons/op_mapshow.png'>%s</a>",$site_html_root,$mid_to_show, $site_html_root,$mid_to_show);
+			$show_url = sprintf("<a href='%s/show.php?mid=%s' target=_blank><img src='%s/icons/op_mapshow.png'>%s</a>",$site_html_root,$mid_to_show, $site_html_root,mid_show($mid_to_show));
 			$rs = $rank->stats($mid_to_show);
 			list ($login, $uid) = userid();
 			if ($login === false){
@@ -99,115 +105,35 @@ th {
 			
 			if ($row['flag'] != 2 ) {
 				$html_root = $out_html_root . str_replace($out_root, "", dirname($row['filename']));
-			
-				if (file_exists(map_file_name($row['filename'],'gpx')))
-					$gpx_url = sprintf("%s(<a href='%s%s/%s' class=download_track target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' class=download_track target=_blank>kml</a>)",$row['title'],$site_url,$html_root,basename(map_file_name($row['filename'], 'gpx')), $mid_to_show);
-				else
-					$gpx_url = sprintf("%s (<a href='getkml.php?mid=%d' class=download_track target=_blank>kml</a>)",$row['title'],$mid_to_show);
+				if ($mid_to_show > 0 ) {
+					if (file_exists(map_file_name($row['filename'],'gpx')))
+						$gpx_url = sprintf("%s(<a href='%s%s/%s' class=download_track target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' class=download_track target=_blank>kml</a>)",$row['title'],
+											$site_url,$html_root,basename(map_file_name($row['filename'], 'gpx')), $mid_to_show);
+					else
+						$gpx_url = sprintf("%s (<a href='getkml.php?mid=%d' class=download_track target=_blank>kml</a>)",$row['title'],$mid_to_show);
+				} else { 
+					// track database
+				    $gpx_link = $site_url . str_replace($out_root,$out_html_root,sprintf("%s%d/%s_p.gpx",$row['path'],-1 * $row['mid'],$row['md5name']));
+					$gpx_url = sprintf("%s(<a href='%s' class=download_track target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' class=download_track target=_blank>kml</a>)",
+						$row['title'],$gpx_link  , $mid_to_show);
+				}
 				printf("<tr><td>%s%s<td rowspan=$rowspan><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a>
 				<td rowspan=$rowspan>%s<td rowspan=$rowspan>%s<td rowspan=$rowspan>%s",
 				$wpt_icon,$row['name'],
-				$mid_to_show,$row['title'],rawurlencode($show_url),$mid_to_show,
+				$mid_to_show,$row['title'],rawurlencode($show_url),mid_show($mid_to_show),
 				$gpx_url,(($row['flag'] == 0)? $show_url:"" ). $record_str, $rank_str);
 			} else {
-				printf("<tr><td>%s%s<td rowspan=$rowspan><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a>
+				printf("<tr><td>%s%s<td rowspan=$rowspan>
+				<a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a>
 				<td rowspan=$rowspan><a href='export_mid_gpx.php?mid=%d&kml=1' class=download_track target=_blank>%s (kml)</a>
 				<td rowspan=$rowspan><img src='/twmap/icons/op_delete.png' title='原始 gpx 已刪除'/><td rowspan=$rowspan>%s", 
 				$wpt_icon,$row['name'], 
-				$mid_to_show,$row['title'],rawurlencode($show_url),$mid_to_show, $mid_to_show, 
+				$mid_to_show,$row['title'],rawurlencode($show_url),mid_show($mid_to_show), $mid_to_show, 
 				$row['title'],$rank_str);
 			}
 		}
 	}	
-	/*
-	foreach($data as $row){
-		if (isset($ans[$row['name']][$row['ele']]) && $ans[$row['name']][$row['ele']][0] == $row['title']){
-					$row['dup'] = 1;
-					// 尚未刪除的
-					if ($row['flag'] == 0) {
-						// $dup [ current mid ] = original mid, current still exist
-						$dup[$row['mid']] = $ans[$row['name']][$row['ele']][1];
-					}
-		} else {
-					$ans[$row['name']][$row['ele']] = array($row['title'],$row['mid']);
-					$row['dup'] = 0;
-		}
-		$to_show[] = $row;
-	}
-	
-	foreach($to_show as $row){
-		
-		if ($row['dup'] == 0 ) {
-			// 如果有尚未刪除的, 列出尚未刪除的.
-			if (count($dup)>0){
-				$found = 0;
-				foreach($dup as $d_cur => $d_orig){
-					//echo  "$d_cur => $d_orig\n";
-					if ($row['mid'] == $d_orig){
-						$mid_to_show = $d_cur;
-						$found = 1;
-						break;
-					}
-				}
-				if (!$found)
-					$mid_to_show = $row['mid'];
-			} else {
-				$mid_to_show = $row['mid'];
-			}
-			if ( !empty($row['keepon_id']) &&  $row['keepon_id'] != 'NULL' && !is_numeric($row['keepon_id']))
-				$record_str = sprintf("<a href='http://www.keepon.com.tw/redirectMap-%s.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>",$row['keepon_id']);
-			else
-				$record_str = '';
-			$wpt_icon = "<img src='/twmap/icons/wpt.png' />";
-			$show_url = sprintf("<a href='/twmap/show.php?mid=%s' target=_blank><img src='/twmap/icons/op_mapshow.png'>%s</a>",$mid_to_show);
-			if ($row['flag'] != 2 ) {
-				$html_root = $out_html_root . str_replace($out_root, "", dirname($row['filename']));
-				// $show_url = sprintf("<a href='/twmap/show.php?mid=%s' target=_blank><img src='/twmap/icons/op_mapshow.png'/></a>",$mid_to_show);
-				if (file_exists(map_file_name($row['filename'],'gpx')))
-					$gpx_url = sprintf("%s(<a href='%s%s/%s' target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' target=_blank>kml</a>)",$row['title'],$site_url,$html_root,basename(map_file_name($row['filename'], 'gpx')), $mid_to_show);
-				else
-					$gpx_url = sprintf("%s (<a href='getkml.php?mid=%d' target=_blank>kml</a>)",$row['title'],$mid_to_show);
-				printf("<tr><td>%s%s<td><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a><td>%s<td>%s",
-				$wpt_icon,$row['name'],
-				$mid_to_show,$row['title'],rawurlencode($show_url),$mid_to_show,
-				$gpx_url,(($row['flag'] == 0)? $show_url:"" ). $record_str);
-			} else {
-				printf("<tr><td>%s%s<td><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s<td><a href='export_mid_gpx.php?mid=%d&kml=1' target=_blank>%s (kml)</a><td><img src='/twmap/icons/op_delete.png' title='原始 gpx 已刪除'/>", 
-				$wpt_icon,$row['name'], $mid_to_show,$row['title'],rawurlencode($show_url), $mid_to_show, $mid_to_show, $row['title']);
-			}
 
-
-		}
-	}
-	if (count($trk_data) > 0 ) {
-		foreach($trk_data as $row) {
-			$mid_to_show = $row['mid'];
-			if ( !empty($row['keepon_id']) &&  $row['keepon_id'] != 'NULL' && !is_numeric($row['keepon_id']))
-				$record_str = sprintf("<a href='http://www.keepon.com.tw/redirectMap-%s.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>",$row['keepon_id']);
-			else
-				$record_str = '';
-			$trk_icon = "<img src='/twmap/icons/trk.png'/>";
-			$show_url = sprintf("<a href='/twmap/show.php?mid=%s' target=_blank><img src='/twmap/icons/op_mapshow.png'>%s</a>",$mid_to_show);
-			if ($row['flag'] != 2 ) {
-				$html_root = $out_html_root . str_replace($out_root, "", dirname($row['filename']));
-				
-				if (file_exists(map_file_name($row['filename'],'gpx')))
-					$gpx_url = sprintf("%s(<a href='%s%s/%s' target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' target=_blank>kml</a>)",$row['title'],$site_url,$html_root,basename(map_file_name($row['filename'], 'gpx')), $mid_to_show);
-				else
-					$gpx_url = sprintf("%s (<a href='getkml.php?mid=%d' target=_blank>kml</a>)",$row['title'],$mid_to_show);
-				printf("<tr><td>%s%s<td><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a><td>%s<td>%s",
-						$trk_icon,$row['name'],
-						$mid_to_show,$row['title'],rawurlencode($show_url),$mid_to_show,
-						$gpx_url,(($row['flag'] == 0)?$show_url:"") . $record_str );
-			} else {
-				printf("<tr><td>%s%s<td><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s<td><a href='export_mid_gpx.php?mid=%d&kml=1' target=_blank>%s (kml)</a><td><img src='/twmap/icons/op_delete.png' title='原始 gpx 已刪除'/>",
-				$trk_icon, $row['name'], 
-				$mid_to_show,$row['title'],rawurlencode($show_url),$mid_to_show, $mid_to_show, $row['title']);
-			}
-
-		}
-	}
-	*/
 	echo "</table>";
 	echo "<hr>";
 	if (is_admin()) {

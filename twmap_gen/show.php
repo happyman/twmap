@@ -14,7 +14,11 @@ if (isset($_GET['tab']) || isset($_GET['links']) || isset($_GET['zip'])) {
 }
 
 $mid = $_GET['mid'];
-$map = map_get_single($mid);
+if ($mid < 0 ){
+	$map = track_get_single($mid * -1);
+} else {
+	$map = map_get_single($mid);
+}
 
 if ($map == null ) {
 	echo "<h1>無此 map".print_r($_GET,true)."</h1>";
@@ -24,6 +28,56 @@ if ($map == null ) {
 if (!isset($_GET['info']) && $html_head == 1){
 	header("Location: ". pagelink($map));
 	exit;
+}
+if ($mid < 0 ){
+	$smarty->assign("title","檢視航跡:". $map['name']);
+	$smarty->assign("description",sprintf("%s 航跡範圍: %s. ", $map['name'],$map['bbox']));
+	$smarty->assign("site_root_url", $site_url . $site_html_root);
+// $smarty->assign("ogimage", array("thumb.php?mid=$mid&size=s", "thumb.php?mid=$mid&size=m", "thumb.php?mid=$mid&size=l"));
+	$smarty->assign("html_head", $html_head);
+if ($html_head == 1 ) {
+        echo $smarty->fetch("header.html");
+        if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1 ) {
+                $smarty->assign("user_icon", 'imgs/icon_'.$_SESSION['mylogin']['type']. '.png');
+                $smarty->assign("user_email", $_SESSION['mylogin']['email'] );
+                $smarty->assign("user_nickname", $_SESSION['mylogin']['nick'] );
+                $smarty->assign("lastest_mid", "&mid=$mid" );
+                $smarty->assign("initial_tab", 3 );
+                $smarty->assign("browser_url", $TWMAP3URL );
+                $smarty->assign("loggedin", 1);
+        } else { // 沒有登入
+                //require_once('lib/fb/facebook.php');
+                //require_once('lib/xuite.php');
+                $smarty->assign("lastest_mid", "&mid=$mid" );
+                $smarty->assign("initial_tab", 2 );
+                $smarty->assign("showing", true );
+                $smarty->assign("browser_url", $TWMAP3URL );
+                $smarty->assign("loggedin", 0);
+                $smarty->assign("login_xuite", $xuite->getLoginUrl());
+                $smarty->assign("login_fb",
+                        $facebook->getLoginUrl(  array(
+                                'canvas'    => 0,
+                                'fbconnect' => 1,
+                                'req_perms' => 'email'
+
+                        )));
+                $smarty->assign("user_icon", "imgs/icon-map.png");
+        }
+        echo $smarty->fetch("main.html");
+        exit;
+}
+
+	$smarty->assign('map',$map);
+	$gpx_link = $site_url . str_replace($out_root,$out_html_root,sprintf("%s%d/%s_p.gpx",$map['path'],$map['tid'],$map['md5name']));
+	$fname = glob(sprintf("%s%d/%s_o.*",$map['path'],$map['tid'],$map['md5name']));
+	$orig_link = $site_url . str_replace($out_root,$out_html_root,$fname[0]);
+	$smarty->assign('gpx_link',$gpx_link);
+	$smarty->assign('orig_link',$orig_link);
+	$smarty->assign("show_link", $TWMAP3URL . "?skml_id=-".$map['tid']);
+	$links['page'] = pagelink($map);
+	$smarty->assign('links',$links);
+	$smarty->display('show_track.html');
+	exit(0);
 }
 // 3. 顯示地圖
 // $html_root = $out_html_root . sprintf("/%06d/%d", $map['uid'],$mid);
@@ -165,6 +219,10 @@ default:
 }
 function pagelink($map) {
 	global $site_url, $site_html_root,$mid;
+	if ($mid < 0 ) {
+		$info = sprintf("%s",$map['bbox']);
+		return $site_url . $site_html_root . "/show.php?info=".urlencode($info) ."&mid=" . $mid;
+	} 
 	$info = sprintf("%dx%s-%dx%d",$map['locX'],$map['locY'],$map['shiftX'],$map['shiftY']);
 	return  $site_url . $site_html_root . "/show.php?info=".urlencode($info)."&version=".$map['version']. "&mid=$mid";
 }

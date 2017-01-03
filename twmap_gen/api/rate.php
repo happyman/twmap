@@ -14,7 +14,13 @@ if ($login === false) {
 	echo "請登入";
 	exit;
 }
-$map = map_get_single($mid);
+if ($mid < 0) {
+	$tid = $mid * -1;
+	$rs = track_get_single($tid);
+	$map['title'] = $rs['name'];
+}else{
+	$map = map_get_single($mid);
+}
 $rank = new map_rank();
 $st = $rank->get_rank($mid,$uid);
 $stat = $rank->get_comment($mid);

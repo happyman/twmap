@@ -223,6 +223,7 @@ function GPX_bbox($gpxurl) {
 		$ret =  $svg->detect_bbox();
 		return $ret;
 }
+// TODO: add to track database if over size happyman
 function GPX_enqueue($keepon_id,$title,$gpxurl,$auto_shrink=0){
 	// 1. download gpx
 		$tmp_gpx = tempnam("/tmp","GPX") . ".gpx";
@@ -233,6 +234,15 @@ function GPX_enqueue($keepon_id,$title,$gpxurl,$auto_shrink=0){
 			return array(false,"unable to download gpx");
 		}
 		file_put_contents($tmp_gpx, $data);
+	// 1.1 detect bbox, if over limit add to track database
+	$ret = GPX_bbox($gpxurl);
+	if ($ret[1]['is_taiwan'] != 0 && $ret[1]['over'] == 1) {
+		$cmd = sprintf("php upload.php %s %s %s",$tmp_gpx, escapeshellarg($title. ".gpx"), escapeshellarg($keepon_id));
+		exec($cmd, $out, $ret3);
+		kcli_msglog("run $cmd return $ret3");
+		@unlink($tmp_gpx);
+		return array(($ret==0)? true : false, "upload to track database");
+	}
 	// 2. parse params
 	$svg = new gpxsvg(array("gpx"=>$tmp_gpx, "width"=>1024, "fit_a4" => 1, "auto_shrink" => $auto_shrink,	"show_label_trk" => 0, "show_label_wpt" => 2));
 	$ret = $svg->process();

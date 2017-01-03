@@ -666,16 +666,20 @@ function import_gpx_to_gis($mid){
 	global $db_name,$db_user,$db_pass,$db_host;
 	// 0. 先檢查 gpx 存在與否
 	if ($mid > 0 ){
-	$row = map_get_single($mid);
+		$row = map_get_single($mid);
 		if ($row==null) 
 			return array(false, "mid incorrect");
 		$gpx_file = map_file_name($row['filename'], 'gpx');
 	} else {
-		// 找出對應的 gpx file
+		// 找出對應的 gpx file, mid < 0 is track
 		$tid = -1 * $mid;
 		$rs = track_get_single($tid);
 		if ($rs !== null ){
-			$gpx_file = sprintf("%s/%d/%s_p.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
+			$gpx_file_tmp = sprintf("%s/%d/%s_p.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
+			$gpx_file = sprintf("%s/%d/%s_x.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
+			$cmd = sprintf("gpsbabel -i gpx -f %s -x discard,matchcmt=base64 -o gpx -F %s",$gpx_file_tmp,$gpx_file);
+			echo $cmd;
+			exec($cmd,$ret,$out);
 		} else 
 			return array(false, "tid incorrect");
 	}
@@ -687,6 +691,15 @@ function import_gpx_to_gis($mid){
 		return array(true,"success");
 	else
 		return array(false,"fail import");
+}
+function is_gpx_in_gis($mid){
+	$db = get_conn();
+	$sql = sprintf("SELECT count(*) from gpx_trk WHERE mid=%d",$mid);
+	$rs = $db->getAll($sql);
+	if ($rs[0][0] == 0 ) {
+		return false;
+	}
+	return true;
 }
 function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
 	$tl = proj_67toge($tw67_bbox[0]);
@@ -736,12 +749,14 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
  */
 function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twmap_gpx"){
 	if ($mid < 0 ){
+		$tid = $mid * -1;
 		$rs = track_get_single($tid);
 		if ($rs === null ){
 			return array(false, "no such track");
 		}
 		// 直接將 bound 從 db 取出
-		list ($tl[1],$tl[0],$br[1],$br[0]) = preg_split("/\s",$rs['bbox']);
+		list ($tl[1],$tl[0],$br[1],$br[0]) = preg_split("/\s/",$rs['bbox']);
+		$title = $rs['name'];
 	} else {
 		$row = map_get_single($mid);
 		//print_r($row);
@@ -750,8 +765,12 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 		}
 		$tl = proj_67toge(array($row['locX'],$row['locY']));
 		$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
+		$title = $row['title'];
 		}
 	$cmd = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
+	// moi_osm_gpx 
+	$cmd2 = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l moi_osm_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	exec($cmd2);
 	error_log("tilestache_clean: ". $cmd);
 	/*
 	   利用 tilestache-clean 的 output 來砍另一層 cache 
@@ -781,7 +800,7 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 			$del = $cache_dir . "/". $line;
 			@unlink($del);
 			}
-			return array(true,$row['title'] ."cleaned");
+			return array(true,$title ."cleaned");
 		}
 		return array(true,$clean);
 	}
@@ -808,8 +827,9 @@ function get_waypoint($x,$y,$r=10,$detail=0){
 	$db=get_conn();
 	if ($detail == 0)
 		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name from gpx_wp WHERE ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY name",$x,$y,$r/1000/111.325);
-	else
-		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name,\"gpx_wp.ele\" AS ele,ST_AsText(wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename from gpx_wp A, map WHERE  ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) AND A.mid = map.mid  ORDER BY map.title",$x,$y,$r/1000/111.325);
+	else {
+		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name,\"gpx_wp.ele\" AS ele,ST_AsText(wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename,map.path,map.md5name from gpx_wp A, meta as map WHERE  ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) AND A.mid = map.idid  ORDER BY map.title",$x,$y,$r/1000/111.325);
+	}
 	// error_log($sql);
 	$rs = $db->getAll($sql);	
 	return $rs;
@@ -820,8 +840,8 @@ function get_track($x,$y,$r=10,$detail=0){
                 $sql = sprintf("SELECT \"gpx_trk.name\" AS name FROM gpx_trk WHERE ST_Crosses(wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry)", $x,$y,$r);
 
         else
-                $sql = sprintf("SELECT A.\"gpx_trk.name\" AS name,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename from gpx_trk A,map WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry) AND A.mid = map.mid ", $x,$y,$r);
-        // error_log($sql);
+                $sql = sprintf("SELECT A.\"gpx_trk.name\" AS name,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename,map.path,map.md5name from gpx_trk A,meta as map WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry) AND A.mid = map.idid ", $x,$y,$r);
+       // error_log($sql);
         $rs = $db->getAll($sql);
         return $rs;
 }

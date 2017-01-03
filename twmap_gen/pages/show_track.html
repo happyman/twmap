@@ -1,0 +1,30 @@
+<table id="bigbox" style="white-space:nowrap; overflow:visible;">
+	<tr><td width="400px" valign="top" align="left">
+			<ul>
+				<li>名稱: {$map.name}
+				<li>原始航跡: <a href='{$orig_link}'>{$orig_link}</a>
+				{if isset($gpx_link)}
+				<li>下載 GPX: <a href='{$gpx_link}'>{$gpx_link}</a>
+				<li>外連網址: <a href='{$show_link}' target=_blank>{$show_link}</a>
+				{/if}
+			     {if $map.keepon_id && $map.keepon_id != 'NULL' && !is_numeric($map.keepon_id)}
+                                <li>紀錄: <a href='http://www.keepon.com.tw/redirectMap-{$map.keepon_id}.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>
+                                {/if}
+ 
+				<li>範圍: {$map.bbox}
+				<li>延伸東方 {$map.km_x} 與 南方 {$map.km_y} 公里
+				<li>日期: {$map.cdate}
+			</ul>
+	</td>
+	<td  valign="top" align="right" width="800px">
+		<iframe src="{$show_link}" style="border: none;" width="800" height="800"></iframe>
+	</td>
+	</tr>
+</table>
+<script>
+	 window.history.replaceState({},'', '{$links.page}');
+ {literal}
+                        $('#bigbox').css({"table-layout":"fixed", "width":"100%",
+                                "border":"1px solid #000", "white-space": "nowrap","overflow": "visible"});
+{/literal}
+</script>
