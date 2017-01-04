@@ -41,7 +41,7 @@ $('document').ready(function(){
 
 Dropzone.options.myAwesomeDropzone = {
    maxFiles: 10,
-   maxFilesize: 20, // MB
+   maxFilesize: 60, // MB
    acceptedFiles: ".kml,.kmz,.gpx,.gdb",
    dictDefaultMessage: "請將檔案拖曳到此處上傳",
   init: function() {

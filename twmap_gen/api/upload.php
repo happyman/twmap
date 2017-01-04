@@ -1,7 +1,7 @@
 <?php
 require_once("../config.inc.php");
 
-$debug = 1;
+$debug = 0;
 $cli = 0;
 $keepon_id = "";
 if (php_sapi_name() != "cli"){
