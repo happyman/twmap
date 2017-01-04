@@ -19,7 +19,7 @@ switch($action){
 			break;
 	case 'list':
 	default:
-			$rs = track_get($uid);
+			$rs = track_get($uid,$_GET['jtSorting']);
 			break;
 }
 if ($rs === false) {

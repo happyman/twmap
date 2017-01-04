@@ -11,9 +11,10 @@ function track_add($data){
 	$rs = $db->getAll($sql);
 	return $rs[0]['tid'];
 }
-function track_get($uid){
+function track_get($uid, $order="tid DESC"){
 	$db=get_conn();
-	$sql = sprintf("select * from \"track\" where uid=%d AND status <> 3",$uid);
+	$sql = sprintf("select * from \"track\" where uid=%d AND status <> 3 ORDER BY %s",$uid,$order);
+	error_log($sql);
 	$rs = $db->getAll($sql);
 	return $rs;
 }
@@ -80,6 +81,7 @@ function gpsbabel_convert($orig,$type,$dest,$dtype){
 		return array(false, implode(" ",$out));
 	}
 }
+
 //http://php.net/manual/en/function.glob.php
 function glob_recursive($pattern, $flags = 0)
 {
@@ -100,7 +102,7 @@ function process_kmz_to_kml($fpath, $fname, $dest_gpx_path, $dest){
 	$cmd = sprintf("unzip -d %s %s", escapeshellarg($extract_path), escapeshellarg($fpath));
 	exec($cmd);
 	if (file_exists($kml_path)){
-		system("grep oruxmapsextensions $kml_path",$ret);
+		exec("grep oruxmapsextensions $kml_path >/dev/null",$out,$ret);
 		if ($ret == 0){
 			$cmd2 = sprintf("mogrify -format jpg  -auto-orient -thumbnail 1024x1024 '%s/files/*.jpg'",$extract_path);
 			exec($cmd2, $out, $ret2);
@@ -112,17 +114,19 @@ function process_kmz_to_kml($fpath, $fname, $dest_gpx_path, $dest){
 				// do process oruxmaps kmz 
 				$cwd = getcwd();
 				gpsbabel_convert($kml_path,"kml",$gpx_path, "gpx");
-				// $cmd3 = sprintf("gpsbabel -i kml -f %s -o gpx -F %s",escapeshellarg($kml_path), escapeshellarg($gpx_path));
-				// exec($cmd3);
+				// just keep gpx without photo wpt :~
+				copy($gpx_path,$dest_gpx_path);
+				// doing conversion 
 				$cmd4 = sprintf("rm %s; gpsbabel -i gpx -f %s -o kml,points=0 -F %s",$kml_path, escapeshellarg($gpx_path),escapeshellarg($kml_path));
-				exec($cmd4);
+				exec($cmd4,$out4,$ret);
+				error_log("run $cmd4 return $ret");
 				chdir($extract_path);
 				$f=realpath("doc.kml");
+				// embed image in kml part
 				process_oruxmap_kmz(file_get_contents($f), $dest);
 				chdir($cwd);
 				exec("rm -r $extract_path");
-				// kml convert back to gpx
-				gpsbabel_convert($dest, "kml", $dest_gpx_path, "gpx");
+		
 				return true;
 			}
 			
@@ -152,11 +156,19 @@ function process_oruxmap_kmz($file_string,$outfile){
 			echo '<Style id="oruxmap_photo_wpt"><BalloonStyle><text><![CDATA[<p align="left"><font size="+1"><b>$[name]</b></font></p> <p align="left">$[description]</p>]]></text></BalloonStyle><IconStyle><Icon><href>http://www.oruxmaps.com/iconos/wpts_foto.png</href></Icon><color>FFFFFFFF</color><colorMode>normal</colorMode><hotSpot x="0.5" xunits="fraction" y="0" yunits="fraction" /></IconStyle><LabelStyle><color>FFFFFFFF</color></LabelStyle></Style>';
 			$folder_start = 1;	
 		}
+		// 2.5 add CDATA for image
+		if (preg_match("@<description>(<ta.*)@",$line,$mat)){
+			printf("<description><![CDATA[%s",$mat[1]);
+			continue;
+		} else if (preg_match("@</table></description>@",$line,$mat)){
+			echo "</table>]]></description>";
+			continue;
+		}
 		// 3. replace img tag with embed html
 		if (preg_match("@<img width=\"320\" src=\"(.*)\" /></td></tr>@",$line,$mat)) {
 			list($width, $height) = getimagesize($mat[1]);
 			if ($width > $height) $width=800; else $width=600;
-			printf("<img width=%d src=\"%s\" /></td></tr>",$width, b64img($mat[1]));
+			printf("<img width=%d src=\"%s\" /></td></tr>\n",$width, b64img($mat[1]));
 			$photo_style = 1;
 		} else {
 			// 4. change style

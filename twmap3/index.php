@@ -2,6 +2,7 @@
 if(!ob_start("ob_gzhandler")) ob_start();
 session_start();
 $ver = trim(file_get_contents("VERSION"));
+require_once("lib/functions.inc.php");
 ?>
 <!DOCTYPE html>
 <html>
