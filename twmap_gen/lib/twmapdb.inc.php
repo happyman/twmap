@@ -1147,6 +1147,11 @@ class map_rank {
 		return array();
 	}
 }
+
+function sanitize_output($buffer) {
+      return  PHPWee\Minify::html($buffer) . "<!--\n" . file_get_contents( __ROOT__ ."/buddha.txt") . "\n-->\n";
+}
+
 // track table handling functions
 // 
 require_once("track.inc.php");

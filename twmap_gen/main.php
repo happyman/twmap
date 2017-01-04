@@ -1,6 +1,7 @@
 <?php
 // $Id: main.php 297 2012-06-27 04:32:26Z happyman $
 require_once("config.inc.php");
+ob_start('sanitize_output');
 if (!isset($_SESSION))
 	session_start();
 
