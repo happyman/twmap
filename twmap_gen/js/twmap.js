@@ -111,7 +111,8 @@ if (loggedin == 1 ) {
                     //console.log("update  collee" + arguments.callee.startval );
                 }
                 if (Number(pst) == 100) {
-                    clearProgress();
+					console.log("background command finished");
+                    // clearProgress();
                     // 5 秒之後檢查跳頁: test
                     // setTimeout("checkFinished()", 3000);
                 }
@@ -124,7 +125,18 @@ if (loggedin == 1 ) {
                 if (logmsg.indexOf("err:") === 0) {
                     // 出錯了 要 keep 嘛?
                     clearProgress();
-                }
+                } else if (logmsg.indexOf("finished!") === 0) {
+					// 處理 finished message: 因為 proxy 會中斷連線
+					console.log("got finished msg:" + logmsg);
+					var final_mid = logmsg.substr(logmsg.indexOf("!")+1);
+
+					$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php");
+					$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=1&mid="+final_mid);
+					$('#tabs').tabs('option',"active",3);
+					clearProgress();
+					$.unblockUI();
+				}
+				
             }
         });
     });

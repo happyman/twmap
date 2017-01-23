@@ -81,9 +81,14 @@ function update_params(ph) {
     } else {
         page = total + " 張 A4";
     }
+	var ver;
+	if ($("#changemap").val() == 'moi_osm') ver = 2016;
+	else if ($("#changemap").val() == 'tw25k_v1') ver = 1;
+	else ver = 3;
+	
     $("#params").html("X:" + data.x + "Y:" + data.y + " 東:" + data.shiftx + " 南:" + data.shifty + " km 共 " + page + 
                 '<button type="button" id="generate" name="generate" title="將參數傳送到地圖產生器" class="ui-state-default ui-corner-all" >產生</button>');
-    callmake = "x=" + data.x + "&y=" + data.y + "&shiftx=" + data.shiftx + "&shifty=" + data.shifty + "&ph=" + ph;
+    callmake = "x=" + data.x + "&y=" + data.y + "&shiftx=" + data.shiftx + "&shifty=" + data.shifty + "&ph=" + ph + "&version=" + ver;
 	$("#generate").click(generate_btn_click);
     return data;
 }

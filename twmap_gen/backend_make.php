@@ -132,8 +132,9 @@ if (empty($inp['startx']) || empty($inp['starty']) || empty($inp['shiftx']) || e
 
 //
 
-$version = isset($inp['version']) ? $inp['version'] : 3;
-if ($version < 1 || $version > 3) $version = 3;
+$version = isset($inp['version']) ? $inp['version'] : "3";
+// if ($version < 1 || $version > 3) $version = 3;
+if ($version != 1 && $version != 3 && $version != 2016) $version = "3";
 $shiftx = $inp['shiftx'];
 $shifty = $inp['shifty'];
 $title = $inp['title'];
@@ -231,8 +232,15 @@ $okmsg = msglog("done");
 
 // even here is exit(0)
 // the ape client will still redirect user to the correct place?
-sleep(1);
+// sleep(1);
+// in case the http connection is broken. seealso js:twmap.js
+// add finished!final_mid (注意 :, 看 notify_web in STB.inc.php)
+$log_channel = sprintf("%s:%s",$_SESSION['mylogin']['email'], $inp['formid']);
+msglog("notify web $log_channel with $mid");
+notify_web($log_channel,array("finished!$mid"));
 ok_out(implode("", $okmsg), $mid);
+
+
 
 // function
 //

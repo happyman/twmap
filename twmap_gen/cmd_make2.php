@@ -11,7 +11,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "Usage: $argv[0] -r 236:2514:6:4 [-g gpx:0:0] [-c] [-G]-O dir [-e] -v 1|3 -t title -i localhost\n";
 	echo "       -r params: startx:starty:shiftx:shifty\n";
 	echo "       -O outdir: /home/map/out/000003\n";
-	echo "       -v 1|3: version of map,default 3\n";
+	echo "       -v 1|3|2016: version of map,default 3\n";
 	echo "       -t title: title of image\n";
 	echo "       -i ip: log remote address\n";
 	echo "       -p 1|0: 1 if is pong-hu\n";
@@ -39,7 +39,8 @@ $jump = isset($opt['s'])? $opt['s'] : 1;
 if (isset($opt['S'])) $jumpstop = $jump+1; else $jumpstop = 0;
 $remote_ip = isset($opt['i'])? $opt['i'] : "localhost";
 if (isset($opt['d'])) $BETA = 1; else $BETA = 0;
-if ($version < 1 || $version > 3) $version = 3;
+if ($version != 1 && $version != 3 && $version != 2016) 
+	$version = 3;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
 $outpath=$opt['O'];
 if (!file_exists($outpath)) {
@@ -63,17 +64,29 @@ $stage = 1;
 $type = determine_type($shiftx, $shifty);
 
 // add version 3
-if ($version == 1 ) {
+switch($version){
+	case 1:
 	if ($ph == 1 ) {
 		cli_error_out("無澎湖圖資");
 	}
 	$g = new STB($stbpath, $startx, $starty, $shiftx, $shifty);
-}
-else
+	break;
+	case 3:
 	$g = new STB2($tilepath, $startx, $starty, $shiftx, $shifty, $ph);
+	$g->version = 3;
+	break;
+	case 2016:
+	$g = new STB2($tilepath, $startx, $starty, $shiftx, $shifty, $ph);
+	$g->version = 2016;
+	break;
+}
+if (isset($opt['G'])) {
+	$g->include_gpx = 1;
+} 
 if (!empty($log_channel)) {
 	$g->setLog($log_channel);
-	cli_msglog("setup log channel ".md5($log_channel));
+	// cli_msglog("setup log channel ".md5($log_channel));
+	cli_msglog("start log here ^_^");
 	cli_msglog("ps%0");
 }
 if (!empty($g->err)) 
@@ -155,32 +168,38 @@ if ($jump <= $stage ) {
 	} else {
 		write_and_forget($im,$outimage,$BETA);
 	}
+	/*
 	if (isset($opt['G'])) {
-	cli_msglog("add GPX layer to PNG");
-    // 直接從 gis 資料庫取得 svg
-    $bbox[0] =  array($startx * 1000,$starty * 1000);
-    $bbox[1] =  array(($startx+$shiftx)*1000, ($starty-$shifty)*1000);
-    $bbox[2] =  array($shiftx * 315, $shifty * 315);
-    list($ret, $msg) = mapnik_svg_gen($bbox, $outimage, $outsvg_big);
-    if ($ret == false) {
-    		@unlink($outimage_orig);
-			@unlink($outimage);
-	   	    cli_error_out("mapnik_svg2_gen fail: $msg");
-	    }
-    list ($ret,$msg) = svg2png($outsvg_big, $outimage, $bbox[2]);
-    	if ($ret == false) {
-    		@unlink($outimage_orig);
-			@unlink($outimage);
-	   	    cli_error_out("svg2png fail: $msg");
-	    }
-	 cli_msglog("convert svg to png success");
-	 cli_msglog("ps%+3");
+		cli_msglog("add GPX layer to PNG");
+		// 直接從 gis 資料庫取得 svg
+		$bbox[0] =  array($startx * 1000,$starty * 1000);
+		$bbox[1] =  array(($startx+$shiftx)*1000, ($starty-$shifty)*1000);
+		$bbox[2] =  array($shiftx * 315, $shifty * 315);
+		list($ret, $msg) = mapnik_svg_gen($bbox, $outimage, $outsvg_big);
+		if ($ret == false) {
+				@unlink($outimage_orig);
+				@unlink($outimage);
+				cli_error_out("mapnik_svg2_gen fail: $msg");
+			}
+		list ($ret,$msg) = svg2png($outsvg_big, $outimage, $bbox[2]);
+			if ($ret == false) {
+				@unlink($outimage_orig);
+				@unlink($outimage);
+				cli_error_out("svg2png fail: $msg");
+			}
+		 cli_msglog("convert svg to png success");
+		 cli_msglog("ps%+3");
 	} // end of -G
+	*/
 	// 加上 grid
 	if (isset($opt['e'])) {
 		cli_msglog("add 100M grid to image...");
 		im_addgrid($outimage, 100, $version);
 		cli_msglog("ps%+3");
+	}
+	// 若是 moi_osm 則加上 1000 
+	if ($version == 2016){
+		im_addgrid($outimage, 1000, $version);
 	}
 	// happyman
 	cli_msglog("ps%40");

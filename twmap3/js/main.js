@@ -2326,10 +2326,14 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
             gridColor = 'black';
         }
     }
-    var startx = Math.round(sw.x / xstep) * xstep;
-    var starty = Math.round(sw.y / ystep) * ystep;
-    var endx = Math.round(ne.x / xstep) * xstep;
-    var endy = Math.round(ne.y / ystep) * ystep;
+    if ($("#changemap").val() == 'moi_osm'){
+	gridColor = 'black';
+    }
+	// floor / ceil 多畫一點沒關係
+    var startx = Math.floor(sw.x / xstep) * xstep;
+    var starty = Math.floor(sw.y / ystep) * ystep;
+    var endx = Math.ceil(ne.x / xstep) * xstep;
+    var endy = Math.ceil(ne.y / ystep) * ystep;
     var p;
     var p1;
     var lp;

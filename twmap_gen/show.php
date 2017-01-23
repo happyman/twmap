@@ -83,7 +83,7 @@ if ($html_head == 1 ) {
 // $html_root = $out_html_root . sprintf("/%06d/%d", $map['uid'],$mid);
 $html_root = $out_html_root . str_replace($out_root, "", dirname($map['filename']));
 // 產生 coord 
-if (strstr($map['filename'],'v3p')) {
+if (strstr($map['filename'],'v3p') || strstr($map['filename'],'v2016p')) {
 	$ph = 1;
 } else {
 	$ph = 0;

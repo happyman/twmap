@@ -69,7 +69,8 @@ function create_rows($maps,$startsn=0) {
 		// 如果地圖已經過期
 		if ($maps[$i]['flag'] == 1 ) {
 			// 看看是不是澎湖
-			if (strstr($maps[$i]['filename'],'v3p')) $ph = 1; else $ph = 0;
+			if (strstr($maps[$i]['filename'],'v3p') || strstr($maps[$i]['filename'],'v2016p')) 
+				$ph = 1; else $ph = 0;
 			if ($maps[$i]['gpx'] == 1 ) {
 				$param = sprintf("mid=%s&title=%s&filename=%s",$maps[$i]['mid'],$maps[$i]['title'],$maps[$i]['filename']);
 				$op[] = sprintf("<span id='icon_recreate' title=\"mid=%d 重新產生\" 

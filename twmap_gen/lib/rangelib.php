@@ -181,7 +181,10 @@ function im_tagimage($fpath, $inp_startx, $inp_starty) {
  */
 function im_addgrid($fpath, $step_m = 100, $ver=3) {
 	list ($w, $h) = getimagesize($fpath);
-	$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
+	if ($ver == 3)
+		$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
+	else if ($ver == 2016)
+		$v3img = dirname(__FILE__) . "/../imgs/v2016image.png";
 	$step = 315 / (1000 / $step_m );
 	for($i=0; $i<$w; $i+=$step) {
 			$poly[] = sprintf(" -draw 'line %d,%d %d,%d'", round($i),0 ,round($i),$h);

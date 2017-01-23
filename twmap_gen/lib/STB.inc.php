@@ -371,6 +371,8 @@ Class STB2 extends STB {
 	var $createfromim; // != 0 表示圖形已經有了
 	var $im;
 	var $ph; // 澎湖
+	var $version = 3; // 那個圖
+	var $include_gpx = 0; // 是否包含 gpx
 
 	private $zoom = 16;
 
@@ -408,16 +410,22 @@ Class STB2 extends STB {
 	function createpng($tag=0, $gray=0, $fuzzy=0, $x=1, $y=1, $debug_flag=0, $borders=array()) {
 		global $tmppath;
 		global $tilecachepath;
-		$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
+		if ($this->version == 3)
+			$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
+		else if ($this->version == 2016)
+			$v3img = dirname(__FILE__) . "/../imgs/v2016image.png";
 		if ($this->createfromim == 1 ) { // just load image from im or filename
 			$cim=$this->im;
-		} else {  // load from STB files
+		} else {  
 			$pscount = 1; $pstotal = $this->shiftx * $this->shifty;
 			$this->doLog( "check tiles...");
 			for($j=$this->starty; $j>$this->starty-$this->shifty; $j--){
 				for($i=$this->startx; $i<$this->startx+$this->shiftx; $i++){
 					//error_log("call $i $j");
-					list ($status, $fname) =img_from_tiles($this->stbdir, $i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $tmppath, $tilecachepath);
+					// list ($status, $fname) =img_from_tiles($this->stbdir, $i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $tmppath, $tilecachepath);
+					$tileurl = $this->gettileurl();
+					// tmppath => /dev/shm
+					list ($status, $fname) =img_from_tiles2($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , "/dev/shm", $tileurl);
 					// 產生 progress
 					$this->doLog( "$pscount /  $pstotal");
 					$this->doLog( sprintf("ps%%+%d", 20 * $pscount/$pstotal));
@@ -481,6 +489,22 @@ Class STB2 extends STB {
 		}
 		return $cim;
 	}
+	function gettileurl() {
+	switch($this->version){
+		case 3:
+			if ($this->include_gpx==0){
+				return 'http://rs.happyman.idv.tw/map/tw25k2001/zxy/%s_%s_%s.png';
+			} else 
+				return 'http://rs.happyman.idv.tw/map/twmap_gpx/%s_%s_%s.png';
+		break;
+		case 2016:
+			if ($this->include_gpx==0){
+				return 'http://rs.happyman.idv.tw/map/moi_osm/%s/%s/%s.png';
+			} else 
+				return 'http://rs.happyman.idv.tw/map/moi_osm_gpx/%s/%s/%s.png';
+		break;
+	}
+}
 } //eo class
 
 function request_curl($url, $method='GET', $params=array(),$hdr=array()) {
