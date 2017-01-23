@@ -1149,7 +1149,7 @@ class map_rank {
 }
 
 function sanitize_output($buffer) {
-      return  PHPWee\Minify::html($buffer) . "<!--\n" . file_get_contents( __ROOT__ ."/buddha.txt") . "\n-->\n";
+      return  PHPWee\Minify::html($buffer) . "<!--\n" . file_get_contents( __ROOT__ ."/pages/buddha.txt") . "\n-->\n";
 }
 
 // track table handling functions

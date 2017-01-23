@@ -4,6 +4,7 @@ define('__ROOT__', dirname(__FILE__). "/");
 require_once(__ROOT__. "lib/rangelib.php");
 require_once(__ROOT__."lib/STB.inc.php");
 require_once(__ROOT__."lib/svglib.php");
+require_once(__ROOT__."lib/phpwee-php-minifier/phpwee.php");
 
 $out_root = "/srv/www/htdocs/map/out";
 $out_html_root = "/map/out";
