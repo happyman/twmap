@@ -410,10 +410,13 @@ Class STB2 extends STB {
 	function createpng($tag=0, $gray=0, $fuzzy=0, $x=1, $y=1, $debug_flag=0, $borders=array()) {
 		global $tmppath;
 		global $tilecachepath;
-		if ($this->version == 3)
+		if ($this->version == 3) {
 			$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
-		else if ($this->version == 2016)
+			$image_ps_args = array("-equalize");
+		}else if ($this->version == 2016){
 			$v3img = dirname(__FILE__) . "/../imgs/v2016image.png";
+			$image_ps_args = array();
+		}
 		if ($this->createfromim == 1 ) { // just load image from im or filename
 			$cim=$this->im;
 		} else {  
@@ -425,7 +428,7 @@ Class STB2 extends STB {
 					// list ($status, $fname) =img_from_tiles($this->stbdir, $i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $tmppath, $tilecachepath);
 					$tileurl = $this->gettileurl();
 					// tmppath => /dev/shm
-					list ($status, $fname) =img_from_tiles2($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , "/dev/shm", $tileurl);
+					list ($status, $fname) =img_from_tiles2($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag ,"/dev/shm", $tileurl, $image_ps_args);
 					// 產生 progress
 					$this->doLog( "$pscount /  $pstotal");
 					$this->doLog( sprintf("ps%%+%d", 20 * $pscount/$pstotal));

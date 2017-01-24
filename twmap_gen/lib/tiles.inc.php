@@ -341,7 +341,7 @@ function tempdir($dir=NULL,$prefix=NULL) {
 }
 
 // pass tile url pattern for flexbility
-function img_from_tiles2($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpdir="/dev/shm", $tileurl ) {
+function img_from_tiles2($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpdir="/dev/shm", $tileurl, $image_ps_args=array() ) {
 	
 	$montage_bin = "montage";
 	$cache_filename = "";
@@ -490,11 +490,13 @@ function img_from_tiles2($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpd
 	exec($cmd, $out, $ret);
 	if ($debug)
 		error_log($cmd);
+	$str_image_ps_arg = implode(" ",$image_ps_args);
 	//$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 miff:- | composite -gravity northeast %s - png:%s",$outimage,
-	$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 png:%s",$outimage,
+	$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 png:%s",$outimage,
 		ceil($px_width), ceil($px_height),
 		round($px_shiftx)+$offset_x, round($px_shifty)+$offset_y,
 		$resize,
+		escapeshellarg($str_image_ps_arg),
 		$cropimage);
 	if ($debug) {
 		error_log("cmd=". $cmd );
