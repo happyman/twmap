@@ -496,7 +496,7 @@ function img_from_tiles2($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpd
 		ceil($px_width), ceil($px_height),
 		round($px_shiftx)+$offset_x, round($px_shifty)+$offset_y,
 		$resize,
-		escapeshellarg($str_image_ps_arg),
+		(!empty($str_image_ps_arg))?escapeshellarg($str_image_ps_arg):"",
 		$cropimage);
 	if ($debug) {
 		error_log("cmd=". $cmd );
