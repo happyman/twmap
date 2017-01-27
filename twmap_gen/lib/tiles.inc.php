@@ -492,11 +492,14 @@ function img_from_tiles2($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpd
 		error_log($cmd);
 	$str_image_ps_arg = implode(" ",$image_ps_args);
 	//$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 miff:- | composite -gravity northeast %s - png:%s",$outimage,
-	$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 png:%s",$outimage,
+// -white-threshold 85%% p
+	$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s %s  png:%s",
+		$outimage,
 		ceil($px_width), ceil($px_height),
 		round($px_shiftx)+$offset_x, round($px_shifty)+$offset_y,
 		$resize,
-		(!empty($str_image_ps_arg))?escapeshellarg($str_image_ps_arg):"",
+		//(!empty($str_image_ps_arg))?escapeshellarg($str_image_ps_arg):"",
+		$str_image_ps_arg, 
 		$cropimage);
 	if ($debug) {
 		error_log("cmd=". $cmd );

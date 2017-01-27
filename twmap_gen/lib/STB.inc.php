@@ -412,10 +412,10 @@ Class STB2 extends STB {
 		global $tilecachepath;
 		if ($this->version == 3) {
 			$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
-			$image_ps_args = array("-equalize");
+			$image_ps_args = array("-equalize  -gamma 2.2");
 		}else if ($this->version == 2016){
 			$v3img = dirname(__FILE__) . "/../imgs/v2016image.png";
-			$image_ps_args = array();
+			$image_ps_args = array("-normalize");
 		}
 		if ($this->createfromim == 1 ) { // just load image from im or filename
 			$cim=$this->im;
