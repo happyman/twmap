@@ -233,8 +233,32 @@ $('#create2').click(function() {
 			opacity: .5,
 			color: '#fff'
 	}, message: '<h1>讓我來慢慢產生,您去喝杯越南咖啡做做體操再回來!</h1>' });
-
-	document.mapform.submit();
+	if (! window.FormData)
+		document.mapform.submit();
+	else { // use HTML5 ajax file upload
+		var form = $('#mapform')[0]; // You need to use standart javascript object here
+		var formData = new FormData(form);
+		$.ajax({
+			url: 'backend_make.php',
+			data: formData,
+			type: 'POST',
+			dataType : 'json',
+			contentType: false,
+			processData: false,
+			success : function(data){
+				$.unblockUI();
+				if (data.status == "ok") {
+				clearProgress();
+				var $tabs = $('#tabs').tabs();
+				$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php");
+				$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=1&mid="+data.id);
+				$tabs.tabs('option',"active",3);
+				}
+				else
+					alert("error: "+data.error);
+            }
+		});
+	} // end of else
 });
 $('#create3').click(function() {
 	$("#mapform input[name=gps]").val(2);
