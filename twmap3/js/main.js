@@ -89,7 +89,8 @@ var GoogleNameOptions = {
 };
 var NLSCNameOptions = {
     getTileUrl: function(a, b) {
-        return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=EMAP2&STYLE=_null&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
+       // return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=EMAP2&STYLE=_null&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
+	   return 'http://wmts.nlsc.gov.tw/wmts/EMAP2/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -111,7 +112,8 @@ var Taiwan_General_2011_MapOptions = {
     getTileUrl: function(a, b) {
         var set = "PHOTO2";
         var road = "EMAP1";
-        return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=PHOTO2&STYLE=_null&TILEMATRIXSET=EPSG%3A3857&TILEMATRIX=' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
+        //return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=PHOTO2&STYLE=_null&TILEMATRIXSET=EPSG%3A3857&TILEMATRIX=' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
+		return 'http://wmts.nlsc.gov.tw/wmts/PHOTO2/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
     },
     tileSize: new google.maps.Size(256, 256),
     //maxZoom: 16,
@@ -240,6 +242,54 @@ var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
 var Hillshading_MapType = new google.maps.ImageMapType(Hillshading_Options);
 
+//圖資 copyright
+// http://stackoverflow.com/questions/5489811/showing-map-copyright-in-gmaps-api-v3
+var copyrightDiv, logoDiv;
+var google_div__span_created = 0;
+var copyrights =    {
+	 'twmapv1' : "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 經建一版 1985~1989",
+	 'taiwan' : "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 經建三版 1999~2001",
+	 'general2011': "<a target=\"_blank\" href=\"http://www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖正射影像",
+	 'moi_osm': '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA' + "<a target=\"_blank\" href=\"https://dl.dropboxusercontent.com/u/899714/maps/taiwan_topo.html\">Taiwan TOPO By Rudy</a>",
+	 'fandi': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 番地地形圖 1907~1916",
+	 'jm50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 日治五萬分之一(陸軍測量部 1924~1944)",
+	 'tw50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣五萬分之一(依據美國陸軍製圖局 1951~1956)",
+	 'hillshading': "<a target=\"_blank\" href=\"http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/\">內政部數值網格資料</a> - 山區陰影圖層"
+};
+var logos =  {   
+	'tw25k_v1': "經1版",
+	'tw25k_v3': "經3版",
+	'moi_osm': 'MOI_OSM' 
+};
+
+function CopyrightChange(){
+				var editurl = '';
+                newMapType = map.getMapTypeId();
+				fMap = $("#changemap").val(); // 前景圖
+                if (!google_div__span_created) { 
+						logoDiv = document.createElement("div");
+						copyrightDiv = document.createElement("div");
+						copyrightDiv.index = 0; // used for ordering 
+						map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(logoDiv);  
+                        
+						map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(copyrightDiv);
+                        google_div__span_created = 1;
+                }
+
+                if (newMapType in copyrights)
+                        copyrightDiv.innerHTML = copyrights[newMapType];
+                else
+                        copyrightDiv.innerHTML = "";
+
+                if (fMap in logos)  {
+						var c = map.getCenter().toUrlValue(5).split(',');
+						editurl = 'https://www.openstreetmap.org/edit#map='+ map.getZoom() +'/'+ c[0]+'/'+c[1];
+						logoDiv.innerHTML = logos[fMap].replace('MOI_OSM','<a href="'+ editurl + ' target=_blank">[編輯OSM]</a>');
+					   //logoDiv.innerHTML = logos[fMap];
+				}else
+                        logoDiv.innerHTML = "";
+
+}
 // 
 var BackgroundMapType;
 var BackgroundMapOptions;
@@ -1458,6 +1508,7 @@ function initialize() {
     });
     // 畫框框
     google.maps.event.addListener(map, 'maptypeid_changed', function() {
+        CopyrightChange();
         updateView("info_only");
     });
     // 真正載入完成
@@ -1592,6 +1643,8 @@ function initialize() {
 			 console.log('skip change');
 			 return true;
 		} 	
+		// call change copyright
+		CopyrightChange();
 		map.overlayMapTypes.removeAt(0, BackgroundMapType);
         map.overlayMapTypes.insertAt(0, BackgroundMapType);
         updateView("info_only");
