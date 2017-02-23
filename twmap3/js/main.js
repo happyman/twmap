@@ -220,6 +220,16 @@ var TW50K1956_Options = {
     alt: "1956 台灣五萬分之一(依據美國陸軍製圖局 1951)",
     maxZoom: 17
 };
+var TW5KArielPIC_Options = {
+	getTileUrl: function(a, b) {
+		var y_tms = (1 << b) - a.y - 1;
+        return "http://210.59.147.238/~happyman/tw5k/"+ b + "/" + a.x + "/" + y_tms + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 16,
+    name: "TW5K",
+    alt: "2000年五千分之一相片基本圖"
+};
 // 前景
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
@@ -234,13 +244,14 @@ var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
 var FanDi_MapType = new google.maps.ImageMapType(Fandi_Options);
 var JM50K1924_MapType = new google.maps.ImageMapType(JM50K1924_Options);
 var TW50K1956_MapType = new google.maps.ImageMapType(TW50K1956_Options);
-
+var Hillshading_MapType = new google.maps.ImageMapType(Hillshading_Options);
+var TW5KArielPIC_MapType = new google.maps.ImageMapType(TW5KArielPIC_Options);
 
 
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
-var Hillshading_MapType = new google.maps.ImageMapType(Hillshading_Options);
+
 
 //圖資 copyright
 // http://stackoverflow.com/questions/5489811/showing-map-copyright-in-gmaps-api-v3
@@ -254,7 +265,8 @@ var copyrights =    {
 	 'fandi': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 番地地形圖 1907~1916",
 	 'jm50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 日治五萬分之一(陸軍測量部 1924~1944)",
 	 'tw50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣五萬分之一(依據美國陸軍製圖局 1951~1956)",
-	 'hillshading': "<a target=\"_blank\" href=\"http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/\">內政部數值網格資料</a> - 山區陰影圖層"
+	 'hillshading': "<a target=\"_blank\" href=\"http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/\">內政部數值網格資料</a> - 山區陰影圖層",
+	 'tw5kariel': "台灣5000:1相片基本圖"
 };
 var logos =  {   
 	'tw25k_v1': "經1版",
@@ -284,7 +296,7 @@ function CopyrightChange(){
                 if (fMap in logos)  {
 						var c = map.getCenter().toUrlValue(5).split(',');
 						editurl = 'https://www.openstreetmap.org/edit#map='+ map.getZoom() +'/'+ c[0]+'/'+c[1];
-						logoDiv.innerHTML = logos[fMap].replace('MOI_OSM','<a href="'+ editurl + ' target=_blank">[編輯OSM]</a>');
+						logoDiv.innerHTML = logos[fMap].replace('MOI_OSM','<a href="'+ editurl + '" target=_blank>[編輯OSM]</a>');
 					   //logoDiv.innerHTML = logos[fMap];
 				}else
                         logoDiv.innerHTML = "";
@@ -1409,7 +1421,7 @@ function initialize() {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "theme", 'fandi', 'jm50k','tw50k','hillshading', 'general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "theme", 'fandi', 'jm50k','tw50k','hillshading', 'tw5kariel', 'general2011']
         }
     });
 
@@ -1437,6 +1449,7 @@ function initialize() {
     map.mapTypes.set('tw50k', TW50K1956_MapType);
 	map.mapTypes.set('moi_osm_gpx', MOI_OSM_GPX_MapType);
 	map.mapTypes.set('hillshading', Hillshading_MapType);
+	map.mapTypes.set('tw5kariel', TW5KArielPIC_MapType);
 	if (getParameterByName("theme") == 'ingress')
 		map.mapTypes.set('theme', Darker_MapType);
 	else
@@ -1508,7 +1521,6 @@ function initialize() {
     });
     // 畫框框
     google.maps.event.addListener(map, 'maptypeid_changed', function() {
-        CopyrightChange();
         updateView("info_only");
     });
     // 真正載入完成
@@ -1643,8 +1655,6 @@ function initialize() {
 			 console.log('skip change');
 			 return true;
 		} 	
-		// call change copyright
-		CopyrightChange();
 		map.overlayMapTypes.removeAt(0, BackgroundMapType);
         map.overlayMapTypes.insertAt(0, BackgroundMapType);
         updateView("info_only");
@@ -2073,7 +2083,8 @@ function updateView(type) {
         console.log("updateView abort");
         return;
     }
-    if ($('#changegrid') != 'None') showGrid($('#changegrid').val());
+    if ($('#changegrid') != 'None') 
+		showGrid($('#changegrid').val());
     // 如果已經關閉就不用重開
     if (centerInfo && centerInfo.getMap()) {
         var newpos = centerMarker.getPosition();
@@ -2090,6 +2101,8 @@ function updateView(type) {
             tagInfo(newpos, showCenterMarker_id);
         }
     }
+	// update copyright Info
+	CopyrightChange();
     saveMapState();
     console.log("updateView "+type);
 }
