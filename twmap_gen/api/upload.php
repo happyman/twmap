@@ -1,7 +1,7 @@
 <?php
 require_once("../config.inc.php");
 
-$debug = 0;
+$debug = 1;
 $cli = 0;
 $keepon_id = "";
 if (php_sapi_name() != "cli"){
@@ -53,7 +53,7 @@ if (!empty($_FILES)) {
 		}
 		// 1. check num of tracks
 		$t = track_get($uid);
-		if (count($t) >= 50 ) {
+		if (count($t) >= 50 && $uid != 3 ) {
 			header("HTTP/1.0 500 Internal Server Error");
 			echo "超過數量限制";
 			exit(1);
@@ -68,6 +68,7 @@ if (!empty($_FILES)) {
 		if ($st != 0 ){
 			header("HTTP/1.0 500 Internal Server Error");
 			echo $msg;
+			print_r($meta);
 			exit(1);
 		
 		}

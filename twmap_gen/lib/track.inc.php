@@ -99,20 +99,22 @@ function process_kmz_to_kml($fpath, $fname, $dest_gpx_path, $dest){
 	$extract_path = dirname($fpath) . "/" . $fname;
 	$kml_path = $extract_path . "/doc.kml";
     $gpx_path = $extract_path . "/doc.gpx";
-	$cmd = sprintf("unzip -d %s %s", escapeshellarg($extract_path), escapeshellarg($fpath));
+	$cmd = sprintf("unzip -o -d %s %s", escapeshellarg($extract_path), escapeshellarg($fpath));
 	exec($cmd);
 	if (file_exists($kml_path)){
-		exec("grep oruxmapsextensions $kml_path >/dev/null",$out,$ret);
+		exec("grep oruxmaps $kml_path >/dev/null",$out,$ret);
 		if ($ret == 0){
 			$cmd2 = sprintf("mogrify -format jpg  -auto-orient -thumbnail 1024x1024 '%s/files/*.jpg'",$extract_path);
 			exec($cmd2, $out, $ret2);
 			// if there's photo waypoints
 			if ($ret2 == 0 ){
 				if ($debug) {
-					echo "it's a oruxmaps kmz with photos";
+					echo "it's a oruxmaps kmz with photos\n";
 				}
 				// do process oruxmaps kmz 
 				$cwd = getcwd();
+				$cmd3=sprintf("grep -v \<om %s > %s.1; mv %s.1 %s",$kml_path,$kml_path,$kml_path,$kml_path);
+				exec($cmd3);
 				gpsbabel_convert($kml_path,"kml",$gpx_path, "gpx");
 				// just keep gpx without photo wpt :~
 				copy($gpx_path,$dest_gpx_path);
