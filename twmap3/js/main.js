@@ -50,7 +50,7 @@ var TaiwanMapV1Options = {
 		return "http://gis.sinica.edu.tw/googlemap/TM25K_1989/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
     },
     tileSize: new google.maps.Size(256, 256),
-    maxZoom: 17,
+    maxZoom: 15,
     // minZoom: 13, ## fcgi 13-18
     name: '經建1',
     alt: '經建一'	
@@ -61,7 +61,7 @@ var TaiwanMapOptions = {
         return "http://rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
-    maxZoom: 16,
+    maxZoom: 17,
     minZoom: 10,
     name: "經建3",
     alt: 'Taiwan TW67 Map'
@@ -71,7 +71,7 @@ var TaiwanGpxMapOptions = {
         return 'http://rs.happyman.idv.tw/map/twmap_gpx/' + b + "_" + a.x + "_" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
-    maxZoom: 16,
+    maxZoom: 17,
     minZoom: 10,
     name: "台灣經建三版+GPX",
     alt: 'Taiwan TW67 Map with GPX'
@@ -226,7 +226,7 @@ var TW5KArielPIC_Options = {
         return "http://210.59.147.238/~happyman/tw5k/"+ b + "/" + a.x + "/" + y_tms + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
-    maxZoom: 16,
+    maxZoom: 17,
     name: "TW5K",
     alt: "2000年五千分之一相片基本圖"
 };
