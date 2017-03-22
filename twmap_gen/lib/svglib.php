@@ -47,6 +47,7 @@ class gpxsvg {
 	// 取得本圖的 bounds
 	function get_bbox($gpx_str){
 		require_once("geoPHP/geoPHP.inc");
+		try {
 		$geom = geoPHP::load($gpx_str, 'gpx');
 		$bbox = $geom->getBBox();
 		$tl = $this->is_taiwan($bbox['minx'], $bbox['maxy']);
@@ -57,6 +58,12 @@ class gpxsvg {
 			$this->taiwan = $tl; // 0 or 1 or 2
 		//echo "lon $minlon $maxlon, lat $maxlat $minlat\n"; exit;
 		return array($bbox['minx'], $bbox['maxy'], $bbox['maxx'], $bbox['miny']);
+		}   catch (Exception $e) {
+			// parse gpx error
+			$this->taiwan = 0;
+			$this->over = 1;
+			return false;
+		}
 	}
 	
 	function fit_a4($tl, $br) {

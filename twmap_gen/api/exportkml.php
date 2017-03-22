@@ -10,7 +10,7 @@ require_once("../config.inc.php");
 if (isset($_REQUEST['bound'])){
 	$bound = 1;
 	list($x,$y,$x1,$y1)=explode(",",$_REQUEST['bound']);
-	$bound_str = sprintf("%.06f,%.06f,%.06f,%.06f",$x,$y,$x1,$y1);
+	$bound_str = sprintf("%.06f %.06f %.06f %.06f",$y,$x,$y1,$x1);
 	// TOP=25.24917 BOTTOM=25.11332 LEFT=121.48012 RIGHT=121.63218 for Rudy's tool
 	// https://github.com/alpha-rudy/taiwan-topo/commit/02b13b14ac562b38eac7638183e6de8730f796a5
 	$bound_str2 = sprintf("TOP=%.06f BOTTOM=%.06f LEFT=%.06f RIGHT=%.06f",$y,$y1,$x,$x1);
@@ -55,7 +55,8 @@ if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
 	if ($bound){
 		printf("<li><a href='?kml=1&bound=%s' target=kml>下載範圍內的點位資料</a>",$_REQUEST['bound']);	
 		// printf("  (%s)",$bound_str);
-		printf("<li><b>Bound</b>: %s\n",$bound_str2);
+		printf("<li><b>Bound(taiwan-topo)</b>: %s\n",$bound_str2);
+		printf("<li><b>Bound(tilestache-clean)</b>: %s\n",$bound_str);
 	}
 	?>
 	</ul>

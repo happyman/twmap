@@ -771,6 +771,8 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 	// moi_osm_gpx 
 	$cmd2 = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l moi_osm_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	exec($cmd2);
+	$cmd3 = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l moi_osm -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	exec($cmd3);
 	error_log("tilestache_clean: ". $cmd);
 	/*
 	   利用 tilestache-clean 的 output 來砍另一層 cache 

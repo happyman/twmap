@@ -124,7 +124,7 @@ function keepon_List($start, $end, $page=1, $limit=100) {
 		       );
 	$result = request_curl($kurl, "POSTJSON", $params);
 	//error_log("request $kurl with params".print_r($params,true) ."get $result");
-	kcli_msglog("request $kurl with params".json_encode($params) ."get $result");
+//	kcli_msglog("request $kurl with params".json_encode($params) ."get $result");
 	$ret = json_decode($result,true);
 	if ($ret !== false)
 		return array(true, $ret);

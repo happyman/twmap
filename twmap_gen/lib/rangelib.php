@@ -326,8 +326,10 @@ function im_grayscale($im, $tmpdir="/dev/shm") {
 function im_file_gray($fpath, $outpath,  $ver=3) {
 	if ($ver == 1) {
 		$param = "-opaque 'rgb(93,119,80)' -fill white -opaque 'rgb(148,146,145)' -fill white     -fuzz 50%  -fill black -opaque blue  -colorspace gray";
-	} else {
+	} else if ($ver == 3) {
 		$param = "-colorspace gray miff:-|convert miff:- -brightness-contrast 20x5 -tint 40";
+	}  else {
+		$param = "-colorspace gray";
 	}
 	$cmd = sprintf("convert %s %s %s",$fpath, $param, $outpath);
 	echo "$cmd\n";
