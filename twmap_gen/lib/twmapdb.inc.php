@@ -1031,6 +1031,62 @@ function line_of_sight($a, $b, $distance_limit = 32000, $cache = 1) {
 	return $ret;
 
 }
+/* 利用高度用在算真正走的距離　2017.3.30 */
+function get_distance2($wkt_str, $twDEM_path){
+	$db = get_conn();
+	$step = 20.0 / 1000 / 111.325;
+			
+	$sql = sprintf("select st_astext( ST_Segmentize(ST_SetSRID( ST_GeomFromText( '%s' ) , 4326), %f)) as linestring" ,$wkt_str,$step);
+	// echo $sql;
+	$db->SetFetchMode(ADODB_FETCH_ASSOC);
+	$res = $db->getAll($sql);
+	// print_r($res);
+	if (!preg_match("/LINESTRING\((.*)\)/",$res[0]['linestring'],$mat)) {
+		return array(false, "error query $sql ".print_r($res,true));
+	}
+	
+	$points = explode(",",$mat[1]);
+	$elev_data = get_elev_multi($twDEM_path, $points);
+	$maxele = 0;
+	$minele = 9999;
+	$sumele = 0;
+	$descent = 0;
+	$ascent = 0;
+	$outofrange = 0;
+	if ($elev_data[0] > $maxele) $maxele = $elev_data[0];
+	if ($elev_data[0] < $minele) $minele = $elev_data[0];
+	$sumele = $elev_data[0];
+	for($i=1;$i<count($points);$i++) {
+		$point = explode(" ",$points[$i]);
+		$ele = $elev_data[$i];
+		$dist[$i] = get_distance(explode(" ",$points[$i-1]), $point);
+		$elediff[$i] = $elev_data[$i] - $elev_data[$i-1];
+	
+		//  利用 dem 的 empty return 當作超出範圍 
+		if (empty($elev_data[$i])) $outofrange = 1;
+		// 算最高 最低海拔
+		if ($elev_data[$i] > $maxele) $maxele = $elev_data[$i];
+		if ($elev_data[$i] < $minele) $minele = $elev_data[$i];
+		// 算上升下降多少
+		if ($elediff[$i] > 0 )
+			$ascent+=$elediff[$i];
+		else
+			$descent+=abs($elediff[$i]);
+		$sumele+= $elev_data[$i];
+		$dist2[$i] = sqrt(pow($dist[$i],2) + pow($elediff[$i],2));
+		
+	}
+	$sum=0;$sum2=0;
+	for($i=0;$i<count($points);$i++) {
+		$sum+=$dist[$i];
+		$sum2+=$dist2[$i];
+		$msg.=sprintf("<pre>%d %s %d h=%.02f d=%.02f d1=%.02f  \n",$i,$points[$i],$elev_data[$i],$elediff[$i],$dist[$i],$dist2[$i]);
+		if ($i>0)
+		$charts[] =sprintf("[%.02f,%.02f]",$sum,$elev_data[$i]);
+	}
+	return array(true,array("step"=>20, "d"=>$sum, "d1"=>$sum2, "avgele" => $sumele / count($points),
+	"ascent"=>$ascent, "descent"=>$descent, "outofrange" => $outofrange, "maxele"=> $maxele, "minele" => $minele, "chart"=>implode(",",$charts)));
+}
 function get_administration($x,$y,$type="town") {
 	$db=get_conn();
 	if ($type == "nature_park") {

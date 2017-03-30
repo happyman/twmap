@@ -13,7 +13,7 @@ require_once("lib/functions.inc.php");
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
 	<!--<script src="//maps.google.com/maps/api/js?sensor=true&v=3"></script> -->
-	<script src="//maps.googleapis.com/maps/api/js?v=3&key=<?php echo $CONFIG['gmap_api_key']; ?>&libraries=geometry"></script>
+	<script src="//maps.googleapis.com/maps/api/js?v=3&key=<?php echo $CONFIG['gmap_api_key']; ?>&libraries=geometry,drawing"></script>
        <!--<script  src="js/jquery-1.7.1.min.js"></script>
        <script  src="js/jquery-ui-1.8.17.custom.min.js"></script>
 -->
@@ -44,6 +44,7 @@ require_once("lib/functions.inc.php");
 	<script  src="js/jsts.min.js"></script>
 	<script  src="js/triangle.js"></script>
 	<script  src="js/jquery.noty.js"></script>
+	<script  src="js/shapedraw.js"></script>
 	<!-- endbuild -->
 <!--
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
@@ -196,6 +197,12 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 	<div id="ranking">
 	<iframe id="ranking_iframe" frameborder="0" marginwidth="0" marginheight="0"  width="100%" height="100%" allowfullscreen></iframe>
 	</div>
+	<div id="consolediv" style="display:hidden"> <textarea id="console" readonly="readonly" style="width:100%;height:100%;border:0px;margin:0px;background-color:#e0f0a0;"></textarea></div>
+	  <div id="buttons">
+            <input type="button" id="delete-button" value="刪">
+            <input type="button" id="clear-button" value="全刪">
+			<input type="button" id="shapeinfo-button" value="資訊">
+      </div>
 <script>
 	var _gaq = _gaq || [];
 	_gaq.push(['_setAccount', 'UA-19949015-1']);

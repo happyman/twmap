@@ -1406,6 +1406,8 @@ function showUploadPanel(e) {
 function hideUploadPanel(e) {
   $('#drop-container').hide();
 }
+var shapesMap;
+
 function initialize() {
     console.log('initialize');
     geocoder = new google.maps.Geocoder();
@@ -1424,7 +1426,7 @@ function initialize() {
             mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "theme", 'fandi', 'jm50k','tw50k','hillshading', 'tw5kariel', 'general2011']
         }
     });
-
+	
 	var green_styles = [{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#7f2200"},{"visibility":"off"}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"color":"#87ae79"}]},{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#495421"}]},{"featureType":"administrative","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"},{"visibility":"on"},{"weight":4.1}]},{"featureType":"administrative.neighborhood","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"geometry.fill","stylers":[{"color":"#abce83"}]},{"featureType":"poi","elementType":"geometry.fill","stylers":[{"color":"#769E72"}]},{"featureType":"poi","elementType":"labels.text.fill","stylers":[{"color":"#7B8758"}]},{"featureType":"poi","elementType":"labels.text.stroke","stylers":[{"color":"#EBF4A4"}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"visibility":"simplified"},{"color":"#8dab68"}]},{"featureType":"road","elementType":"geometry.fill","stylers":[{"visibility":"simplified"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#5B5B3F"}]},{"featureType":"road","elementType":"labels.text.stroke","stylers":[{"color":"#ABCE83"}]},{"featureType":"road","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#EBF4A4"}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#d2ec5f"},{"weight":"4"},{"visibility":"simplified"}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#e0ef9e"},{"visibility":"simplified"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"geometry","stylers":[{"visibility":"on"},{"color":"#aee2e0"}]}];
 	map.setOptions({styles: green_styles});
 	var GreenstyledMap = new google.maps.StyledMapType(green_styles,{name: "theme"});
@@ -1434,10 +1436,24 @@ function initialize() {
         map.setOptions({
             disableDoubleClickZoom: false
         });
-    }
+		// add drawing tool
+		shapesMap = new ShapesMap( $("#delete-button")[0],$("#clear-button")[0], $("#shapeinfo-button")[0], function(shapes){
+			// save info to cookie
+			//var expirationDate = new Date();
+			//expirationDate.setDate(expirationDate.getDate + 1);
+			//var value = escape(shapes) + "; expires=" + expirationDate.toUTCString() + "; path=/";
+			//document.cookie = "infoshapes=" + value;
+			localStorage.setItem("infoshapes", shapes);
+			showmeerkat(get_elev_url + "?infoshapes=1", { 'width': '600'} );		
+		} );
+	}
     var moveDiv = document.createElement('div');
     var myCustomControl2 = new curLocControl(moveDiv, map);
     map.controls[google.maps.ControlPosition.RIGHT_TOP].push(moveDiv);
+	if (is_mobile)
+		$("#buttons").hide();
+	else
+		map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#buttons")[0]);
     map.mapTypes.set('twmapv1', TaiwanMapV1MapType);
     map.mapTypes.set('taiwan', TaiwanMapType);
     map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
@@ -1555,6 +1571,7 @@ function initialize() {
                 disableDoubleClickZoom: false
             });
             console.log("left click fired");
+			shapesMap.selectionClear();
             var newpos = event.latLng;
             locInfo_name = "我的位置";
             centerMarker.setPosition(newpos);

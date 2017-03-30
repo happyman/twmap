@@ -195,6 +195,10 @@ textarea:hover {
 #copylinkurl {
 	width: 180px;
 }
+#buttons {
+	padding: 5px 5px;
+	cursor: pointer;
+}
 body {
 	border:1px;
 	solid gray;
