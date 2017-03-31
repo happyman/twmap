@@ -15,10 +15,9 @@
 //     type=[gpx|kml] (optional, default=gpx)
 //     dev=[0|1] (Dor development only. When dev=1, xml is printed instead of downloaded.)
 
-$dev = 0;
-$type = 'gpx'; // Supports [ gpx | kml ]
-if ( array_key_exists('dev', $_GET) ) $dev = $_GET['dev'];
-if ( array_key_exists('type', $_GET) ) $type = $_GET['type'];
+// $type = 'gpx'; // Supports [ gpx | kml ]
+$dev = isset($_REQUEST['dev']) ? $_REQUEST['dev'] : 0;
+$type = isset($_REQUEST['type']) ? $_REQUEST['type'] : 'gpx';
 
 if ( $dev ) {
     ini_set('display_errors', 1);
@@ -179,7 +178,7 @@ $input = '{
         }';
         
 if ( isset($_POST) && sizeof($_POST) > 0 ) {
-    $input = $_POST[0];
+    $input = $_POST['data'];
 } else {
     // Get posted data
     $reset_json = file_get_contents( 'php://input' );
@@ -352,7 +351,8 @@ if ( $valid && $xml ) {
         echo $xml->asXML();
     }
 } else {
-    http_response_code(404);
+    //http_response_code(200);
+	print_r($_POST['data']);
 }
 
 ?>

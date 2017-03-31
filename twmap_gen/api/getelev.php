@@ -66,6 +66,7 @@ exit();
 					printf("%.06f %.06f\n",$pt['lon'],$pt['lat']);
 				}
 				echo "</textarea>\n";
+				downloadform();
 				$sum=0;
 				for($i=1;$i<count($pts);$i++){
 					$sum+=get_distance($pts[$i-1],$pts[$i]);
@@ -120,6 +121,7 @@ function drawBackgroundColor() {
 					printf("%.06f %.06f\n",$pt['lon'],$pt['lat']);
 				}
 				echo "</textarea>";
+					downloadform();
 				$pts[] = $pts[0];
 				$wkt_str = sprintf("POLYGON((%s))",implode(",",$pts));
 				$result = get_AREA($wkt_str);
@@ -132,6 +134,7 @@ function drawBackgroundColor() {
 				echo "<hr><p><h1>這是一個長方形 rectangle </h1>";
 				echo "<br>東北座標:" . coord($ne); 
 				echo "<br>西南座標:" . coord($sw);
+					downloadform();
 				$pts[] = sprintf("%f %f",$sw['lon'],$ne['lat']);
 				$pts[] = sprintf("%f %f",$ne['lon'],$ne['lat']);
 				$pts[] = sprintf("%f %f",$ne['lon'],$sw['lat']);
@@ -224,6 +227,15 @@ function display_area($sqm){
 		printf("<div id='tab_%d'>面積: %.02f %s<br>註: 1 平方公尺 = %f %s</div>",$i,$sqm * $unit_a[$i], $unit_n[$i],$unit_a[$i], $unit_n[$i]);
 	}
 	echo "</div>";
+}
+function downloadform() {
+	printf("<form id='exportform' action='shape2track.php' method='post'><input type=hidden name='data' value='%s'>",$_POST['data']);
+	?>
+	<input type=radio name=type value='gpx' >GPX </input>
+	<input type=radio name=type value='kml' checked>KML </input>
+	<button type="submit">下載</button>
+	</form>
+	<?php
 }
 // 以下為取得點位資訊的部分
 
