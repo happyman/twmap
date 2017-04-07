@@ -223,7 +223,7 @@ var TW50K1956_Options = {
 var TW5KArielPIC_Options = {
 	getTileUrl: function(a, b) {
 		var y_tms = (1 << b) - a.y - 1;
-        return "http://210.59.147.238/~happyman/tw5k/"+ b + "/" + a.x + "/" + y_tms + ".png";
+        return "http://rs.happyman.idv.tw/~mountain/tw5k/"+ b + "/" + a.x + "/" + y_tms + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 17,
