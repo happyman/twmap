@@ -86,6 +86,7 @@ if (php_sapi_name() != "cli") {
 	$smarty->assign("twmap_gen_version", $twmap_gen_version);
 	$smarty->assign("browser_url", $TWMAP3URL );
 	$smarty->assign("fb_appid", $fb_appid );
+	$smarty->assign('twmap3_html_root',$TWMAP3_html_root);
 
 }
 else {

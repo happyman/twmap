@@ -1,4 +1,4 @@
-<?
+<?php
 namespace PHPWee;
 require_once("src/CssMin/CssMin.php");
 require_once("src/HtmlMin/HtmlMin.php");
