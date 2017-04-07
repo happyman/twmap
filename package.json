@@ -24,5 +24,9 @@
     "grunt-contrib-copy": "~0.8.1",
     "grunt-contrib-jshint": "~0.11.3",
     "grunt-phplint": "0.0.5"
+  },
+  "dependencies": {
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-rsync": "^2.0.1"
   }
 }
