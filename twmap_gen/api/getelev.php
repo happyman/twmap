@@ -216,15 +216,17 @@ function distance_display($result){
 1平方公里 = 100公頃
 */
 function display_area($sqm){
-	$unit_n = array("公頃","平方公里","甲","英畝","公畝","坪","平方公尺","平方呎");
-	$unit_a = array(0.0001,	0.00001,0.000103,0.000247,0.01,0.3025,1,10.7639);
+	$unit_n = array("公頃","平方公里","甲","分","英畝","公畝","坪","平方公尺","平方呎");
+	$unit_a = array(0.0001,	0.00001,0.000103,0.0000103,0.000247,0.01,0.3025,1,10.7639);
 	echo "<div id=tabs><ul>";
 	for($i=0;$i<count($unit_n);$i++){
 		printf("<li><a href=#tab_%d>%s</a></li>",$i,$unit_n[$i]);
 	}
 	echo "</ul>";
 	for($i=0;$i<count($unit_n);$i++){
-		printf("<div id='tab_%d'>面積: %.02f %s<br>註: 1 平方公尺 = %f %s</div>",$i,$sqm * $unit_a[$i], $unit_n[$i],$unit_a[$i], $unit_n[$i]);
+		printf("<div id='tab_%d'>面積: %.02f %s",$i,$sqm * $unit_a[$i], $unit_n[$i]);
+		if ($unit_a[$i] != 1 ) 
+			printf("<br>註: 1 平方公尺 = %f %s</div>",$unit_a[$i], $unit_n[$i]);
 	}
 	echo "</div>";
 }
