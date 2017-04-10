@@ -767,11 +767,11 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 		$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
 		$title = $row['title'];
 		}
-	$cmd = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	// moi_osm_gpx 
-	$cmd2 = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l moi_osm_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd2 = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l moi_osm_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	exec($cmd2);
-	$cmd3 = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l moi_osm -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd3 = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l moi_osm -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	exec($cmd3);
 	error_log("tilestache_clean: ". $cmd);
 	/*

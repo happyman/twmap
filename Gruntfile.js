@@ -103,13 +103,13 @@ phplint: {
   grunt.registerTask('default', [
       'jshint',
       'phplint',
-      'clean',
      // 'copy:generated',
 	  'rsync:generated',
       'useminPrepare',
       'concat',
       'uglify',
       'cssmin',
+      'clean',
       'filerev',
       'usemin',
   ]);

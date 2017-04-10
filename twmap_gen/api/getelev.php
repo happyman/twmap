@@ -1,10 +1,12 @@
 <?php
+// 1. 取得高度及其他資訊
+// 2. 輸入形狀取得高度 or 面積資訊
 
 require_once("../config.inc.php");
 
 // $twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
-$loc = $_REQUEST['loc'];
-$is_shapes = $_REQUEST['infoshapes'];
+$loc = isset($_REQUEST['loc'])? $_REQUEST['loc']: "";
+$is_shapes =isset( $_REQUEST['infoshapes'])?  $_REQUEST['infoshapes'] : "";
 if (empty($loc) && empty($is_shapes)) {
 	ajaxerr("insufficent parameters");
 }
@@ -114,7 +116,7 @@ function drawBackgroundColor() {
 				break;
 			case 'polygon':
 				//print_r($shape);
-				echo "<hr><p><h1>這是一個多邊形 polygon</h1>";
+				echo "<p><h2>這是一個多邊形 polygon</h2>";
 				echo "端點座標<br><textarea style='width:200px;height:70px;border:2px #ccc solid;overflow:hidden'>";
 				foreach($shape['paths'][0]['path'] as $pt) {
 					$pts[] = sprintf("%f %f",$pt['lon'],$pt['lat']);
@@ -131,7 +133,7 @@ function drawBackgroundColor() {
 			case 'rectangle':
 				$ne = $shape['bounds']['northEast'];
 				$sw = $shape['bounds']['southWest'];
-				echo "<hr><p><h1>這是一個長方形 rectangle </h1>";
+				echo "<p><h2>這是一個長方形 rectangle </h2>";
 				echo "<br>東北座標:" . coord($ne); 
 				echo "<br>西南座標:" . coord($sw);
 					downloadform();
