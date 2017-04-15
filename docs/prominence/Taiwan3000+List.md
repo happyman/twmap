@@ -1,14 +1,14 @@
-# 台灣的高山列表 v20170414 by happyman
+# 台灣的高山列表 v20170415 by happyman
 
 ## 問題: 台灣到底有多少座高山?
 ## 方法:
  1. 高山是海拔大於等於 3000M 的山頭，有人說100個，有人根據維基百科列表說有 268 個 [1](#ref1)，到底多少? 那一定要先定義何者為山峰。
-百岳選峰非常主觀，有些未達 3000M，有些則只是測量點埋設處。有名子的山峰也不夠客觀，任何人都可以幫山取名。
-故比較客觀的方式，就是用地形特徵來選擇。世界上的山峰亦是如此，是採用全球的數位高程資料計算地形突起度[2](#ref2)而來。
-地形突起度超過 1500M 稱為超級突出峰[3](#ref3)。台灣有玉山及雪山入榜，玉山排名世界 27 名[4](#ref4)。
-台灣的山曾有人計算過[5](#ref5)，山岳界小花也曾自行選擇獨立峰。本計算是定義是突起度超過 100M 才算山峰。
- 1. 數值地形模型（Digital Terrain Model，DTM）採用內政部 2016.9 公布的 20M 資料。其中尚有錯誤部分，採用 Rudy 內插修正過的檔案[6](#ref6)，轉換成 hgt 格式提供程式使用。
- 1. 程式採用 randall77 開放原始碼程式[7](#ref7)。修改成可以吃 SRTM1 格式。[8](#ref8)
+百岳選峰非常主觀，有些未達 3000M，有些則只是測量點埋設處。有名字的山峰也不夠客觀，任何人都可以幫山取名。
+故比較客觀的方式，就是用地形特徵來選擇。世界上的山峰亦是如此，是採用全球的數位高程資料計算[地形突起度](#ref2)而來。
+地形突起度超過 1500M 稱為[超級突出峰](#ref3)。台灣有玉山及雪山入榜，[玉山排名世界 27 名](#ref4)。
+台灣的山曾有人[計算過](#ref5)，山岳界莊錦豐(小花)也曾自行選擇獨立峰。本計算是定義是突起度超過 100M 才算山峰。
+ 1. 數值地形模型（Digital Terrain Model，DTM）採用內政部 2016.9 公布的 20M 資料。其中尚有錯誤部分，採用 Rudy 內插修正過的[tif檔案](#ref6)，轉換成 hgt 格式提供程式使用。
+ 1. 程式採用 randall77 開放[原始碼程式](#ref7)。修改成可以吃 SRTM1 格式。程式碼可在此[下載](#ref8)
 ## 答案:
 台灣超過 3000M 以上高山共有 151 座。列表如下:
  * 其中山峰名稱由張桂秋(秋姐)整理。
@@ -103,7 +103,7 @@ no	peak_x	peak_y	peak_h	peak_name	prominence	col_x	col_y	col_h	parent_x	parent_y
 85	121.1853	23.8519	3249	火山	174	121.1478	23.8692	3075	121.1389	23.8761	3275	干卓萬山
 86	120.9589	23.4464	3845	玉山南峰	174	120.9553	23.455	3671	120.95728	23.47	3952	玉山
 87	121.0881	23.6428	3523	烏達佩山	174	121.0861	23.6367	3349	121.0919	23.6267	3607	東郡大山
-88	121.2683	23.8836	3016	安北山	168	121.2631	23.8817	2848	121.2664	23.8728	3064	安東軍山
+88	121.2683	23.8836	3016	安東軍北峰	168	121.2631	23.8817	2848	121.2664	23.8728	3064	安東軍山
 89	121.245	23.6108	3046	阿巴拉山	167	121.2456	23.6014	2879	121.2444	23.5936	3051	阿屘那來山
 90	121.0325	23.3339	3056	世新山	166	121.0375	23.3328	2890	120.9117	23.2269	3656	關山P
 91	121.2667	24.4281	3517	品田山	166	121.2572	24.4256	3351	121.2319	24.3831	3878	雪山
@@ -169,9 +169,9 @@ no	peak_x	peak_y	peak_h	peak_name	prominence	col_x	col_y	col_h	parent_x	parent_y
 151	121.4236	24.3083	3573	中央尖東峰	100	121.4214	24.3083	3473	121.4161	24.31	3693	中央尖
 
 ```
-xlsx 下載: [9](#ref9)
-https://github.com/happyman/twmap/blob/master/docs/prominence/20170414/Taiwan_3000%2B_peak.xlsx
-
+ * xlsx 下載: [https://github.com/happyman/twmap/blob/master/docs/prominence/20170414/Taiwan_3000%2B_peak.xlsx]
+ * kml 下載: [http://map.happyman.idv.tw/kml/Taiwan_3000+_peak.kml]
+ 
 ### 參考資料:
  1. <a name="ref1"></a> https://zh.wikipedia.org/wiki/%E5%8F%B0%E7%81%A3%E5%B1%B1%E5%B3%B0%E5%88%97%E8%A1%A8
  1. <a name="ref2"></a> https://en.wikipedia.org/wiki/Topographic_prominence 
@@ -182,4 +182,6 @@ https://github.com/happyman/twmap/blob/master/docs/prominence/20170414/Taiwan_30
  1. <a name="ref7"></a>  https://github.com/randall77/prominence
  1. <a name="ref8"></a>  https://github.com/happyman/twmap/tree/master/docs/prominence/src
  1. <a name="ref9"></a>  https://github.com/happyman/twmap/blob/master/docs/prominence/20170414/
-
+## changelog:
+ 1. 2017.4.14 initial version
+ 1. 2017.4.15 安北山->安東軍山北峰, 名子->名字
