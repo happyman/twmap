@@ -99,9 +99,9 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 			<!-- <button type="button" id="changemap" name="changemap" title="切換一版與三版地形圖" >經建三</button>-->
 			<div id="CGMAP">
 				<select title="切換前景圖" name="changemap" id="changemap">
+					<option value="moi_osm">OSM</option>
 					<option value="tw25k_v3">經建三</option>
 					<option value="tw25k_v1">經建一</option>
-					<option value="moi_osm">OSM</option>
 				</select>
 			</div>
 			 <div id='CGNAME'>

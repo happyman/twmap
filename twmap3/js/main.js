@@ -97,6 +97,17 @@ var NLSCNameOptions = {
 	opacity: 1,
     name: 'NLSCNames'
 };
+var GPXTrackOptions = {
+    getTileUrl: function(a, b) {
+        return 'http://rs.happyman.idv.tw/map/gpxtrack/' + b + "/" + a.x + "/" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    minZoom: 10,
+    name: "GPXTrack",
+    alt: 'User contributed GPX'
+};
+
 // 以下為背景圖
 //var OSM_GDEM_Options = {
 //	maxZoom: 18,
@@ -154,7 +165,7 @@ var MOI_OSM_Options = {
 };
 var MOI_OSM_TWMAP_Options = {
     getTileUrl: function(a, b) {
-        return "http://rs.happyman.idv.tw/MOI_OSM/" + b + "/" + a.x + "/" + a.y + ".png";
+        return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -251,6 +262,7 @@ var TW5KArielPIC_MapType = new google.maps.ImageMapType(TW5KArielPIC_Options);
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
+var GPXTrackMapType = new google.maps.ImageMapType(GPXTrackOptions);
 
 
 //圖資 copyright
@@ -764,7 +776,9 @@ function locInfo_show(newpos, ele, extra) {
     content += "<br>座標: " + comment + "" + Math.round(p.x) + "," + Math.round(p.y);
    // /* allow from all points
     if (ele > -1000) 
-	content += "<br>通視模擬: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
+	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
+	content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
+				
     //*/
     if (login_role == 1) {
         if (locInfo_name == "我的位置") 
@@ -826,7 +840,8 @@ function tagInfo(newpos, id) {
 				content += "<br>座標: " + comment + "<br>" + Math.round(p.x) + "," + Math.round(p.y);
 				content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
 				content += data[0].story;
-				content += "<br>通視模擬: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
+				content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img title='通視模擬' id=\"los_eye_img\" src=img/eye.png width=32/></a>";
+				content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc' ><img src=img/mc.png title='地圖對照器' /></a>";
 				content += "</div>";
 			}
 			centerInfo.setContent(content);
@@ -841,12 +856,25 @@ function tagInfo(newpos, id) {
 }
 var line_of_sight_lines = [];
 var line_of_sight_running = 0;
+var line_of_sight_display_xyz = "";
 function show_line_of_sight(y,x,z){
 	var names = [];
 	if (line_of_sight_running == 1 ) {
 		alert("搓到眼睛．．好痛");
 		 return;
 	}
+	// 再點一次即消失原來的線條
+	var input = x + "_" +  y + "_" + z;
+	if (line_of_sight_display_xyz == input ) {
+		for(var i=0; i< line_of_sight_lines.length; i++){
+			if (line_of_sight_lines[i])
+				line_of_sight_lines[i].setMap(null);
+		}
+		// 重設
+		line_of_sight_display_xyz = "";
+		return;
+	}
+	line_of_sight_display_xyz = input;
 	$('#los_eye_img').attr('src',"img/eye_a.gif");
 	line_of_sight_running = 1;
 	topnoty = noty({text: '通視模擬計算中.....', layout:'top'});
@@ -1406,6 +1434,33 @@ function showUploadPanel(e) {
 function hideUploadPanel(e) {
   $('#drop-container').hide();
 }
+function setRoadMap(){
+
+	var name = $('#changegname').val();
+	var c =  map.overlayMapTypes.getLength();
+	for(var i = 0; i < c-1;  i++) {
+		map.overlayMapTypes.pop();
+		// console.log(i);
+	}
+	console.log(c);
+	console.log('remove overlays cur=' + name);
+	i=1;
+	if (name == 'GoogleNames') {
+		map.overlayMapTypes.insertAt(i++, GoogleNameMapType);
+		console.log('insert Google overlay');
+		//map.overlayMapTypes[1].setOpacity(1);
+	} else if (name == 'NLSCNames') {
+		map.overlayMapTypes.insertAt(i++, NLSCNameMapType);
+		console.log('insert NLSC overlay');
+		//map.overlayMapTypes[1].setOpacity(1);
+	}
+	if (show_kml_layer == 1){
+                 map.overlayMapTypes.insertAt(i++, GPXTrackMapType);
+                        console.log('insert GPX overlay');
+                }
+}
+    // 切換前景圖
+
 var shapesMap;
 
 function initialize() {
@@ -1473,14 +1528,16 @@ function initialize() {
 
 		
     // 前景免設
-    // 三版加底圖
-    BackgroundMapType = TaiwanGpxMapType;
-    BackgroundMapOptions = TaiwanGpxMapOptions;
+    // MOI_OSM_GPX as default
+    //BackgroundMapType = TaiwanGpxMapType;
+    //BackgroundMapOptions = TaiwanGpxMapOptions;
+    BackgroundMapType = MOI_OSM_TWMAP_MapType;
+    BackgroundMapOptions = MOI_OSM_TWMAP_Options;
     // 初始顯示哪張圖? 衛星圖
     map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
     // 背景哪張圖
     map.overlayMapTypes.insertAt(0, BackgroundMapType);
-    map.overlayMapTypes.insertAt(1, GoogleNameMapType);
+    setRoadMap();
     // 控制背景圖的透明度
     var bar = document.getElementById("op");
     var container = $("#opSlider");
@@ -1645,27 +1702,27 @@ function initialize() {
 		 var curMapType = BackgroundMapType;
 		 var newMap = $("#changemap").val();
 		 if (newMap == 'tw25k_v3' || newMap == '3') {
-			 if (show_kml_layer == 1) {
-				BackgroundMapType = TaiwanGpxMapType;
-                BackgroundMapOptions = TaiwanGpxMapOptions;
+	//		 if (show_kml_layer == 1) {
+	//			BackgroundMapType = TaiwanGpxMapType;
+          //      BackgroundMapOptions = TaiwanGpxMapOptions;
 				
-			 } else {
+	//		 } else {
 				BackgroundMapType = TaiwanMapType;
                 BackgroundMapOptions = TaiwanMapOptions; 
-			 }
+		//	 }
 			 BackgroundMap = 'tw25k_v3';
 		} else if (newMap == 'tw25k_v1' || newMap == '1') {
 			BackgroundMapType = TaiwanMapV1MapType;
             BackgroundMapOptions = TaiwanMapV1Options;
 			BackgroundMap = 'tw25k_v1';
 		} else {
-			if (show_kml_layer == 1) {
-				BackgroundMapType = MOI_OSM_GPX_MapType;
-				BackgroundMapOptions = MOI_OSM_GPX_Options;
-			} else {
+		//	if (show_kml_layer == 1) {
+		//		BackgroundMapType = MOI_OSM_GPX_MapType;
+		//		BackgroundMapOptions = MOI_OSM_GPX_Options;
+		//	} else {
 				BackgroundMapType = MOI_OSM_TWMAP_MapType;
 				BackgroundMapOptions = MOI_OSM_TWMAP_Options;
-			}
+		//	}
 			BackgroundMap = 'moi_osm';
 		}	
 		 if (curMapType == BackgroundMapType) {
@@ -1679,16 +1736,19 @@ function initialize() {
 	 });
     // 切換前景圖
     $('#changegname').change(function() {
-        var curMap = (map.overlayMapTypes.length == 2) ? map.overlayMapTypes.getArray()[1].name : 'None';
+        //var curMap = (map.overlayMapTypes.length == 2) ? map.overlayMapTypes.getArray()[1].name : 'None';
+/*
+	 var curMap = (map.overlayMapTypes.getAt(1) != "undefined" && map.overlayMapTypes.getAt(1).name != 'GPXTrack') ? map.overlayMapTypes.getArray()[1].name : 'None';
         var newMap = $('#changegname').val();
         if (curMap == newMap) return true;
+	
         if ($('#changegname').val() == 'None') {
             map.overlayMapTypes.removeAt(1);
             return true;
         }
         if (curMap != 'None') {
 			map.overlayMapTypes.removeAt(1);
-		}
+	}
         if (newMap == 'GoogleNames') {
 			map.overlayMapTypes.insertAt(1, GoogleNameMapType);
 			//map.overlayMapTypes[1].setOpacity(1);
@@ -1697,6 +1757,8 @@ function initialize() {
 			map.overlayMapTypes.insertAt(1, NLSCNameMapType);
 			//map.overlayMapTypes[1].setOpacity(1);
 		}
+*/
+	setRoadMap();
         updateView("info_only");
     });
     $('#changegrid').change(function() {
@@ -1747,7 +1809,7 @@ function initialize() {
             show_kml_layer = 1;
             $("#kml_sw").removeClass("disable");
         }
-		$("#changemap").change();
+	$("#changegname").change();
     });
     $("#label_sw").click(function() {
 	console.log("label_sw triggerred: " + show_label);
