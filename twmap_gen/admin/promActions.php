@@ -13,7 +13,7 @@ $inp['jtPageSize'] = (isset($inp['jtPageSize']))? $inp['jtPageSize'] : 100;
 $inp['jtStartIndex'] = (isset($inp['jtStartIndex']))? $inp['jtStartIndex'] : 0;
 $inp['type'] = (isset($inp['type']))? $inp['type'] : "";
 // overwrite
-$inp['jtPageSize'] = (isset($inp['limit'])&& $inp['jtPageSize']!=100)? $inp['limit'] :  $inp['jtPageSize'];
+$inp['jtPageSize'] = (isset($inp['limit'])&& $inp['jtPageSize']==100)? $inp['limit'] :  $inp['jtPageSize'];
 if ($inp['jtStartIndex'] == 0 && isset($inp['start']))
 	$inp['jtStartIndex'] = $inp['start'];
 switch($inp['action']) {
