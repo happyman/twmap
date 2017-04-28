@@ -47,7 +47,7 @@ $(document).ready(function() {
                         <li>按右鍵可以顯示目前座標
                         <li>按左鍵可以選擇範圍
                         <li>搜尋框可打入山名,地標,座標: 
-				<ul><li>lat,lng :緯度,緯度
+				<ul><li>lat,lng :緯度,緯度 (用小數點方式)
                                 <li>twd67 座標  : x,y
 				<li>twd97 座標  : x/y
 				<li>地籍座標(間): cj: x.x,y.y
@@ -59,6 +59,7 @@ $(document).ready(function() {
 						<?php if ($st === false) echo "上載."; else {
 							?><a href='<?php echo $site_twmap_html_root;?>/api/uploadpage.php'>上載</a>行跡檔.	
 						<?php } ?>
+			<li>可以在地圖上畫線/多邊形 計算長度/面積。
 			</ul>	
 			其他:
 			<ul>

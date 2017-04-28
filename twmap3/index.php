@@ -68,6 +68,7 @@ printf("var getkml_url = '%s';\n",$CONFIG['getkml_url']);
 printf("var geocodercache_url = '%s';\n",$CONFIG['geocodercache_url']);
 printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
 printf("var pointdata_admin_url = '%s';\n",$CONFIG['pointdata_admin_url']);
+printf("var promlist_url = '%s';\n", $CONFIG['promlist_url']);
 printf("var get_waypoints_url = '%s';\n",$CONFIG['get_waypoints_url']);
 printf("var get_elev_url = '%s';\n",$CONFIG['get_elev_url']);
 printf("var viewshed_url = '%s';\n",$CONFIG['viewshed_url']);
@@ -132,6 +133,7 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
       		<option selected="selected" value="6">小百岳</option>
       		<option selected="selected" value="9">百名山</option>
       		<option selected="selected" value="8">溫泉</option>
+		<option selected="selected" value="10">獨立峰</option>
 			<option selected="selected" value="7">其他</option>
 			</select>
 			
@@ -223,9 +225,7 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 	var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
 	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
 	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	if (window.location.href != window.top.location.href) {
-		$('#openwin').html('<a href="/~happyman/twmap3/" target=_top>獨立視窗</a>');
-	}
+
 });
 
 </script>

@@ -19,6 +19,7 @@ $CONFIG['get_elev_url'] = $site_twmap_html_root ."api/getelev.php";
 $CONFIG['pointdata_url'] = $site_twmap_html_root . "api/pointdata.php";
 $CONFIG['viewshed_url'] = $site_twmap_html_root . "api/get_line_of_sight.php";
 $CONFIG['pointdata_admin_url'] = $site_twmap_html_root . "admin/index.php";
+$CONFIG['promlist_url'] = $site_twmap_html_root . "admin/promlist.php";
 $CONFIG['exportkml_url'] = $site_twmap_html_root . "api/exportkml.php";
 
 // 資料庫連線參數

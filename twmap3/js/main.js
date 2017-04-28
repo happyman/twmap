@@ -666,7 +666,12 @@ function locInfo(newpos, callback, param) {
             "detail": 0
         }
     }).done(function(data) {
-         //   console.log(data);
+         // toggle login
+		 	if (data.rsp.info){
+				toggle_user_role(1);
+			} else {
+				toggle_user_role(0);
+			}
         if (data.ok === true && data.rsp.wpt !== "undefined") {
             locInfo_name = "GPS 航跡資訊";
             var extra = [];
@@ -722,34 +727,6 @@ function locInfo(newpos, callback, param) {
 		// console.log(data);
 		locInfo_show(newpos, ele, { "callback": callback, "content": extra_info ,"param": param, "close": close_infowin });
 	    });
-/*
-            if (!elevator) elevator = new google.maps.ElevationService();
-            elevator.getElevationForLocations({
-                'locations': [newpos]
-            }, function(results, status) {
-                if (status == google.maps.ElevationStatus.OK) {
-                    if (results[0]) {
-                        locInfo_show(newpos, results[0].elevation, {
-                            "callback": callback,
-                            "param": param,
-                            "close": close_infowin
-                        });
-                    } else {
-                        locInfo_show(newpos, -10000, {
-                            "callback": callback,
-                            "param": param,
-                            "close": close_infowin
-                        }); // success but unknown
-                    }
-                } else {
-                    locInfo_show(newpos, -20000, {
-                        "callback": callback,
-                        "param": param,
-                        "close": close_infowin
-                    });
-                }
-            });
-*/
         }
     }); // done
 }
@@ -778,6 +755,7 @@ function locInfo_show(newpos, ele, extra) {
     if (ele > -1000) 
 	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
 	content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
+	content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
 				
     //*/
     if (login_role == 1) {
@@ -1210,6 +1188,8 @@ success: function(data) {
                     type: data[i].type,
                     class: data[i].class,
                     mt100: data[i].mt100,
+					prom: data[i].prominence,
+					prom_idx: data[i].prominence_index,
 		    owner: data[1].owner
                 };
             }
@@ -2221,6 +2201,8 @@ function markerReloadSingle(opt){
                     "type": opt.meta.type,
                     "class": opt.meta.class,
                     "mt100": opt.meta.mt100,
+					"prom": opt.meta.prominence,
+					"prom_idx": opt.meta.prominence_index,
 		    "owner": opt.meta.owner
                 };
         availableTagsLocation[to_update_id] = new google.maps.LatLng(opt.meta.y, opt.meta.x);
@@ -2252,6 +2234,8 @@ function markerReloadSingle(opt){
                     "type": opt.meta.type,
                     "class": opt.meta.class,
                     "mt100": opt.meta.mt100,
+					"prom": opt.meta.prominence,
+					"prom_idx": opt.meta.prominence_index,
 		    "owner": opt.meta.owner
         };
         allmarkers[to_update_id] = new google.maps.Marker({
@@ -2329,6 +2313,12 @@ function markerFilter() {
                 if (availableTagsMeta[i].class == '0' && (availableTagsMeta[i].type == '溫泉')) {
                     want = 1;
                 }
+			} else if (s[k] == '10') {
+				// prominence list
+				if ( availableTagsMeta[i].prom_idx > 0)  {
+					want = 1;
+				}
+					
             } else if (s[k] == '7') {
                 // 其他
                 if (availableTagsMeta[i].class == '0') {

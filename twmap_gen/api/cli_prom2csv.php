@@ -51,7 +51,7 @@ foreach($lines as $line){
 	else
 		$parent_name = "";
 	
-	$result[]=array($peak_x,$peak_y,"$peak_y $peak_x",$peak_h,process_name($peak_name),$prom, $col_x,$col_y,$col_h,$parent_x,$parent_y,$parent_h,$parent_name,$mark);
+	$result[]=array($peak_x,$peak_y,"$peak_y $peak_x",$peak_h,process_name($peak_name),$prom, $col_x,$col_y,$col_h,$parent_x,$parent_y,$parent_h,process_name($parent_name),$mark);
 	// echo implode(",",$result) . "\n";
 	if ($mark == 2){
 		// printf("Update point3 SET prominence=%d WHERE id=%d;\n",$prom,$peak_data[0]['id']);
