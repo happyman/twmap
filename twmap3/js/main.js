@@ -734,23 +734,29 @@ function locInfo(newpos, callback, param) {
 function locInfo_show(newpos, ele, extra) {
     //console.log( "locInfo:"+locInfo_name);
     var ph;
-    var comment;
+    var comment, comment2;
+
     var ll = is_taiwan(newpos.lat(), newpos.lng());
+	ph = (ll == 2)? 1 : 0;
+	var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
+	var p2 = lonlat2twd97(newpos.lng(), newpos.lat(), ph);
     if (ll == 2) {
-        ph = 1;
-        comment = "澎湖 TWD67:";
+        comment = "澎湖 TWD67 TM2:" + Math.round(p.x) + "," + Math.round(p.y);
+		comment2 = "澎湖 TWD97 TM2:" + Math.round(p2.x) + "/" + Math.round(p2.y);
     } else {
-        ph = 0;
-        comment = "台灣 TWD67:";
+
+        comment = "台灣 TWD67 TM2:" + Math.round(p.x) + "," + Math.round(p.y);
+		comment2 = "台灣 TWD97 TM2:" + Math.round(p2.x) + "/" + Math.round(p2.y);
     }
-    var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
+	var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
+	var comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
     var content = "<div class='infowin'>" + locInfo_name + "";
     if (locInfo_name == "我的位置" || locInfo_name == "GPS 航跡資訊") content += permLinkURL(newpos.toUrlValue(5));
     else content += permLinkURL(encodeURIComponent(locInfo_name));
     if (extra.content) content += extra.content;
     content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
     if (ele > -1000) content += "<br>高度: " + ele.toFixed(0) + "M";
-    content += "<br>座標: " + comment + "" + Math.round(p.x) + "," + Math.round(p.y);
+    content += "<br>座標: " + comment + "<br>" + comment2 + "<br>" + comment3;
    // /* allow from all points
     if (ele > -1000) 
 	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
@@ -789,17 +795,20 @@ function locInfo_show(newpos, ele, extra) {
 // Tags Info
 function tagInfo(newpos, id) {
 	var ph;
-	var comment;
+	var comment, comment2;
     var ll = is_taiwan(newpos.lat(), newpos.lng());
+	ph = (ll == 2)? 1 : 0;
+	var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
+	var p2 = lonlat2twd97(newpos.lng(), newpos.lat(), ph);
     if (ll == 2) {
-        ph = 1;
-        comment = "澎湖 TWD67:";
+        comment = "澎湖 TWD67 TM2: " + Math.round(p.x) + "," + Math.round(p.y);
+		comment2 = "澎湖 TWD97 TM2: " + Math.round(p2.x) + "/" + Math.round(p2.y);
     } else {
-        ph = 0;
-        comment = "台灣 TWD67:";
+        comment = "台灣 TWD67 TM2: " + Math.round(p.x) + "," + Math.round(p.y);
+		comment2 = "台灣 TWD97 TM2: " + Math.round(p2.x) + "/" + Math.round(p2.y);
     }
-    var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
-    //centerInfo.setContent(comment+Math.round(p.x) + ","+Math.round(p.y));
+    var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
+	var comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
     $.ajax({
         dataType: 'json',
         cache: false,
@@ -815,7 +824,7 @@ function tagInfo(newpos, id) {
 			} else {
 				content = "<div class='infowin'><b>" + data[0].name + "</b>";
 				content += permLinkURL(encodeURIComponent(data[0].name));
-				content += "<br>座標: " + comment + "<br>" + Math.round(p.x) + "," + Math.round(p.y);
+				content += "<br>座標: " + comment + "<br>" + comment2 + "<br>"+ comment3; 
 				content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
 				content += data[0].story;
 				content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img title='通視模擬' id=\"los_eye_img\" src=img/eye.png width=32/></a>";

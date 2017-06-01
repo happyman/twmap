@@ -2,7 +2,7 @@
 require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
 
-session_start();
+//session_start();
 $id = (isset($_REQUEST['id']))? $_REQUEST['id'] : NULL;
 // id == ALL
 // lastest == 5
@@ -16,7 +16,7 @@ if (isset($_REQUEST['lastest'])) {
 		 $str="不在台澎範圍";
 		 break;
                 case 3:
-		 $str="找不到喔! 座標格式: <ul><li> twd67 X,Y 如 310300,2703000 <li> t97 X/Y 如 310321/2702000 <li>含小數點經緯度 lat,lon 24.430623,121.603503</ul>";
+		 $str="找不到喔! 座標格式: <ul><li> TWD67 TM2 X,Y 如 310300,2703000 <li> TWD97 TM2 X/Y 如 310321/2702000 <li>含小數點WWGS84 經緯度 lat,lon 24.430623,121.603503</ul>";
 		 break;
                 case 4:
 		 $str="cached: 不在台澎範圍";

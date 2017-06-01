@@ -18,6 +18,7 @@ if (php_sapi_name() != "cli"){
 		echo "usage: upload.php gpx_file name [keepon_id]\n";
 		exit(1);
 	}
+		
 	$_FILES['file']['tmp_name'] = $argv[1];
 	if (!isset($argv[2])) {
 		$_FILES['file']['name'] = basename($argv[1]);
@@ -33,6 +34,10 @@ if (php_sapi_name() != "cli"){
 if (!empty($_FILES)) {
      
     $tempFile = $_FILES['file']['tmp_name'];                      
+    if (strstr($tempFile,"http")){
+	exec(sprintf("wget -O /tmp/%s %s", basename($tempFile), $tempFile));
+	$tempFile = "/tmp/".  basename($tempFile);
+    }
       
 	$pa = pathinfo($_FILES['file']['name']);
     $ext = strtolower($pa['extension']);
@@ -53,7 +58,7 @@ if (!empty($_FILES)) {
 		}
 		// 1. check num of tracks
 		$t = track_get($uid);
-		if (count($t) >= 50 && $uid != 3 ) {
+		if (count($t) >= 50 && $uid != 3 && $uid != 1) {
 			header("HTTP/1.0 500 Internal Server Error");
 			echo "超過數量限制";
 			exit(1);

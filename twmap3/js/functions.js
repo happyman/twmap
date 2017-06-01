@@ -151,22 +151,58 @@ function twd972lonlat(x, y, ph) {
     return result;
 }
 
+function lonlat2twd97(x, y, ph) {
+    var p = new Proj4js.Point(parseFloat(x), parseFloat(y));
+    if (ph == 1) Proj4js.transform(WGS84, EPSG3825, p);
+    else Proj4js.transform(WGS84, EPSG3826, p);
+    var result = {
+        x: p.x,
+        y: p.y
+    };
+    return result;
+}
+/*
+https://wiki.osgeo.org/wiki/Taiwan_datums/cad2twd67
+*/
 function cad2twd67(Xcad,Ycad, unit) {
     unit = typeof unit !== 'undefined' ? unit : 'm';
     if (unit == 'm') {
-	Xcad *= 0.55;
-	Ycad *= 0.55;
+		Xcad *= 0.55;
+		Ycad *= 0.55;
     }
-   var XCtm69 = 227361.634 + 0.0;
-var YCtm69 = 2632574.582 + 0.0;
-var XCcad = 5750;
-var YCcad = -21300;
-var A     = 1.8182516286522;
-var B     = -0.004167109289753;
+	var XCtm69 = 227361.634 + 0.0;
+	var YCtm69 = 2632574.582 + 0.0;
+	var XCcad = 5750;
+	var YCcad = -21300;
+	var A     = 1.8182516286522;
+	var B     = -0.004167109289753;
     var Xtmtrn = A * ( Xcad - XCcad ) - B * ( Ycad - YCcad ) + XCtm69;
     var Ytmtrn = B * ( Xcad - XCcad ) + A * ( Ycad - YCcad ) + YCtm69;
     return [ Xtmtrn, Ytmtrn ];
 
+
+}
+/* happyman */
+function twd672cad(x,y, unit){
+	var XCtm69 = 227361.634 + 0.0;
+	var YCtm69 = 2632574.582 + 0.0;
+	var XCcad = 5750;
+	var YCcad = -21300;
+	var A     = 1.8182516286522;
+	var B     = -0.004167109289753;
+	var Xcad =(B*y-B*YCtm69+B*B*XCcad+A*x-A*XCtm69+A*A*XCcad)/(A*A+B*B);
+	var Ycad =(A*y-A*YCtm69+A*A*YCcad+B*B*YCcad-B*x+B*XCtm69)/(B*B+A*A);
+    unit = typeof unit !== 'undefined' ? unit : 'm';
+    if (unit == 'm') {
+	Xcad /= 0.55;
+	Ycad /= 0.55;
+    }
+	return { x:Xcad, y:Ycad };
+}
+// wrap 一下
+function lonlat2cad(x,y,unit){
+	var p = lonlat2twd67(x,y,0);
+	return twd672cad(p.x,p.y,unit);
 }
 function lonlat_getblock(lon, lat, ph, unit) {
     unit = typeof unit !== 'undefined' ? unit : 1000;
