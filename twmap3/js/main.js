@@ -761,6 +761,7 @@ function locInfo_show(newpos, ele, extra) {
     if (ele > -1000) 
 	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
 	content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
+	content += "<a href='http://maps.nlsc.gov.tw/O09/mapshow.action?zoom=" + map.getZoom() + "&lon=" + newpos.lng().toFixed(5) + "&lat=" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
 	content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
 				
     //*/

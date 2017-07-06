@@ -25,7 +25,13 @@ if (!empty($is_shapes)){
 <script type="text/javascript">
 window.onload = function() {
 	// var data = localStorage.getItem("infoshapes");
-   $("#data").val(localStorage.getItem("infoshapes"));
+	var cur_shape = localStorage.getItem("infoshapes");
+	if (cur_shape.indexOf("circle")>=0) {
+		//
+		$("#data").val(localStorage.getItem("shapes"));
+	}else{
+		$("#data").val(cur_shape);
+	}
    document.forms["shapeform"].submit();
    
 }
@@ -55,8 +61,107 @@ exit();
   <hr>
 <p>
  <?php
+ $run_once = 0;
 	foreach($shapes as $shape){
+		if ($run_once == 1) break;
 		switch($shape['type']) {
+			case 'circle':
+			?>
+			<script>
+		
+						
+			function loadcircles() {
+				var myshapes = localStorage.getItem("shapes");
+				var jsonObject = eval("(" + myshapes + ")");
+	/*
+	{"shapes":[{"type":"circle","color":"undefined","center":{"lat":"22.571219105273084","lon":"120.8719253540039"},"radius":"4582.94087326265"},{"type":"circle","color":"undefined","center":{"lat":"22.571219105273084","lon":"120.91707229614258"},"radius":"229.39212386740388"}]}
+	*/
+				var radius;
+				var color;
+				var center_loc;
+				// clear
+				$("#shapes_editor").html("");
+				for (var i = 0; i < jsonObject.shapes.length; i++){
+					switch (jsonObject.shapes[i].type) {
+						case 'circle':
+						radius = parseFloat(jsonObject.shapes[i].radius);
+						color = (jsonObject.shapes[i].color == null ) ? '#FFFFE0' : jsonObject.shapes[i].color;
+						center_loc = parseFloat(jsonObject.shapes[i].center.lat).toFixed(4) + "," + parseFloat(jsonObject.shapes[i].center.lon).toFixed(4);
+						$("#shapes_editor").append( "圓圈" + i + "中心:<a href=#>"+ center_loc+"</a>");
+						$("#shapes_editor").append(":半徑=" + "<input type=text class='radius' size=10 data-index='"+ i +"' value='" + radius.toFixed(5) + "'>顏色:<input type=color class='color' data-index='"+ i +"' value='"+  jsonObject.shapes[i].color +"'><br>" );
+						
+						break;
+						default:
+						//document.write( i + " " + jsonObject.shapes[i].type + "<br>");
+						break;	
+					}
+					
+				}
+				$("#shapes_editor").on("change", "input", function() {
+						var i = $(this).data("index");
+						var newval = $(this).val();
+						var field=$(this).attr('class');
+						if (jsonObject.shapes[i].type == 'circle') {
+							
+						//console.log(field);
+						//console.log(i);
+				
+						parent.shapesMap.shapesClearAll();
+						// jsonObject.shapes[i].color = '#FF0000';
+						jsonObject.shapes[i][field] = newval;
+						localStorage.setItem("shapes",JSON.stringify(jsonObject));
+						parent.shapesMap.shapesLoad();
+						}
+					}
+				);
+				$('#shapes_editor a').each(function(index) {
+						$(this).click(function(event) {
+						event.preventDefault();
+						var name=$(this).text();
+						$("#tags",parent.document).val(name);
+						$("#goto",parent.document).trigger('click');
+					});
+				})
+			}  // end of loadcircles
+
+			$(document).ready(function(){
+			$('#add').click(function(){
+				 event.preventDefault();
+				// validate x,y,r
+				if ($.isNumeric($("#addx").val()) && $.isNumeric($("#addy").val()) && $.isNumeric($("#addradius").val()) && Math.abs($("#addx").val()) <= 180 &&  Math.abs($("#addy").val()) <= 90  ) {
+					
+					var myshapes = localStorage.getItem("shapes");
+					var jsonObject = eval("(" + myshapes + ")");
+					var i = jsonObject.shapes.length;
+					jsonObject.shapes[i] = { "type": "circle","radius": $("#addradius").val(), "center": { "lat":  $("#addy").val(),"lon": $("#addx").val() }, "color": $("#addcolor").val() };
+					localStorage.setItem("shapes",JSON.stringify(jsonObject));
+					parent.shapesMap.shapesLoad();
+					// reload
+					loadcircles();
+				} else {
+					alert("輸入有誤喔");
+				}
+				});
+				loadcircles();			
+			});
+			</script>
+			<?php
+			// print_r($shapes);
+			echo "<div id=shapes_editor></div>";
+			?>
+			<form id="addcircle">
+			新圓圈中心:<br>緯度:<input type=text size=12 id="addy">經度:<input type=text size=12 id="addx">,半徑=<input type=text id="addradius" size=10 value=1000>公尺 
+			顏色:<input type=color id="addcolor"><button type="button" id="add">新增</button><br>
+			</form>
+			<button onclick="loadcircles();">重載</button>
+			<?php
+			//echo "<h2>圓圈圈處理</h2>";
+			// printf( "圓心座標:%.06f %.06f 半徑: %.06fM\n",$shapes[0]['center']['lon'],$shapes[0]['center']['lat'],$shapes[0]['radius'] );
+			// downloadform();
+			$run_once = 1;
+			//printf ("</ul><br>面積: %.04f Km^2", $result[0]['st_area'] / 1000000 );
+			// display_area(pow($shapes[0]['radius'], 2) * pi() );
+				break;
 			case 'polyline':
 				$path = $shape['path'];
 				// print_r($path);
@@ -219,7 +324,7 @@ function distance_display($result){
 */
 function display_area($sqm){
 	$unit_n = array("公頃","平方公里","甲","分","英畝","公畝","坪","平方公尺","平方呎");
-	$unit_a = array(0.0001,	0.00001,0.000103,0.0000103,0.000247,0.01,0.3025,1,10.7639);
+	$unit_a = array(0.0001,	0.000001,0.000103,0.0000103,0.000247,0.01,0.3025,1,10.7639);
 	echo "<div id=tabs><ul>";
 	for($i=0;$i<count($unit_n);$i++){
 		printf("<li><a href=#tab_%d>%s</a></li>",$i,$unit_n[$i]);
