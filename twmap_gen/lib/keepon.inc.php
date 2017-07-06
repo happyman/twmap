@@ -179,7 +179,7 @@ function keepon_Tid_to_URL($tid) {
 function keepon_Id_to_Tid($keepon_id) {
 	$params = array();
 	$kurl = sprintf("http://www.keepon.com.tw/redirectMap-%s.html", $keepon_id);
-	$cmd = sprintf("wget    --max-redirect=1  %s  2>&1 |grep Location |grep thread",$kurl);
+	$cmd = sprintf("wget -e use_proxy=yes -e http_proxy=192.168.168.17:3128   --max-redirect=1  %s  2>&1 |grep Location |grep thread",$kurl);
 	exec($cmd, $out, $ret);
 	
 	if (preg_match("/thread-(.*)\.html/",$out[0],$mat)) {

@@ -22,7 +22,7 @@ function pointcrud($inp, $owner_uid, $admin) {
 				$where[] = "contribute=1";
 			}
 			$where_str = (count($where)>0)? "WHERE ".implode(" AND ",$where) : "";
-			$sql = sprintf("SELECT id,name,alias,alias2,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute FROM point3 %s ORDER BY %s OFFSET %d LIMIT %d", 
+			$sql = sprintf("SELECT id,name,alias,alias2,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute,prominence,prominence_index FROM point3 %s ORDER BY %s OFFSET %d LIMIT %d", 
 			$where_str, $inp['jtSorting'], $inp['jtStartIndex'], $inp['jtPageSize']);
 			$db->SetFetchMode(ADODB_FETCH_ASSOC);
 			if (($rs = $db->GetAll($sql)) === false) {
@@ -50,10 +50,10 @@ function pointcrud($inp, $owner_uid, $admin) {
 			$pp = sprintf("ST_GeomFromText('SRID=4326;POINT(%f %f)')",$inp['x'],$inp['y']);
 			$inp['number'] = (empty($inp['number']))? "NULL": intval($inp['number']);
 			$inp['ele'] = (empty($inp['ele']))? "NULL": intval($inp['ele']);
-			$sql = sprintf("insert into point3 (id, name,alias,type,class,number,status,ele,mt100,checked,comment,coord,owner,contribute,alias2) values ( DEFAULT, '%s','%s','%s','%s',%s
-				,'%s', %s,'%s','%s','%s',%s, %d, %d, '%s') returning id",
+			$sql = sprintf("insert into point3 (id, name,alias,type,class,number,status,ele,mt100,checked,comment,coord,owner,contribute,alias2,prominence,prominence_index) values ( DEFAULT, '%s','%s','%s','%s',%s
+				,'%s', %s,'%s','%s','%s',%s, %d, %d, '%s',%d, %d) returning id",
 					$inp['name'],$inp['alias'],$inp['type'],$inp['class'], $inp['number'],
-					$inp['status'],$inp['ele'],$inp['mt100'],$checked,pg_escape_string($inp['comment']),$pp, $owner_uid, $contribute, $inp['alias2'] );
+					$inp['status'],$inp['ele'],$inp['mt100'],$checked,pg_escape_string($inp['comment']),$pp, ($adimin==1)? $inp['owner'] : $owner_uid, $contribute, $inp['alias2'],$inp['prominence'],$inp['prominence_index']);
 			if (($rs = $db->GetAll($sql)) === false) {
 				$errmsg[] = "fail $sql" . $db->ErrorMsg();
 			}
@@ -76,6 +76,8 @@ function pointcrud($inp, $owner_uid, $admin) {
 			$inp['number'] = (empty($inp['number']))? "NULL": intval($inp['number']);
 			$inp['ele'] = (empty($inp['ele']))? "NULL": intval($inp['ele']);
 			$inp['alias2'] = (empty($inp['alias2']))? "": intval($inp['alias2']);
+			$inp['prominence'] = (empty($inp['prominence']))? 0 : intval($inp['prominence']);
+			$inp['prominence_index'] = (empty($inp['prominence_index']))? 0 : intval($inp['prominence_index']);
 			// 1. 檢查身份
 			$sql = sprintf("select owner from point3 where id=%d",$inp['id']);
 			if (($rs = $db->GetAll($sql)) === false) {
@@ -87,19 +89,19 @@ function pointcrud($inp, $owner_uid, $admin) {
 					$errmsg[] = "not owner";
 					break;
 				}
-				$sql = sprintf("update point3 set name='%s',alias='%s',type='%s',class='%s',number=%s,status='%s',ele=%s,mt100='%s',checked='%s',comment='%s',coord=%s,contribute='%s',mdate=now(),alias2='%s' WHERE id=%s and owner=%d",
+				$sql = sprintf("update point3 set name='%s',alias='%s',type='%s',class='%s',number=%s,status='%s',ele=%s,mt100='%s',checked='%s',comment='%s',coord=%s,contribute='%s',mdate=now(),alias2='%s',prominence=%d,prominence_index=%d WHERE id=%s and owner=%d",
 						$inp['name'],$inp['alias'],$inp['type'],$inp['class'], $inp['number'],
-						$inp['status'],$inp['ele'],$inp['mt100'],$checked,pg_escape_string($inp['comment']),$pp,$contribute,  $inp['alias2'], $inp['id'], $owner_uid );
+						$inp['status'],$inp['ele'],$inp['mt100'],$checked,pg_escape_string($inp['comment']),$pp,$contribute,  $inp['alias2'], $inp['prominence'],$inp['prominence_index'],$inp['id'],$owner_uid );
 
 			} else {
-				$sql = sprintf("update point3 set name='%s',alias='%s',type='%s',class='%s',number=%s,status='%s',ele=%s,mt100='%s',checked='%s',comment='%s',coord=%s,contribute='%s',owner=%d,mdate=now(),alias2='%s' WHERE id=%s",
+				$sql = sprintf("update point3 set name='%s',alias='%s',type='%s',class='%s',number=%s,status='%s',ele=%s,mt100='%s',checked='%s',comment='%s',coord=%s,contribute='%s',owner=%d,mdate=now(),alias2='%s',prominence=%d,prominence_index=%d  WHERE id=%s",
 						$inp['name'],$inp['alias'],$inp['type'],$inp['class'], $inp['number'],
-						$inp['status'],$inp['ele'],$inp['mt100'],$checked,pg_escape_string($inp['comment']),$pp,$contribute, $inp['owner'],$inp['alias2'],$inp['id']);
+						$inp['status'],$inp['ele'],$inp['mt100'],$checked,pg_escape_string($inp['comment']),$pp,$contribute, $inp['owner'],$inp['alias2'],$inp['prominence'],$inp['prominence_index'],$inp['id']);
 			}
 			if (($rs = $db->Execute($sql)) === false) {
 				$errmsg[] = "fail sql: $sql";
 			}
-			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute FROM point3 WHERE id=%d",$inp['id']);
+			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute,prominence,prominence_index FROM point3 WHERE id=%d",$inp['id']);
 			if (($rs = $db->GetAll($sql)) === false) {
 				$errmsg[] = "fail $sql" . $db->ErrorMsg();
 			}

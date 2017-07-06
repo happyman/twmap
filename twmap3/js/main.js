@@ -97,6 +97,17 @@ var NLSCNameOptions = {
 	opacity: 1,
     name: 'NLSCNames'
 };
+var GPXTrackOptions = {
+    getTileUrl: function(a, b) {
+        return 'http://rs.happyman.idv.tw/map/gpxtrack/' + b + "/" + a.x + "/" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    minZoom: 10,
+    name: "GPXTrack",
+    alt: 'User contributed GPX'
+};
+
 // 以下為背景圖
 //var OSM_GDEM_Options = {
 //	maxZoom: 18,
@@ -154,7 +165,7 @@ var MOI_OSM_Options = {
 };
 var MOI_OSM_TWMAP_Options = {
     getTileUrl: function(a, b) {
-        return "http://rs.happyman.idv.tw/MOI_OSM/" + b + "/" + a.x + "/" + a.y + ".png";
+        return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -223,7 +234,7 @@ var TW50K1956_Options = {
 var TW5KArielPIC_Options = {
 	getTileUrl: function(a, b) {
 		var y_tms = (1 << b) - a.y - 1;
-        return "http://210.59.147.238/~happyman/tw5k/"+ b + "/" + a.x + "/" + y_tms + ".png";
+        return "http://rs.happyman.idv.tw/~mountain/tw5k/"+ b + "/" + a.x + "/" + y_tms + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 17,
@@ -251,6 +262,7 @@ var TW5KArielPIC_MapType = new google.maps.ImageMapType(TW5KArielPIC_Options);
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
+var GPXTrackMapType = new google.maps.ImageMapType(GPXTrackOptions);
 
 
 //圖資 copyright
@@ -654,7 +666,12 @@ function locInfo(newpos, callback, param) {
             "detail": 0
         }
     }).done(function(data) {
-         //   console.log(data);
+         // toggle login
+		 	if (data.rsp.info){
+				toggle_user_role(1);
+			} else {
+				toggle_user_role(0);
+			}
         if (data.ok === true && data.rsp.wpt !== "undefined") {
             locInfo_name = "GPS 航跡資訊";
             var extra = [];
@@ -710,34 +727,6 @@ function locInfo(newpos, callback, param) {
 		// console.log(data);
 		locInfo_show(newpos, ele, { "callback": callback, "content": extra_info ,"param": param, "close": close_infowin });
 	    });
-/*
-            if (!elevator) elevator = new google.maps.ElevationService();
-            elevator.getElevationForLocations({
-                'locations': [newpos]
-            }, function(results, status) {
-                if (status == google.maps.ElevationStatus.OK) {
-                    if (results[0]) {
-                        locInfo_show(newpos, results[0].elevation, {
-                            "callback": callback,
-                            "param": param,
-                            "close": close_infowin
-                        });
-                    } else {
-                        locInfo_show(newpos, -10000, {
-                            "callback": callback,
-                            "param": param,
-                            "close": close_infowin
-                        }); // success but unknown
-                    }
-                } else {
-                    locInfo_show(newpos, -20000, {
-                        "callback": callback,
-                        "param": param,
-                        "close": close_infowin
-                    });
-                }
-            });
-*/
         }
     }); // done
 }
@@ -745,26 +734,35 @@ function locInfo(newpos, callback, param) {
 function locInfo_show(newpos, ele, extra) {
     //console.log( "locInfo:"+locInfo_name);
     var ph;
-    var comment;
+    var comment, comment2;
+
     var ll = is_taiwan(newpos.lat(), newpos.lng());
+	ph = (ll == 2)? 1 : 0;
+	var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
+	var p2 = lonlat2twd97(newpos.lng(), newpos.lat(), ph);
     if (ll == 2) {
-        ph = 1;
-        comment = "澎湖 TWD67:";
+        comment = "澎湖 TWD67 TM2:" + Math.round(p.x) + "," + Math.round(p.y);
+		comment2 = "澎湖 TWD97 TM2:" + Math.round(p2.x) + "/" + Math.round(p2.y);
     } else {
-        ph = 0;
-        comment = "台灣 TWD67:";
+
+        comment = "台灣 TWD67 TM2:" + Math.round(p.x) + "," + Math.round(p.y);
+		comment2 = "台灣 TWD97 TM2:" + Math.round(p2.x) + "/" + Math.round(p2.y);
     }
-    var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
+	var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
+	var comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
     var content = "<div class='infowin'>" + locInfo_name + "";
     if (locInfo_name == "我的位置" || locInfo_name == "GPS 航跡資訊") content += permLinkURL(newpos.toUrlValue(5));
     else content += permLinkURL(encodeURIComponent(locInfo_name));
     if (extra.content) content += extra.content;
     content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
     if (ele > -1000) content += "<br>高度: " + ele.toFixed(0) + "M";
-    content += "<br>座標: " + comment + "" + Math.round(p.x) + "," + Math.round(p.y);
+    content += "<br>座標: " + comment + "<br>" + comment2 + "<br>" + comment3;
    // /* allow from all points
     if (ele > -1000) 
-	content += "<br>通視模擬: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
+	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
+	content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
+	content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
+				
     //*/
     if (login_role == 1) {
         if (locInfo_name == "我的位置") 
@@ -797,17 +795,20 @@ function locInfo_show(newpos, ele, extra) {
 // Tags Info
 function tagInfo(newpos, id) {
 	var ph;
-	var comment;
+	var comment, comment2;
     var ll = is_taiwan(newpos.lat(), newpos.lng());
+	ph = (ll == 2)? 1 : 0;
+	var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
+	var p2 = lonlat2twd97(newpos.lng(), newpos.lat(), ph);
     if (ll == 2) {
-        ph = 1;
-        comment = "澎湖 TWD67:";
+        comment = "澎湖 TWD67 TM2: " + Math.round(p.x) + "," + Math.round(p.y);
+		comment2 = "澎湖 TWD97 TM2: " + Math.round(p2.x) + "/" + Math.round(p2.y);
     } else {
-        ph = 0;
-        comment = "台灣 TWD67:";
+        comment = "台灣 TWD67 TM2: " + Math.round(p.x) + "," + Math.round(p.y);
+		comment2 = "台灣 TWD97 TM2: " + Math.round(p2.x) + "/" + Math.round(p2.y);
     }
-    var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
-    //centerInfo.setContent(comment+Math.round(p.x) + ","+Math.round(p.y));
+    var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
+	var comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
     $.ajax({
         dataType: 'json',
         cache: false,
@@ -823,10 +824,11 @@ function tagInfo(newpos, id) {
 			} else {
 				content = "<div class='infowin'><b>" + data[0].name + "</b>";
 				content += permLinkURL(encodeURIComponent(data[0].name));
-				content += "<br>座標: " + comment + "<br>" + Math.round(p.x) + "," + Math.round(p.y);
+				content += "<br>座標: " + comment + "<br>" + comment2 + "<br>"+ comment3; 
 				content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
 				content += data[0].story;
-				content += "<br>通視模擬: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img id=\"los_eye_img\" src=img/eye.png width=32/></a>";
+				content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img title='通視模擬' id=\"los_eye_img\" src=img/eye.png width=32/></a>";
+				content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc' ><img src=img/mc.png title='地圖對照器' /></a>";
 				content += "</div>";
 			}
 			centerInfo.setContent(content);
@@ -841,12 +843,25 @@ function tagInfo(newpos, id) {
 }
 var line_of_sight_lines = [];
 var line_of_sight_running = 0;
+var line_of_sight_display_xyz = "";
 function show_line_of_sight(y,x,z){
 	var names = [];
 	if (line_of_sight_running == 1 ) {
 		alert("搓到眼睛．．好痛");
 		 return;
 	}
+	// 再點一次即消失原來的線條
+	var input = x + "_" +  y + "_" + z;
+	if (line_of_sight_display_xyz == input ) {
+		for(var i=0; i< line_of_sight_lines.length; i++){
+			if (line_of_sight_lines[i])
+				line_of_sight_lines[i].setMap(null);
+		}
+		// 重設
+		line_of_sight_display_xyz = "";
+		return;
+	}
+	line_of_sight_display_xyz = input;
 	$('#los_eye_img').attr('src',"img/eye_a.gif");
 	line_of_sight_running = 1;
 	topnoty = noty({text: '通視模擬計算中.....', layout:'top'});
@@ -1182,6 +1197,8 @@ success: function(data) {
                     type: data[i].type,
                     class: data[i].class,
                     mt100: data[i].mt100,
+					prom: data[i].prominence,
+					prom_idx: data[i].prominence_index,
 		    owner: data[1].owner
                 };
             }
@@ -1406,6 +1423,33 @@ function showUploadPanel(e) {
 function hideUploadPanel(e) {
   $('#drop-container').hide();
 }
+function setRoadMap(){
+
+	var name = $('#changegname').val();
+	var c =  map.overlayMapTypes.getLength();
+	for(var i = 0; i < c-1;  i++) {
+		map.overlayMapTypes.pop();
+		// console.log(i);
+	}
+	console.log(c);
+	console.log('remove overlays cur=' + name);
+	i=1;
+	if (name == 'GoogleNames') {
+		map.overlayMapTypes.insertAt(i++, GoogleNameMapType);
+		console.log('insert Google overlay');
+		//map.overlayMapTypes[1].setOpacity(1);
+	} else if (name == 'NLSCNames') {
+		map.overlayMapTypes.insertAt(i++, NLSCNameMapType);
+		console.log('insert NLSC overlay');
+		//map.overlayMapTypes[1].setOpacity(1);
+	}
+	if (show_kml_layer == 1){
+                 map.overlayMapTypes.insertAt(i++, GPXTrackMapType);
+                        console.log('insert GPX overlay');
+                }
+}
+    // 切換前景圖
+
 var shapesMap;
 
 function initialize() {
@@ -1473,14 +1517,16 @@ function initialize() {
 
 		
     // 前景免設
-    // 三版加底圖
-    BackgroundMapType = TaiwanGpxMapType;
-    BackgroundMapOptions = TaiwanGpxMapOptions;
+    // MOI_OSM_GPX as default
+    //BackgroundMapType = TaiwanGpxMapType;
+    //BackgroundMapOptions = TaiwanGpxMapOptions;
+    BackgroundMapType = MOI_OSM_TWMAP_MapType;
+    BackgroundMapOptions = MOI_OSM_TWMAP_Options;
     // 初始顯示哪張圖? 衛星圖
     map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
     // 背景哪張圖
     map.overlayMapTypes.insertAt(0, BackgroundMapType);
-    map.overlayMapTypes.insertAt(1, GoogleNameMapType);
+    setRoadMap();
     // 控制背景圖的透明度
     var bar = document.getElementById("op");
     var container = $("#opSlider");
@@ -1645,27 +1691,27 @@ function initialize() {
 		 var curMapType = BackgroundMapType;
 		 var newMap = $("#changemap").val();
 		 if (newMap == 'tw25k_v3' || newMap == '3') {
-			 if (show_kml_layer == 1) {
-				BackgroundMapType = TaiwanGpxMapType;
-                BackgroundMapOptions = TaiwanGpxMapOptions;
+	//		 if (show_kml_layer == 1) {
+	//			BackgroundMapType = TaiwanGpxMapType;
+          //      BackgroundMapOptions = TaiwanGpxMapOptions;
 				
-			 } else {
+	//		 } else {
 				BackgroundMapType = TaiwanMapType;
                 BackgroundMapOptions = TaiwanMapOptions; 
-			 }
+		//	 }
 			 BackgroundMap = 'tw25k_v3';
 		} else if (newMap == 'tw25k_v1' || newMap == '1') {
 			BackgroundMapType = TaiwanMapV1MapType;
             BackgroundMapOptions = TaiwanMapV1Options;
 			BackgroundMap = 'tw25k_v1';
 		} else {
-			if (show_kml_layer == 1) {
-				BackgroundMapType = MOI_OSM_GPX_MapType;
-				BackgroundMapOptions = MOI_OSM_GPX_Options;
-			} else {
+		//	if (show_kml_layer == 1) {
+		//		BackgroundMapType = MOI_OSM_GPX_MapType;
+		//		BackgroundMapOptions = MOI_OSM_GPX_Options;
+		//	} else {
 				BackgroundMapType = MOI_OSM_TWMAP_MapType;
 				BackgroundMapOptions = MOI_OSM_TWMAP_Options;
-			}
+		//	}
 			BackgroundMap = 'moi_osm';
 		}	
 		 if (curMapType == BackgroundMapType) {
@@ -1679,16 +1725,19 @@ function initialize() {
 	 });
     // 切換前景圖
     $('#changegname').change(function() {
-        var curMap = (map.overlayMapTypes.length == 2) ? map.overlayMapTypes.getArray()[1].name : 'None';
+        //var curMap = (map.overlayMapTypes.length == 2) ? map.overlayMapTypes.getArray()[1].name : 'None';
+/*
+	 var curMap = (map.overlayMapTypes.getAt(1) != "undefined" && map.overlayMapTypes.getAt(1).name != 'GPXTrack') ? map.overlayMapTypes.getArray()[1].name : 'None';
         var newMap = $('#changegname').val();
         if (curMap == newMap) return true;
+	
         if ($('#changegname').val() == 'None') {
             map.overlayMapTypes.removeAt(1);
             return true;
         }
         if (curMap != 'None') {
 			map.overlayMapTypes.removeAt(1);
-		}
+	}
         if (newMap == 'GoogleNames') {
 			map.overlayMapTypes.insertAt(1, GoogleNameMapType);
 			//map.overlayMapTypes[1].setOpacity(1);
@@ -1697,6 +1746,8 @@ function initialize() {
 			map.overlayMapTypes.insertAt(1, NLSCNameMapType);
 			//map.overlayMapTypes[1].setOpacity(1);
 		}
+*/
+	setRoadMap();
         updateView("info_only");
     });
     $('#changegrid').change(function() {
@@ -1747,7 +1798,7 @@ function initialize() {
             show_kml_layer = 1;
             $("#kml_sw").removeClass("disable");
         }
-		$("#changemap").change();
+	$("#changegname").change();
     });
     $("#label_sw").click(function() {
 	console.log("label_sw triggerred: " + show_label);
@@ -2159,6 +2210,8 @@ function markerReloadSingle(opt){
                     "type": opt.meta.type,
                     "class": opt.meta.class,
                     "mt100": opt.meta.mt100,
+					"prom": opt.meta.prominence,
+					"prom_idx": opt.meta.prominence_index,
 		    "owner": opt.meta.owner
                 };
         availableTagsLocation[to_update_id] = new google.maps.LatLng(opt.meta.y, opt.meta.x);
@@ -2190,6 +2243,8 @@ function markerReloadSingle(opt){
                     "type": opt.meta.type,
                     "class": opt.meta.class,
                     "mt100": opt.meta.mt100,
+					"prom": opt.meta.prominence,
+					"prom_idx": opt.meta.prominence_index,
 		    "owner": opt.meta.owner
         };
         allmarkers[to_update_id] = new google.maps.Marker({
@@ -2267,6 +2322,12 @@ function markerFilter() {
                 if (availableTagsMeta[i].class == '0' && (availableTagsMeta[i].type == '溫泉')) {
                     want = 1;
                 }
+			} else if (s[k] == '10') {
+				// prominence list
+				if ( availableTagsMeta[i].prom_idx > 0)  {
+					want = 1;
+				}
+					
             } else if (s[k] == '7') {
                 // 其他
                 if (availableTagsMeta[i].class == '0') {

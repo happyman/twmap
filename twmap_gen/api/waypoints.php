@@ -3,6 +3,7 @@ $uid = 1;
 require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
 
+// session_start();
 
 $r = $_REQUEST['r'];
 $x = $_REQUEST['x'];
@@ -29,12 +30,16 @@ function mid_show($id){
 	else
 		return $id;
 }
+
 if (empty($detail) || $detail == 0 ){
 // 傳回高度
     $ele = get_elev(twDEM_path, $y, $x, 1);
-
 	header('Access-Control-Allow-Origin: *');
-	ajaxok(array("wpt"=>$wpt_data,"trk"=>$trk_data,"ele"=>$ele));
+	$ret = array("wpt"=>$wpt_data,"trk"=>$trk_data,"ele"=>$ele);
+	list($st,$info) = userid();
+	if ($st === true)
+		$ret['info']=$info;
+	ajaxok($ret);
 } else {
 	// web page
 	echo "<html>";

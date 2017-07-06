@@ -521,6 +521,9 @@ require_once("keepon.inc.php");
 function ajaxerr($msg) {
 	$ret['ok'] = false;
 	$ret['rsp'] = array('msg' => $msg );
+	list($st,$info) = userid();
+	if ($st === true)
+		$ret['rsp']['info']=$info;
 	header('Content-Type: application/json');
 	echo json_encode($ret);
 	exit(0);
@@ -767,11 +770,11 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 		$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
 		$title = $row['title'];
 		}
-	$cmd = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	// moi_osm_gpx 
-	$cmd2 = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l moi_osm_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd2 = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l moi_osm_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	exec($cmd2);
-	$cmd3 = sprintf("tilestache-clean.py -c ~www-data/etc/tilestache.cfg -l moi_osm -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd3 = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l moi_osm -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	exec($cmd3);
 	error_log("tilestache_clean: ". $cmd);
 	/*
@@ -866,7 +869,7 @@ function get_point($id='ALL',$is_admin=false) {
 		$where = " WHERE id=$id";
 	else
 		$where = "";
-	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner FROM point3 %s ORDER BY number,class DESC", $where);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index FROM point3 %s ORDER BY number,class DESC", $where);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
 }
@@ -874,7 +877,7 @@ function get_point($id='ALL',$is_admin=false) {
 function get_point_by_class($class_num) {
 	$db=get_conn();
 	$where = sprintf("WHERE class='%d' AND owner=0",$class_num);
-	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner FROM point3 %s ORDER BY number,ST_XMin(coord)", $where);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index  FROM point3 %s ORDER BY number,ST_XMin(coord)", $where);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	// echo $sql;
 	return $db->getAll($sql);
@@ -882,14 +885,14 @@ function get_point_by_class($class_num) {
 /* 取出範圍內所有 features, 官方點 */
 function get_points_from_center($center, $r_in_meters) {
 	$db = get_conn();
-	$sql = sprintf("SELECT id,name,class,number,ele,ST_X(coord) AS x, ST_Y(coord) AS y FROM point3 WHERE owner = 0 AND ST_DWithin(coord, ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY number,ST_XMin(coord)",$center[0],$center[1],$r_in_meters/1000/111.325);
+	$sql = sprintf("SELECT id,name,class,number,ele,ST_X(coord) AS x, ST_Y(coord) AS y,prominence,prominence_index FROM point3 WHERE owner = 0 AND ST_DWithin(coord, ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY number,ST_XMin(coord)",$center[0],$center[1],$r_in_meters/1000/111.325);
 	// echo $sql;
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
         return $db->getAll($sql);
 }
 function get_lastest_point($num=5) {
 	$db=get_conn();
-	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner FROM point3 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index FROM point3 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
 }
@@ -1213,3 +1216,4 @@ function sanitize_output($buffer) {
 // track table handling functions
 // 
 require_once("track.inc.php");
+require_once("export/php-export-data.class.php");

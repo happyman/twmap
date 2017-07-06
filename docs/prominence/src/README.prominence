@@ -1,0 +1,31 @@
+README.prominence 
+
+original source: https://github.com/randall77/prominence
+
+ * add support of SRTM1
+ * add info for furthur parsing (csv: isl:)
+ * possible buggy while 
+   * not found highest peak 玉山 3952 
+   * not found 關山's highest location
+
+
+1. install Go and compile  
+sudo apt install golang
+cd src
+make
+
+2. run
+# 只取獨立度 100 以上的山峰
+./prominence -min 50 -format srtm3  MOI_OSM > out
+# 抓出需要的部分  取代玉山的座標及高度 (fixme)
+grep -e isl -e csv out |sed 's/120.9575  23.4700 3939/120.95728  23.47 3952/' |sed 's/3952 3939/3952 3952/' > /tmp/prom.out
+
+得到的 /tmp/prom.out 就是最原始的產出
+
+以下是我的作法
+1. 將名稱 mapping 過來 這個步驟會去 mapping 座標跟 peak name
+所以將獨立峰預先鍵入資料庫, 才不會有 unmapped 空白名
+cd projects/twmap/twmap_gen/api
+php cli_prom2csv.php -i /tmp/prom.out  > /tmp/prom.csv
+2. 產生 kml
+php prom2kml.php -i /tmp/prom.csv > prom.kml 

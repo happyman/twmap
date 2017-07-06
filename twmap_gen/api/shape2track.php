@@ -1,5 +1,4 @@
 <?php
-
 // Usage:
 //     shape2track.php?type=kml
 //
@@ -15,7 +14,9 @@
 //     type=[gpx|kml] (optional, default=gpx)
 //     dev=[0|1] (Dor development only. When dev=1, xml is printed instead of downloaded.)
 
+
 header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24 * 1))); // 1 day browser cache
+
 
 // $type = 'gpx'; // Supports [ gpx | kml ]
 $dev = isset($_REQUEST['dev']) ? $_REQUEST['dev'] : 0;
@@ -26,7 +27,6 @@ if ( $dev ) {
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
     header("Content-Type: application/json; charset=utf-8");
-}
 
 define('ROOT3HALF', 0.86602540378);
 
@@ -42,6 +42,8 @@ $proj4 = new Proj4php();
 $projLatLon = new Proj('EPSG:4326', $proj4);
 $projUTM    = new Proj('EPSG:3857', $proj4);
 // ---------- End of proj4php codes
+
+
 
 // Default value for $input is for testing purpose
 $input = '{
@@ -191,6 +193,7 @@ $input = '{
                             ]
                         }
                     ]
+
                 },
                 {
                     "type": "circle",
@@ -209,18 +212,21 @@ $input = '{
                         "lon": "121.48337"
                     },
                     "radius": "605.94200738791307"
+
                 }
             ]
         }';
         
-if ( isset($_POST) && strlen($_POST) > 0 ) {
+
+if ( isset($_POST) && sizeof($_POST) > 0 ) {
     $input = $_POST['data'];
 } else {
     // Get posted data
     $reset_json = file_get_contents( 'php://input' );
-    if ( isset($reset_json) && strlen($reset_json) > 1 ) {
+
+    if ( isset($reset_json) && sizeof($reset_json) > 1 ) {
         $input = $reset_json;
-        if ( $dev ) echo 'POST'.PHP_EOL;
+        if ( $dev ) echo 'POST'.'<br/>';
     }
 }
 
@@ -254,6 +260,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
         if ( $shape->type==='rectangle' ) {
             if ( property_exists($shape, 'bounds') && property_exists($shape->bounds, 'northEast') && property_exists($shape->bounds, 'southWest') ) {
                 //if ( $dev ) echo var_dump($shape->bounds).PHP_EOL;
+
                 
                 $minlat = $shape->bounds->northEast->lat;
                 $minlon = $shape->bounds->northEast->lon;
@@ -309,6 +316,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                 // Invalid data
             }
             // End of rectangle
+
         } else if ( $shape->type==='polyline' && sizeof($shape->path) > 0 ) {
             if ( property_exists($shape, 'path') ) {
                 if ( $type==='kml' ) {
@@ -326,7 +334,9 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                     $name = $trk->addChild('name', $shapename);
                     $trkseg = $trk->addChild('trkseg');
                     foreach( $shape->path as $ptindex => $pt ) {
+
                         //if ( $dev ) echo var_dump($pt).PHP_EOL;
+
                         $trkpt = $trkseg->addChild('trkpt');
                         $trkpt->addAttribute('lat', $pt->lat);
                         $trkpt->addAttribute('lon', $pt->lon);
@@ -337,6 +347,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                 // Invalid data
             }
             // End of polyline
+
         } else if ( $shape->type==='polygon' ) {
             if ( property_exists($shape, 'paths') && sizeof($shape->paths) > 0 ) {
                 foreach ( $shape->paths as $pathindex => $path) {
@@ -361,7 +372,9 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                         $trkseg = $trk->addChild('trkseg');
                         if ( property_exists($path, 'path') && sizeof($path->path) > 0 ) {
                             foreach( $path->path as $ptindex => $pt ) {
+
                                 //if ( $dev ) echo var_dump($pt).PHP_EOL;
+
                                 $trkpt = $trkseg->addChild('trkpt');
                                 $trkpt->addAttribute('lat', $pt->lat);
                                 $trkpt->addAttribute('lon', $pt->lon);
@@ -376,6 +389,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
             } else {
                 // Invalid data
             }
+
             // End of polygon
         } else if ( $shape->type==='circle' ) {
             if ( property_exists($shape, 'center') && property_exists($shape, 'radius') ) {
@@ -558,6 +572,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                 }
             }
             // End of circle
+
         }
     }
 } 
@@ -565,14 +580,16 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
 if ( $valid && $xml ) {
     if ( $dev ) {
         echo $xml->asXML().PHP_EOL;
+
     } else {
         header("Content-Type: application/xml; charset=utf-8");
         header('Content-Disposition: attachment; filename="'.$filename.'"');
         echo $xml->asXML();
     }
 } else {
+
     http_response_code(500);
 	print_r($_POST['data']);
 }
 
-?>
+

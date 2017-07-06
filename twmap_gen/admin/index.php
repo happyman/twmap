@@ -113,6 +113,7 @@ $(document).ready(function () {
     '補點',
     '圖根點',
     '無基石山頭',
+	'獨立峰',
     '溫泉',
     '湖泊',
     '谷地',
@@ -146,10 +147,12 @@ $(document).ready(function () {
     '森林點共存',
     '其他' ] , width: "5%"
 					},
-					number: { title: "號碼", edit: true, width: "5%" },
+					number: { title: "號", edit: true, width: "5%" },
 					ele: { title: "高度", edit: true, width: "5%" },
 					mt100: { title: "百岳", edit: true, options: { '0': "不是", '1': "百岳", '2': "小百岳", '4': "百名山", '5': '百岳+名山', '6': '小百岳+名山' } },
 					checked: { title: "檢查", edit: true, type: 'checkbox', values: { '0': '還沒', '1': 'done' }, width: "2%" },
+					prominence: { title: "獨立度", edit: true, width: "5%"},
+					prominence_index: { title: "獨立index", edit: true, width: "5%"},
 			<?php
 				if (is_admin()) {
 				printf('owner: { title: "who", edit: true },');
@@ -175,6 +178,7 @@ $(document).ready(function () {
 	<?php
 	if (is_admin()) {
 		printf("<p><a href='?pending=1'>待審核</a>");
+		printf("<p><a href='promlist.php'>獨立峰列表(all)</a>,<a href='promlist.php?type=h2000'>中級山</a>,<a href='promlist.php?type=h1000'>郊山</a>");
 	}
 	?>
 	<p>

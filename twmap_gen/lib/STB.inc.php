@@ -502,9 +502,9 @@ Class STB2 extends STB {
 		break;
 		case 2016:
 			if ($this->include_gpx==0){
-				return 'http://rs.happyman.idv.tw/map/moi_osm/%s/%s/%s.png';
+				return 'http://rs.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
 			} else 
-				return 'http://rs.happyman.idv.tw/map/moi_osm_gpx/%s/%s/%s.png';
+				return 'http://rs.happyman.idv.tw/map/moi_gpx_nocache/%s/%s/%s.png';
 		break;
 	}
 }
@@ -515,6 +515,7 @@ function request_curl($url, $method='GET', $params=array(),$hdr=array()) {
 	$curl = curl_init($url . ($method == 'GET' && $params_line ? '?' . $params_line : ''));
 	$headers = array();
 	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+	curl_setopt($curl, CURLOPT_PROXY, "192.168.168.17:3128");
 	curl_setopt($curl, CURLOPT_HEADER, false);
 	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -562,7 +563,7 @@ function request_curl($url, $method='GET', $params=array(),$hdr=array()) {
 		return $headers;
 	}
 	$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-	if ($httpCode != 200 ) {
+	if ($httpCode != 200 && $httpCode != 302) {
 		throw new ErrorException("HTTP return $httpCode", $httpCode );
 	}
 	// error_log("curl $method $url" . print_r(array_merge($hdr,$headers),true));

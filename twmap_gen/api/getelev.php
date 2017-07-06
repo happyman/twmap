@@ -1,10 +1,12 @@
 <?php
+// 1. 取得高度及其他資訊
+// 2. 輸入形狀取得高度 or 面積資訊
 
 require_once("../config.inc.php");
 
 // $twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
-$loc = $_REQUEST['loc'];
-$is_shapes = $_REQUEST['infoshapes'];
+$loc = isset($_REQUEST['loc'])? $_REQUEST['loc']: "";
+$is_shapes =isset( $_REQUEST['infoshapes'])?  $_REQUEST['infoshapes'] : "";
 if (empty($loc) && empty($is_shapes)) {
 	ajaxerr("insufficent parameters");
 }
@@ -66,6 +68,7 @@ exit();
 					printf("%.06f %.06f\n",$pt['lon'],$pt['lat']);
 				}
 				echo "</textarea>\n";
+				downloadform();
 				$sum=0;
 				for($i=1;$i<count($pts);$i++){
 					$sum+=get_distance($pts[$i-1],$pts[$i]);
@@ -113,13 +116,14 @@ function drawBackgroundColor() {
 				break;
 			case 'polygon':
 				//print_r($shape);
-				echo "<hr><p><h1>這是一個多邊形 polygon</h1>";
+				echo "<p><h2>這是一個多邊形 polygon</h2>";
 				echo "端點座標<br><textarea style='width:200px;height:70px;border:2px #ccc solid;overflow:hidden'>";
 				foreach($shape['paths'][0]['path'] as $pt) {
 					$pts[] = sprintf("%f %f",$pt['lon'],$pt['lat']);
 					printf("%.06f %.06f\n",$pt['lon'],$pt['lat']);
 				}
 				echo "</textarea>";
+					downloadform();
 				$pts[] = $pts[0];
 				$wkt_str = sprintf("POLYGON((%s))",implode(",",$pts));
 				$result = get_AREA($wkt_str);
@@ -129,9 +133,10 @@ function drawBackgroundColor() {
 			case 'rectangle':
 				$ne = $shape['bounds']['northEast'];
 				$sw = $shape['bounds']['southWest'];
-				echo "<hr><p><h1>這是一個長方形 rectangle </h1>";
+				echo "<p><h2>這是一個長方形 rectangle </h2>";
 				echo "<br>東北座標:" . coord($ne); 
 				echo "<br>西南座標:" . coord($sw);
+					downloadform();
 				$pts[] = sprintf("%f %f",$sw['lon'],$ne['lat']);
 				$pts[] = sprintf("%f %f",$ne['lon'],$ne['lat']);
 				$pts[] = sprintf("%f %f",$ne['lon'],$sw['lat']);
@@ -213,17 +218,28 @@ function distance_display($result){
 1平方公里 = 100公頃
 */
 function display_area($sqm){
-	$unit_n = array("公頃","平方公里","甲","英畝","公畝","坪","平方公尺","平方呎");
-	$unit_a = array(0.0001,	0.00001,0.000103,0.000247,0.01,0.3025,1,10.7639);
+	$unit_n = array("公頃","平方公里","甲","分","英畝","公畝","坪","平方公尺","平方呎");
+	$unit_a = array(0.0001,	0.00001,0.000103,0.0000103,0.000247,0.01,0.3025,1,10.7639);
 	echo "<div id=tabs><ul>";
 	for($i=0;$i<count($unit_n);$i++){
 		printf("<li><a href=#tab_%d>%s</a></li>",$i,$unit_n[$i]);
 	}
 	echo "</ul>";
 	for($i=0;$i<count($unit_n);$i++){
-		printf("<div id='tab_%d'>面積: %.02f %s<br>註: 1 平方公尺 = %f %s</div>",$i,$sqm * $unit_a[$i], $unit_n[$i],$unit_a[$i], $unit_n[$i]);
+		printf("<div id='tab_%d'>面積: %.02f %s",$i,$sqm * $unit_a[$i], $unit_n[$i]);
+		if ($unit_a[$i] != 1 ) 
+			printf("<br>註: 1 平方公尺 = %f %s</div>",$unit_a[$i], $unit_n[$i]);
 	}
 	echo "</div>";
+}
+function downloadform() {
+	printf("<form id='exportform' action='shape2track.php' method='post'><input type=hidden name='data' value='%s'>",$_POST['data']);
+	?>
+	<input type=radio name=type value='gpx' >GPX </input>
+	<input type=radio name=type value='kml' checked>KML </input>
+	<button type="submit">下載</button>
+	</form>
+	<?php
 }
 // 以下為取得點位資訊的部分
 

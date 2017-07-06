@@ -9,6 +9,14 @@ module.exports = function(grunt) {
 	//]
     //  },
     //},
+	clean: {
+          files: [
+            'dist/twmap_gen/js/main.*.js',
+            'dist/twmap_gen/css/main.*.css',
+            'dist/twmap3/js/vender.*.js',
+            'dist/twmap3/css/twmap3.*.css'
+          ]
+	},
 	rsync: {
 		options: {
 			args: ["-av"],
@@ -90,6 +98,7 @@ phplint: {
   grunt.loadNpmTasks('grunt-filerev');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-phplint');
+  grunt.loadNpmTasks('grunt-contrib-clean');
 
   grunt.registerTask('default', [
       'jshint',
@@ -100,6 +109,7 @@ phplint: {
       'concat',
       'uglify',
       'cssmin',
+      'clean',
       'filerev',
       'usemin',
   ]);

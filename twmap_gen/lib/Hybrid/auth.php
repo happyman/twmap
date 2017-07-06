@@ -43,7 +43,7 @@ if ( isset($_REQUEST['action']) && $_REQUEST['action'] == 'logout' ) {
 //  "https://yahoo.com/"))
 
 // return Hybrid_User_Profile object intance
-$user_profile = $adapter->getUserProfile($config['providers']['Xuite']);
+$user_profile = $adapter->getUserProfile();
 
 require_once("../../config.inc.php");
 
