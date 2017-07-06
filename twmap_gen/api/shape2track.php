@@ -194,19 +194,21 @@ $input = '{
                 },
                 {
                     "type": "circle",
-                    "color": "undefined",
-                    "center": [
-                        {
-                            "lat": "23.86983",
-                            "lon": "121.49164",
-                            "radius": "2405.94200738791307"
-                        },
-                        {
-                            "lat": "23.88775",
-                            "lon": "121.48337",
-                            "radius": "605.94200738791307"
-                        }
-                    ]
+                    "color": "#646464",
+                    "center": {
+                        "lat": "23.86983",
+                        "lon": "121.49164"
+                    },
+                    "radius": "2405.94200738791307"
+                },
+                {
+                    "type": "circle",
+                    "color": "#646464",
+                    "center": {
+                        "lat": "23.88775",
+                        "lon": "121.48337"
+                    },
+                    "radius": "605.94200738791307"
                 }
             ]
         }';
@@ -376,7 +378,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
             }
             // End of polygon
         } else if ( $shape->type==='circle' ) {
-            if ( property_exists($shape, 'center') && sizeof($shape->center) > 0 ) {
+            if ( property_exists($shape, 'center') && property_exists($shape, 'radius') ) {
                 
                 // prepare matrices
                 if ( !isset($trigonometry) ) {
@@ -402,23 +404,22 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                     );
                 }
                 
-                $pathlist = array();
-                $i = 0;
-                foreach ( $shape->center as $i => $center ) {
+                {
+                    $center = &$shape->center;
 
                     // Convert center polar coordinates (lat lon) to planar
                     // ---------- Replace with your coordinates conversion code ----------
                     $pointSrc = new Point($center->lon, $center->lat, $projLatLon);
                     $pointDest = $proj4->transform($projUTM, $pointSrc);
                     //echo "Conversion: " . $pointDest->toShortString() . " in UTM".PHP_EOL.PHP_EOL;
-                    $shape->center[$i]->x = floatval($pointDest->x);
-                    $shape->center[$i]->y = floatval($pointDest->y);
+                    $center->x = floatval($pointDest->x);
+                    $center->y = floatval($pointDest->y);
                     // ---------- End of coordinates conversion ----------
                 
                     // Calculate slice number
-                    $slices = intval($center->radius * M_PI * 2 / 20); // 20m resolution
-                    //$slices = intval($center->radius * M_PI * 2 / 200); // 200m resolution, for testing
-                    //if ( $dev ) echo $center->radius.': '.$slices.PHP_EOL;
+                    $slices = intval($shape->radius * M_PI * 2 / 20); // 20m resolution
+                    //$slices = intval($shape->radius * M_PI * 2 / 200); // 200m resolution, for testing
+                    //if ( $dev ) echo $shape->radius.': '.$slices.PHP_EOL;
                     if ( $slices <= 12 ) {
                         $slices = 12;
                     } else if ( $slices >= 3072 ) {
@@ -431,36 +432,37 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                             }
                         }
                     }
-                    //if ( $dev ) echo $center->radius.': '.$slices.PHP_EOL;
+                    //if ( $dev ) echo $shape->radius.': '.$slices.PHP_EOL;
                     
                     // Draw circles, in planar coordinates
                     // Bisect a circle instead of rotate initial vector to minimize precision error accumulation
                     $indexincrement = $slices / 12;
                     $cx = $center->x;
                     $cy = $center->y;
-                    $r = $center->radius;
+                    $r = $shape->radius;
                     $rs = $r / 2;           // r short
                     $rl = $r * ROOT3HALF;   // r long
                     
                     // Pre-populate the array to make index ordered
+                    $path = array();
                     for ( $j = 0; $j < $slices; $j++ ) {
-                        $pathlist[$i][$j] = 0;
+                        $path[$j] = 0;
                     }
                     
                     // Add initial 12 points of the circle with high precision
                     $j = 0;
-                    $pathlist[$i][$j] = array($cx      , $cy - $r ); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx + $rs, $cy - $rl); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx + $rl, $cy - $rs); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx + $r , $cy      ); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx + $rl, $cy + $rs); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx + $rs, $cy + $rl); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx      , $cy + $r ); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx - $rs, $cy + $rl); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx - $rl, $cy + $rs); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx - $r , $cy      ); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx - $rl, $cy - $rs); $j += $indexincrement;
-                    $pathlist[$i][$j] = array($cx - $rs, $cy - $rl); $j += $indexincrement;
+                    $path[$j] = array($cx      , $cy - $r ); $j += $indexincrement;
+                    $path[$j] = array($cx + $rs, $cy - $rl); $j += $indexincrement;
+                    $path[$j] = array($cx + $rl, $cy - $rs); $j += $indexincrement;
+                    $path[$j] = array($cx + $r , $cy      ); $j += $indexincrement;
+                    $path[$j] = array($cx + $rl, $cy + $rs); $j += $indexincrement;
+                    $path[$j] = array($cx + $rs, $cy + $rl); $j += $indexincrement;
+                    $path[$j] = array($cx      , $cy + $r ); $j += $indexincrement;
+                    $path[$j] = array($cx - $rs, $cy + $rl); $j += $indexincrement;
+                    $path[$j] = array($cx - $rl, $cy + $rs); $j += $indexincrement;
+                    $path[$j] = array($cx - $r , $cy      ); $j += $indexincrement;
+                    $path[$j] = array($cx - $rl, $cy - $rs); $j += $indexincrement;
+                    $path[$j] = array($cx - $rs, $cy - $rl); $j += $indexincrement;
                     
                     // Iterate bisect to fill points in between
                     // This counter-intuitive approach is to minimize accumulated precision error
@@ -476,9 +478,9 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                             $j += $indexincrement;
                             $vdest = $j;
                             $j += $indexincrement;
-                            $x = $pathlist[$i][$vsrc][0] - $cx;
-                            $y = $pathlist[$i][$vsrc][1] - $cy;
-                            $pathlist[$i][$vdest] = array(
+                            $x = $path[$vsrc][0] - $cx;
+                            $y = $path[$vsrc][1] - $cy;
+                            $path[$vdest] = array(
                                 $x * $cos - $y * $sin + $cx,
                                 $x * $sin + $y * $cos + $cy,
                             );
@@ -486,22 +488,21 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                                 echo $vsrc.'-'.$vdest.', '.PHP_EOL;
                                 echo $x.', '.$y.PHP_EOL;
                                 echo $cos.', '.$sin.PHP_EOL;
-                                echo $pathlist[$i][$vdest][0].', '.$pathlist[$i][$vdest][1].PHP_EOL;
+                                echo $path[$vdest][0].', '.$path[$vdest][1].PHP_EOL;
                             }*/
                         }
                         //if ( $dev ) echo PHP_EOL;
                     }
                     //if ( $dev ) echo PHP_EOL;
-                    $i++;
                 }
 
                 // Convert planar coordinates to polar (lat lon)
                 // ---------- Replace with your coordinates conversion code ----------
-                foreach ( $pathlist as $i => $path ) {
+                {
                     foreach ( $path as $j => $point ) {
                         $pointSrc = new Point($point[0], $point[1], $projUTM);
                         $pointDest = $proj4->transform($projLatLon, $pointSrc);
-                        $pathlist[$i][$j] = array(floatval($pointDest->x), floatval($pointDest->y));
+                        $path[$j] = array(floatval($pointDest->x), floatval($pointDest->y));
                     }
                 }
                 // ---------- End of coordinates conversion ----------
@@ -513,10 +514,10 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                 // Write xml
                 if ( $type==='kml' ) {
                     $Placemark = $xml->addChild('Placemark');
-                    $name = $Placemark->addChild('name', $shapename);
-                    foreach ( $pathlist as $i => $path ) {
+                    $name = $Placemark->addChild('name', $index.': center');
+                    {
                         $Point = $Placemark->addChild('Point');
-                        $coordinatesstr = sprintf( '%f,%f,0 ', $shape->center[$i]->lon, $shape->center[$i]->lat );
+                        $coordinatesstr = sprintf( '%f,%f,0 ', $shape->center->lon, $shape->center->lat );
                         $coordinates = $Point->addChild('coordinates', $coordinatesstr);
                         
                         $Polygon = $Placemark->addChild('Polygon');
@@ -533,16 +534,16 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                         $coordinates = $LinearRing->addChild('coordinates', $coordinatesstr);
                     }
                 } else {
-                    foreach ( $shape->center as $i => $center ) {
+                    {
                         $wpt = $xml->addChild('wpt');
-                        $wpt->addAttribute('lat', $center->lat);
-                        $wpt->addAttribute('lon', $center->lon);
-                        $name = $wpt->addChild('name', $shapename);
+                        $wpt->addAttribute('lat', $shape->center->lat);
+                        $wpt->addAttribute('lon', $shape->center->lon);
+                        $name = $wpt->addChild('name', $index.': center');
                     }
                     
                     $trk = $xml->addChild('trk');
                     $name = $trk->addChild('name', $shapename);
-                    foreach ( $pathlist as $i => $path ) {
+                    {
                         $trkseg = $trk->addChild('trkseg');
                         foreach( $path as $ptindex => $pt ) {
                             $trkpt = $trkseg->addChild('trkpt');
