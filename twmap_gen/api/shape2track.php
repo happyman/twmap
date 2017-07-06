@@ -1,5 +1,4 @@
 <?php
-
 // Usage:
 //     shape2track.php?type=kml
 //
@@ -15,6 +14,10 @@
 //     type=[gpx|kml] (optional, default=gpx)
 //     dev=[0|1] (Dor development only. When dev=1, xml is printed instead of downloaded.)
 
+
+header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24 * 1))); // 1 day browser cache
+
+
 // $type = 'gpx'; // Supports [ gpx | kml ]
 $dev = isset($_REQUEST['dev']) ? $_REQUEST['dev'] : 0;
 $type = isset($_REQUEST['type']) ? $_REQUEST['type'] : 'gpx';
@@ -23,7 +26,24 @@ if ( $dev ) {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
-}
+    header("Content-Type: application/json; charset=utf-8");
+
+define('ROOT3HALF', 0.86602540378);
+
+// ---------- Codes for proj4php; remove if other lib is used
+// Use a PSR-4 autoloader for the `proj4php` root namespace.
+include("./proj4php-master/vendor/autoload.php");
+use proj4php\Proj4php;
+use proj4php\Proj;
+use proj4php\Point;
+// Initialise Proj4
+$proj4 = new Proj4php();
+// Create two different projections.
+$projLatLon = new Proj('EPSG:4326', $proj4);
+$projUTM    = new Proj('EPSG:3857', $proj4);
+// ---------- End of proj4php codes
+
+
 
 // Default value for $input is for testing purpose
 $input = '{
@@ -173,15 +193,37 @@ $input = '{
                             ]
                         }
                     ]
+
+                },
+                {
+                    "type": "circle",
+                    "color": "#646464",
+                    "center": {
+                        "lat": "23.86983",
+                        "lon": "121.49164"
+                    },
+                    "radius": "2405.94200738791307"
+                },
+                {
+                    "type": "circle",
+                    "color": "#646464",
+                    "center": {
+                        "lat": "23.88775",
+                        "lon": "121.48337"
+                    },
+                    "radius": "605.94200738791307"
+
                 }
             ]
         }';
         
+
 if ( isset($_POST) && sizeof($_POST) > 0 ) {
     $input = $_POST['data'];
 } else {
     // Get posted data
     $reset_json = file_get_contents( 'php://input' );
+
     if ( isset($reset_json) && sizeof($reset_json) > 1 ) {
         $input = $reset_json;
         if ( $dev ) echo 'POST'.'<br/>';
@@ -213,11 +255,12 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
     // Convert shapes to xml...
     foreach ( $jsonShapes->shapes as $index => $shape ) {
         //echo var_dump( $shape );
-        if ( $dev ) echo $shape->type.'<br/>';
+        if ( $dev ) echo $shape->type.PHP_EOL;
         $shapename = $index.': '.$shape->type;
         if ( $shape->type==='rectangle' ) {
             if ( property_exists($shape, 'bounds') && property_exists($shape->bounds, 'northEast') && property_exists($shape->bounds, 'southWest') ) {
-                if ( $dev ) echo var_dump($shape->bounds).'<br/>';
+                //if ( $dev ) echo var_dump($shape->bounds).PHP_EOL;
+
                 
                 $minlat = $shape->bounds->northEast->lat;
                 $minlon = $shape->bounds->northEast->lon;
@@ -272,6 +315,8 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
             } else {
                 // Invalid data
             }
+            // End of rectangle
+
         } else if ( $shape->type==='polyline' && sizeof($shape->path) > 0 ) {
             if ( property_exists($shape, 'path') ) {
                 if ( $type==='kml' ) {
@@ -289,7 +334,9 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                     $name = $trk->addChild('name', $shapename);
                     $trkseg = $trk->addChild('trkseg');
                     foreach( $shape->path as $ptindex => $pt ) {
-                        if ( $dev ) echo var_dump($pt).'<br/>';
+
+                        //if ( $dev ) echo var_dump($pt).PHP_EOL;
+
                         $trkpt = $trkseg->addChild('trkpt');
                         $trkpt->addAttribute('lat', $pt->lat);
                         $trkpt->addAttribute('lon', $pt->lon);
@@ -299,6 +346,8 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
             } else {
                 // Invalid data
             }
+            // End of polyline
+
         } else if ( $shape->type==='polygon' ) {
             if ( property_exists($shape, 'paths') && sizeof($shape->paths) > 0 ) {
                 foreach ( $shape->paths as $pathindex => $path) {
@@ -323,7 +372,9 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                         $trkseg = $trk->addChild('trkseg');
                         if ( property_exists($path, 'path') && sizeof($path->path) > 0 ) {
                             foreach( $path->path as $ptindex => $pt ) {
-                                if ( $dev ) echo var_dump($pt).'<br/>';
+
+                                //if ( $dev ) echo var_dump($pt).PHP_EOL;
+
                                 $trkpt = $trkseg->addChild('trkpt');
                                 $trkpt->addAttribute('lat', $pt->lat);
                                 $trkpt->addAttribute('lon', $pt->lon);
@@ -338,21 +389,207 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
             } else {
                 // Invalid data
             }
+
+            // End of polygon
+        } else if ( $shape->type==='circle' ) {
+            if ( property_exists($shape, 'center') && property_exists($shape, 'radius') ) {
+                
+                // prepare matrices
+                if ( !isset($trigonometry) ) {
+                    /*
+                    // prepare values for rotation matrices
+                    $slicenum = array(24, 48, 96, 192, 384, 768, 1536, 3072);
+                    foreach ( $slicenum as $slices ) {
+                        $cossin = array(cos(M_PI/2/$slices), sin(M_PI*2/$slices));
+                        echo $slices. ' => array('.$cossin[0].', '.$cossin[1].'),'.PHP_EOL;
+                    }
+                    echo PHP_EOL;
+                    */
+                    $trigonometry = array(
+                        // slices => (cosine, sine)
+                        24      => array(0.96592582628907, 0.25881904510252),
+                        48      => array(0.99144486137381, 0.13052619222005),
+                        96      => array(0.9978589232386, 0.065403129230143),
+                        192     => array(0.99946458747637, 0.032719082821776),
+                        384     => array(0.99986613790956, 0.016361731626487),
+                        768     => array(0.9999665339174, 0.0081811396039371),
+                        1536    => array(0.99999163344435, 0.0040906040262348),
+                        3072    => array(0.9999979083589, 0.0020453062911641),
+                    );
+                }
+                
+                {
+                    $center = &$shape->center;
+
+                    // Convert center polar coordinates (lat lon) to planar
+                    // ---------- Replace with your coordinates conversion code ----------
+                    $pointSrc = new Point($center->lon, $center->lat, $projLatLon);
+                    $pointDest = $proj4->transform($projUTM, $pointSrc);
+                    //echo "Conversion: " . $pointDest->toShortString() . " in UTM".PHP_EOL.PHP_EOL;
+                    $center->x = floatval($pointDest->x);
+                    $center->y = floatval($pointDest->y);
+                    // ---------- End of coordinates conversion ----------
+                
+                    // Calculate slice number
+                    $slices = intval($shape->radius * M_PI * 2 / 20); // 20m resolution
+                    //$slices = intval($shape->radius * M_PI * 2 / 200); // 200m resolution, for testing
+                    //if ( $dev ) echo $shape->radius.': '.$slices.PHP_EOL;
+                    if ( $slices <= 12 ) {
+                        $slices = 12;
+                    } else if ( $slices >= 3072 ) {
+                        $slices = 3072;
+                    } else {
+                        foreach ( $trigonometry as $targetslices => $cossin ) {
+                            if ( $targetslices >= $slices ) {
+                                $slices = $targetslices;
+                                break;
+                            }
+                        }
+                    }
+                    //if ( $dev ) echo $shape->radius.': '.$slices.PHP_EOL;
+                    
+                    // Draw circles, in planar coordinates
+                    // Bisect a circle instead of rotate initial vector to minimize precision error accumulation
+                    $indexincrement = $slices / 12;
+                    $cx = $center->x;
+                    $cy = $center->y;
+                    $r = $shape->radius;
+                    $rs = $r / 2;           // r short
+                    $rl = $r * ROOT3HALF;   // r long
+                    
+                    // Pre-populate the array to make index ordered
+                    $path = array();
+                    for ( $j = 0; $j < $slices; $j++ ) {
+                        $path[$j] = 0;
+                    }
+                    
+                    // Add initial 12 points of the circle with high precision
+                    $j = 0;
+                    $path[$j] = array($cx      , $cy - $r ); $j += $indexincrement;
+                    $path[$j] = array($cx + $rs, $cy - $rl); $j += $indexincrement;
+                    $path[$j] = array($cx + $rl, $cy - $rs); $j += $indexincrement;
+                    $path[$j] = array($cx + $r , $cy      ); $j += $indexincrement;
+                    $path[$j] = array($cx + $rl, $cy + $rs); $j += $indexincrement;
+                    $path[$j] = array($cx + $rs, $cy + $rl); $j += $indexincrement;
+                    $path[$j] = array($cx      , $cy + $r ); $j += $indexincrement;
+                    $path[$j] = array($cx - $rs, $cy + $rl); $j += $indexincrement;
+                    $path[$j] = array($cx - $rl, $cy + $rs); $j += $indexincrement;
+                    $path[$j] = array($cx - $r , $cy      ); $j += $indexincrement;
+                    $path[$j] = array($cx - $rl, $cy - $rs); $j += $indexincrement;
+                    $path[$j] = array($cx - $rs, $cy - $rl); $j += $indexincrement;
+                    
+                    // Iterate bisect to fill points in between
+                    // This counter-intuitive approach is to minimize accumulated precision error
+                    $curslice = 12;
+                    while ( $indexincrement >= 2 ) {
+                        $curslice *= 2;
+                        $cos = $trigonometry[$curslice][0];
+                        $sin = $trigonometry[$curslice][1];
+                        $indexincrement /= 2;
+                        $j = 0;
+                        while ( $j < $slices ) {
+                            $vsrc = $j;
+                            $j += $indexincrement;
+                            $vdest = $j;
+                            $j += $indexincrement;
+                            $x = $path[$vsrc][0] - $cx;
+                            $y = $path[$vsrc][1] - $cy;
+                            $path[$vdest] = array(
+                                $x * $cos - $y * $sin + $cx,
+                                $x * $sin + $y * $cos + $cy,
+                            );
+                            /*if ( $dev ) {
+                                echo $vsrc.'-'.$vdest.', '.PHP_EOL;
+                                echo $x.', '.$y.PHP_EOL;
+                                echo $cos.', '.$sin.PHP_EOL;
+                                echo $path[$vdest][0].', '.$path[$vdest][1].PHP_EOL;
+                            }*/
+                        }
+                        //if ( $dev ) echo PHP_EOL;
+                    }
+                    //if ( $dev ) echo PHP_EOL;
+                }
+
+                // Convert planar coordinates to polar (lat lon)
+                // ---------- Replace with your coordinates conversion code ----------
+                {
+                    foreach ( $path as $j => $point ) {
+                        $pointSrc = new Point($point[0], $point[1], $projUTM);
+                        $pointDest = $proj4->transform($projLatLon, $pointSrc);
+                        $path[$j] = array(floatval($pointDest->x), floatval($pointDest->y));
+                    }
+                }
+                // ---------- End of coordinates conversion ----------
+                /*if ( $dev ) {
+                    echo 'draw: '.(microtime(TRUE)-$now).PHP_EOL;
+                    $now = microtime(TRUE);
+                }*/
+
+                // Write xml
+                if ( $type==='kml' ) {
+                    $Placemark = $xml->addChild('Placemark');
+                    $name = $Placemark->addChild('name', $index.': center');
+                    {
+                        $Point = $Placemark->addChild('Point');
+                        $coordinatesstr = sprintf( '%f,%f,0 ', $shape->center->lon, $shape->center->lat );
+                        $coordinates = $Point->addChild('coordinates', $coordinatesstr);
+                        
+                        $Polygon = $Placemark->addChild('Polygon');
+                        $outerBoundaryIs = $Polygon->addChild('outerBoundaryIs');
+                        $LinearRing = $outerBoundaryIs->addChild('LinearRing');
+
+                        $coordinatesstr = '';
+                        foreach( $path as $ptindex => $pt ) {
+                            $coordinatesstr .= sprintf( '%f,%f,0 ', $pt[0], $pt[1] );
+                            $valid = true;
+                        }
+                        $coordinatesstr .= sprintf( '%f,%f,0 ', $path[0][0], $path[0][1] );
+                        
+                        $coordinates = $LinearRing->addChild('coordinates', $coordinatesstr);
+                    }
+                } else {
+                    {
+                        $wpt = $xml->addChild('wpt');
+                        $wpt->addAttribute('lat', $shape->center->lat);
+                        $wpt->addAttribute('lon', $shape->center->lon);
+                        $name = $wpt->addChild('name', $index.': center');
+                    }
+                    
+                    $trk = $xml->addChild('trk');
+                    $name = $trk->addChild('name', $shapename);
+                    {
+                        $trkseg = $trk->addChild('trkseg');
+                        foreach( $path as $ptindex => $pt ) {
+                            $trkpt = $trkseg->addChild('trkpt');
+                            $trkpt->addAttribute('lat', $pt[1]);
+                            $trkpt->addAttribute('lon', $pt[0]);
+                            $valid = true;
+                        }
+                        $trkpt = $trkseg->addChild('trkpt');
+                        $trkpt->addAttribute('lat', $path[0][1]);
+                        $trkpt->addAttribute('lon', $path[0][0]);
+                    }
+                }
+            }
+            // End of circle
+
         }
     }
 } 
 
 if ( $valid && $xml ) {
     if ( $dev ) {
-        echo '<br/>'.htmlspecialchars($xml->asXML()).'<br/>';
+        echo $xml->asXML().PHP_EOL;
+
     } else {
         header("Content-Type: application/xml; charset=utf-8");
         header('Content-Disposition: attachment; filename="'.$filename.'"');
         echo $xml->asXML();
     }
 } else {
-    //http_response_code(200);
+
+    http_response_code(500);
 	print_r($_POST['data']);
 }
 
-?>
+
