@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
+function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback, _Completecallback) {
 
     // state
 
@@ -396,7 +396,6 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
 
     function shapesSave() { 
         var shapes = jsonMake();
-
        // var expirationDate = new Date();
        // expirationDate.setDate(expirationDate.getDate + 365);
         
@@ -404,6 +403,9 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
        //    + "; expires=" + expirationDate.toUTCString();
        // document.cookie = "shapes=" + value;
 	   localStorage.setItem("shapes",shapes);
+	   // on shape complete callback 
+	   _Completecallback(shapes);
+	   console.log("shapes string saved");
     }
 
     function shapesLoad() {

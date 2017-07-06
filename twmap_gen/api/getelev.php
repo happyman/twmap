@@ -27,7 +27,6 @@ window.onload = function() {
 	// var data = localStorage.getItem("infoshapes");
 	var cur_shape = localStorage.getItem("infoshapes");
 	if (cur_shape.indexOf("circle")>=0) {
-		//
 		$("#data").val(localStorage.getItem("shapes"));
 	}else{
 		$("#data").val(cur_shape);
@@ -69,10 +68,20 @@ exit();
 			?>
 			<script>
 		
-						
-			function loadcircles() {
-				var myshapes = localStorage.getItem("shapes");
+			// buggy: localStorage has race condition issue
+			function loadcircles(newshapes) {
+				var myshapes;
+				if (newshapes !== undefined)
+					myshapes = newshapes;
+				else 
+					myshapes = localStorage.getItem("shapes");
+				
 				var jsonObject = eval("(" + myshapes + ")");
+				console.log("loadcircles" + jsonObject.shapes.length);
+				if (jsonObject.shapes.length == 0 ){
+					console.log(localStorage.getItem("shapes"));
+					
+				}
 	/*
 	{"shapes":[{"type":"circle","color":"undefined","center":{"lat":"22.571219105273084","lon":"120.8719253540039"},"radius":"4582.94087326265"},{"type":"circle","color":"undefined","center":{"lat":"22.571219105273084","lon":"120.91707229614258"},"radius":"229.39212386740388"}]}
 	*/
@@ -97,12 +106,26 @@ exit();
 					}
 					
 				}
-				$("#shapes_editor").on("change", "input", function() {
+				$('#shapes_editor a').each(function(index) {
+						$(this).click(function(event) {
+						event.preventDefault();
+						var name=$(this).text();
+						$("#tags",parent.document).val(name);
+						$("#goto",parent.document).trigger('click');
+					});
+				});
+			}  // end of loadcircles
+
+			$(document).ready(function(){
+							$("#shapes_editor").on("change", "input", function() {
 						var i = $(this).data("index");
 						var newval = $(this).val();
 						var field=$(this).attr('class');
+						console.log("change" + field + "i=" + i);
+						var myshapes = localStorage.getItem("shapes");
+						var jsonObject = eval("(" + myshapes + ")");
 						if (jsonObject.shapes[i].type == 'circle') {
-							
+					
 						//console.log(field);
 						//console.log(i);
 				
@@ -114,17 +137,7 @@ exit();
 						}
 					}
 				);
-				$('#shapes_editor a').each(function(index) {
-						$(this).click(function(event) {
-						event.preventDefault();
-						var name=$(this).text();
-						$("#tags",parent.document).val(name);
-						$("#goto",parent.document).trigger('click');
-					});
-				})
-			}  // end of loadcircles
-
-			$(document).ready(function(){
+				
 			$('#add').click(function(){
 				 event.preventDefault();
 				// validate x,y,r
@@ -136,7 +149,6 @@ exit();
 					jsonObject.shapes[i] = { "type": "circle","radius": $("#addradius").val(), "center": { "lat":  $("#addy").val(),"lon": $("#addx").val() }, "color": $("#addcolor").val() };
 					localStorage.setItem("shapes",JSON.stringify(jsonObject));
 					parent.shapesMap.shapesLoad();
-					// reload
 					loadcircles();
 				} else {
 					alert("輸入有誤喔");

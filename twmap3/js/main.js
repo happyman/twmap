@@ -1482,15 +1482,20 @@ function initialize() {
             disableDoubleClickZoom: false
         });
 		// add drawing tool
-		shapesMap = new ShapesMap( $("#delete-button")[0],$("#clear-button")[0], $("#shapeinfo-button")[0], function(shapes){
-			// save info to cookie
-			//var expirationDate = new Date();
-			//expirationDate.setDate(expirationDate.getDate + 1);
-			//var value = escape(shapes) + "; expires=" + expirationDate.toUTCString() + "; path=/";
-			//document.cookie = "infoshapes=" + value;
+		shapesMap = new ShapesMap( $("#delete-button")[0],$("#clear-button")[0], $("#shapeinfo-button")[0], 
+		function(shapes){
 			localStorage.setItem("infoshapes", shapes);
 			showmeerkat(get_elev_url + "?infoshapes=1", { 'width': '600'} );		
-		} );
+		}, 
+		function(shapes){
+			// 	console.log(loadcircles);
+			
+			if (typeof $("#meerkatiframe")[0].contentWindow.loadcircles === 'function'){
+				$("#meerkatiframe")[0].contentWindow.loadcircles(shapes);
+			}
+		} 
+		);
+		
 	}
     var moveDiv = document.createElement('div');
     var myCustomControl2 = new curLocControl(moveDiv, map);
