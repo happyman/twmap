@@ -213,12 +213,12 @@ $input = '{
             ]
         }';
         
-if ( isset($_POST) && sizeof($_POST) > 0 ) {
+if ( isset($_POST) && strlen($_POST) > 0 ) {
     $input = $_POST['data'];
 } else {
     // Get posted data
     $reset_json = file_get_contents( 'php://input' );
-    if ( isset($reset_json) && sizeof($reset_json) > 1 ) {
+    if ( isset($reset_json) && strlen($reset_json) > 1 ) {
         $input = $reset_json;
         if ( $dev ) echo 'POST'.PHP_EOL;
     }
