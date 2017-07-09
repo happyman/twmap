@@ -244,6 +244,14 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
 							  .'<Document></Document>'
                               .'</kml>');
         $meta = $xml->addChild('metadata');
+        $style = $xml->addChild('Style');
+        $style->addAttribute('id', 'shape_style');
+        $lstyle = $style->addChild('LineStyle');
+        $lstyle->addChild('color', '99000000');
+        $pstyle = $style->addChild('PolyStyle');
+        $pstyle->addChild('color', '33000000');
+        $pstyle->addChild('fill', '1');
+        $pstyle->addChild('outline', '1');
     } else {
         $filename = 'shapes.gpx';
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="no" ?>'
@@ -283,6 +291,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                     $Placemark = $xml->addChild('Placemark');
                     $name = $Placemark->addChild('name', $shapename);
                     $Polygon = $Placemark->addChild('Polygon');
+                    $Polygon->addChild('styleUrl', '#shape_style');
                     $outerBoundaryIs = $Polygon->addChild('outerBoundaryIs');
                     $LinearRing = $outerBoundaryIs->addChild('LinearRing');
                     $coordinatesstr = '';
@@ -535,6 +544,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                         $coordinates = $Point->addChild('coordinates', $coordinatesstr);
                         
                         $Polygon = $Placemark->addChild('Polygon');
+                        $Polygon->addChild('styleUrl', '#shape_style');
                         $outerBoundaryIs = $Polygon->addChild('outerBoundaryIs');
                         $LinearRing = $outerBoundaryIs->addChild('LinearRing');
 
