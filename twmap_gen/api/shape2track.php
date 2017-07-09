@@ -27,6 +27,7 @@ if ( $dev ) {
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
     header("Content-Type: application/json; charset=utf-8");
+}
 
 define('ROOT3HALF', 0.86602540378);
 
@@ -42,8 +43,6 @@ $proj4 = new Proj4php();
 $projLatLon = new Proj('EPSG:4326', $proj4);
 $projUTM    = new Proj('EPSG:3857', $proj4);
 // ---------- End of proj4php codes
-
-
 
 // Default value for $input is for testing purpose
 $input = '{
