@@ -241,6 +241,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
         $filename = 'shapes.kml';
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>'
                               .'<kml xmlns="http://www.opengis.net/kml/2.2">'
+							  .'<Document></Document>'
                               .'</kml>');
         $meta = $xml->addChild('metadata');
     } else {
