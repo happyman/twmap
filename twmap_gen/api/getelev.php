@@ -69,7 +69,7 @@ exit();
 			<script>
 		
 			// buggy: localStorage has race condition issue
-			function loadcircles(newshapes) {
+			function loadCirclelist(newshapes) {
 				var myshapes;
 				if (newshapes !== undefined)
 					myshapes = newshapes;
@@ -77,7 +77,7 @@ exit();
 					myshapes = localStorage.getItem("shapes");
 				
 				var jsonObject = eval("(" + myshapes + ")");
-				console.log("loadcircles" + jsonObject.shapes.length);
+				console.log("loadcircles: " + jsonObject.shapes.length);
 				if (jsonObject.shapes.length == 0 ){
 					console.log(localStorage.getItem("shapes"));
 					
@@ -114,47 +114,45 @@ exit();
 						$("#goto",parent.document).trigger('click');
 					});
 				});
-			}  // end of loadcircles
+			}  // end of loadCirclelist
 
 			$(document).ready(function(){
-							$("#shapes_editor").on("change", "input", function() {
+				$("#shapes_editor").on("change", "input", function() {
 						var i = $(this).data("index");
 						var newval = $(this).val();
 						var field=$(this).attr('class');
-						console.log("change" + field + "i=" + i);
+						console.log("change_" + field + "i=" + i);
 						var myshapes = localStorage.getItem("shapes");
 						var jsonObject = eval("(" + myshapes + ")");
+						// clear all shapes
 						if (jsonObject.shapes[i].type == 'circle') {
-					
-						//console.log(field);
-						//console.log(i);
-				
-						parent.shapesMap.shapesClearAll();
-						// jsonObject.shapes[i].color = '#FF0000';
-						jsonObject.shapes[i][field] = newval;
-						localStorage.setItem("shapes",JSON.stringify(jsonObject));
-						parent.shapesMap.shapesLoad();
+							parent.shapeMap.shapesClearAll();
+							// jsonObject.shapes[i].color = '#FF0000';
+							jsonObject.shapes[i][field] = newval;
+							localStorage.setItem("shapes",JSON.stringify(jsonObject));
+							parent.shapesMap.shapesLoad();
 						}
 					}
 				);
 				
-			$('#add').click(function(){
-				 event.preventDefault();
-				// validate x,y,r
-				if ($.isNumeric($("#addx").val()) && $.isNumeric($("#addy").val()) && $.isNumeric($("#addradius").val()) && Math.abs($("#addx").val()) <= 180 &&  Math.abs($("#addy").val()) <= 90  ) {
-					
-					var myshapes = localStorage.getItem("shapes");
-					var jsonObject = eval("(" + myshapes + ")");
-					var i = jsonObject.shapes.length;
-					jsonObject.shapes[i] = { "type": "circle","radius": $("#addradius").val(), "center": { "lat":  $("#addy").val(),"lon": $("#addx").val() }, "color": $("#addcolor").val() };
-					localStorage.setItem("shapes",JSON.stringify(jsonObject));
-					parent.shapesMap.shapesLoad();
-					loadcircles();
-				} else {
-					alert("輸入有誤喔");
-				}
-				});
-				loadcircles();			
+				$('#add').click(function(){
+					 event.preventDefault();
+					// validate x,y,r
+					if ($.isNumeric($("#addx").val()) && $.isNumeric($("#addy").val()) && $.isNumeric($("#addradius").val()) && Math.abs($("#addx").val()) <= 180 &&  Math.abs($("#addy").val()) <= 90  ) {
+						console.log("add clicked");
+						var myshapes = localStorage.getItem("shapes");
+						var jsonObject = eval("(" + myshapes + ")");
+						var i = jsonObject.shapes.length;
+						jsonObject.shapes[i] = { "type": "circle","radius": $("#addradius").val(), "center": { "lat":  $("#addy").val(),"lon": $("#addx").val() }, "color": $("#addcolor").val() };
+						parent.shapesMap.shapesClearAll();
+						localStorage.setItem("shapes",JSON.stringify(jsonObject));
+						parent.shapesMap.shapesLoad();
+						loadCirclelist();
+					} else {
+						alert("輸入有誤喔");
+					}
+					});
+				loadCirclelist();			
 			});
 			</script>
 			<?php

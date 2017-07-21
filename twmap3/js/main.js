@@ -1490,7 +1490,7 @@ function initialize() {
 		function(shapes){
 			// 	console.log(loadcircles);
 			
-			if (typeof $("#meerkatiframe")[0].contentWindow.loadcircles === 'function'){
+			if ($("#meerkatiframe")[0] && typeof $("#meerkatiframe")[0].contentWindow.loadcircles === 'function'){
 				$("#meerkatiframe")[0].contentWindow.loadcircles(shapes);
 			}
 		} 

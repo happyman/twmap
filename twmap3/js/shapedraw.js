@@ -720,7 +720,7 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback, _Com
     onCreate();
 	return {
 		selectionClear: function() { selectionClear(); },
-		shapesLoad: function() { shapesLoad(); },
+		shapesLoad: function() {  shapesLoad(); }, 
 		shapesClearAll: function() {onClearButtonClicked();
 		}
 	};
