@@ -10,28 +10,28 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 class GeoPoint {
-    public $mFormat;
+    public $mFormat; /* 0 = raster, 4326 = WGS84 */
     public $x;
     public $y;
     public $lon;
     public $lat;
     
-    public function __construct( $horizontal, $vertical, $format=4326 ) {
+    public function __construct( $p1, $p2, $format=4326 ) {
         $this->mFormat = $format;
         if ( $format===4326 ) {
-            $this->lon = $horizontal;
-            $this->lat = $vertical;
+            $this->lat = $p1;
+            $this->lon = $p2;
         } else {
-            $this->x = $horizontal;
-            $this->y = $vertical;
+            $this->x = $p1;
+            $this->y = $p2;
         }
     }
     
-    public function add ( &$vector ) {
+    public function add( &$vector ) {
         if ( $vector->mFormat===$this->mFormat ) {
             if ( $format===4326 ) {
-                $this->lon += $vector->lon;
                 $this->lat += $vector->lat;
+                $this->lon += $vector->lon;
             } else {
                 $this->x += $vector->x;
                 $this->y += $vector->y;
@@ -45,7 +45,7 @@ class GeoPoint {
         if ( $this->mFormat===4326 ) {
             return sprintf( '(%.6f, %.6f)', $this->lat, $this->lon );
         }
-        return sprintf( '(%d, %d)', $this->x, $this->y );
+        return sprintf( '(%.2f, %.2f)', $this->x, $this->y );
     }
     
 }
@@ -75,6 +75,8 @@ class GeoKeyDirectory {
 }
 
 class ImageFileDirectory {
+    private $hFile;
+
     public $NumDirEntries;
 
     public $ImageWidth; /* 256 The number of columns in the image, i.e., the number of pixels per row. */
@@ -97,7 +99,11 @@ class ImageFileDirectory {
     public $TileLength; /* 323 The tile length (height) in pixels. This is the number of rows in each tile. */
     public $TileOffsets; /* 324 For each tile, the byte offset of that tile, as compressed and stored on disk. */
     public $TileByteCounts; /* 325 For each tile, the number of (compressed) bytes in that tile. */
+    public $TileColumnNum;
+    public $TileRowNum;
     
+    public $GeographicTypeGeoKey; /* This key may be used to specify the code for the geographic coordinate system used to map lat-long to a specific ellipsoid over the earth. */
+
     public $SampleFormat; /* 339 Specifies how to interpret each data sample in a pixel. */
     public $ModelPixelScaleTag; /* 33550 Used in interchangeable GeoTIFF_1_0 files. */
     public $ModelTiepointTag; /* 33922 Originally part of Intergraph's GeoTIFF tags, but now used in interchangeable GeoTIFF_1_0 files. */
@@ -106,7 +112,50 @@ class ImageFileDirectory {
     public $GeoDoubleParamsTag; /* 34736 Used in interchangeable GeoTIFF_1_0 files. */
     public $GeoAsciiParamsTag; /* 34737 Used in interchangeable GeoTIFF_1_0 files. */
     
-    public $TagList = array(); /* tagid => data are stored in this array to be referenced by GeoKeyDirectoryTag with TIFFTagLocation */
+    public $TagList = array(); /* tagid => data are stored in this array to be referenced by GeoKeyDirectoryTag with TIFFTagLocation */    
+
+    public function __construct( &$file ) {
+        $this->hFile = $file;
+    }
+
+    public function getValue( &$point ) {
+        if ( $point->mFormat===$this->GeographicTypeGeoKey ) {
+            $pixel = new GeoPoint(
+                $this->ModelTiepointTag[0] + ($point->lon - $this->ModelTiepointTag[3]) / $this->ModelPixelScaleTag[0],
+                $this->ModelTiepointTag[1] + ($point->lat - $this->ModelTiepointTag[4]) / $this->ModelPixelScaleTag[1],
+                0
+            );
+            echo $pixel->getReadable().PHP_EOL;
+
+            $tile = new GeoPoint(
+                intdiv( $pixel->x, $this->TileWidth ),
+                intdiv( $pixel->y, $this->TileLength ),
+                0
+            );
+            echo $tile->getReadable().PHP_EOL;
+            $tileseq = $tile->x + $tile->y * $this->TileColumnNum;
+            echo $tileseq.PHP_EOL;
+            echo $this->TagList[324][$tileseq].PHP_EOL;
+
+            $ptile = new GeoPoint(
+                $pixel->x % $this->TileWidth,
+                $pixel->y % $this->TileLength,
+                0
+            );
+            echo $ptile->getReadable().PHP_EOL;
+            $bytes = intdiv($this->BitsPerSample, 8);
+            echo 'bytes: '.$bytes.PHP_EOL;
+            $poffset = $this->TagList[324][$tileseq] + ($ptile->x + $ptile->y * $this->TileWidth) * $bytes;
+            echo 'offset: '.$poffset.PHP_EOL;
+            $fcurrent = ftell( $this->hFile );
+            fseek( $this->hFile, $poffset );
+            $value = current(unpack( 'v', fread( $this->hFile, $bytes ) ));
+            echo 'value: '.$value.PHP_EOL;
+            fseek( $this->hFile, $fcurrent );
+            echo PHP_EOL;
+        }
+        return -1;
+    }
 }
 
 class GeoTIFF {
@@ -181,7 +230,7 @@ class GeoTIFF {
         $p = pack('S', $testint);
         return $testint===current(unpack('v', $p));
     }
-    
+   
     public function open( $filename ) {
         $this->mFilename = $filename;
         $this->hFile = fopen( $this->mFilename, 'r' );
@@ -205,7 +254,7 @@ class GeoTIFF {
             echo $ifdoffset.PHP_EOL;
             if ( fseek($this->hFile, $ifdoffset)===0 ) {
                 $numdir = current(unpack( $this->mUnpackFormats[0], fread( $this->hFile, 2 ) )); /* Number of Tags in IFD  */
-                $this->IFDList[$ifdoffset] = new ImageFileDirectory();
+                $this->IFDList[$ifdoffset] = new ImageFileDirectory( $this->hFile );
                 $this->IFDList[$ifdoffset]->NumDirEntries = $numdir;
                 echo $numdir.PHP_EOL;
                 for ( $i=0; $i<$numdir; $i++ ) {
@@ -253,6 +302,11 @@ class GeoTIFF {
                         $data = $dataoffset;
                     }
                     if ( count($data) ) {
+                        switch ( $datatype ) {
+                            case 2:
+                                $data = trim(implode('', $data));
+                                break;
+                        }
                         switch ( $tagid ) {
                             case 256:
                                 $this->IFDList[$ifdoffset]->ImageWidth = $data;
@@ -270,7 +324,7 @@ class GeoTIFF {
                                 $this->IFDList[$ifdoffset]->PhotometricInterpretation = $data;
                                 break;
                             case 274:
-                                $this->IFDList[$ifdoffset]->PhotometricInterpretation = $data;
+                                $this->IFDList[$ifdoffset]->Orientation = $data;
                                 break;
                             case 277:
                                 $this->IFDList[$ifdoffset]->SamplesPerPixel = $data;
@@ -306,6 +360,11 @@ class GeoTIFF {
                                     for ( $j=4; $j<$data[3]*4+1; $j+=4 ) {
                                         $geokey = new GeoKeyDirectory( $data[$j], $data[$j+1], $data[$j+2], $data[$j+3], $this->IFDList[$ifdoffset] );
                                         $this->IFDList[$ifdoffset]->GeoKeyDirectoryTag[$geokey->KeyID] = $geokey;
+                                        switch ( $geokey->KeyID ) {
+                                            case 2048:
+                                                $this->IFDList[$ifdoffset]->GeographicTypeGeoKey = $geokey->Value_Offset;
+                                                break;
+                                        }
                                     }
                                 } else {
                                     // Invalid data
@@ -316,12 +375,6 @@ class GeoTIFF {
                             case 34736:
                                 $this->IFDList[$ifdoffset]->GeoDoubleParamsTag = $data;
                                 break;
-                            case 305:
-                            case 34737:
-                                $data = trim(implode('', $data));
-                                break;
-                            default:
-                                break;
                         }
                         $this->IFDList[$ifdoffset]->TagList[$tagid] = $data;
                     } else {
@@ -329,6 +382,8 @@ class GeoTIFF {
                         // data not read correctly
                     }
                 }
+                $this->IFDList[$ifdoffset]->TileColumnNum = intdiv($this->IFDList[$ifdoffset]->ImageWidth - 1, $this->IFDList[$ifdoffset]->TileWidth) + 1;
+                $this->IFDList[$ifdoffset]->TileRowNum = intdiv($this->IFDList[$ifdoffset]->ImageLength - 1, $this->IFDList[$ifdoffset]->TileLength) + 1;
                 $ifdoffset = current(unpack( $this->mUnpackFormats[1], fread( $this->hFile, 4 ) )); /* Offset to next IFD  */
                 echo 'next: '.$ifdoffset.PHP_EOL;
             } else {
@@ -340,9 +395,23 @@ class GeoTIFF {
         }
         echo PHP_EOL;
         
+        $samples = array(
+            new GeoPoint( 26.000139, 118.999861 ), /* Upper Left 0m */
+            new GeoPoint( 25.67371,119.84161 ), /* Some where in first tile 0m */
+            new GeoPoint( 23.47, 120.95728 ), /* Mt. Tonku Saveq 3952m */
+            new GeoPoint( 23.90165,121.32335 ), /* Mt. Pinnacle 2340m */
+            new GeoPoint( 24.44647,121.61394 ), /* Haga-Paris 911m */
+            new GeoPoint( 22.69926,120.94559 ), /* Mt. Katana 1666m */
+        );
+        
         foreach ( $this->IFDList as $ifd ) {
+            foreach ( $samples as $sample ) {
+                echo $sample->getReadable().PHP_EOL;
+                $ifd->getValue( $sample );
+            }
+            echo PHP_EOL;
             if ( isset($ifd->TagList[33922]) && count($ifd->TagList[33922])>=6 ) {
-                $UpperLeft = new GeoPoint( $ifd->TagList[33922][3], $ifd->TagList[33922][4] );
+                $UpperLeft = new GeoPoint( $ifd->TagList[33922][4], $ifd->TagList[33922][3] );
                 echo $UpperLeft->getReadable().PHP_EOL;
                 $UpperLeft->lon += $ifd->ImageWidth * $ifd->TagList[33550][0];
                 $UpperLeft->lat += $ifd->ImageLength * $ifd->TagList[33550][1];
