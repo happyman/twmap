@@ -82,6 +82,7 @@ class ImageFileDirectory {
     public $ImageWidth; /* 256 The number of columns in the image, i.e., the number of pixels per row. */
     public $ImageLength; /* 257 The number of rows of pixels in the image. */
     public $BitsPerSample; /* 258 Number of bits per component. */
+    public $BytesPerSample;
     public $Compression; /* 259 Compression scheme used on the image data. 1=uncompressed and 4=CCITT Group 4. */
     public $PhotometricInterpretation; /* 262 The color space of the image data. 1=black is zero and 2=RGB. */
     public $Threshholding; /* 263 For black and white TIFF files that represent shades of gray, the technique used to convert from gray to black and white pixels. */
@@ -99,8 +100,12 @@ class ImageFileDirectory {
     public $TileLength; /* 323 The tile length (height) in pixels. This is the number of rows in each tile. */
     public $TileOffsets; /* 324 For each tile, the byte offset of that tile, as compressed and stored on disk. */
     public $TileByteCounts; /* 325 For each tile, the number of (compressed) bytes in that tile. */
+    
     public $TileColumnNum;
     public $TileRowNum;
+    public $TileBytesPerRow;
+    public $TilePointer; /* current index of tile in this IFD */
+    public $TilePixelPointer; /* current pixel in current tile */
     
     public $GeographicTypeGeoKey; /* This key may be used to specify the code for the geographic coordinate system used to map lat-long to a specific ellipsoid over the earth. */
 
@@ -132,10 +137,10 @@ class ImageFileDirectory {
                 intdiv( $pixel->y, $this->TileLength ),
                 0
             );
-            echo $tile->getReadable().PHP_EOL;
-            $tileseq = $tile->x + $tile->y * $this->TileColumnNum;
-            echo $tileseq.PHP_EOL;
-            echo $this->TagList[324][$tileseq].PHP_EOL;
+            //echo $tile->getReadable().PHP_EOL;
+            $this->TilePointer = $tile->x + $tile->y * $this->TileColumnNum;
+            //echo $this->TilePointer.PHP_EOL;
+            //echo $this->TagList[324][$this->TilePointer].PHP_EOL;
 
             $ptile = new GeoPoint(
                 $pixel->x % $this->TileWidth,
@@ -143,16 +148,32 @@ class ImageFileDirectory {
                 0
             );
             echo $ptile->getReadable().PHP_EOL;
-            $bytes = intdiv($this->BitsPerSample, 8);
-            echo 'bytes: '.$bytes.PHP_EOL;
-            $poffset = $this->TagList[324][$tileseq] + ($ptile->x + $ptile->y * $this->TileWidth) * $bytes;
-            echo 'offset: '.$poffset.PHP_EOL;
+            $this->TilePixelPointer = $this->TagList[324][$this->TilePointer] + ($ptile->x + $ptile->y * $this->TileWidth) * $this->BytesPerSample;
+            //echo 'offset: '.$this->TilePixelPointer.PHP_EOL;
             $fcurrent = ftell( $this->hFile );
-            fseek( $this->hFile, $poffset );
-            $value = current(unpack( 'v', fread( $this->hFile, $bytes ) ));
+            
+            fseek( $this->hFile, $this->TilePixelPointer );
+            $value = current(unpack( 'v', fread( $this->hFile, $this->BytesPerSample ) ));
             echo 'value: '.$value.PHP_EOL;
+            $window = 7;
+            $this->TilePixelPointer -= $this->BytesPerSample * $window; // move left
+            $this->TilePixelPointer -= $this->TileBytesPerRow * $window; // move up
+            fseek( $this->hFile, $this->TilePixelPointer );
+            $value = current(unpack( 'v', fread( $this->hFile, $this->BytesPerSample ) ));
+            echo 'value: '.$value.PHP_EOL;
+            fseek( $this->hFile, $this->TilePixelPointer );
+            for ( $y=0; $y<$window*2+1; $y++ ) {
+                for ( $x=0; $x<$window*2+1; $x++ ) {
+                    $value = current(unpack( 'v', fread( $this->hFile, $this->BytesPerSample ) ));
+                    echo sprintf('%04d ', $value);
+                }
+                $this->TilePixelPointer += $this->TileBytesPerRow; // move down
+                fseek( $this->hFile, $this->TilePixelPointer );
+                echo PHP_EOL;
+            }
+            
             fseek( $this->hFile, $fcurrent );
-            echo PHP_EOL;
+            echo PHP_EOL;            
         }
         return -1;
     }
@@ -316,6 +337,7 @@ class GeoTIFF {
                                 break;
                             case 258:
                                 $this->IFDList[$ifdoffset]->BitsPerSample = $data;
+                                $this->IFDList[$ifdoffset]->BytesPerSample = intdiv($data, 8);
                                 break;
                             case 259:
                                 $this->IFDList[$ifdoffset]->Compression = $data;
@@ -382,8 +404,11 @@ class GeoTIFF {
                         // data not read correctly
                     }
                 }
+                
                 $this->IFDList[$ifdoffset]->TileColumnNum = intdiv($this->IFDList[$ifdoffset]->ImageWidth - 1, $this->IFDList[$ifdoffset]->TileWidth) + 1;
                 $this->IFDList[$ifdoffset]->TileRowNum = intdiv($this->IFDList[$ifdoffset]->ImageLength - 1, $this->IFDList[$ifdoffset]->TileLength) + 1;
+                $this->IFDList[$ifdoffset]->TileBytesPerRow = $this->IFDList[$ifdoffset]->TileWidth * $this->IFDList[$ifdoffset]->BytesPerSample;
+
                 $ifdoffset = current(unpack( $this->mUnpackFormats[1], fread( $this->hFile, 4 ) )); /* Offset to next IFD  */
                 echo 'next: '.$ifdoffset.PHP_EOL;
             } else {
