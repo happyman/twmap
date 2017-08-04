@@ -217,6 +217,57 @@ class ImageFileDirectory {
                 unset($unpacked);
             }
             
+            $windowsize = 23;
+            $windowcenter = intdiv($windowsize, 2);
+            $localavg = array();
+            foreach ( $bitmap as $index => $value ) {
+                $x = $index % $this->TileWidth - $windowcenter;
+                $y = intdiv($index, $this->TileWidth) - $windowcenter;
+                //echo $index.' '.$x.','.$y.' ';
+                if ( $x>=0 && $y>=0 && $x+$windowsize<$this->TileWidth && $y+$windowsize<$this->TileLength ) {
+                    $offset = $index - $windowcenter * ($this->TileWidth+1);
+                    //echo 'UL:'.$offset.' ';
+                    $mean = 0.0;
+                    $count = 0;
+                    for ( $y=0; $y<$windowsize; $y++ ) {
+                        for ( $x=0; $x<$windowsize; $x++ ) {
+                            $count++;
+                            //echo $offset.' ';
+                            $mean = $mean*($count-1)/$count + $bitmap[$offset]/$count;
+                            $offset++;
+                        }
+                        $offset -= $windowsize;
+                        $offset += $this->TileWidth;
+                    }
+                    //echo $offset.' ';
+                    $offset += $windowcenter;
+                    $offset -= $this->TileWidth * ($windowcenter+1);
+                    //echo 'C:'.$offset.' ';
+                    $localavg[$offset] = $bitmap[$index] - $mean;
+                    //echo PHP_EOL;
+                    //$bitmap[$index] = intval($bitmap[$index] * $multiplier);
+                } else {
+                    // Out of range
+                    //$localavg[$index] = $bitmap[$index];
+                    $localavg[$index] = 0;
+                    //echo $index.' ';
+                }
+            }
+            $bitmap = $localavg;
+            $min = 65535;
+            $max = 0;
+            $count = 0;
+            $mean = 0.0;
+            $sqrmean = 0.0;
+            foreach ( $bitmap as $value ) {
+                $count++;
+                if ( $value > $max ) $max = $value;
+                if ( $value < $min ) $min = $value;
+                $mean = $mean*($count-1)/$count + $value/$count;
+                $sqrmean = $sqrmean*($count-1)/$count + $value*$value/$count;
+            }
+            //echo sprintf('mean: %.6f, stddev: %.2f, max: %.2f, min: %.2f'.PHP_EOL, $mean, sqrt($count*$sqrmean - pow($count*$mean,2)), $max, $min);
+            
             //echo 'bitmap: '.count($bitmap).PHP_EOL;
             $img = imagecreatetruecolor( $this->TileWidth , $this->TileLength );
             if ( is_resource($img) ) {
@@ -227,13 +278,23 @@ class ImageFileDirectory {
                     for ( $x=0; $x<$this->TileWidth; $x++ ) {
                         $bitmap[$index] = intval( ($bitmap[$index]-$min) * $multiplier );
                         //echo $bitmap[$index].' ';
-                        imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap[$index], $bitmap[$index], $bitmap[$index] ) );
+                        if ( $bitmap[$index] > 160 ) {
+                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap[$index], intdiv($bitmap[$index], 2), intdiv($bitmap[$index], 8) ) );
+                        } else if ( $bitmap[$index] < 96 ) {
+                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, intdiv($bitmap[$index], 2), intdiv($bitmap[$index], 2), $bitmap[$index] ) );
+                        } else {
+                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap[$index], $bitmap[$index], $bitmap[$index] ) );
+                        }
                         //imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, 0, $bitmap[$index], 0 ) );
                         $index++;
                     }
                 }
-                header('Content-Type: image/png');
-                imagepng( $img );
+                if ( $GLOBALS['dev'] ) {
+                    die();
+                } else {
+                    header('Content-Type: image/png');
+                    imagepng( $img );
+                }
                 imagedestroy( $img );
                 /*foreach ( $bitmap as $index => $value ) {
                     $bitmap[$index] = intval($bitmap[$index] * $multiplier);
