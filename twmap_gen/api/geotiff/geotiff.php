@@ -3,11 +3,25 @@
 //http://www.fileformat.info/format/tiff/egff.htm
 //https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
 
-header('Content-Type: application/json; charset=utf-8');
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+$dev = 0;
+$reset = 0;
+if ( isset($_GET['dev']) ) $dev = intval( $_GET['dev'] );
+if ( isset($_GET['reset']) ) $reset = intval( $_GET['reset'] );
+if ( $dev>0 ) {
+    header('Content-Type: application/json; charset=utf-8');
+    echo 'DEV'.PHP_EOL;
+}
+
+if ( !function_exists('intdiv') ) {
+    function intdiv( $dividend, $divisor ) {
+        return ( $dividend - $dividend % $divisor ) / $divisor;
+    }
+}
 
 class GeoPoint {
     public $mFormat; /* 0 = raster, 4326 = WGS84 */
@@ -45,7 +59,10 @@ class GeoPoint {
         if ( $this->mFormat===4326 ) {
             return sprintf( '(%.6f, %.6f)', $this->lat, $this->lon );
         }
-        return sprintf( '(%.2f, %.2f)', $this->x, $this->y );
+        if ( $this->x > intval($this->x) || $this->y > intval($this->y) ) {
+            return sprintf( '(%.2f, %.2f)', $this->x, $this->y );
+        }
+        return sprintf( '(%d, %d)', $this->x, $this->y );
     }
     
 }
@@ -75,7 +92,7 @@ class GeoKeyDirectory {
 }
 
 class ImageFileDirectory {
-    private $hFile;
+    private $mGeoTIFF;
 
     public $NumDirEntries;
 
@@ -104,8 +121,8 @@ class ImageFileDirectory {
     public $TileColumnNum;
     public $TileRowNum;
     public $TileBytesPerRow;
-    public $TilePointer; /* current index of tile in this IFD */
-    public $TilePixelPointer; /* current pixel in current tile */
+    public $TileIndex; /* current index of tile in this IFD */
+    public $PixelPointer; /* current pixel offset */
     
     public $GeographicTypeGeoKey; /* This key may be used to specify the code for the geographic coordinate system used to map lat-long to a specific ellipsoid over the earth. */
 
@@ -119,18 +136,135 @@ class ImageFileDirectory {
     
     public $TagList = array(); /* tagid => data are stored in this array to be referenced by GeoKeyDirectoryTag with TIFFTagLocation */    
 
-    public function __construct( &$file ) {
-        $this->hFile = $file;
+    public $mUnpackFormats;
+
+    public function __construct() {
+    }
+    
+    public function init( &$geotiff ) {
+        $this->mGeoTIFF = $geotiff;
+        if ( isset($geotiff->mUnpackFormats) ) $this->mUnpackFormats = $geotiff->mUnpackFormats; /* Endianness is stored outside IFD and need to be copied into IFD or serialize/unserialize fails */
     }
 
     public function getValue( &$point ) {
+        /* Get value of a single pixel */
+        if ( $point->mFormat===$this->GeographicTypeGeoKey ) {
+            $x = intval( $this->ModelTiepointTag[0] + ($point->lon - $this->ModelTiepointTag[3]) / $this->ModelPixelScaleTag[0] );
+            $y = intval( $this->ModelTiepointTag[1] + ($point->lat - $this->ModelTiepointTag[4]) / $this->ModelPixelScaleTag[1] );
+            
+            $this->TileIndex = intdiv( $x, $this->TileWidth ) + intdiv( $y, $this->TileLength ) * $this->TileColumnNum;
+            $this->PixelPointer = $this->TagList[324][$this->TileIndex] + (($x % $this->TileWidth) + ($y % $this->TileLength) * $this->TileWidth) * $this->BytesPerSample;
+
+            fseek( $this->mGeoTIFF->hFile, $this->PixelPointer );
+            $value = current(unpack( $this->mUnpackFormats[$this->BytesPerSample], fread( $this->mGeoTIFF->hFile, $this->BytesPerSample ) ));
+
+            if ( $GLOBALS['dev'] ) {
+                $pixel = new GeoPoint(
+                    $x,
+                    $y,
+                    0
+                );
+                echo 'getValue @ '.$pixel->getReadable().PHP_EOL;
+                echo 'value: '.$value.PHP_EOL.PHP_EOL;
+            }
+        } else {
+            echo 'Warning! Coordinate system mismatch. point CS: '.$point->mFormat.', map CS: '.$this->GeographicTypeGeoKey.PHP_EOL;
+        }
+        return -1;
+    }
+
+    public function getTile( &$point, $format='png' ) {
+        /* Get TIFF Tile where the point is in */
+        if ( $point->mFormat===$this->GeographicTypeGeoKey ) {
+            $x = intval( $this->ModelTiepointTag[0] + ($point->lon - $this->ModelTiepointTag[3]) / $this->ModelPixelScaleTag[0] );
+            $y = intval( $this->ModelTiepointTag[1] + ($point->lat - $this->ModelTiepointTag[4]) / $this->ModelPixelScaleTag[1] );
+            
+            $this->TileIndex = intdiv( $x, $this->TileWidth ) + intdiv( $y, $this->TileLength ) * $this->TileColumnNum;
+            $this->PixelPointer = $this->TagList[324][$this->TileIndex] + (($x % $this->TileWidth) + ($y % $this->TileLength) * $this->TileWidth) * $this->BytesPerSample;
+            //echo sprintf( 'tile index: %d, offset: %d, bytes: %d'.PHP_EOL, $this->TileIndex, $this->TagList[324][$this->TileIndex], $this->TagList[325][$this->TileIndex] );
+            
+            $raw = array();
+
+            $min = 65535;
+            $max = 0;
+            $count = 0;
+            $mean = 0.0;
+            $sqrmean = 0.0;
+            
+            $now = microtime(true) * 1000;
+            
+            $bitmap = array();
+            
+            fseek( $this->mGeoTIFF->hFile, $this->TagList[324][$this->TileIndex] );
+            $remaining = $this->TagList[325][$this->TileIndex];
+            while ( $remaining && !feof($this->mGeoTIFF->hFile) ) {
+                $buffer = fread( $this->mGeoTIFF->hFile, $remaining - $remaining%$this->BytesPerSample );
+                $remaining -= strlen($buffer);
+                //echo 'len: '.strlen($buffer).PHP_EOL;
+                //echo 'unpack format: '.$this->mUnpackFormats[$this->BytesPerSample].PHP_EOL;
+                //echo 'unpack len: '.count(unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer )).PHP_EOL;
+                $unpacked = unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer );
+                foreach ( $unpacked as $value ) {
+                    if ( $value > 0 ) {
+                        $count++;
+                        if ( $value > $max ) $max = $value;
+                        if ( $value < $min ) $min = $value;
+                        $mean = $mean*($count-1)/$count + $value/$count;
+                        $sqrmean = $sqrmean*($count-1)/$count + $value*$value/$count;
+                    }
+                }
+                $bitmap = array_merge($bitmap, $unpacked);
+                unset($unpacked);
+            }
+            
+            //echo 'bitmap: '.count($bitmap).PHP_EOL;
+            $img = imagecreatetruecolor( $this->TileWidth , $this->TileLength );
+            if ( is_resource($img) ) {
+                $multiplier = 255.0 / ($max-$min);
+                //echo 'max: '.$max.', min: '.$min.', multiplier: '.$multiplier.'<br/>';
+                $index = 0;
+                for ( $y=0; $y<$this->TileLength; $y++ ) {
+                    for ( $x=0; $x<$this->TileWidth; $x++ ) {
+                        $bitmap[$index] = intval( ($bitmap[$index]-$min) * $multiplier );
+                        //echo $bitmap[$index].' ';
+                        imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap[$index], $bitmap[$index], $bitmap[$index] ) );
+                        //imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, 0, $bitmap[$index], 0 ) );
+                        $index++;
+                    }
+                }
+                header('Content-Type: image/png');
+                imagepng( $img );
+                imagedestroy( $img );
+                /*foreach ( $bitmap as $index => $value ) {
+                    $bitmap[$index] = intval($bitmap[$index] * $multiplier);
+                }*/
+            }
+
+            if ( $GLOBALS['dev'] ) {
+                echo 'average time taken: '.(microtime(true)*1000-$now).' ms'.PHP_EOL;
+                echo sprintf( 'max: %d, min: %d'.PHP_EOL, $max, $min );
+                echo sprintf( 'count: %d, mean: %.2f, sqr mean: %.2f'.PHP_EOL, $count, $mean, $sqrmean );
+            }
+        } else {
+            echo 'Warning! Coordinate system mismatch. point CS: '.$point->mFormat.', map CS: '.$this->GeographicTypeGeoKey.PHP_EOL;
+        }
+        return -1;
+    }
+    
+    public function getValueEx( &$point ) {
         if ( $point->mFormat===$this->GeographicTypeGeoKey ) {
             $pixel = new GeoPoint(
                 $this->ModelTiepointTag[0] + ($point->lon - $this->ModelTiepointTag[3]) / $this->ModelPixelScaleTag[0],
                 $this->ModelTiepointTag[1] + ($point->lat - $this->ModelTiepointTag[4]) / $this->ModelPixelScaleTag[1],
                 0
             );
-            echo $pixel->getReadable().PHP_EOL;
+
+            if ( $GLOBALS['dev'] ) {
+                echo 'getValue @ '.$pixel->getReadable().PHP_EOL;
+                $pixel->x = intval($pixel->x);
+                $pixel->y = intval($pixel->y);
+                echo 'getValue @ '.$pixel->getReadable().PHP_EOL;
+            }
 
             $tile = new GeoPoint(
                 intdiv( $pixel->x, $this->TileWidth ),
@@ -138,9 +272,9 @@ class ImageFileDirectory {
                 0
             );
             //echo $tile->getReadable().PHP_EOL;
-            $this->TilePointer = $tile->x + $tile->y * $this->TileColumnNum;
-            //echo $this->TilePointer.PHP_EOL;
-            //echo $this->TagList[324][$this->TilePointer].PHP_EOL;
+            $this->TileIndex = $tile->x + $tile->y * $this->TileColumnNum;
+            //echo $this->TileIndex.PHP_EOL;
+            //echo $this->TagList[324][$this->TileIndex].PHP_EOL;
 
             $ptile = new GeoPoint(
                 $pixel->x % $this->TileWidth,
@@ -148,31 +282,31 @@ class ImageFileDirectory {
                 0
             );
             echo $ptile->getReadable().PHP_EOL;
-            $this->TilePixelPointer = $this->TagList[324][$this->TilePointer] + ($ptile->x + $ptile->y * $this->TileWidth) * $this->BytesPerSample;
-            //echo 'offset: '.$this->TilePixelPointer.PHP_EOL;
-            $fcurrent = ftell( $this->hFile );
+            $this->PixelPointer = $this->TagList[324][$this->TileIndex] + ($ptile->x + $ptile->y * $this->TileWidth) * $this->BytesPerSample;
+            //echo 'offset: '.$this->PixelPointer.PHP_EOL;
+            $fcurrent = ftell( $this->mGeoTIFF->hFile );
             
-            fseek( $this->hFile, $this->TilePixelPointer );
-            $value = current(unpack( 'v', fread( $this->hFile, $this->BytesPerSample ) ));
+            fseek( $this->mGeoTIFF->hFile, $this->PixelPointer );
+            $value = current(unpack( 'v', fread( $this->mGeoTIFF->hFile, $this->BytesPerSample ) ));
             echo 'value: '.$value.PHP_EOL;
             $window = 7;
-            $this->TilePixelPointer -= $this->BytesPerSample * $window; // move left
-            $this->TilePixelPointer -= $this->TileBytesPerRow * $window; // move up
-            fseek( $this->hFile, $this->TilePixelPointer );
-            $value = current(unpack( 'v', fread( $this->hFile, $this->BytesPerSample ) ));
+            $this->PixelPointer -= $this->BytesPerSample * $window; // move left
+            $this->PixelPointer -= $this->TileBytesPerRow * $window; // move up
+            fseek( $this->mGeoTIFF->hFile, $this->PixelPointer );
+            $value = current(unpack( 'v', fread( $this->mGeoTIFF->hFile, $this->BytesPerSample ) ));
             echo 'value: '.$value.PHP_EOL;
-            fseek( $this->hFile, $this->TilePixelPointer );
+            fseek( $this->mGeoTIFF->hFile, $this->PixelPointer );
             for ( $y=0; $y<$window*2+1; $y++ ) {
                 for ( $x=0; $x<$window*2+1; $x++ ) {
-                    $value = current(unpack( 'v', fread( $this->hFile, $this->BytesPerSample ) ));
+                    $value = current(unpack( 'v', fread( $this->mGeoTIFF->hFile, $this->BytesPerSample ) ));
                     echo sprintf('%04d ', $value);
                 }
-                $this->TilePixelPointer += $this->TileBytesPerRow; // move down
-                fseek( $this->hFile, $this->TilePixelPointer );
+                $this->PixelPointer += $this->TileBytesPerRow; // move down
+                fseek( $this->mGeoTIFF->hFile, $this->PixelPointer );
                 echo PHP_EOL;
             }
             
-            fseek( $this->hFile, $fcurrent );
+            fseek( $this->mGeoTIFF->hFile, $fcurrent );
             echo PHP_EOL;            
         }
         return -1;
@@ -181,14 +315,16 @@ class ImageFileDirectory {
 
 class GeoTIFF {
     public $mFilename;
-    private $hFile;
+    public $hFile;
     
-    private $mUnpackFormats;
+    public $mUnpackFormats;
     
     public $Identifier; /* Byte-order Identifier */
     public $Version;    /* TIFF version number (always 2Ah) */
     public $IFDOffset;  /* Offset of the first Image File Directory*/
     public $IFDList = array();
+
+    private $CacheExpire = 60 * 60; /* Cache expiration time in seconds */
     
     public static $DataTypeLength = array(
         1   => 1, /* BYTE 8-bit unsigned integer */
@@ -217,7 +353,7 @@ class GeoTIFF {
             8   => 's', /* SSHORT 16-bit signed integer */
             9   => 'l', /* SLONG 32-bit signed integer */
             10  => 'l2', /* SRATIONAL Two 32-bit signed integers */
-            // 7.0.15,7.1.1	The "e", "E", "g" and "G" codes were added to enable byte order support for float and double.
+            // PHP 7.0.15,7.1.1	The "e", "E", "g" and "G" codes were added to enable byte order support for float and double.
             11  => 'gX', /* FLOAT 4-byte single-precision IEEE floating-point value */
             12  => 'eX', /* DOUBLE 8-byte double-precision IEEE floating-point value */
         ),
@@ -232,7 +368,7 @@ class GeoTIFF {
             8   => 's', /* SSHORT 16-bit signed integer */
             9   => 'l', /* SLONG 32-bit signed integer */
             10  => 'l2', /* SRATIONAL Two 32-bit signed integers */
-            // 7.0.15,7.1.1	The "e", "E", "g" and "G" codes were added to enable byte order support for float and double.
+            // PHP 7.0.15,7.1.1	The "e", "E", "g" and "G" codes were added to enable byte order support for float and double.
             11  => 'GX', /* FLOAT 4-byte single-precision IEEE floating-point value */
             12  => 'EX', /* DOUBLE 8-byte double-precision IEEE floating-point value */
         ),
@@ -243,7 +379,7 @@ class GeoTIFF {
     }
     
     public function __destruct () {
-        fclose( $this->hFile );
+        if ( $this->hFile && is_resource($this->hFile) ) fclose( $this->hFile );
     }
 
     public static function isLittleEndian() {
@@ -254,38 +390,69 @@ class GeoTIFF {
    
     public function open( $filename ) {
         $this->mFilename = $filename;
-        $this->hFile = fopen( $this->mFilename, 'r' );
+        
+        $cachepath = sys_get_temp_dir().DIRECTORY_SEPARATOR.md5($this->mFilename).'.cache';
+        if ( file_exists($cachepath) && !$GLOBALS['reset'] ) {
+            if ( time() - filemtime( $cachepath ) < $this->CacheExpire ) {
+                try {
+                    $this->IFDList = unserialize (gzuncompress(file_get_contents( $cachepath )));
+                    //if ( $GLOBALS['dev'] ) print_r( $this->IFDList );
+                    $this->hFile = fopen( $this->mFilename, 'rb' );
+                    foreach ( $this->IFDList as $ifd ) {
+                        $ifd->init( $this );
+                    }
+                    if ( $GLOBALS['dev'] > 1 ) {
+                        echo 'LOADED FROM CACHE'.PHP_EOL;
+                        print_r( $this->IFDList );
+                    }
+                    return 1;
+                } catch (Exception $e) {
+                    echo 'Caught exception: ',  $e->getMessage(), PHP_EOL;
+                }
+            }
+        }
+        
+        $this->hFile = fopen( $this->mFilename, 'rb' );
         if ( !$this->hFile ) {
             // Error handling
-            die();
+            return 0;
         }
         $this->Identifier = fread( $this->hFile, 2 );
-        echo $this->Identifier.PHP_EOL;
+        if ( $GLOBALS['dev'] ) echo $this->Identifier.PHP_EOL;
         if ( $this->Identifier==='II' ) { // little endian
-            $this->mUnpackFormats = array( 'v', 'V', );
+            $this->mUnpackFormats = array( 
+                1 => 'C*',
+                2 => 'v*',
+                4 => 'V*',
+            );
         } else if ( $this->Identifier==='MM' ) { // big endian
-            $this->mUnpackFormats = array( 'n', 'N', );
+            $this->mUnpackFormats = array( 
+                1 => 'C*',
+                2 => 'n*',
+                4 => 'N*',
+            );
         } else {
             // Error handling
         }
-        $this->Version = current(unpack( $this->mUnpackFormats[0], fread( $this->hFile, 2 ) ));
-        echo $this->Version.PHP_EOL;
-        $ifdoffset = current(unpack( $this->mUnpackFormats[1], fread( $this->hFile, 4 ) )); /* Offset to next IFD  */
+        $this->Version = current(unpack( $this->mUnpackFormats[2], fread( $this->hFile, 2 ) ));
+        //echo $this->Version.PHP_EOL;
+        $ifdoffset = current(unpack( $this->mUnpackFormats[4], fread( $this->hFile, 4 ) )); /* Offset to next IFD  */
         while ( $ifdoffset ) {
-            echo $ifdoffset.PHP_EOL;
+            //echo $ifdoffset.PHP_EOL;
             if ( fseek($this->hFile, $ifdoffset)===0 ) {
-                $numdir = current(unpack( $this->mUnpackFormats[0], fread( $this->hFile, 2 ) )); /* Number of Tags in IFD  */
-                $this->IFDList[$ifdoffset] = new ImageFileDirectory( $this->hFile );
+                $numdir = current(unpack( $this->mUnpackFormats[2], fread( $this->hFile, 2 ) )); /* Number of Tags in IFD  */
+                $this->IFDList[$ifdoffset] = new ImageFileDirectory();
+                $this->IFDList[$ifdoffset]->init( $this );
                 $this->IFDList[$ifdoffset]->NumDirEntries = $numdir;
-                echo $numdir.PHP_EOL;
+                //echo $numdir.PHP_EOL;
                 for ( $i=0; $i<$numdir; $i++ ) {
-                    $tagid = current(unpack( $this->mUnpackFormats[0], fread( $this->hFile, 2 ) )); /* The tag identifier  */
-                    $datatype = current(unpack( $this->mUnpackFormats[0], fread( $this->hFile, 2 ) )); /* The scalar type of the data items  */
-                    $datacount = current(unpack( $this->mUnpackFormats[1], fread( $this->hFile, 4 ) )); /* The number of items in the tag data  */
-                    $dataoffset = current(unpack( $this->mUnpackFormats[1], fread( $this->hFile, 4 ) )); /* The byte offset to the data items  */
+                    $tagid = current(unpack( $this->mUnpackFormats[2], fread( $this->hFile, 2 ) )); /* The tag identifier  */
+                    $datatype = current(unpack( $this->mUnpackFormats[2], fread( $this->hFile, 2 ) )); /* The scalar type of the data items  */
+                    $datacount = current(unpack( $this->mUnpackFormats[4], fread( $this->hFile, 4 ) )); /* The number of items in the tag data  */
+                    $dataoffset = current(unpack( $this->mUnpackFormats[4], fread( $this->hFile, 4 ) )); /* The byte offset to the data items  */
                     $datalength = $datacount * self::$DataTypeLength[$datatype];
                     $data = array();
-                    echo $i.': '.$tagid.', type: '.$datatype.', len: '.$datalength.', offset: '.$dataoffset.PHP_EOL;
+                    //echo $i.': '.$tagid.', type: '.$datatype.', len: '.$datalength.', offset: '.$dataoffset.PHP_EOL;
                     if ( $datalength > 4 ) {
                         $fcurrent = ftell( $this->hFile );
                         if ( fseek($this->hFile, $dataoffset)===0 ) {
@@ -409,8 +576,49 @@ class GeoTIFF {
                 $this->IFDList[$ifdoffset]->TileRowNum = intdiv($this->IFDList[$ifdoffset]->ImageLength - 1, $this->IFDList[$ifdoffset]->TileLength) + 1;
                 $this->IFDList[$ifdoffset]->TileBytesPerRow = $this->IFDList[$ifdoffset]->TileWidth * $this->IFDList[$ifdoffset]->BytesPerSample;
 
+                /*
+                $bps = $this->IFDList[$ifdoffset]->BytesPerSample;
+                $min = 65535;
+                $max = 0;
+                $count = 0;
+                $mean = 0.0;
+                $sqrmean = 0.0;
+                $current = ftell( $this->hFile );
+                $iterations = 0;
+                $now = microtime(true) * 1000;
+                foreach ( $this->IFDList[$ifdoffset]->TagList[324] as $index => $toffset ) {
+                    fseek( $this->hFile, $toffset );
+                    $remaining = $this->IFDList[$ifdoffset]->TagList[325][$index];
+                    //echo 'offset: '.$toffset.' + '.$remaining.PHP_EOL;
+                    while ( $remaining && !feof($this->hFile) ) {
+                        $buffer = fread( $this->hFile, $remaining - $remaining%$bps );
+                        $remaining -= strlen($buffer);
+                        foreach ( unpack( $this->mUnpackFormats[$bps], $buffer ) as $value ) {
+                            if ( $value > 0 ) {
+                                $count++;
+                                if ( $value > $max ) $max = $value;
+                                if ( $value < $min ) $min = $value;
+                                $mean = $mean*($count-1)/$count + $value/$count;
+                                $sqrmean = $sqrmean*($count-1)/$count + $value*$value/$count;
+                                if ( $count<=5 ) {
+                                    //echo sprintf( 'value: %d, max: %d, min: %d'.PHP_EOL, $value, $max, $min );
+                                    //echo sprintf( 'count: %d, mean: %.2f, sqr mean: %.2f'.PHP_EOL, $count, $mean, $sqrmean );
+                                }
+                            }
+                        }
+                    }
+                    echo sprintf( 'value: %d, max: %d, min: %d'.PHP_EOL, $value, $max, $min );
+                    echo sprintf( 'count: %d, mean: %.2f, sqr mean: %.2f'.PHP_EOL, $count, $mean, $sqrmean );
+                    $iterations++;
+                    echo 'average time taken: '.((microtime(true)*1000-$now)/$iterations).' ms'.PHP_EOL;
+                }
+                fseek( $this->hFile, $current );
+                echo sprintf( 'value: %d, max: %d, min: %d'.PHP_EOL, $value, $max, $min );
+                echo sprintf( 'count: %d, mean: %.2f, sqr mean: %.2f'.PHP_EOL, $count, $mean, $sqrmean );
+                */
+                
                 $ifdoffset = current(unpack( $this->mUnpackFormats[1], fread( $this->hFile, 4 ) )); /* Offset to next IFD  */
-                echo 'next: '.$ifdoffset.PHP_EOL;
+                //echo 'next: '.$ifdoffset.PHP_EOL;
             } else {
                 // Error handling...
                 // fseek() failed
@@ -418,41 +626,68 @@ class GeoTIFF {
             }
             // End of reading all ImageFileDirectory (IFD)
         }
-        echo PHP_EOL;
-        
-        $samples = array(
-            new GeoPoint( 26.000139, 118.999861 ), /* Upper Left 0m */
-            new GeoPoint( 25.67371,119.84161 ), /* Some where in first tile 0m */
-            new GeoPoint( 23.47, 120.95728 ), /* Mt. Tonku Saveq 3952m */
-            new GeoPoint( 23.90165,121.32335 ), /* Mt. Pinnacle 2340m */
-            new GeoPoint( 24.44647,121.61394 ), /* Haga-Paris 911m */
-            new GeoPoint( 22.69926,120.94559 ), /* Mt. Katana 1666m */
-        );
-        
-        foreach ( $this->IFDList as $ifd ) {
-            foreach ( $samples as $sample ) {
-                echo $sample->getReadable().PHP_EOL;
-                $ifd->getValue( $sample );
-            }
+
+        /*
+        if ( isset($ifd->TagList[33922]) && count($ifd->TagList[33922])>=6 ) {
+            $UpperLeft = new GeoPoint( $ifd->TagList[33922][4], $ifd->TagList[33922][3] );
+            echo $UpperLeft->getReadable().PHP_EOL;
+            $UpperLeft->lon += $ifd->ImageWidth * $ifd->TagList[33550][0];
+            $UpperLeft->lat += $ifd->ImageLength * $ifd->TagList[33550][1];
+            echo $UpperLeft->getReadable().PHP_EOL;
             echo PHP_EOL;
-            if ( isset($ifd->TagList[33922]) && count($ifd->TagList[33922])>=6 ) {
-                $UpperLeft = new GeoPoint( $ifd->TagList[33922][4], $ifd->TagList[33922][3] );
-                echo $UpperLeft->getReadable().PHP_EOL;
-                $UpperLeft->lon += $ifd->ImageWidth * $ifd->TagList[33550][0];
-                $UpperLeft->lat += $ifd->ImageLength * $ifd->TagList[33550][1];
-                echo $UpperLeft->getReadable().PHP_EOL;
-                echo PHP_EOL;
-            }
         }
+        */
         
-        print_r( $this->IFDList );
+        if ( $GLOBALS['dev'] > 1 ) print_r( $this->IFDList );
         
+        try {
+            file_put_contents( $cachepath, gzcompress(serialize($this->IFDList)) );
+        } catch (Exception $e) {
+            echo 'Caught exception: ',  $e->getMessage(), PHP_EOL;
+        }
+
+        return 2;
+        // End of open()
+    }
+
+    public function getValue( &$point ) {
+        reset($this->IFDList);
+        $ifd = current($this->IFDList);
+        $ifd->getValue( $point );
+    }
+
+    public function getTile( &$point, $format='png' ) {
+        reset($this->IFDList);
+        $ifd = current($this->IFDList);
+        $ifd->getTile( $point, $format );
     }
 }
           
 // Creating a new person called "boring 12345", who is 12345 years old ;-)
-$tiff = new GeoTIFF();
-$tiff->open( __DIR__.'/twdtm_asterV2_30m.tif' );
-unset( $tiff );
+$geotiff = new GeoTIFF();
+if ( $geotiff->open( __DIR__.DIRECTORY_SEPARATOR.'twdtm_asterV2_30m.tif' ) ) {
+
+    $geotiff->getTile( new GeoPoint( 23.47, 120.95728 ) );
+
+    if ( $GLOBALS['dev'] ) {
+        $samples = array(
+            new GeoPoint( 26.000139, 118.999861 ), /* Upper Left 0m */
+            new GeoPoint( 25.67371,119.84161 ), /* Some where in first tile 0m */
+            new GeoPoint( 23.47, 120.95728 ), /* Mt. Tonku Saveq 3952m */
+            new GeoPoint( 23.90165,121.32335 ), /* Mt. Pinnacle 2313 */
+            new GeoPoint( 24.44647,121.61394 ), /* Haga-Paris 911m */
+            new GeoPoint( 22.69926,120.94559 ), /* Mt. Katana 1666m */
+        );
+
+        foreach ( $samples as $sample ) {
+            echo $sample->getReadable().PHP_EOL;
+            $geotiff->getValue( $sample );
+            $geotiff->getTile( $sample );
+            echo PHP_EOL.PHP_EOL;
+        }
+    }
+}
+
+unset( $geotiff );
 
 ?>
