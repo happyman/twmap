@@ -10,8 +10,10 @@ error_reporting(E_ALL);
 
 $dev = 0;
 $reset = 0;
+$filter = 0;
 if ( isset($_GET['dev']) ) $dev = intval( $_GET['dev'] );
 if ( isset($_GET['reset']) ) $reset = intval( $_GET['reset'] );
+if ( isset($_GET['filter']) ) $filter = $_GET['filter'];
 if ( $dev>0 ) {
     header('Content-Type: application/json; charset=utf-8');
     echo 'DEV'.PHP_EOL;
@@ -193,29 +195,93 @@ class ImageFileDirectory {
             
             $now = microtime(true) * 1000;
             
-            $bitmap = array();
-            
-            fseek( $this->mGeoTIFF->hFile, $this->TagList[324][$this->TileIndex] );
-            $remaining = $this->TagList[325][$this->TileIndex];
-            while ( $remaining && !feof($this->mGeoTIFF->hFile) ) {
-                $buffer = fread( $this->mGeoTIFF->hFile, $remaining - $remaining%$this->BytesPerSample );
-                $remaining -= strlen($buffer);
-                //echo 'len: '.strlen($buffer).PHP_EOL;
-                //echo 'unpack format: '.$this->mUnpackFormats[$this->BytesPerSample].PHP_EOL;
-                //echo 'unpack len: '.count(unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer )).PHP_EOL;
-                $unpacked = unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer );
-                foreach ( $unpacked as $value ) {
-                    if ( $value > 0 ) {
-                        $count++;
-                        if ( $value > $max ) $max = $value;
-                        if ( $value < $min ) $min = $value;
-                        //$mean = $mean*($count-1)/$count + $value/$count;
-                        //$sqrmean = $sqrmean*($count-1)/$count + $value*$value/$count;
+            $tiles = array(
+                array(), array(), array(),
+                array(), array(), array(),
+                array(), array(), array(),
+            );
+            $toffset = $this->TileIndex - $this->TileColumnNum - 1;
+            $tindex = 0;
+            for ( $ty=0; $ty<3; $ty++ ) {
+                for ( $tx=0; $tx<3; $tx++ ) {
+                    if ( $toffset>=0 && $toffset<$this->TileColumnNum*$this->TileRowNum ) {
+                        fseek( $this->mGeoTIFF->hFile, $this->TagList[324][$toffset] );
+                        $remaining = $this->TagList[325][$toffset];
+                        while ( $remaining && !feof($this->mGeoTIFF->hFile) ) {
+                            $buffer = fread( $this->mGeoTIFF->hFile, $remaining - $remaining%$this->BytesPerSample );
+                            //$buffer = fread( $this->mGeoTIFF->hFile, $this->TileWidth * $this->BytesPerSample );
+                            $remaining -= strlen($buffer);
+                            //echo 'len: '.strlen($buffer).PHP_EOL;
+                            //echo 'unpack format: '.$this->mUnpackFormats[$this->BytesPerSample].PHP_EOL;
+                            //echo 'unpack len: '.count(unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer )).PHP_EOL;
+                            $unpacked = unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer );
+                            foreach ( $unpacked as $value ) {
+                                if ( $value > 0 ) {
+                                    $count++;
+                                    if ( $value > $max ) $max = $value;
+                                    if ( $value < $min ) $min = $value;
+                                    //$mean = $mean*($count-1)/$count + $value/$count;
+                                    //$sqrmean = $sqrmean*($count-1)/$count + $value*$value/$count;
+                                }
+                            }
+                            $tiles[$tindex] = array_merge($tiles[$tindex], $unpacked);
+                            unset($unpacked);
+                        }
                     }
+                    $tindex++;
+                    $toffset++;
                 }
-                $bitmap = array_merge($bitmap, $unpacked);
-                unset($unpacked);
+                $toffset += $this->TileColumnNum - 3;
             }
+            $bitmap = $tiles[4];
+            
+            /* Stitch 9 tiles */
+            $bitmap = array();
+            $expand = 64;
+            $b1offset = $this->TileWidth * ($this->TileLength - $expand + 1) - $expand;
+            $b2offset = $this->TileWidth * ($this->TileLength - $expand);
+            $b3offset = $b2offset;
+            for ( $i=0; $i<$expand; $i++ ) {
+                //header( sprintf('X-Debug: %s', var_dump() ) );
+                GeoTIFF::array_append( $bitmap, $tiles[0], $b1offset, $expand );
+                GeoTIFF::array_append( $bitmap, $tiles[1], $b2offset, $this->TileWidth );
+                GeoTIFF::array_append( $bitmap, $tiles[2], $b3offset, $expand );
+                $b1offset += $this->TileWidth;
+                $b2offset += $this->TileWidth;
+                $b3offset += $this->TileWidth;
+            }
+            $b1offset = $this->TileWidth - $expand;
+            $b2offset = 0;
+            $b3offset = $b2offset;
+            for ( $i=0; $i<$this->TileLength; $i++ ) {
+                //header( sprintf('X-Debug: b1offset %d, b1offset2 %d, b3offset %d', $b1offset, $b2offset, $b3offset ) );
+                header( sprintf('X-Debug: bitmap %d', count($bitmap) ) );
+                GeoTIFF::array_append( $bitmap, $tiles[3], $b1offset, $expand );
+                GeoTIFF::array_append( $bitmap, $tiles[4], $b2offset, $this->TileWidth );
+                GeoTIFF::array_append( $bitmap, $tiles[5], $b3offset, $expand );
+                $b1offset += $this->TileWidth;
+                $b2offset += $this->TileWidth;
+                $b3offset += $this->TileWidth;
+            }
+            $b1offset = $this->TileWidth - $expand;
+            $b2offset = 0;
+            $b3offset = $b2offset;
+            for ( $i=0; $i<$expand; $i++ ) {
+                GeoTIFF::array_append( $bitmap, $tiles[6], $b1offset, $expand );
+                GeoTIFF::array_append( $bitmap, $tiles[7], $b2offset, $this->TileWidth );
+                GeoTIFF::array_append( $bitmap, $tiles[8], $b3offset, $expand );
+                /*$bitmap = array_merge( $bitmap,
+                    array_slice($tiles[0], $b1offset, $expand),
+                    array_slice($tiles[1], $b2offset, $this->TileWidth),
+                    array_slice($tiles[2], $b3offset, $expand)
+                );*/
+                $b1offset += $this->TileWidth;
+                $b2offset += $this->TileWidth;
+                $b3offset += $this->TileWidth;
+            }
+            
+            $stitched_width = $this->TileWidth + $expand * 2;
+            $stitched_length = $this->TileLength + $expand * 2;
             
             $kernel_prototypes = array(
                 'gaussian' => array(
@@ -239,59 +305,63 @@ class ImageFileDirectory {
                     1/9, 1/9, 1/9,
                 ),
             );
-            $kernelcascade = array(
-                $kernel_prototypes['gaussian'],
-                $kernel_prototypes['prominence'],
-            );
-
-            $offset = array();
-            $buffer = $bitmap;
-            foreach ( $kernelcascade as $kernel ) {
-                $min = 65536 * 65536;
-                $max = -65536 * 65536;
-                $ksz = sqrt( count($kernel) ); /* kernel width */
-                $offset[0] = 0;
-                $offset[1] = $offset[0] + 1;
-                $offset[2] = $offset[0] + 2;
-                $offset[3] = $offset[0] + $this->TileWidth;
-                $offset[4] = $offset[3] + 1;
-                $offset[5] = $offset[3] + 2;
-                $offset[6] = $offset[3] + $this->TileWidth;
-                $offset[7] = $offset[6] + 1;
-                $offset[8] = $offset[6] + 2;
-                for ( $py=0; $py<$this->TileLength-$ksz; $py++ ) {
-                    for ( $px=0; $px<$this->TileWidth-$ksz; $px++ ) {
-                        $buffer[$offset[4]] =   $bitmap[$offset[8]] * $kernel[0] + 
-                                                $bitmap[$offset[7]] * $kernel[1] + 
-                                                $bitmap[$offset[6]] * $kernel[2] + 
-                                                $bitmap[$offset[5]] * $kernel[3] + 
-                                                $bitmap[$offset[4]] * $kernel[4] + 
-                                                $bitmap[$offset[3]] * $kernel[5] + 
-                                                $bitmap[$offset[2]] * $kernel[6] + 
-                                                $bitmap[$offset[1]] * $kernel[7] + 
-                                                $bitmap[$offset[0]] * $kernel[8];
-                        if ( $buffer[$offset[4]] > $max ) $max = $buffer[$offset[4]];
-                        if ( $buffer[$offset[4]] < $min ) $min = $buffer[$offset[4]];
-                        $offset[0]++; $offset[1]++; $offset[2]++;
-                        $offset[3]++; $offset[4]++; $offset[5]++;
-                        $offset[6]++; $offset[7]++; $offset[8]++;
+            if ( $GLOBALS['filter']==='prominence' ) {
+                $kernelcascade = array(
+                    $kernel_prototypes['gaussian'],
+                    $kernel_prototypes['prominence'],
+                );
+            }
+            if ( isset($kernelcascade) && count($kernelcascade) ) {
+                $offset = array();
+                $buffer = $bitmap;
+                foreach ( $kernelcascade as $kernel ) {
+                    $min = 65536 * 65536;
+                    $max = -65536 * 65536;
+                    $ksz = sqrt( count($kernel) ); /* kernel width */
+                    $offset[0] = 0;
+                    $offset[1] = $offset[0] + 1;
+                    $offset[2] = $offset[0] + 2;
+                    $offset[3] = $offset[0] + $stitched_width;
+                    $offset[4] = $offset[3] + 1;
+                    $offset[5] = $offset[3] + 2;
+                    $offset[6] = $offset[3] + $stitched_width;
+                    $offset[7] = $offset[6] + 1;
+                    $offset[8] = $offset[6] + 2;
+                    for ( $py=0; $py<$stitched_length-$ksz; $py++ ) {
+                        for ( $px=0; $px<$stitched_width-$ksz; $px++ ) {
+                            header( sprintf('X-Debug2: offset %d, length %d', $offset[4], count($buffer) ) );
+                            $buffer[$offset[4]] =   $bitmap[$offset[8]] * $kernel[0] + 
+                                                    $bitmap[$offset[7]] * $kernel[1] + 
+                                                    $bitmap[$offset[6]] * $kernel[2] + 
+                                                    $bitmap[$offset[5]] * $kernel[3] + 
+                                                    $bitmap[$offset[4]] * $kernel[4] + 
+                                                    $bitmap[$offset[3]] * $kernel[5] + 
+                                                    $bitmap[$offset[2]] * $kernel[6] + 
+                                                    $bitmap[$offset[1]] * $kernel[7] + 
+                                                    $bitmap[$offset[0]] * $kernel[8];
+                            if ( $buffer[$offset[4]] > $max ) $max = $buffer[$offset[4]];
+                            if ( $buffer[$offset[4]] < $min ) $min = $buffer[$offset[4]];
+                            $offset[0]++; $offset[1]++; $offset[2]++;
+                            $offset[3]++; $offset[4]++; $offset[5]++;
+                            $offset[6]++; $offset[7]++; $offset[8]++;
+                        }
+                        $offset[0] += $ksz; $offset[1] += $ksz; $offset[2] += $ksz;
+                        $offset[3] += $ksz; $offset[4] += $ksz; $offset[5] += $ksz;
+                        $offset[6] += $ksz; $offset[7] += $ksz; $offset[8] += $ksz;
                     }
-                    $offset[0] += $ksz; $offset[1] += $ksz; $offset[2] += $ksz;
-                    $offset[3] += $ksz; $offset[4] += $ksz; $offset[5] += $ksz;
-                    $offset[6] += $ksz; $offset[7] += $ksz; $offset[8] += $ksz;
+                    $bitmap = $buffer;
                 }
-                $bitmap = $buffer;
             }
             
             //echo 'bitmap: '.count($bitmap).PHP_EOL;
-            $img = imagecreatetruecolor( $this->TileWidth , $this->TileLength );
+            $img = imagecreatetruecolor( $stitched_width , $stitched_length );
             if ( is_resource($img) ) {
                 $multiplier = 255.0 / ($max-$min);
                 //echo 'max: '.$max.', min: '.$min.', multiplier: '.$multiplier.'<br/>';
                 header( sprintf('X-Debug: max %.2f, min %.2f, multiplier: %.6f', $max, $min, $multiplier ) );
                 $index = 0;
-                for ( $y=0; $y<$this->TileLength; $y++ ) {
-                    for ( $x=0; $x<$this->TileWidth; $x++ ) {
+                for ( $y=0; $y<$stitched_length; $y++ ) {
+                    for ( $x=0; $x<$stitched_width; $x++ ) {
                         $bitmap[$index] = intval( ($bitmap[$index]-$min) * $multiplier );
                         //echo $bitmap[$index].' ';
                         if ( $bitmap[$index] > 160 ) {
@@ -463,6 +533,12 @@ class GeoTIFF {
         $testint = 0x00FF;
         $p = pack('S', $testint);
         return $testint===current(unpack('v', $p));
+    }
+
+    public static function array_append( &$array1, &$array2, $offset, $length ) {
+        foreach ( array_slice($array2, $offset, $length) as $ele ) {
+            $array1[] = $ele;
+        }
     }
     
     public static function loadFromCache( $filename, &$obj ) {
