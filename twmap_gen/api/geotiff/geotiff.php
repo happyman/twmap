@@ -209,70 +209,86 @@ class ImageFileDirectory {
                         $count++;
                         if ( $value > $max ) $max = $value;
                         if ( $value < $min ) $min = $value;
-                        $mean = $mean*($count-1)/$count + $value/$count;
-                        $sqrmean = $sqrmean*($count-1)/$count + $value*$value/$count;
+                        //$mean = $mean*($count-1)/$count + $value/$count;
+                        //$sqrmean = $sqrmean*($count-1)/$count + $value*$value/$count;
                     }
                 }
                 $bitmap = array_merge($bitmap, $unpacked);
                 unset($unpacked);
             }
             
-            $windowsize = 23;
-            $windowcenter = intdiv($windowsize, 2);
-            $localavg = array();
-            foreach ( $bitmap as $index => $value ) {
-                $x = $index % $this->TileWidth - $windowcenter;
-                $y = intdiv($index, $this->TileWidth) - $windowcenter;
-                //echo $index.' '.$x.','.$y.' ';
-                if ( $x>=0 && $y>=0 && $x+$windowsize<$this->TileWidth && $y+$windowsize<$this->TileLength ) {
-                    $offset = $index - $windowcenter * ($this->TileWidth+1);
-                    //echo 'UL:'.$offset.' ';
-                    $mean = 0.0;
-                    $count = 0;
-                    for ( $y=0; $y<$windowsize; $y++ ) {
-                        for ( $x=0; $x<$windowsize; $x++ ) {
-                            $count++;
-                            //echo $offset.' ';
-                            $mean = $mean*($count-1)/$count + $bitmap[$offset]/$count;
-                            $offset++;
-                        }
-                        $offset -= $windowsize;
-                        $offset += $this->TileWidth;
+            $kernel_prototypes = array(
+                'gaussian' => array(
+                    1/16, 2/16, 1/16,
+                    2/16, 4/16, 2/16,
+                    1/16, 2/16, 1/16,
+                ),
+                'prominence' => array(
+                    -1/8, -1/8, -1/8,
+                    -1/8,    1, -1/8,
+                    -1/8, -1/8, -1/8,
+                ),
+                'identity' => array(
+                    0, 0, 0,
+                    0, 1, 0,
+                    0, 0, 0,
+                ),
+                'blur' => array(
+                    1/9, 1/9, 1/9,
+                    1/9, 1/9, 1/9,
+                    1/9, 1/9, 1/9,
+                ),
+            );
+            $kernelcascade = array(
+                $kernel_prototypes['gaussian'],
+                $kernel_prototypes['prominence'],
+            );
+
+            $offset = array();
+            $buffer = $bitmap;
+            foreach ( $kernelcascade as $kernel ) {
+                $min = 65536 * 65536;
+                $max = -65536 * 65536;
+                $ksz = sqrt( count($kernel) ); /* kernel width */
+                $offset[0] = 0;
+                $offset[1] = $offset[0] + 1;
+                $offset[2] = $offset[0] + 2;
+                $offset[3] = $offset[0] + $this->TileWidth;
+                $offset[4] = $offset[3] + 1;
+                $offset[5] = $offset[3] + 2;
+                $offset[6] = $offset[3] + $this->TileWidth;
+                $offset[7] = $offset[6] + 1;
+                $offset[8] = $offset[6] + 2;
+                for ( $py=0; $py<$this->TileLength-$ksz; $py++ ) {
+                    for ( $px=0; $px<$this->TileWidth-$ksz; $px++ ) {
+                        $buffer[$offset[4]] =   $bitmap[$offset[8]] * $kernel[0] + 
+                                                $bitmap[$offset[7]] * $kernel[1] + 
+                                                $bitmap[$offset[6]] * $kernel[2] + 
+                                                $bitmap[$offset[5]] * $kernel[3] + 
+                                                $bitmap[$offset[4]] * $kernel[4] + 
+                                                $bitmap[$offset[3]] * $kernel[5] + 
+                                                $bitmap[$offset[2]] * $kernel[6] + 
+                                                $bitmap[$offset[1]] * $kernel[7] + 
+                                                $bitmap[$offset[0]] * $kernel[8];
+                        if ( $buffer[$offset[4]] > $max ) $max = $buffer[$offset[4]];
+                        if ( $buffer[$offset[4]] < $min ) $min = $buffer[$offset[4]];
+                        $offset[0]++; $offset[1]++; $offset[2]++;
+                        $offset[3]++; $offset[4]++; $offset[5]++;
+                        $offset[6]++; $offset[7]++; $offset[8]++;
                     }
-                    //echo $offset.' ';
-                    $offset += $windowcenter;
-                    $offset -= $this->TileWidth * ($windowcenter+1);
-                    //echo 'C:'.$offset.' ';
-                    $localavg[$offset] = $bitmap[$index] - $mean;
-                    //echo PHP_EOL;
-                    //$bitmap[$index] = intval($bitmap[$index] * $multiplier);
-                } else {
-                    // Out of range
-                    //$localavg[$index] = $bitmap[$index];
-                    $localavg[$index] = 0;
-                    //echo $index.' ';
+                    $offset[0] += $ksz; $offset[1] += $ksz; $offset[2] += $ksz;
+                    $offset[3] += $ksz; $offset[4] += $ksz; $offset[5] += $ksz;
+                    $offset[6] += $ksz; $offset[7] += $ksz; $offset[8] += $ksz;
                 }
+                $bitmap = $buffer;
             }
-            $bitmap = $localavg;
-            $min = 65535;
-            $max = 0;
-            $count = 0;
-            $mean = 0.0;
-            $sqrmean = 0.0;
-            foreach ( $bitmap as $value ) {
-                $count++;
-                if ( $value > $max ) $max = $value;
-                if ( $value < $min ) $min = $value;
-                $mean = $mean*($count-1)/$count + $value/$count;
-                $sqrmean = $sqrmean*($count-1)/$count + $value*$value/$count;
-            }
-            //echo sprintf('mean: %.6f, stddev: %.2f, max: %.2f, min: %.2f'.PHP_EOL, $mean, sqrt($count*$sqrmean - pow($count*$mean,2)), $max, $min);
             
             //echo 'bitmap: '.count($bitmap).PHP_EOL;
             $img = imagecreatetruecolor( $this->TileWidth , $this->TileLength );
             if ( is_resource($img) ) {
                 $multiplier = 255.0 / ($max-$min);
                 //echo 'max: '.$max.', min: '.$min.', multiplier: '.$multiplier.'<br/>';
+                header( sprintf('X-Debug: max %.2f, min %.2f, multiplier: %.6f', $max, $min, $multiplier ) );
                 $index = 0;
                 for ( $y=0; $y<$this->TileLength; $y++ ) {
                     for ( $x=0; $x<$this->TileWidth; $x++ ) {
@@ -280,12 +296,12 @@ class ImageFileDirectory {
                         //echo $bitmap[$index].' ';
                         if ( $bitmap[$index] > 160 ) {
                             imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap[$index], intdiv($bitmap[$index], 2), intdiv($bitmap[$index], 8) ) );
-                        } else if ( $bitmap[$index] < 96 ) {
+                        } else if ( $bitmap[$index] < 142 ) {
                             imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, intdiv($bitmap[$index], 2), intdiv($bitmap[$index], 2), $bitmap[$index] ) );
                         } else {
                             imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap[$index], $bitmap[$index], $bitmap[$index] ) );
                         }
-                        //imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, 0, $bitmap[$index], 0 ) );
+                        imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap[$index], $bitmap[$index], $bitmap[$index] ) );
                         $index++;
                     }
                 }
@@ -385,7 +401,7 @@ class GeoTIFF {
     public $IFDOffset;  /* Offset of the first Image File Directory*/
     public $IFDList = array();
 
-    private $CacheExpire = 60 * 60; /* Cache expiration time in seconds */
+    private static $CacheExpire = 60 * 60; /* Cache expiration time in seconds */
     
     public static $DataTypeLength = array(
         1   => 1, /* BYTE 8-bit unsigned integer */
@@ -448,29 +464,44 @@ class GeoTIFF {
         $p = pack('S', $testint);
         return $testint===current(unpack('v', $p));
     }
-   
-    public function open( $filename ) {
-        $this->mFilename = $filename;
-        
-        $cachepath = sys_get_temp_dir().DIRECTORY_SEPARATOR.md5($this->mFilename).'.cache';
-        if ( file_exists($cachepath) && !$GLOBALS['reset'] ) {
-            if ( time() - filemtime( $cachepath ) < $this->CacheExpire ) {
+    
+    public static function loadFromCache( $filename, &$obj ) {
+        if ( file_exists($filename) && !$GLOBALS['reset'] ) {
+            if ( time() - filemtime( $filename ) < self::$CacheExpire ) {
                 try {
-                    $this->IFDList = unserialize (gzuncompress(file_get_contents( $cachepath )));
-                    //if ( $GLOBALS['dev'] ) print_r( $this->IFDList );
-                    $this->hFile = fopen( $this->mFilename, 'rb' );
-                    foreach ( $this->IFDList as $ifd ) {
-                        $ifd->init( $this );
-                    }
+                    $obj = unserialize (gzuncompress(file_get_contents( $filename )));
                     if ( $GLOBALS['dev'] > 1 ) {
                         echo 'LOADED FROM CACHE'.PHP_EOL;
-                        print_r( $this->IFDList );
+                        print_r( $obj );
                     }
                     return 1;
                 } catch (Exception $e) {
                     echo 'Caught exception: ',  $e->getMessage(), PHP_EOL;
                 }
             }
+        }
+        return 0;
+    }
+
+    public static function saveToCache( $filename, &$obj ) {
+        try {
+            file_put_contents( $filename, gzcompress(serialize($obj)) );
+        } catch (Exception $e) {
+            echo 'Caught exception: ',  $e->getMessage(), PHP_EOL;
+        }
+    }
+    
+    public function open( $filename ) {
+        $this->mFilename = $filename;
+        
+        $cachepath = sys_get_temp_dir().DIRECTORY_SEPARATOR.md5($this->mFilename).'.cache';
+        if ( !$GLOBALS['reset'] && self::loadFromCache( $cachepath, $this->IFDList ) ) {
+            //if ( $GLOBALS['dev'] ) print_r( $this->IFDList );
+            $this->hFile = fopen( $this->mFilename, 'rb' );
+            foreach ( $this->IFDList as $ifd ) {
+                $ifd->init( $this );
+            }
+            return 1;
         }
         
         $this->hFile = fopen( $this->mFilename, 'rb' );
@@ -701,11 +732,7 @@ class GeoTIFF {
         
         if ( $GLOBALS['dev'] > 1 ) print_r( $this->IFDList );
         
-        try {
-            file_put_contents( $cachepath, gzcompress(serialize($this->IFDList)) );
-        } catch (Exception $e) {
-            echo 'Caught exception: ',  $e->getMessage(), PHP_EOL;
-        }
+        self::saveToCache( $cachepath, $this->IFDList );
 
         return 2;
         // End of open()
@@ -728,7 +755,8 @@ class GeoTIFF {
 $geotiff = new GeoTIFF();
 if ( $geotiff->open( __DIR__.DIRECTORY_SEPARATOR.'twdtm_asterV2_30m.tif' ) ) {
 
-    $geotiff->getTile( new GeoPoint( 23.47, 120.95728 ) );
+    $point = new GeoPoint( 23.47, 120.95728 );
+    $geotiff->getTile( $point );
 
     if ( $GLOBALS['dev'] ) {
         $samples = array(
