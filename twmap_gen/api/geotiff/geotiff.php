@@ -111,12 +111,14 @@ class SplFixedRaster extends SplFixedArray {
         return $this->mLength;
     }
     
-    public function fromSplFixedRaster( &$source ) {
+    public function fromSplFixedRaster( &$source, $copydata = true ) {
         if ( $source->mLength!==$this->mLength ) {
             // Error handling
         }
-        for ( $i=0; $i<$this->mLength; $i++ ) {
-            $this->mBitmap[$i] = $source->mBitmap[$i];
+        if ( $copydata ) {
+            for ( $i=0; $i<$this->mLength; $i++ ) {
+                $this->mBitmap[$i] = $source->mBitmap[$i];
+            }
         }
         $this->mTiepoint[0] = $source->mTiepoint[0];
         $this->mTiepoint[1] = $source->mTiepoint[1];
@@ -207,8 +209,8 @@ class SplFixedRaster extends SplFixedArray {
         );
 
         if ( $GLOBALS['dev'] ) {
-            print_r( array($threshold_low, $threshold_high) );
-            print_r($histogram);
+            //print_r( array($threshold_low, $threshold_high) );
+            //print_r($histogram);
         }
     }
 }
@@ -295,6 +297,86 @@ class ImageFileDirectory {
         return -1;
     }
 
+    public static $mKernels = array(
+        'gaussian' => array(
+            1/16, 2/16, 1/16,
+            2/16, 4/16, 2/16,
+            1/16, 2/16, 1/16,
+        ),
+        'prominence' => array(
+            -1/8, -1/8, -1/8,
+            -1/8,    1, -1/8,
+            -1/8, -1/8, -1/8,
+        ),
+        'identity' => array(
+            0, 0, 0,
+            0, 1, 0,
+            0, 0, 0,
+        ),
+        'blur' => array(
+            1/9, 1/9, 1/9,
+            1/9, 1/9, 1/9,
+            1/9, 1/9, 1/9,
+        ),
+        'v-sobel' => array(
+            1, 0, -1,
+            2, 0, -2,
+            1, 0, -1,
+        ),
+        'h-sobel' => array(
+             1,  2,  1,
+             0,  0,  0,
+            -1, -2, -1,
+        ),
+        'erosion' => array(
+            1, 1, 1,
+            1, 1, 1,
+            1, 1, 1,
+        ),
+    );
+    
+    public static function convolution( &$dstRaster, &$srcRaster, $kernelName ) {
+        $kernel = &self::$mKernels[$kernelName];
+        $buffer = new SplFixedRaster( $srcRaster->mWidth, $srcRaster->mHeight );
+        $buffer->fromSplFixedRaster( $srcRaster, false );
+        $ksz = sqrt( count($kernel) ); /* kernel width */
+        $vi = $ksz-1; /* vertical incremental of array offset */
+        $src = &$srcRaster->mBitmap;
+        $dst = &$buffer->mBitmap;
+        $w = $srcRaster->mWidth;
+        $h = $srcRaster->mHeight;
+        $k0 = $kernel[0]; $k1 = $kernel[1]; $k2 = $kernel[2];
+        $k3 = $kernel[3]; $k4 = $kernel[4]; $k5 = $kernel[5];
+        $k6 = $kernel[6]; $k7 = $kernel[7]; $k8 = $kernel[8];
+        $p0 = 0;            $p1 = $p0 + 1;      $p2 = $p0 + 2;
+        $p3 = $p0 + $w;     $p4 = $p3 + 1;      $p5 = $p3 + 2;  
+        $p6 = $p3 + $w;     $p7 = $p6 + 1;      $p8 = $p6 + 2;
+        if ( $GLOBALS['dev'] ) {
+            echo 'applying kernel'.PHP_EOL;
+            echo 'srcRaster: '.$srcRaster->getSize().', mem: '.memory_get_usage().PHP_EOL;
+            echo 'buffer: '.$buffer->getSize().', mem: '.memory_get_usage().PHP_EOL;
+        }
+        for ( $py=0; $py<=$h-$ksz; $py++ ) {
+            for ( $px=0; $px<=$w-$ksz; $px++ ) {
+                $dst[$p4] = $src[$p8] * $k0 + $src[$p7] * $k1 + $src[$p6] * $k2 +
+                            $src[$p5] * $k3 + $src[$p4] * $k4 + $src[$p3] * $k5 +
+                            $src[$p2] * $k6 + $src[$p1] * $k7 + $src[$p0] * $k8;
+                $p0++; $p1++; $p2++;
+                $p3++; $p4++; $p5++;
+                $p6++; $p7++; $p8++;
+            }
+            $p0 += $vi; $p1 += $vi; $p2 += $vi;
+            $p3 += $vi; $p4 += $vi; $p5 += $vi;
+            $p6 += $vi; $p7 += $vi; $p8 += $vi;
+        }
+        if ( $GLOBALS['dev'] ) {
+            echo 'kernel applied'.PHP_EOL;
+            echo 'dstRaster: '.$dstRaster->getSize().', mem: '.memory_get_usage().PHP_EOL;
+            echo 'buffer: '.$buffer->getSize().', mem: '.memory_get_usage().PHP_EOL;
+        }
+        $dstRaster->fromSplFixedRaster( $buffer );
+    }
+
     public function getTile( &$point, $format='png' ) {
         /* Get TIFF Tile where the point is in */
         if ( $point->mFormat===$this->GeographicTypeGeoKey ) {
@@ -317,7 +399,7 @@ class ImageFileDirectory {
             
             $now = microtime(true) * 1000;
             
-            $expand = 1; /* expand for convolution */
+            $expand = 16; /* expand for convolution */
             $bitmap = new SplFixedRaster( $this->TileWidth + $expand * 2, $this->TileLength + $expand * 2 );
             $bitmap->setRange(
                 $this->ModelTiepointTag[3] + $tx*$this->TileWidth*$this->ModelPixelScaleTag[0] - $expand*$this->ModelPixelScaleTag[0],
@@ -402,129 +484,44 @@ class ImageFileDirectory {
             $bitmap->mBitmap = SplFixedArray::fromArray( unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer ), false ); /* This must be done with one line or extra memory is allocated */
             if ( $GLOBALS['dev'] ) echo 'unpacked: '.count($buffer).', mem: '.memory_get_usage().PHP_EOL;
           
-            $kernel_prototypes = array(
-                'gaussian' => array(
-                    1/16, 2/16, 1/16,
-                    2/16, 4/16, 2/16,
-                    1/16, 2/16, 1/16,
-                ),
-                'prominence' => array(
-                    -1/8, -1/8, -1/8,
-                    -1/8,    1, -1/8,
-                    -1/8, -1/8, -1/8,
-                ),
-                'identity' => array(
-                    0, 0, 0,
-                    0, 1, 0,
-                    0, 0, 0,
-                ),
-                'blur' => array(
-                    1/9, 1/9, 1/9,
-                    1/9, 1/9, 1/9,
-                    1/9, 1/9, 1/9,
-                ),
-                'v-sobel' => array(
-                    1, 0, -1,
-                    2, 0, -2,
-                    1, 0, -1,
-                ),
-                'h-sobel' => array(
-                     1,  2,  1,
-                     0,  0,  0,
-                    -1, -2, -1,
-                ),
-                'erosion' => array(
-                    1, 1, 1,
-                    1, 1, 1,
-                    1, 1, 1,
-                ),
-            );
+            /* apply kernels */
             if ( $GLOBALS['filter']==='prominence' ) {
-                $kernelcascade = array(
-                    $kernel_prototypes['gaussian'],
-                    $kernel_prototypes['prominence'],
-                    //$kernel_prototypes['gaussian'],
-                    //$kernel_prototypes['identity'],
-                );
+                self::convolution( $bitmap, $bitmap, 'gaussian' );
+                self::convolution( $bitmap, $bitmap, 'prominence' );
             } else if ( $GLOBALS['filter']==='v-sobel' ) {
-                $kernelcascade = array(
-                    $kernel_prototypes['gaussian'],
-                    $kernel_prototypes['v-sobel'],
-                    $kernel_prototypes['erosion'],
-                );
+                self::convolution( $bitmap, $bitmap, 'gaussian' );
+                self::convolution( $bitmap, $bitmap, 'v-sobel' );
             } else if ( $GLOBALS['filter']==='h-sobel' ) {
-                $kernelcascade = array(
-                    $kernel_prototypes['gaussian'],
-                    $kernel_prototypes['h-sobel'],
-                    $kernel_prototypes['erosion'],
-                );
-            }
-            if ( isset($kernelcascade) && count($kernelcascade) ) {
-                if ( $GLOBALS['dev'] ) {
-                    echo 'bitmap: '.$bitmap->mWidth.'x'.$bitmap->mHeight.', mem: '.memory_get_usage().PHP_EOL;
-                }
-                $buffer = new SplFixedRaster( $bitmap->mWidth, $bitmap->mHeight );
-                $buffer->fromSplFixedRaster( $bitmap );
-                //$buffer = $bitmap;
-                if ( $GLOBALS['dev'] ) {
-                    echo 'bitmap copied to buffer'.PHP_EOL;
-                    echo 'bitmap: '.$bitmap->getSize().', mem: '.memory_get_usage().PHP_EOL;
-                    echo 'buffer: '.$buffer->getSize().', mem: '.memory_get_usage().PHP_EOL;
-                    echo PHP_EOL;
-                }
-                $src = &$bitmap->mBitmap;
-                $dst = &$buffer->mBitmap;
-                $w = $bitmap->mWidth;
-                $h = $bitmap->mHeight;
-                foreach ( $kernelcascade as $kernel ) {
-                    $ksz = sqrt( count($kernel) ); /* kernel width */
-                    $vi = $ksz-1; /* vertical incremental of array offset */
-                    $k0 = $kernel[0]; $k1 = $kernel[1]; $k2 = $kernel[2];
-                    $k3 = $kernel[3]; $k4 = $kernel[4]; $k5 = $kernel[5];
-                    $k6 = $kernel[6]; $k7 = $kernel[7]; $k8 = $kernel[8];
-                    $p0 = 0;                    $p1 = $p0 + 1;      $p2 = $p0 + 2;
-                    $p3 = $p0 + $w;     $p4 = $p3 + 1;      $p5 = $p3 + 2;  
-                    $p6 = $p3 + $w;     $p7 = $p6 + 1;      $p8 = $p6 + 2;
-                    if ( $GLOBALS['dev'] ) {
-                        echo 'applying kernel'.PHP_EOL;
-                        echo 'bitmap: '.$bitmap->getSize().', mem: '.memory_get_usage().PHP_EOL;
-                        echo 'buffer: '.$buffer->getSize().', mem: '.memory_get_usage().PHP_EOL;
+                self::convolution( $bitmap, $bitmap, 'gaussian' );
+                self::convolution( $bitmap, $bitmap, 'h-sobel' );
+            } else if ( $GLOBALS['filter']==='sobel' ) {
+                self::convolution( $bitmap, $bitmap, 'gaussian' );
+                $vsobel = new SplFixedRaster( $bitmap->mWidth, $bitmap->mHeight );
+                $vsobel->fromSplFixedRaster( $bitmap, false );
+                self::convolution( $vsobel, $bitmap, 'v-sobel' );
+                $hsobel = new SplFixedRaster( $bitmap->mWidth, $bitmap->mHeight );
+                $hsobel->fromSplFixedRaster( $bitmap, false );
+                self::convolution( $hsobel, $bitmap, 'h-sobel' );
+                
+                $n = $bitmap->mLength;
+                $vx = 1;
+                $vy = 2;
+                for ( $i=0; $i<$n; $i++ ) {
+                    if ( $hsobel->mBitmap[$i] || $vsobel->mBitmap[$i] ) {
+                        $bitmap->mBitmap[$i] = acos(
+                            ($vx * $hsobel->mBitmap[$i] + $vy * $vsobel->mBitmap[$i]) /
+                            sqrt(pow($vx, 2) + pow($vy, 2)) /
+                            sqrt(pow($hsobel->mBitmap[$i], 2) + pow($vsobel->mBitmap[$i], 2))
+                        );
+                    } else {
+                        $bitmap->mBitmap[$i] = 0;
                     }
-                    for ( $py=0; $py<=$h-$ksz; $py++ ) {
-                        for ( $px=0; $px<=$w-$ksz; $px++ ) {
-                            if ( $GLOBALS['dev'] && $px==$w-$ksz ) {
-                                //echo $p0.' '.$p1.' '.$p2.' '.$p3.' '.$p4.' '.$p5.' '.$p6.' '.$p7.' '.$p8.PHP_EOL;
-                            }
-                            //header( sprintf('X-Debug2: offset %d, length %d', $p4, count($buffer) ) );
-                            //header( sprintf('X-Debug2: %s', $p0.' '.$p1.' '.$p2.' '.$p3.' '.$p4.' '.$p5.' '.$p6.' '.$p7.' '.$p8 ) );
-                            $dst[$p4] = $src[$p8] * $k0 + $src[$p7] * $k1 + $src[$p6] * $k2 +
-                                        $src[$p5] * $k3 + $src[$p4] * $k4 + $src[$p3] * $k5 +
-                                        $src[$p2] * $k6 + $src[$p1] * $k7 + $src[$p0] * $k8;
-                            $p0++; $p1++; $p2++;
-                            $p3++; $p4++; $p5++;
-                            $p6++; $p7++; $p8++;
-                        }
-                        $p0 += $vi; $p1 += $vi; $p2 += $vi;
-                        $p3 += $vi; $p4 += $vi; $p5 += $vi;
-                        $p6 += $vi; $p7 += $vi; $p8 += $vi;
-                    }
-                    if ( $GLOBALS['dev'] ) {
-                        echo 'kernel applied'.PHP_EOL;
-                        echo 'bitmap: '.$bitmap->getSize().', mem: '.memory_get_usage().PHP_EOL;
-                        echo 'buffer: '.$buffer->getSize().', mem: '.memory_get_usage().PHP_EOL;
-                    }
-                    $bitmap->fromSplFixedRaster( $buffer );
-                    /*
-                    if ( $GLOBALS['dev'] ) {
-                        echo 'bitmap: '.$bitmap->getSize().', mem: '.memory_get_usage().PHP_EOL;
-                        echo 'buffer: '.$buffer->getSize().', mem: '.memory_get_usage().PHP_EOL;
-                        echo 'max: '.$max.', min: '.$min.PHP_EOL;
-                        echo PHP_EOL;
-                    }*/
                 }
-            }
+                self::convolution( $bitmap, $bitmap, 'gaussian' );
+                //self::convolution( $bitmap, $bitmap, 'prominence' );
+            }            
             
-            $bitmap->trim(1);
+            $bitmap->trim($expand);
 
             /* find max and min for value scaling */
             /*$min = 65536 * 65536;
@@ -545,24 +542,17 @@ class ImageFileDirectory {
                 for ( $y=0; $y<$bitmap->mHeight; $y++ ) {
                     for ( $x=0; $x<$bitmap->mWidth; $x++ ) {
                         $p = $bitmap->mBitmap[$index];
-                        if ( $p > $threshold_high ) {
-                            //imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, intdiv($p, 2), intdiv($p, 8) ) );
-                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, 255, $p, $p ) );
-                        } else if ( $p < $threshold_low ) {
-                            //imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, intdiv($p, 2), intdiv($p, 2), $p ) );
-                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, $p, 255 ) );
+                        if ( $GLOBALS['filter']==='prominence' ) {
+                            if ( $p > $threshold_high ) {
+                                imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, 255, $p, $p ) );
+                            } else if ( $p < $threshold_low ) {
+                                imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, $p, 255 ) );
+                            } else {
+                                imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, $p, $p ) );
+                            }
                         } else {
                             imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, $p, $p ) );
                         }
-                        /*
-                        if ( $bitmap->mBitmap[$index] > $threshold_high ) {
-                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap->mBitmap[$index], intdiv($bitmap->mBitmap[$index], 2), intdiv($bitmap->mBitmap[$index], 8) ) );
-                        } else if ( $bitmap->mBitmap[$index] < $threshold_low ) {
-                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, intdiv($bitmap->mBitmap[$index], 2), intdiv($bitmap->mBitmap[$index], 2), $bitmap->mBitmap[$index] ) );
-                        } else {
-                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap->mBitmap[$index], $bitmap->mBitmap[$index], $bitmap->mBitmap[$index] ) );
-                        }*/
-                        //imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $bitmap->mBitmap[$index], $bitmap->mBitmap[$index], $bitmap->mBitmap[$index] ) );
                         $index++;
                     }
                 }
@@ -1024,9 +1014,9 @@ $geotiff = new GeoTIFF();
 if ( $geotiff->open( __DIR__.DIRECTORY_SEPARATOR.'twdtm_asterV2_30m.tif' ) ) {
 
     //$point = new GeoPoint( 23.47, 120.95728 );
-    //$point = new GeoPoint( 23.90165,121.32335 );
-    //$point = new GeoPoint( 22.69926,120.94559 );
-    $point = new GeoPoint( 24.48084,121.47884 );
+    //$point = new GeoPoint( 24.80635,121.4768 ); /* Mt. Woo */
+    $point = new GeoPoint( 23.90165,121.32335 ); /* Mt. Pinnacle 2313 */
+    //$point = new GeoPoint( 24.48084,121.47884 );
     $geotiff->getTile( $point );
 
     if ( $GLOBALS['dev'] ) {
@@ -1038,6 +1028,7 @@ if ( $geotiff->open( __DIR__.DIRECTORY_SEPARATOR.'twdtm_asterV2_30m.tif' ) ) {
             new GeoPoint( 24.44647,121.61394 ), /* Haga-Paris 911m */
             new GeoPoint( 22.69926,120.94559 ), /* Mt. Katana 1666m */
             new GeoPoint( 24.48084,121.47884 ), /* Karasan */
+            new GeoPoint( 24.80635,121.4768 ), /* Mt. Woo */
         );
 
         foreach ( $samples as $sample ) {
