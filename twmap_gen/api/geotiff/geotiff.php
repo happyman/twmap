@@ -423,6 +423,21 @@ class ImageFileDirectory {
                     1/9, 1/9, 1/9,
                     1/9, 1/9, 1/9,
                 ),
+                'v-sobel' => array(
+                    1, 0, -1,
+                    2, 0, -2,
+                    1, 0, -1,
+                ),
+                'h-sobel' => array(
+                     1,  2,  1,
+                     0,  0,  0,
+                    -1, -2, -1,
+                ),
+                'erosion' => array(
+                    1, 1, 1,
+                    1, 1, 1,
+                    1, 1, 1,
+                ),
             );
             if ( $GLOBALS['filter']==='prominence' ) {
                 $kernelcascade = array(
@@ -430,6 +445,18 @@ class ImageFileDirectory {
                     $kernel_prototypes['prominence'],
                     //$kernel_prototypes['gaussian'],
                     //$kernel_prototypes['identity'],
+                );
+            } else if ( $GLOBALS['filter']==='v-sobel' ) {
+                $kernelcascade = array(
+                    $kernel_prototypes['gaussian'],
+                    $kernel_prototypes['v-sobel'],
+                    $kernel_prototypes['erosion'],
+                );
+            } else if ( $GLOBALS['filter']==='h-sobel' ) {
+                $kernelcascade = array(
+                    $kernel_prototypes['gaussian'],
+                    $kernel_prototypes['h-sobel'],
+                    $kernel_prototypes['erosion'],
                 );
             }
             if ( isset($kernelcascade) && count($kernelcascade) ) {
