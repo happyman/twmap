@@ -160,12 +160,17 @@ class SplFixedRaster extends SplFixedArray {
         $this->mTiepoint[1] += $this->mPixelScale[1] * $size;
     }
     
-    public function normalize( &$stats ) {
-        $min = 65536 * 65536;
-        $max = -65536 * 65536;
-        foreach ( $this->mBitmap as $value ) {
-            if ( $value > $max ) $max = $value;
-            if ( $value < $min ) $min = $value;
+    public function normalize( &$stats, $type = 'dynamic', $min = -500, $max = 500 ) {
+        if ( $type==='static' ) {
+        } else {
+            $min = 65536 * 65536;
+            $max = -65536 * 65536;
+            foreach ( $this->mBitmap as $value ) {
+                if ( $value > $max ) $max = $value;
+                if ( $value < $min ) $min = $value;
+            }
+            header('G4H-RasterMaxValue: '.$max);
+            header('G4H-RasterMinValue: '.$min);
         }
         $multiplier = 255.0 / ($max-$min);
         
@@ -177,7 +182,10 @@ class SplFixedRaster extends SplFixedArray {
         }
         
         for ( $i=0; $i<$this->mLength; $i++ ) {
-            $this->mBitmap[$i] = intval( ($this->mBitmap[$i]-$min) * $multiplier );
+            $v = intval( ($this->mBitmap[$i]-$min) * $multiplier );
+            if ( $v > 255 ) $v = 255;
+            else if ( $v < 0 ) $v = 0;
+            $this->mBitmap[$i] = $v;
             $segment = intdiv($this->mBitmap[$i], $qdivisor );
             $histogram[$segment] = $histogram[$segment]+1;
             if ( $segment<1 || $segment>=$quantization-1 ) {
@@ -378,6 +386,8 @@ class ImageFileDirectory {
     }
 
     public function getTile( &$point, $format='png' ) {
+        global $dev, $reset;
+        
         /* Get TIFF Tile where the point is in */
         if ( $point->mFormat===$this->GeographicTypeGeoKey ) {
             $mx = intval( $this->ModelTiepointTag[0] + ($point->lon - $this->ModelTiepointTag[3]) / $this->ModelPixelScaleTag[0] ); /* pixel x in whole map */
@@ -389,152 +399,159 @@ class ImageFileDirectory {
             $this->PixelPointer = $this->TagList[324][$this->TileIndex] + (($mx % $this->TileWidth) + ($my % $this->TileLength) * $this->TileWidth) * $this->BytesPerSample;
             //echo sprintf( 'tile index: %d, offset: %d, bytes: %d'.PHP_EOL, $this->TileIndex, $this->TagList[324][$this->TileIndex], $this->TagList[325][$this->TileIndex] );
             
-            $raw = array();
+            $cache_filename = md5( $this->TileIndex.'::'.$GLOBALS['filter'] );
+            $cache_dir = './cache/'.substr($cache_filename, 0, 2).'/'.substr($cache_filename, 2, 2);
+            $cache_filename = $cache_dir.'/'.$cache_filename;
+            @mkdir( $cache_dir, 0777, true );
+            
+            header('G4H-Reset: '.$GLOBALS['reset']);
 
-            $min = 65535;
-            $max = 0;
-            $count = 0;
-            $mean = 0.0;
-            $sqrmean = 0.0;
-            
-            $now = microtime(true) * 1000;
-            
-            $expand = 16; /* expand for convolution */
-            $bitmap = new SplFixedRaster( $this->TileWidth + $expand * 2, $this->TileLength + $expand * 2 );
-            $bitmap->setRange(
-                $this->ModelTiepointTag[3] + $tx*$this->TileWidth*$this->ModelPixelScaleTag[0] - $expand*$this->ModelPixelScaleTag[0],
-                $this->ModelTiepointTag[4] + $ty*$this->TileLength*$this->ModelPixelScaleTag[1] - $expand*$this->ModelPixelScaleTag[1],
-                $this->ModelPixelScaleTag[0],
-                $this->ModelPixelScaleTag[1]
-            );
-            if ( $GLOBALS['dev'] ) echo 'pixels: '.$bitmap->getSize().', mem: '.memory_get_usage().PHP_EOL;
-            
-            $buffer = '';
-
-            $t0 = $this->TileIndex - $this->TileColumnNum - 1;
-            $t1 = $t0 + 1;
-            $t2 = $t0 + 2;
-            $o0 = $this->TagList[324][$t0] + ($this->TileWidth-$expand)*$this->BytesPerSample + ($this->TileLength-$expand)*$this->TileWidth*$this->BytesPerSample;
-            $o1 = $this->TagList[324][$t1] + ($this->TileLength-$expand)*$this->TileWidth*$this->BytesPerSample;
-            $o2 = $this->TagList[324][$t2] + ($this->TileLength-$expand)*$this->TileWidth*$this->BytesPerSample;
-            for ( $i=0; $i<$expand; $i++ ) {
-                fseek( $this->mGeoTIFF->hFile, $o0 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
-                fseek( $this->mGeoTIFF->hFile, $o1 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $this->TileWidth * $this->BytesPerSample );
-                fseek( $this->mGeoTIFF->hFile, $o2 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
-                $o0 += $this->TileWidth * $this->BytesPerSample;
-                $o1 += $this->TileWidth * $this->BytesPerSample;
-                $o2 += $this->TileWidth * $this->BytesPerSample;
-            }
-            if ( $GLOBALS['dev'] ) echo 'fread, buffer: '.strlen($buffer).', mem: '.memory_get_usage().PHP_EOL;
-            
-            $t0 = $this->TileIndex - 1;
-            $t1 = $t0 + 1;
-            $t2 = $t0 + 2;
-            $o0 = $this->TagList[324][$t0] + ($this->TileWidth-$expand)*$this->BytesPerSample;
-            $o1 = $this->TagList[324][$t1];
-            $o2 = $this->TagList[324][$t2];
-            for ( $i=0; $i<$this->TileLength; $i++ ) {
-                fseek( $this->mGeoTIFF->hFile, $o0 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
-                fseek( $this->mGeoTIFF->hFile, $o1 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $this->TileWidth * $this->BytesPerSample );
-                fseek( $this->mGeoTIFF->hFile, $o2 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
-                $o0 += $this->TileWidth * $this->BytesPerSample;
-                $o1 += $this->TileWidth * $this->BytesPerSample;
-                $o2 += $this->TileWidth * $this->BytesPerSample;
-            }
-            if ( $GLOBALS['dev'] ) echo 'fread, buffer: '.strlen($buffer).', mem: '.memory_get_usage().PHP_EOL;
-
-            $t0 = $this->TileIndex - 1 + $this->TileColumnNum;
-            $t1 = $t0 + 1;
-            $t2 = $t0 + 2;
-            $o0 = $this->TagList[324][$t0] + ($this->TileWidth-$expand)*$this->BytesPerSample;
-            $o1 = $this->TagList[324][$t1];
-            $o2 = $this->TagList[324][$t2];
-            for ( $i=0; $i<$expand; $i++ ) {
-                fseek( $this->mGeoTIFF->hFile, $o0 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
-                fseek( $this->mGeoTIFF->hFile, $o1 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $this->TileWidth * $this->BytesPerSample );
-                fseek( $this->mGeoTIFF->hFile, $o2 );
-                $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
-                $o0 += $this->TileWidth * $this->BytesPerSample;
-                $o1 += $this->TileWidth * $this->BytesPerSample;
-                $o2 += $this->TileWidth * $this->BytesPerSample;
-            }
-            if ( $GLOBALS['dev'] ) echo 'fread, buffer: '.strlen($buffer).', mem: '.memory_get_usage().PHP_EOL;
-            
-            /*
-            // read one tile from source file into buffer string
-            $buffer = '';
-            fseek( $this->mGeoTIFF->hFile, $this->TagList[324][$this->TileIndex] );
-            $remaining = $this->TagList[325][$this->TileIndex];
-            while ( $remaining && !feof($this->mGeoTIFF->hFile) ) {
-                $buffer .= fread( $this->mGeoTIFF->hFile, $remaining - $remaining%$this->BytesPerSample );
-                $remaining -= strlen($buffer);
-                if ( $GLOBALS['dev'] ) echo 'fread, buffer: '.strlen($buffer).', mem: '.memory_get_usage().PHP_EOL;
-            }
-            */
-            
-            // unpack 
-            $bitmap->mBitmap = SplFixedArray::fromArray( unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer ), false ); /* This must be done with one line or extra memory is allocated */
-            if ( $GLOBALS['dev'] ) echo 'unpacked: '.count($buffer).', mem: '.memory_get_usage().PHP_EOL;
-          
-            /* apply kernels */
-            if ( $GLOBALS['filter']==='prominence' ) {
-                self::convolution( $bitmap, $bitmap, 'gaussian' );
-                self::convolution( $bitmap, $bitmap, 'prominence' );
-            } else if ( $GLOBALS['filter']==='v-sobel' ) {
-                self::convolution( $bitmap, $bitmap, 'gaussian' );
-                self::convolution( $bitmap, $bitmap, 'v-sobel' );
-            } else if ( $GLOBALS['filter']==='h-sobel' ) {
-                self::convolution( $bitmap, $bitmap, 'gaussian' );
-                self::convolution( $bitmap, $bitmap, 'h-sobel' );
-            } else if ( $GLOBALS['filter']==='sobel' ) {
-                self::convolution( $bitmap, $bitmap, 'gaussian' );
-                $vsobel = new SplFixedRaster( $bitmap->mWidth, $bitmap->mHeight );
-                $vsobel->fromSplFixedRaster( $bitmap, false );
-                self::convolution( $vsobel, $bitmap, 'v-sobel' );
-                $hsobel = new SplFixedRaster( $bitmap->mWidth, $bitmap->mHeight );
-                $hsobel->fromSplFixedRaster( $bitmap, false );
-                self::convolution( $hsobel, $bitmap, 'h-sobel' );
+            if ( !$GLOBALS['reset'] && file_exists($cache_filename) ) {
+                header('G4H-CachePath: '.$cache_filename);
+                header('G4H-CacheSize: '.filesize($cache_filename));
+                $bitmap = unserialize(gzuncompress(file_get_contents( $cache_filename )));
+            } else {
+                $count = 0;
+                $mean = 0.0;
+                $sqrmean = 0.0;
                 
-                $n = $bitmap->mLength;
-                $vx = 1;
-                $vy = 2;
-                for ( $i=0; $i<$n; $i++ ) {
-                    if ( $hsobel->mBitmap[$i] || $vsobel->mBitmap[$i] ) {
-                        $bitmap->mBitmap[$i] = acos(
-                            ($vx * $hsobel->mBitmap[$i] + $vy * $vsobel->mBitmap[$i]) /
-                            sqrt(pow($vx, 2) + pow($vy, 2)) /
-                            sqrt(pow($hsobel->mBitmap[$i], 2) + pow($vsobel->mBitmap[$i], 2))
-                        );
-                    } else {
-                        $bitmap->mBitmap[$i] = 0;
-                    }
-                }
-                self::convolution( $bitmap, $bitmap, 'gaussian' );
-                //self::convolution( $bitmap, $bitmap, 'prominence' );
-            }            
-            
-            $bitmap->trim($expand);
+                $now = microtime(true) * 1000;
+                
+                $expand = 16; /* expand for convolution */
+                $bitmap = new SplFixedRaster( $this->TileWidth + $expand * 2, $this->TileLength + $expand * 2 );
+                $bitmap->setRange(
+                    $this->ModelTiepointTag[3] + $tx*$this->TileWidth*$this->ModelPixelScaleTag[0] - $expand*$this->ModelPixelScaleTag[0],
+                    $this->ModelTiepointTag[4] + $ty*$this->TileLength*$this->ModelPixelScaleTag[1] - $expand*$this->ModelPixelScaleTag[1],
+                    $this->ModelPixelScaleTag[0],
+                    $this->ModelPixelScaleTag[1]
+                );
+                if ( $GLOBALS['dev'] ) echo 'pixels: '.$bitmap->getSize().', mem: '.memory_get_usage().PHP_EOL;
+                
+                $buffer = '';
 
-            /* find max and min for value scaling */
-            /*$min = 65536 * 65536;
-            $max = -65536 * 65536;
-            foreach ( $bitmap->mBitmap as $value ) {
-                if ( $value > $max ) $max = $value;
-                if ( $value < $min ) $min = $value;
-            }*/
-            $stats = array();
-            $bitmap->normalize( $stats );
-            $threshold_high = $stats['threshold'][0];
-            $threshold_low = $stats['threshold'][1];
+                $t0 = $this->TileIndex - $this->TileColumnNum - 1;
+                $t1 = $t0 + 1;
+                $t2 = $t0 + 2;
+                $o0 = $this->TagList[324][$t0] + ($this->TileWidth-$expand)*$this->BytesPerSample + ($this->TileLength-$expand)*$this->TileWidth*$this->BytesPerSample;
+                $o1 = $this->TagList[324][$t1] + ($this->TileLength-$expand)*$this->TileWidth*$this->BytesPerSample;
+                $o2 = $this->TagList[324][$t2] + ($this->TileLength-$expand)*$this->TileWidth*$this->BytesPerSample;
+                for ( $i=0; $i<$expand; $i++ ) {
+                    fseek( $this->mGeoTIFF->hFile, $o0 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
+                    fseek( $this->mGeoTIFF->hFile, $o1 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $this->TileWidth * $this->BytesPerSample );
+                    fseek( $this->mGeoTIFF->hFile, $o2 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
+                    $o0 += $this->TileWidth * $this->BytesPerSample;
+                    $o1 += $this->TileWidth * $this->BytesPerSample;
+                    $o2 += $this->TileWidth * $this->BytesPerSample;
+                }
+                if ( $GLOBALS['dev'] ) echo 'fread, buffer: '.strlen($buffer).', mem: '.memory_get_usage().PHP_EOL;
+                
+                $t0 = $this->TileIndex - 1;
+                $t1 = $t0 + 1;
+                $t2 = $t0 + 2;
+                $o0 = $this->TagList[324][$t0] + ($this->TileWidth-$expand)*$this->BytesPerSample;
+                $o1 = $this->TagList[324][$t1];
+                $o2 = $this->TagList[324][$t2];
+                for ( $i=0; $i<$this->TileLength; $i++ ) {
+                    fseek( $this->mGeoTIFF->hFile, $o0 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
+                    fseek( $this->mGeoTIFF->hFile, $o1 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $this->TileWidth * $this->BytesPerSample );
+                    fseek( $this->mGeoTIFF->hFile, $o2 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
+                    $o0 += $this->TileWidth * $this->BytesPerSample;
+                    $o1 += $this->TileWidth * $this->BytesPerSample;
+                    $o2 += $this->TileWidth * $this->BytesPerSample;
+                }
+                if ( $GLOBALS['dev'] ) echo 'fread, buffer: '.strlen($buffer).', mem: '.memory_get_usage().PHP_EOL;
+
+                $t0 = $this->TileIndex - 1 + $this->TileColumnNum;
+                $t1 = $t0 + 1;
+                $t2 = $t0 + 2;
+                $o0 = $this->TagList[324][$t0] + ($this->TileWidth-$expand)*$this->BytesPerSample;
+                $o1 = $this->TagList[324][$t1];
+                $o2 = $this->TagList[324][$t2];
+                for ( $i=0; $i<$expand; $i++ ) {
+                    fseek( $this->mGeoTIFF->hFile, $o0 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
+                    fseek( $this->mGeoTIFF->hFile, $o1 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $this->TileWidth * $this->BytesPerSample );
+                    fseek( $this->mGeoTIFF->hFile, $o2 );
+                    $buffer .= fread( $this->mGeoTIFF->hFile, $expand * $this->BytesPerSample );
+                    $o0 += $this->TileWidth * $this->BytesPerSample;
+                    $o1 += $this->TileWidth * $this->BytesPerSample;
+                    $o2 += $this->TileWidth * $this->BytesPerSample;
+                }
+                if ( $GLOBALS['dev'] ) echo 'fread, buffer: '.strlen($buffer).', mem: '.memory_get_usage().PHP_EOL;
+                
+                // unpack 
+                $bitmap->mBitmap = SplFixedArray::fromArray( unpack( $this->mUnpackFormats[$this->BytesPerSample], $buffer ), false ); /* This must be done with one line or extra memory is allocated */
+                if ( $GLOBALS['dev'] ) echo 'unpacked: '.count($buffer).', mem: '.memory_get_usage().PHP_EOL;
+              
+                /* apply kernels */
+                if ( $GLOBALS['filter']==='prominence' ) {
+                    self::convolution( $bitmap, $bitmap, 'gaussian' );
+                    self::convolution( $bitmap, $bitmap, 'prominence' );
+                } else if ( $GLOBALS['filter']==='v-sobel' ) {
+                    self::convolution( $bitmap, $bitmap, 'gaussian' );
+                    self::convolution( $bitmap, $bitmap, 'v-sobel' );
+                } else if ( $GLOBALS['filter']==='h-sobel' ) {
+                    self::convolution( $bitmap, $bitmap, 'gaussian' );
+                    self::convolution( $bitmap, $bitmap, 'h-sobel' );
+                } else if ( $GLOBALS['filter']==='sobel' ) {
+                    self::convolution( $bitmap, $bitmap, 'gaussian' );
+                    $vsobel = new SplFixedRaster( $bitmap->mWidth, $bitmap->mHeight );
+                    $vsobel->fromSplFixedRaster( $bitmap, false );
+                    self::convolution( $vsobel, $bitmap, 'v-sobel' );
+                    $hsobel = new SplFixedRaster( $bitmap->mWidth, $bitmap->mHeight );
+                    $hsobel->fromSplFixedRaster( $bitmap, false );
+                    self::convolution( $hsobel, $bitmap, 'h-sobel' );
+                    
+                    $vsobel->normalize( $stats, 'static' );
+                    $hsobel->normalize( $stats, 'static' );
+                    
+                    $n = $bitmap->mLength;
+                    for ( $i=0; $i<$n; $i++ ) {
+                        $bitmap->mBitmap[$i] = $hsobel->mBitmap[$i] * 256 + $vsobel->mBitmap[$i];
+                    }
+
+                    // Convert sobel vectors to heading
+                    /*
+                    $n = $bitmap->mLength;
+                    $vx = 1;
+                    $vy = 2;
+                    for ( $i=0; $i<$n; $i++ ) {
+                        if ( $hsobel->mBitmap[$i] || $vsobel->mBitmap[$i] ) {
+                            $bitmap->mBitmap[$i] = acos(
+                                ($vx * $hsobel->mBitmap[$i] + $vy * $vsobel->mBitmap[$i]) /
+                                sqrt(pow($vx, 2) + pow($vy, 2)) /
+                                sqrt(pow($hsobel->mBitmap[$i], 2) + pow($vsobel->mBitmap[$i], 2))
+                            );
+                        } else {
+                            $bitmap->mBitmap[$i] = 0;
+                        }
+                    }
+                    self::convolution( $bitmap, $bitmap, 'gaussian' );
+                    */
+                }            
+                
+                $bitmap->trim($expand);
+
+                file_put_contents( $cache_filename, gzcompress(serialize($bitmap)) );
+            }
             
+            /* find max and min for value scaling */
+            if ( $GLOBALS['filter']==='sobel' ) {
+            } else {
+                $stats = array();
+                //$bitmap->normalize( $stats );
+                $bitmap->normalize( $stats, 'static' );
+                $threshold_high = $stats['threshold'][0];
+                $threshold_low = $stats['threshold'][1];
+            }
+
             //echo 'bitmap: '.count($bitmap).PHP_EOL;
             $img = imagecreatetruecolor( $bitmap->mWidth, $bitmap->mHeight );
             if ( is_resource($img) ) {
@@ -550,6 +567,11 @@ class ImageFileDirectory {
                             } else {
                                 imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, $p, $p ) );
                             }
+                        } else if ( $GLOBALS['filter']==='sobel' ) {
+                            $r = 0;
+                            $g = $p % 256;
+                            $b = ( $p - $g ) / 256;
+                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $r, $g, $b ) );
                         } else {
                             imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, $p, $p ) );
                         }
@@ -559,7 +581,6 @@ class ImageFileDirectory {
                 if ( $GLOBALS['dev'] ) {
                     die();
                 } else {
-                    header('X-: image/png');
                     header('Content-Type: image/png');
                     imagepng( $img );
                 }
