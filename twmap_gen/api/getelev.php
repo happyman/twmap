@@ -163,7 +163,7 @@ exit();
 			新圓圈中心:<br>緯度:<input type=text size=12 id="addy">經度:<input type=text size=12 id="addx">,半徑=<input type=text id="addradius" size=10 value=1000>公尺 
 			顏色:<input type=color id="addcolor"><button type="button" id="add">新增</button><br>
 			</form>
-			<button onclick="loadcircles();">重載</button>
+			<button onclick="loadCirclelist();">重載</button>
 			<?php
 			//echo "<h2>圓圈圈處理</h2>";
 			// printf( "圓心座標:%.06f %.06f 半徑: %.06fM\n",$shapes[0]['center']['lon'],$shapes[0]['center']['lat'],$shapes[0]['radius'] );
