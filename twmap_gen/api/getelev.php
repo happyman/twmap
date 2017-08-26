@@ -135,7 +135,7 @@ exit();
 					}
 				);
 				
-				$('#add').click(function(){
+				$('#add').click(function(event){
 					 event.preventDefault();
 					// validate x,y,r
 					if ($.isNumeric($("#addx").val()) && $.isNumeric($("#addy").val()) && $.isNumeric($("#addradius").val()) && Math.abs($("#addx").val()) <= 180 &&  Math.abs($("#addy").val()) <= 90  ) {
