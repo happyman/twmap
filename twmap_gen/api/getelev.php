@@ -126,7 +126,7 @@ exit();
 						var jsonObject = eval("(" + myshapes + ")");
 						// clear all shapes
 						if (jsonObject.shapes[i].type == 'circle') {
-							parent.shapeMap.shapesClearAll();
+							parent.shapesMap.shapesClearAll();
 							// jsonObject.shapes[i].color = '#FF0000';
 							jsonObject.shapes[i][field] = newval;
 							localStorage.setItem("shapes",JSON.stringify(jsonObject));

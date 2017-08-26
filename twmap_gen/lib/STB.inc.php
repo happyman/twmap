@@ -515,7 +515,7 @@ function request_curl($url, $method='GET', $params=array(),$hdr=array()) {
 	$curl = curl_init($url . ($method == 'GET' && $params_line ? '?' . $params_line : ''));
 	$headers = array();
 	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-	curl_setopt($curl, CURLOPT_PROXY, "192.168.168.17:3128");
+//	curl_setopt($curl, CURLOPT_PROXY, "192.168.168.17:3128");
 	curl_setopt($curl, CURLOPT_HEADER, false);
 	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

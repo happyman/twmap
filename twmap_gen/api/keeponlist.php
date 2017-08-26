@@ -6,11 +6,11 @@ exit("cli only");
 }
 
 $debug = 1;
-$opt = getopt("a:k:m:t:s:e:rg:u:c:f");
+$opt = getopt("a:k:m:t:s:e:rg:u:c:fp:");
 $action = (isset($opt['a'])) ? $opt['a'] : '';
 if (empty($action)) {
 	printf("%s -a listall|enqueue|list|delete [-k keepon_id] [-t thread_id] [-m 0|1]\n",$argv[0]);
-	printf("	-a listall -s 'Y-m-d' -e 'Y-m-d' -m 0 : start, end, mapgenerated [-r]: do queue [-c]: count\n");
+	printf("	-a listall -s 'Y-m-d' -e 'Y-m-d' -m 0 : start, end, mapgenerated [-r]: do queue [-c]: count [-p 0|1]:1 for publish format\n");
 	printf("	-a enqueue -k keepon_id -t thread_id [-f]: force auto_shrink\n");
 	printf("	-a listt -t thread_id\n");
 	printf("	-a listk -k keepon_id\n");
@@ -29,7 +29,7 @@ case 'listall':
 	$start = (isset($opt['s']))? strtotime($opt['s']) : strtotime(date('01-m-Y',strtotime('this month')));
 	$end = (isset($opt['e'])) ? strtotime($opt['e']) :  strtotime('yesterday') ;
 	$docount = (isset($opt['c']))? intval($opt['c']) : 100;
-	list ($st,$res) =  keepon_List($start,$end,1,100);
+	list ($st,$res) =  keepon_List($start,$end,1,$docount);
 	$data = Keepon_Data_Format($res);
 	$map_exists = 2;
 	if (isset($opt['m'])) {
@@ -38,12 +38,13 @@ case 'listall':
 	$count =0;
 	foreach($data as $d) {
 		if ($d['MapGenerated'] == $map_exists || $map_exists == 2) {
-			printf("%d:\n",++$count);
+			//printf("%d:\n",++$count);
 			if ($count > $docount)  {
 				echo "count reached.. break\n";
 				break;
 			}
-			print_r($d);
+			//print_r($d);
+			listfmt(++$count,$d,$opt['p']);
 			if (isset($opt['r'])) {
 				if ($d['MapGenerated'] == 1) {
 					echo "skip $kid\n";
@@ -156,3 +157,17 @@ case 'mupdate':
 }
 
 
+function listfmt($idx,$data,$publish){
+	if ($publish==1){
+		if ($data['MapGenerated'])
+			printf("<li><a href='%s' target=_blank>%s</a>&nbsp; %s",$data['ArticleUrl'],$data['Title'],$data['MapUrl']);
+		else
+			printf("<li><a href='%s' target=_blank>%s</a>&nbsp; %s",$data['ArticleUrl'],$data['Title'],$data['GpxUrl']);
+	} else {
+		printf("<table border=1><tr><td>%d<a href='%s' target=_blank>%s</a><tr><td><a href='%s' target=_blank>%s</a>",$idx,$data['ArticleUrl'],$data['Title'],$data['GpxUrl'],$data['GpxUrl']);
+		printf("<tr><td>php keeponlist.php -a enqueue -k %s -t %s",$data['Id'],$data['ThreadId']);
+		printf("<tr><td>php keeponlist.php -a detect -g %s</table>",$data['GpxUrl']);
+		if ($data['MapGenerated']==1)
+			printf("<tr><td><a href='%s' target=_blank>%s</a>",$data['MapUrl'],$data['MapUrl']);
+	}
+}

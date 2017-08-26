@@ -114,7 +114,7 @@ function soap_call_delete($id) {
 
 
 function keepon_List($start, $end, $page=1, $limit=100) {
-	$kurl = 'http://www.keepon.com.tw/api/MapGenerator/List';
+	$kurl = 'https://www.keepon.com.tw/api/MapGenerator/List';
 	$params = array(
 
 			"Start" => date('Y-m-d',$start),
@@ -132,7 +132,7 @@ function keepon_List($start, $end, $page=1, $limit=100) {
 		return array(false,"error return $result");
 }
 function keepon_Update($keepon_id, $status, $mapurl='' ) {
-	$kurl = 'http://www.keepon.com.tw/api/MapGenerator/Update';
+	$kurl = 'https://www.keepon.com.tw/api/MapGenerator/Update';
 	$params['Data'][0] = array (
 		'Id' => $keepon_id,
 		'MapGenerated' => $status,
@@ -160,7 +160,7 @@ function keepon_Update($keepon_id, $status, $mapurl='' ) {
 */
 function keepon_List_by_TId($thread_id) {
 	$params = array();
-	$kurl = 'http://www.keepon.com.tw/api/MapGenerator/ThreadMap/' . $thread_id;
+	$kurl = 'https://www.keepon.com.tw/api/MapGenerator/ThreadMap/' . $thread_id;
 	$result = request_curl($kurl, "GET", $params, array('Accept: application/json'));
 	//error_log("request $kurl with params".print_r($params,true) ."get $result");
 	kcli_msglog("request $kurl with params".print_r($params,true) ."get $result");
@@ -171,15 +171,16 @@ function keepon_List_by_TId($thread_id) {
 		return array(false,"error return $result");
 }
 function keepon_Id_to_URL($keepon_id){
-	return sprintf("http://www.keepon.com.tw/redirectMap-%s.html", $keepon_id);
+	return sprintf("https://www.keepon.com.tw/redirectMap-%s.html", $keepon_id);
 }
 function keepon_Tid_to_URL($tid) {
-	return sprintf("http://www.keepon.com.tw/thread-%s.html",$tid);
+	return sprintf("https://www.keepon.com.tw/thread-%s.html",$tid);
 }
 function keepon_Id_to_Tid($keepon_id) {
 	$params = array();
-	$kurl = sprintf("http://www.keepon.com.tw/redirectMap-%s.html", $keepon_id);
-	$cmd = sprintf("wget -e use_proxy=yes -e http_proxy=192.168.168.17:3128   --max-redirect=1  %s  2>&1 |grep Location |grep thread",$kurl);
+	$kurl = sprintf("https://www.keepon.com.tw/redirectMap-%s.html", $keepon_id);
+	//$cmd = sprintf("wget -e use_proxy=yes -e http_proxy=192.168.168.17:3128   --max-redirect=1  %s  2>&1 |grep Location |grep thread",$kurl);
+	$cmd = sprintf("wget --max-redirect=1  %s  2>&1 |grep Location |grep thread",$kurl);
 	exec($cmd, $out, $ret);
 	
 	if (preg_match("/thread-(.*)\.html/",$out[0],$mat)) {
