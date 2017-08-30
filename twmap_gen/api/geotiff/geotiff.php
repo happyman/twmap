@@ -139,6 +139,14 @@ class SplFixedRaster extends SplFixedArray {
         }
     }
     
+    public function setValue( $x, $y, $v ) {
+        $this->mBitmap[ $y * $this->mWidth + $x ] = $v;        
+    }
+    
+    public function getValue( $x, $y ) {
+        return $this->mBitmap[ $y * $this->mWidth + $x ];        
+    }
+    
     public function trim( $size ) {
         $dst = 0;
         $src = $size * ($this->mWidth+1);
@@ -512,9 +520,14 @@ class ImageFileDirectory {
                     $vsobel->normalize( $stats, 'static' );
                     $hsobel->normalize( $stats, 'static' );
                     
+                    // Store planar data in single bitmap
+                    // These values can be used directly by imagecolorallocate
                     $n = $bitmap->mLength;
                     for ( $i=0; $i<$n; $i++ ) {
-                        $bitmap->mBitmap[$i] = $hsobel->mBitmap[$i] * 256 + $vsobel->mBitmap[$i];
+                        $r = 0;
+                        $g = intval( $hsobel->mBitmap[$i] );
+                        $b = intval( $vsobel->mBitmap[$i] );
+                        $bitmap->mBitmap[$i] = $r << 16 + $g << 8 + $b;
                     }
 
                     // Convert sobel vectors to heading
@@ -544,9 +557,9 @@ class ImageFileDirectory {
             
             /* find max and min for value scaling */
             if ( $GLOBALS['filter']==='sobel' ) {
+                // Composite planar data cannot be normalied 
             } else {
                 $stats = array();
-                //$bitmap->normalize( $stats );
                 $bitmap->normalize( $stats, 'static' );
                 $threshold_high = $stats['threshold'][0];
                 $threshold_low = $stats['threshold'][1];
@@ -568,16 +581,47 @@ class ImageFileDirectory {
                                 imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, $p, $p ) );
                             }
                         } else if ( $GLOBALS['filter']==='sobel' ) {
-                            $r = 0;
-                            $g = $p % 256;
-                            $b = ( $p - $g ) / 256;
-                            imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $r, $g, $b ) );
+                            imagesetpixel( $img, $x, $y, intval($p) );
                         } else {
                             imagesetpixel( $img, $x, $y, imagecolorallocate ( $img, $p, $p, $p ) );
                         }
                         $index++;
                     }
                 }
+
+                /* Hiking simulation */
+                $now = microtime(true);
+                while ( (microtime(true) - $now) * 1000 < 5000 ) {
+                    srand((double) microtime() * 1000000); 
+                    $x = rand( 0, $bitmap->mWidth - 1 );
+                    $y = rand( 0, $bitmap->mHeight - 1 );
+                    $i = 0;
+                    while ( $i <= 255 ) {
+                        $rgb = imagecolorat($img, intval($x), intval($y));
+                        $r = ($rgb >> 16) & 0xFF;
+                        $g = ($rgb >> 8) & 0xFF;
+                        $b = $rgb & 0xFF;
+                        $r += $i;
+                        if ( $r > 255 ) $r = 255;
+                        imagesetpixel( $img, intval($x), intval($y), imagecolorallocate ( $img, $r, $g, $b ) );
+
+                        //$sx = $b - 127;
+                        //$sy = $g - 127;
+                        $sx = 127 - $b;
+                        $sy = 127 - $g;
+                        if ( $sx ) $sx = $sx / 64;
+                        if ( $sy ) $sy = $sy / 64;
+                        $x += $sx;
+                        $y += $sy;
+                        if ( $x < 0 ) $i = 65536;
+                        if ( $x >= $bitmap->mWidth ) $i = 65536;
+                        if ( $y < 0 ) $i = 65536;
+                        if ( $y >= $bitmap->mHeight ) $i = 65536;
+
+                        $i++;
+                    }
+                }
+
                 if ( $GLOBALS['dev'] ) {
                     die();
                 } else {
@@ -585,9 +629,6 @@ class ImageFileDirectory {
                     imagepng( $img );
                 }
                 imagedestroy( $img );
-                /*foreach ( $bitmap as $index => $value ) {
-                    $bitmap[$index] = intval($bitmap[$index] * $multiplier);
-                }*/
             }
 
             if ( $GLOBALS['dev'] ) {
