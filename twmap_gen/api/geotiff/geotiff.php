@@ -199,10 +199,10 @@ class SplFixedRaster extends SplFixedArray {
             if ( $segment<1 || $segment>=$quantization-1 ) {
                 $px = $i%$this->mWidth;
                 $py = intdiv($i, $this->mWidth);
-                if ( $GLOBALS['dev'] ) echo $px.', '.$py.PHP_EOL;
+                //if ( $GLOBALS['dev'] ) echo $px.', '.$py.PHP_EOL;
                 $px = $this->mTiepoint[0] + $px*$this->mPixelScale[0];
                 $py = $this->mTiepoint[1] + $py*$this->mPixelScale[1];
-                if ( $GLOBALS['dev'] ) echo $py.', '.$px.PHP_EOL;
+                //if ( $GLOBALS['dev'] ) echo $py.', '.$px.PHP_EOL;
             }
         }
 
@@ -394,8 +394,6 @@ class ImageFileDirectory {
     }
 
     public function getTile( &$point, $format='png' ) {
-        global $dev, $reset;
-        
         /* Get TIFF Tile where the point is in */
         if ( $point->mFormat===$this->GeographicTypeGeoKey ) {
             $mx = intval( $this->ModelTiepointTag[0] + ($point->lon - $this->ModelTiepointTag[3]) / $this->ModelPixelScaleTag[0] ); /* pixel x in whole map */
@@ -407,6 +405,7 @@ class ImageFileDirectory {
             $this->PixelPointer = $this->TagList[324][$this->TileIndex] + (($mx % $this->TileWidth) + ($my % $this->TileLength) * $this->TileWidth) * $this->BytesPerSample;
             //echo sprintf( 'tile index: %d, offset: %d, bytes: %d'.PHP_EOL, $this->TileIndex, $this->TagList[324][$this->TileIndex], $this->TagList[325][$this->TileIndex] );
             
+            // Cache raster as PHP array
             $cache_filename = md5( $this->TileIndex.'::'.$GLOBALS['filter'] );
             $cache_dir = './cache/'.substr($cache_filename, 0, 2).'/'.substr($cache_filename, 2, 2);
             $cache_filename = $cache_dir.'/'.$cache_filename;
@@ -552,6 +551,7 @@ class ImageFileDirectory {
                 
                 $bitmap->trim($expand);
 
+                // Cache raster as PHP array
                 file_put_contents( $cache_filename, gzcompress(serialize($bitmap)) );
             }
             
@@ -560,7 +560,7 @@ class ImageFileDirectory {
                 // Composite planar data cannot be normalied 
             } else {
                 $stats = array();
-                $bitmap->normalize( $stats, 'static' );
+                $bitmap->normalize( $stats );
                 $threshold_high = $stats['threshold'][0];
                 $threshold_low = $stats['threshold'][1];
             }
@@ -589,44 +589,16 @@ class ImageFileDirectory {
                     }
                 }
 
-                /* Hiking simulation */
-                $now = microtime(true);
-                while ( (microtime(true) - $now) * 1000 < 5000 ) {
-                    srand((double) microtime() * 1000000); 
-                    $x = rand( 0, $bitmap->mWidth - 1 );
-                    $y = rand( 0, $bitmap->mHeight - 1 );
-                    $i = 0;
-                    while ( $i <= 255 ) {
-                        $rgb = imagecolorat($img, intval($x), intval($y));
-                        $r = ($rgb >> 16) & 0xFF;
-                        $g = ($rgb >> 8) & 0xFF;
-                        $b = $rgb & 0xFF;
-                        $r += $i;
-                        if ( $r > 255 ) $r = 255;
-                        imagesetpixel( $img, intval($x), intval($y), imagecolorallocate ( $img, $r, $g, $b ) );
-
-                        //$sx = $b - 127;
-                        //$sy = $g - 127;
-                        $sx = 127 - $b;
-                        $sy = 127 - $g;
-                        if ( $sx ) $sx = $sx / 64;
-                        if ( $sy ) $sy = $sy / 64;
-                        $x += $sx;
-                        $y += $sy;
-                        if ( $x < 0 ) $i = 65536;
-                        if ( $x >= $bitmap->mWidth ) $i = 65536;
-                        if ( $y < 0 ) $i = 65536;
-                        if ( $y >= $bitmap->mHeight ) $i = 65536;
-
-                        $i++;
-                    }
-                }
-
                 if ( $GLOBALS['dev'] ) {
+                    imagedestroy( $img );
                     die();
                 } else {
-                    header('Content-Type: image/png');
-                    imagepng( $img );
+                    if ( $format==='png' ) {
+                        header('Content-Type: image/png');
+                        imagepng( $img );
+                    } else {
+                        return $img;
+                    }
                 }
                 imagedestroy( $img );
             }
@@ -1069,6 +1041,58 @@ class GeoTIFF {
         $ifd = current($this->IFDList);
         $ifd->getTile( $point, $format );
     }
+
+    public function botCrawl( &$point ) {
+        reset($this->IFDList);
+        $ifd = current($this->IFDList);
+        $img = $ifd->getTile( $point, 'resource' );
+
+        /* Hiking simulation */
+        $now = microtime(true);
+        $width = imagesx( $img );
+        $height = imagesy( $img );
+        $bots = 10000;
+        while ( $bots > 0 ) {
+            srand((double) microtime() * 1000000); 
+            $x = rand( 0, $width - 1 );
+            $y = rand( 0, $height - 1 );
+            $i = 0;
+            while ( $i <= 255 ) {
+                $rgb = imagecolorat($img, intval($x), intval($y));
+                $r = ($rgb >> 16) & 0xFF;
+                $g = ($rgb >> 8) & 0xFF;
+                $b = $rgb & 0xFF;
+                $r += $i;
+                if ( $r > 255 ) $r = 255;
+                imagesetpixel( $img, intval($x), intval($y), imagecolorallocate ( $img, $r, $g, $b ) );
+
+                $sx = $b - 127;
+                $sy = $g - 127;
+                //$sx = 127 - $b;
+                //$sy = 127 - $g;
+                if ( $sx ) $sx = $sx / 64;
+                if ( $sy ) $sy = $sy / 64;
+                $x += $sx;
+                $y += $sy;
+                if ( $x < 0 ) $i = 65536;
+                if ( $x >= $width ) $i = 65536;
+                if ( $y < 0 ) $i = 65536;
+                if ( $y >= $height ) $i = 65536;
+
+                $i++;
+            }
+            $bots--;
+        }
+
+        if ( $GLOBALS['dev'] ) {
+            imagedestroy( $img );
+            die();
+        } else {
+            header('Content-Type: image/png');
+            imagepng( $img );
+        }
+        imagedestroy( $img );
+    }
 }
           
 // Creating a new person called "boring 12345", who is 12345 years old ;-)
@@ -1076,10 +1100,12 @@ $geotiff = new GeoTIFF();
 if ( $geotiff->open( __DIR__.DIRECTORY_SEPARATOR.'twdtm_asterV2_30m.tif' ) ) {
 
     //$point = new GeoPoint( 23.47, 120.95728 );
+    $point = new GeoPoint( 23.47, 120.95728 ); /* Mt. Tonku Saveq 3952m */
     //$point = new GeoPoint( 24.80635,121.4768 ); /* Mt. Woo */
-    $point = new GeoPoint( 23.90165,121.32335 ); /* Mt. Pinnacle 2313 */
+    //$point = new GeoPoint( 23.90165,121.32335 ); /* Mt. Pinnacle 2313 */
     //$point = new GeoPoint( 24.48084,121.47884 );
-    $geotiff->getTile( $point );
+    //$geotiff->getTile( $point );
+    $geotiff->botCrawl( $point );
 
     if ( $GLOBALS['dev'] ) {
         $samples = array(
@@ -1096,7 +1122,7 @@ if ( $geotiff->open( __DIR__.DIRECTORY_SEPARATOR.'twdtm_asterV2_30m.tif' ) ) {
         foreach ( $samples as $sample ) {
             echo $sample->getReadable().PHP_EOL;
             $geotiff->getValue( $sample );
-            $geotiff->getTile( $sample );
+            //$geotiff->getTile( $sample );
             echo PHP_EOL.PHP_EOL;
         }
     }
