@@ -527,7 +527,7 @@ class ImageFileDirectory {
                         $r = 0;
                         $g = intval( $hsobel->mBitmap[$i] );
                         $b = intval( $vsobel->mBitmap[$i] );
-                        $bitmap->mBitmap[$i] = $r << 16 + $g << 8 + $b;
+                        $bitmap->mBitmap[$i] = ($r << 16) + ($g << 8) + $b;
                     }
 
                     // Convert sobel vectors to heading
