@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
+function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback, _Completecallback) {
 
     // state
 
@@ -396,7 +396,6 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
 
     function shapesSave() { 
         var shapes = jsonMake();
-
        // var expirationDate = new Date();
        // expirationDate.setDate(expirationDate.getDate + 365);
         
@@ -404,8 +403,11 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
        //    + "; expires=" + expirationDate.toUTCString();
        // document.cookie = "shapes=" + value;
 	   localStorage.setItem("shapes",shapes);
+	   // on shape complete callback 
+	   _Completecallback(shapes);
+	   console.log("shapes string saved");
     }
-	
+
     function shapesLoad() {
         var start_length = _shapes.length;
 
@@ -583,7 +585,7 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
         // create drawing manager
 
         var drawingModes = new Array(
-            RECTANGLE,POLYGON, POLYLINE);
+            RECTANGLE,POLYGON, POLYLINE,CIRCLE);
 
         var drawingControlOptions = {
             drawingModes: drawingModes,
@@ -592,6 +594,7 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
 
         var polyOptions = {
             strokeWeight: 0,
+			fillColor: '#646464',
             editable: true
         };
 
@@ -716,6 +719,9 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback) {
     // initialization
     onCreate();
 	return {
-		selectionClear: function() { selectionClear(); }
+		selectionClear: function() { selectionClear(); },
+		shapesLoad: function() {  shapesLoad(); }, 
+		shapesClearAll: function() {onClearButtonClicked();
+		}
 	};
 }

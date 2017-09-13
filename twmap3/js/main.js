@@ -761,6 +761,7 @@ function locInfo_show(newpos, ele, extra) {
     if (ele > -1000) 
 	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
 	content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
+	content += "<a href='http://maps.nlsc.gov.tw/O09/mapshow.action?zoom=" + map.getZoom() + "&lon=" + newpos.lng().toFixed(5) + "&lat=" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
 	content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
 				
     //*/
@@ -1481,15 +1482,20 @@ function initialize() {
             disableDoubleClickZoom: false
         });
 		// add drawing tool
-		shapesMap = new ShapesMap( $("#delete-button")[0],$("#clear-button")[0], $("#shapeinfo-button")[0], function(shapes){
-			// save info to cookie
-			//var expirationDate = new Date();
-			//expirationDate.setDate(expirationDate.getDate + 1);
-			//var value = escape(shapes) + "; expires=" + expirationDate.toUTCString() + "; path=/";
-			//document.cookie = "infoshapes=" + value;
+		shapesMap = new ShapesMap( $("#delete-button")[0],$("#clear-button")[0], $("#shapeinfo-button")[0], 
+		function(shapes){
 			localStorage.setItem("infoshapes", shapes);
 			showmeerkat(get_elev_url + "?infoshapes=1", { 'width': '600'} );		
-		} );
+		}, 
+		function(shapes){
+			// 	console.log(loadcircles);
+			
+			if ($("#meerkatiframe")[0] && typeof $("#meerkatiframe")[0].contentWindow.loadcircles === 'function'){
+				$("#meerkatiframe")[0].contentWindow.loadcircles(shapes);
+			}
+		} 
+		);
+		
 	}
     var moveDiv = document.createElement('div');
     var myCustomControl2 = new curLocControl(moveDiv, map);

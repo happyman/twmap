@@ -353,4 +353,13 @@ function getLatLonXYZ($x, $y, $zoom) {
 
 	return $rect;
 }
-
+// $src = "EPSG:4326"
+// $arr[] = "121.2323 23.1212";
+function gdaltransform_multi($src,$dst,$arr) {
+$cmd = sprintf("printf \"%s\n\" | gdaltransform -s_srs %s -t_srs %s", implode("\\n",$arr),$src,$dst);
+exec($cmd,$out,$ret);
+        if ($ret == 0 ) {
+                return $out;
+        }
+        return false;
+}

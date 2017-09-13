@@ -29,11 +29,12 @@ if ( $dev ) {
     header("Content-Type: application/json; charset=utf-8");
 }
 
+
 define('ROOT3HALF', 0.86602540378);
 
 // ---------- Codes for proj4php; remove if other lib is used
 // Use a PSR-4 autoloader for the `proj4php` root namespace.
-include("./proj4php-master/vendor/autoload.php");
+require("../lib/proj4php/vendor/autoload.php");
 use proj4php\Proj4php;
 use proj4php\Proj;
 use proj4php\Point;
