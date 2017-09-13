@@ -89,7 +89,7 @@
 							<select name=aashifty>
 								{html_options values=$aashifty output=$aashifty selected="5"}
 							</select>
-							A4 直式 如 5x7 格
+							A4 直式 如 5x7 格, A3 直式 7x10
 						</span>
 						<span id="all" name="all" style=display:none>
 							<select name=anyshiftx>
@@ -107,7 +107,7 @@
 							<select name=aarshifty>
 								{html_options values=$aarshifty output=$aarshifty selected="5"}
 							</select>
-							A4 橫式 如 7x5 格
+							A4 橫式 如 7x5 格, A3 橫式 10x7
 						</span>
 				</td></tr>
 				<tr>
@@ -137,6 +137,7 @@
 				<label><input type="checkbox" name="grid_100M" value="1">100米格線</label>
 				<label><input type="checkbox" name="inc_trace" value="1" checked >包含山友 gps trace</label>
 				<label><input type="checkbox" name="keep_color" value="1">彩圖</label>
+				<label><input type="checkbox" name="a3_paper" value="1">A3</label>
 				</td>
 			</tr>
 			<tr><td>
@@ -155,7 +156,7 @@
 			<tr>
 			<td></td>
 			<td colspan=2>
-				輸出格式 A4 或 A4R, 程式會以節省紙張為原則.
+				輸出為直式或橫式, 程式會以節省紙張為原則自動判斷。
 					</tr>
 			<tr><td colspan=3>
 	<a href='https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168?fref=ts' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a> 

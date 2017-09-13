@@ -6,7 +6,7 @@ require_once("config.inc.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c");
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3");
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "Usage: $argv[0] -r 236:2514:6:4 [-g gpx:0:0] [-c] [-G]-O dir [-e] -v 1|3 -t title -i localhost\n";
 	echo "       -r params: startx:starty:shiftx:shifty\n";
@@ -61,7 +61,10 @@ $outpdf = $outfile_prefix . ".pdf";
 
 $stage = 1;
 // 決定哪一種輸出省紙
-$type = determine_type($shiftx, $shifty);
+if (isset($opt['3']))
+	$type = determine_type_a3($shiftx, $shifty);
+else
+	$type = determine_type($shiftx, $shifty);
 
 // add version 3
 switch($version){

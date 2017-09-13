@@ -2,11 +2,11 @@
 
 require_once("config.inc.php");
 
-$id = `id -u`;
-if ($id != 0 ) {
-	echo "Please run as root\n";
-	exit;
-}
+//$id = `id -u`;
+//if ($id != 0 ) {
+//	echo "Please run as root\n";
+//	exit;
+//}
 $opt = getopt("t:r");
 
 if (!isset($opt['t'])){

@@ -43,6 +43,7 @@ var show_kml_layer = 1;
 var show_delaunay = 0;
 var GPSLayer; // external kml layer
 // 以下為底圖
+
 var TaiwanMapV1Options = {
     getTileUrl: function(a, b) {
         var z = 17 - b;
@@ -66,6 +67,7 @@ var TaiwanMapOptions = {
     name: "經建3",
     alt: 'Taiwan TW67 Map'
 };
+// 沒有使用了
 var TaiwanGpxMapOptions = {
     getTileUrl: function(a, b) {
         return 'http://rs.happyman.idv.tw/map/twmap_gpx/' + b + "_" + a.x + "_" + a.y + ".png";
@@ -121,17 +123,23 @@ var GPXTrackOptions = {
 //}
 var Taiwan_General_2011_MapOptions = {
     getTileUrl: function(a, b) {
-        var set = "PHOTO2";
-        var road = "EMAP1";
-        //return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=PHOTO2&STYLE=_null&TILEMATRIXSET=EPSG%3A3857&TILEMATRIX=' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
 		return 'http://wmts.nlsc.gov.tw/wmts/PHOTO2/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
     },
     tileSize: new google.maps.Size(256, 256),
-    //maxZoom: 16,
-    //minZoom: 6,
+
     maxZoom: 19,
     minZoom: 9,
     name: "NLSC",
+    alt: "內政部國土測量中心 2011"
+};
+var Taiwan_General_EMAP_MapOptions = {
+    getTileUrl: function(a, b) {
+		return 'http://wmts.nlsc.gov.tw/wmts/EMAP/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 20,
+    minZoom: 9,
+    name: "EMAP",
     alt: "內政部國土測量中心 2011"
 };
 //var Taiwan_Formosat_2011_MapOptions = {
@@ -157,9 +165,10 @@ var MOI_OSM_Options = {
     getTileUrl: function(a, b) {
       //  return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
 	return "http://rudy.tile.basecamp.tw/" + b + "/" + a.x + "/" + a.y + ".png";
+	//return "http://map.happyman.idv.tw/~mountain/mapserv/TW50K_1966.php?zoom=" + b + "&x=" + a.x + "&y=" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
-    maxZoom: 19,
+    maxZoom: 18,
     name: "OSM",
     alt: "MOI_OSM @Rudy"
 };
@@ -170,7 +179,7 @@ var MOI_OSM_TWMAP_Options = {
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
     name: "OSM",
-    alt: "MOI_OSM @Rudy"
+    alt: "MOI_OSM @Rudy + TWMAP Style"
 };
 var Hillshading_Options = {
     getTileUrl: function(a, b) {
@@ -181,15 +190,15 @@ var Hillshading_Options = {
     name: "陰影",
     alt: "Taiwan hillshading"
 };
-var MOI_OSM_GPX_Options = {
-    getTileUrl: function(a, b) {
-        return 'http://rs.happyman.idv.tw/map/moi_osm_gpx/' + b + "/" + a.x + "/	" + a.y + ".png";
-    },
-    tileSize: new google.maps.Size(256, 256),
-    maxZoom: 19,
-    name: "OSM_GPX",
-    alt: "MOI_OSM +GPX"
-};
+//var MOI_OSM_GPX_Options = {
+//    getTileUrl: function(a, b) {
+//        return 'http://rs.happyman.idv.tw/map/moi_osm_gpx/' + b + "/" + a.x + "/	" + a.y + ".png";
+//    },
+//    tileSize: new google.maps.Size(256, 256),
+//    maxZoom: 19,
+//    name: "OSM_GPX",
+//    alt: "MOI_OSM +GPX"
+//};
 
 var Darker_Options = {
     getTileUrl: function(a, b) {
@@ -245,10 +254,11 @@ var TW5KArielPIC_Options = {
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
 var TaiwanGpxMapType = new google.maps.ImageMapType(TaiwanGpxMapOptions);
-var MOI_OSM_GPX_MapType = new google.maps.ImageMapType(MOI_OSM_GPX_Options);
+// var MOI_OSM_GPX_MapType = new google.maps.ImageMapType(MOI_OSM_GPX_Options);
 var MOI_OSM_TWMAP_MapType = new google.maps.ImageMapType(MOI_OSM_TWMAP_Options);
 //  背景
 var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_2011_MapOptions);
+var Taiwan_General_EMAP_MapType = new google.maps.ImageMapType(Taiwan_General_EMAP_MapOptions);
 var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
 var MOI_OSM_MapType = new google.maps.ImageMapType(MOI_OSM_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
@@ -273,6 +283,7 @@ var copyrights =    {
 	 'twmapv1' : "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 經建一版 1985~1989",
 	 'taiwan' : "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 經建三版 1999~2001",
 	 'general2011': "<a target=\"_blank\" href=\"http://www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖正射影像",
+	 'nlsc_emap': "<a target=\"_blank\" href=\"http://www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖",
 	 'moi_osm': '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA' + "<a target=\"_blank\" href=\"https://dl.dropboxusercontent.com/u/899714/maps/taiwan_topo.html\">Taiwan TOPO By Rudy</a>",
 	 'fandi': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 番地地形圖 1907~1916",
 	 'jm50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 日治五萬分之一(陸軍測量部 1924~1944)",
@@ -1468,7 +1479,7 @@ function initialize() {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "theme", 'fandi', 'jm50k','tw50k','hillshading', 'tw5kariel', 'general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "nlsc_emap", "theme", 'fandi', 'jm50k','tw50k','hillshading', 'tw5kariel', 'general2011']
         }
     });
 	
@@ -1507,13 +1518,14 @@ function initialize() {
     map.mapTypes.set('twmapv1', TaiwanMapV1MapType);
     map.mapTypes.set('taiwan', TaiwanMapType);
     map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
+	map.mapTypes.set('nlsc_emap', Taiwan_General_EMAP_MapType);
     map.mapTypes.set('osm', OSM_MapType);
     map.mapTypes.set('moi_osm', MOI_OSM_MapType);
 	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);
     map.mapTypes.set('fandi', FanDi_MapType);
     map.mapTypes.set('jm50k', JM50K1924_MapType);
     map.mapTypes.set('tw50k', TW50K1956_MapType);
-	map.mapTypes.set('moi_osm_gpx', MOI_OSM_GPX_MapType);
+	// map.mapTypes.set('moi_osm_gpx', MOI_OSM_GPX_MapType);
 	map.mapTypes.set('hillshading', Hillshading_MapType);
 	map.mapTypes.set('tw5kariel', TW5KArielPIC_MapType);
 	if (getParameterByName("theme") == 'ingress')

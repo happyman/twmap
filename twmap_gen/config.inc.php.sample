@@ -35,10 +35,18 @@ $stitch['A4']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
 $stitch['A4']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
 $stitch['A4R']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
 $stitch['A4R']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
+$stitch['A3']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
+$stitch['A3']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
+$stitch['A3R']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
+$stitch['A3R']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
 $tiles['A4'] = array('x'=>5, 'y'=>7);
 $tiles['A4R'] = array('x'=>7, 'y'=>5);
 $pixels['A4'] = array("x"=>1492, "y"=>2110);
 $pixels['A4R'] = array("x"=>2110, "y"=>1492);
+$tiles['A3'] = array('x'=>7, 'y'=>10);
+$tiles['A3R'] = array('x'=>10, 'y'=>7);
+$pixels['A3'] = array("x"=>2110, "y"=>2984);
+$pixels['A43'] = array("x"=>2984, "y"=>2110);
 
 $fuzzy = 20;
 

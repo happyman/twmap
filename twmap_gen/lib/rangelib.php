@@ -565,6 +565,19 @@ function determine_type($x, $y, $page46=0) {
 	// all A4 橫式
 	return 'A4';
 }
+function determine_type_a3($x, $y) {
+
+		$pageX = 7;
+		$pageY = 10;
+
+	$a4 = ceil($x/$pageX) * ceil($y/$pageY);
+	$a4r = ceil($x/$pageY) * ceil($y/$pageX);
+	if($a4-$a4r > 0 ) {
+		return 'A3R';
+	}
+	// all A4 橫式
+	return 'A3';
+}
 /**
  * resizeA4
  * 強制 A4 大小
