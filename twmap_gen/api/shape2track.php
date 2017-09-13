@@ -26,8 +26,9 @@ if ( $dev ) {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
+    header("Content-Type: application/json; charset=utf-8");
 }
-header("Content-Type: application/json; charset=utf-8");
+
 
 define('ROOT3HALF', 0.86602540378);
 
@@ -43,8 +44,6 @@ $proj4 = new Proj4php();
 $projLatLon = new Proj('EPSG:4326', $proj4);
 $projUTM    = new Proj('EPSG:3857', $proj4);
 // ---------- End of proj4php codes
-
-
 
 // Default value for $input is for testing purpose
 $input = '{
@@ -243,8 +242,20 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
         $filename = 'shapes.kml';
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>'
                               .'<kml xmlns="http://www.opengis.net/kml/2.2">'
+							  .'<Document></Document>'
                               .'</kml>');
-        $meta = $xml->addChild('metadata');
+        //$meta = $xml->addChild('metadata');
+        $xml->addChild('name', 'Exported Shapes');
+        $xml->addChild('description', 'Drawn shapes exported from happyman/twmap');
+        $Style = $xml->addChild('Style');
+        $Style->addAttribute('id', 'shape_style');
+        $LineStyle = $Style->addChild('LineStyle');
+        $LineStyle->addChild('color', '99000000');
+        $PolyStyle = $Style->addChild('PolyStyle');
+        $PolyStyle->addChild('color', '33000000');
+        $PolyStyle->addChild('fill', '1');
+        $PolyStyle->addChild('outline', '1');
+		$Folder = $xml->addChild('Folder');
     } else {
         $filename = 'shapes.gpx';
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="no" ?>'
@@ -281,9 +292,10 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                 $valid = true;
                 
                 if ( $type==='kml' ) {
-                    $Placemark = $xml->addChild('Placemark');
+                    $Placemark = $Folder->addChild('Placemark');
                     $name = $Placemark->addChild('name', $shapename);
                     $Polygon = $Placemark->addChild('Polygon');
+                    $Polygon->addChild('styleUrl', '#shape_style');
                     $outerBoundaryIs = $Polygon->addChild('outerBoundaryIs');
                     $LinearRing = $outerBoundaryIs->addChild('LinearRing');
                     $coordinatesstr = '';
@@ -321,7 +333,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
         } else if ( $shape->type==='polyline' && sizeof($shape->path) > 0 ) {
             if ( property_exists($shape, 'path') ) {
                 if ( $type==='kml' ) {
-                    $Placemark = $xml->addChild('Placemark');
+                    $Placemark = $Folder->addChild('Placemark');
                     $name = $Placemark->addChild('name', $shapename);
                     $LineString = $Placemark->addChild('LineString');
                     $coordinatesstr = '';
@@ -353,7 +365,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
             if ( property_exists($shape, 'paths') && sizeof($shape->paths) > 0 ) {
                 foreach ( $shape->paths as $pathindex => $path) {
                     if ( $type==='kml' ) {
-                        $Placemark = $xml->addChild('Placemark');
+                        $Placemark = $Folder->addChild('Placemark');
                         $name = $Placemark->addChild('name', $shapename);
                         $Polygon = $Placemark->addChild('Polygon');
                         $outerBoundaryIs = $Polygon->addChild('outerBoundaryIs');
@@ -528,7 +540,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
 
                 // Write xml
                 if ( $type==='kml' ) {
-                    $Placemark = $xml->addChild('Placemark');
+                    $Placemark = $Folder->addChild('Placemark');
                     $name = $Placemark->addChild('name', $index.': center');
                     {
                         $Point = $Placemark->addChild('Point');
@@ -536,6 +548,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                         $coordinates = $Point->addChild('coordinates', $coordinatesstr);
                         
                         $Polygon = $Placemark->addChild('Polygon');
+                        $Polygon->addChild('styleUrl', '#shape_style');
                         $outerBoundaryIs = $Polygon->addChild('outerBoundaryIs');
                         $LinearRing = $outerBoundaryIs->addChild('LinearRing');
 
@@ -580,12 +593,16 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
 
 if ( $valid && $xml ) {
     if ( $dev ) {
-        echo $xml->asXML().PHP_EOL;
-
+		$dom = dom_import_simplexml($xml)->ownerDocument;
+		$dom->formatOutput = true;
+		echo $dom->saveXML();
     } else {
         header("Content-Type: application/xml; charset=utf-8");
         header('Content-Disposition: attachment; filename="'.$filename.'"');
-        echo $xml->asXML();
+        //echo $xml->asXML();
+		$dom = dom_import_simplexml($xml)->ownerDocument;
+		$dom->formatOutput = true;
+		echo $dom->saveXML();
     }
 } else {
 
