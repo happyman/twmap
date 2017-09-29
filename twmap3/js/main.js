@@ -169,8 +169,8 @@ var MOI_OSM_Options = {
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 18,
-    name: "OSM",
-    alt: "MOI_OSM @Rudy"
+    name: "魯地圖",
+    alt: "Taiwan TOPO @Rudy"
 };
 var MOI_OSM_TWMAP_Options = {
     getTileUrl: function(a, b) {
@@ -178,8 +178,8 @@ var MOI_OSM_TWMAP_Options = {
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
-    name: "OSM",
-    alt: "MOI_OSM @Rudy + TWMAP Style"
+    name: "魯地圖",
+    alt: "Taiwan TOPO + twmap Style"
 };
 var Hillshading_Options = {
     getTileUrl: function(a, b) {
