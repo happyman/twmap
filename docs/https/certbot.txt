@@ -1,0 +1,214 @@
+# cat ape
+=-=-=-=-=-
+#!/usr/bin/php
+<?php
+function out($inp){
+
+$a="<VirtualHost *:80>
+   Servername %sape.happyman.idv.tw
+ #  ServerAlias *.ape.happyman.idv.tw
+   DocumentRoot \"/opt/twmap/aped\"
+         ProxyRequests Off
+
+        <directory proxy:*>
+                Order deny,allow
+                Deny from all
+                Allow from all
+        </directory>
+        ProxyPass /         http://127.0.0.1:6969/
+        ProxyPassReverse /         http://127.0.0.1:6969/
+ #  ErrorLog \${APACHE_LOG_DIR}/error.ape.log
+ #  CustomLog \${APACHE_LOG_DIR}/access.ape.log combined
+</VirtualHost>
+";
+
+$fname=sprintf("%sape.conf",$inp);
+$fp=fopen($fname,"w");
+fprintf($fp,$a,$inp);
+fclose($fp);
+}
+out("");
+for($i=0;$i<=10;$i++){
+        out("$i.");
+}
+=-=-=
+#php ape
+=-=-=-
+# ls
+0.ape.conf   1.ape.conf  3.ape.conf  5.ape.conf  7.ape.conf  9.ape.conf  ape.conf
+10.ape.conf  2.ape.conf  4.ape.conf  6.ape.conf  8.ape.conf  ape        
+# mv *.conf /etc/apache2/sites-available/
+# a2ensite 0.ape
+Enabling site 0.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 1.ape
+Enabling site 1.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 2.ape
+Enabling site 2.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 3.ape
+Enabling site 3.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 4.ape
+Enabling site 4.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 5.ape
+Enabling site 5.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 6.ape
+Enabling site 6.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 7.ape
+Enabling site 7.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 8.ape
+Enabling site 8.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 9.ape
+Enabling site 9.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite 10.ape
+Enabling site 10.ape.
+To activate the new configuration, you need to run:
+  service apache2 reload
+# a2ensite ape
+Site ape already enabled
+# service apaceh2 reload
+apaceh2: unrecognized service
+# certbot --apache
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+
+Which names would you like to activate HTTPS for?
+-------------------------------------------------------------------------------
+1: ape.happyman.idv.tw
+2: 0.ape.happyman.idv.tw
+3: 1.ape.happyman.idv.tw
+4: 10.ape.happyman.idv.tw
+5: 2.ape.happyman.idv.tw
+6: 3.ape.happyman.idv.tw
+7: 4.ape.happyman.idv.tw
+8: 5.ape.happyman.idv.tw
+9: 6.ape.happyman.idv.tw
+10: 7.ape.happyman.idv.tw
+11: 8.ape.happyman.idv.tw
+12: 9.ape.happyman.idv.tw
+13: map.happyman.idv.tw
+14: rs.happyman.idv.tw
+-------------------------------------------------------------------------------
+Select the appropriate numbers separated by commas and/or spaces, or leave input
+blank to select all options shown (Enter 'c' to cancel):
+
+-------------------------------------------------------------------------------
+You have an existing certificate that contains a portion of the domains you
+requested (ref: /etc/letsencrypt/renewal/map.happyman.idv.tw.conf)
+
+It contains these names: map.happyman.idv.tw, rs.happyman.idv.tw
+
+You requested these names for the new certificate: ape.happyman.idv.tw,
+0.ape.happyman.idv.tw, 1.ape.happyman.idv.tw, 10.ape.happyman.idv.tw,
+2.ape.happyman.idv.tw, 3.ape.happyman.idv.tw, 4.ape.happyman.idv.tw,
+5.ape.happyman.idv.tw, 6.ape.happyman.idv.tw, 7.ape.happyman.idv.tw,
+8.ape.happyman.idv.tw, 9.ape.happyman.idv.tw, map.happyman.idv.tw,
+rs.happyman.idv.tw.
+
+Do you want to expand and replace this existing certificate with the new
+certificate?
+-------------------------------------------------------------------------------
+(E)xpand/(C)ancel: E
+Renewing an existing certificate
+Performing the following challenges:
+tls-sni-01 challenge for ape.happyman.idv.tw
+tls-sni-01 challenge for 0.ape.happyman.idv.tw
+tls-sni-01 challenge for 1.ape.happyman.idv.tw
+tls-sni-01 challenge for 10.ape.happyman.idv.tw
+tls-sni-01 challenge for 2.ape.happyman.idv.tw
+tls-sni-01 challenge for 3.ape.happyman.idv.tw
+tls-sni-01 challenge for 4.ape.happyman.idv.tw
+tls-sni-01 challenge for 5.ape.happyman.idv.tw
+tls-sni-01 challenge for 6.ape.happyman.idv.tw
+tls-sni-01 challenge for 7.ape.happyman.idv.tw
+tls-sni-01 challenge for 8.ape.happyman.idv.tw
+tls-sni-01 challenge for 9.ape.happyman.idv.tw
+tls-sni-01 challenge for map.happyman.idv.tw
+tls-sni-01 challenge for rs.happyman.idv.tw
+Waiting for verification...
+Cleaning up challenges
+Deploying Certificate for ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 0.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 1.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 10.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 2.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 3.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 4.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 5.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 6.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 7.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 8.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for 9.ape.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/ape-le-ssl.conf
+Deploying Certificate for map.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/000-default-le-ssl.conf
+Deploying Certificate for rs.happyman.idv.tw to VirtualHost /etc/apache2/sites-available/rs-le-ssl.conf
+
+Please choose whether or not to redirect HTTP traffic to HTTPS, removing HTTP access.
+-------------------------------------------------------------------------------
+1: No redirect - Make no further changes to the webserver configuration.
+2: Redirect - Make all requests redirect to secure HTTPS access. Choose this for
+new sites, or if you're confident your site works on HTTPS. You can undo this
+change by editing your web server's configuration.
+-------------------------------------------------------------------------------
+Select the appropriate number [1-2] then [enter] (press 'c' to cancel): 1
+
+-------------------------------------------------------------------------------
+Your existing certificate has been successfully renewed, and the new certificate
+has been installed.
+
+The new certificate covers the following domains: https://ape.happyman.idv.tw,
+https://0.ape.happyman.idv.tw, https://1.ape.happyman.idv.tw,
+https://10.ape.happyman.idv.tw, https://2.ape.happyman.idv.tw,
+https://3.ape.happyman.idv.tw, https://4.ape.happyman.idv.tw,
+https://5.ape.happyman.idv.tw, https://6.ape.happyman.idv.tw,
+https://7.ape.happyman.idv.tw, https://8.ape.happyman.idv.tw,
+https://9.ape.happyman.idv.tw, https://map.happyman.idv.tw, and
+https://rs.happyman.idv.tw
+
+You should test your configuration at:
+https://www.ssllabs.com/ssltest/analyze.html?d=ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=0.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=1.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=10.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=2.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=3.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=4.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=5.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=6.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=7.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=8.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=9.ape.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=map.happyman.idv.tw
+https://www.ssllabs.com/ssltest/analyze.html?d=rs.happyman.idv.tw
+-------------------------------------------------------------------------------
+
+IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/map.happyman.idv.tw/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/map.happyman.idv.tw/privkey.pem
+   Your cert will expire on 2017-12-27. To obtain a new or tweaked
+   version of this certificate in the future, simply run certbot again
+   with the "certonly" option. To non-interactively renew *all* of
+   your certificates, run "certbot renew"
+ - If you like Certbot, please consider supporting our work by:
+
+   Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+   Donating to EFF:                    https://eff.org/donate-le
+

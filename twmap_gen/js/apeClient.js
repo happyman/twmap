@@ -191,6 +191,7 @@ APE.Config.baseUrl = mydir; //APE JSF
 APE.Config.domain = 'auto'; 
 //APE.Config.server = 'ape.happyman.dev.xuite.net'; //APE server URL
 APE.Config.transport = 2; //jsonp 
+APE.Config.secure = 1;
 
 (function(){
 	for (var i = 0; i < arguments.length; i++)
