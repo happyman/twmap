@@ -6,9 +6,10 @@ require_once(__ROOT__."lib/STB.inc.php");
 require_once(__ROOT__."lib/svglib.php");
 require_once(__ROOT__."lib/phpwee-php-minifier/phpwee.php");
 
+$protocol = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
 $out_root = "/srv/www/htdocs/map/out";
 $out_html_root = "/map/out";
-$site_url = "http://map.happyman.idv.tw";
+$site_url = $protocol . "map.happyman.idv.tw";
 $site_html_root = "/twmap";
 // 30 for SuSE, 33 for Ububtu
 define('WWWRUN_UID', 33);

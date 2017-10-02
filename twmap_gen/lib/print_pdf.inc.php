@@ -24,12 +24,16 @@ class print_pdf {
 	var $outfile = "";
 	var $do_cleanup = 1;
 	var $paramok = 0;
+	var $a3 = 0;
 
 	function png2pdf() {
 		$i=0;
 		foreach($this->infiles as $infile) {
 			$this->outfiles[$i] = $infile.".pdf";
 			// consider margin
+			if ($this->a3 == 1)
+			$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 11.69 -height 16.53 -imagewidth 11.69 -imageheight 16.53 |ps2pdf -r300x300 -sPAPERSIZE=a4 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
+				else
 			$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 8.27 -height 11.69 -imagewidth 8.27 -imageheight 11.69 |ps2pdf -r300x300 -sPAPERSIZE=a4 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
 			$i++;
 			if ($this->print_cmd)
@@ -72,6 +76,7 @@ class print_pdf {
 		if (isset($opt['do_cleanup']) && $opt['do_cleanup'] == 1) $this->do_cleanup = 0;
 		if (isset($opt['quiet']) && $opt['quiet'] == 1) $this->print_cmd = 0;
 		if (isset($opt['outfile'])) $this->outfile = $opt['outfile'];
+		if (isset($opt['a3'])) $this->a3 = $opt['a3'];
 	}
 	function doit() {
 		if ($this->paramok == 1 ) {

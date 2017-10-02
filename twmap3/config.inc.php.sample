@@ -1,6 +1,7 @@
 <?php
 // site url: 還沒用到
-$site_url = "http://map.happyman.idv.tw";
+$protocol = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
+$site_url = $protocol . "map.happyman.idv.tw";
 
 // 地圖瀏覽器的 url prefix
 $site_html_root = "/~happyman/twmap3/";

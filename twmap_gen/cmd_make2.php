@@ -23,6 +23,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "          1 is done then go to 2, 3 ..\n";
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
 	echo "       -G merge user track_logs\n";
+	echo "       -3 for A3 output\n";
 	echo "       -l channel:uniqid to notify web, email from web interface\n";
 	exit(1);
 }
@@ -301,7 +302,7 @@ cli_msglog("ps%90");
 if ($stage >= $jump) {
 	// 產生 pdf
 	require_once("lib/print_pdf.inc.php");
-	$pdf = new print_pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix), 'outfile' => $outpdf, 'infiles' => $simage));
+	$pdf = new print_pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix), 'outfile' => $outpdf, 'infiles' => $simage, 'a3' => $opt['3']? 1 : 0 ));
 	$pdf->print_cmd = 0;
 	$pdf->doit();
 	cli_msglog("save pdf for print...");
