@@ -32,7 +32,7 @@ class print_pdf {
 			$this->outfiles[$i] = $infile.".pdf";
 			// consider margin
 			if ($this->a3 == 1)
-			$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 11.69 -height 16.53 -imagewidth 11.69 -imageheight 16.53 |ps2pdf -r300x300 -sPAPERSIZE=a4 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
+			$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 11.69 -height 16.53 -imagewidth 11.69 -imageheight 16.53 |ps2pdf -r300x300 -sPAPERSIZE=a3 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
 				else
 			$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 8.27 -height 11.69 -imagewidth 8.27 -imageheight 11.69 |ps2pdf -r300x300 -sPAPERSIZE=a4 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
 			$i++;

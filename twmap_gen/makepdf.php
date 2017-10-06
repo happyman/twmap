@@ -28,10 +28,10 @@ if (empty($imgarr)){
 print_r($imgarr);
 //  // 排序一下
 usort($imgarr, 'indexcmp');
-$pdf = new print_pdf(array('title'=> $map['title'], 'subject'=> str_replace(".tag.png", "", basename($map['filename'])), 'outfile' => str_replace("png","pdf",$map['filename']), 'infiles' => $imgarr));
+$pdf = new print_pdf(array('title'=> $map['title'], 'subject'=> str_replace(".tag.png", "", basename($map['filename'])), 'outfile' => str_replace("tag.png","pdf",$map['filename']), 'infiles' => $imgarr, "a3"=>1));
 $pdf->print_cmd = 1;
 $pdf->doit();
 // $pdf->create_pdf_meta();
 
-readfile(dirname($map['filename']) . "/info.txt");
+// readfile(dirname($map['filename']) . "/info.txt");
 

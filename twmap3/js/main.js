@@ -46,9 +46,10 @@ var GPSLayer; // external kml layer
 
 var TaiwanMapV1Options = {
     getTileUrl: function(a, b) {
-        var z = 17 - b;
+        //var z = 17 - b;
         // return "http://rs.happyman.idv.tw/fcgi-bin/mapserv.fcgi?x=" + a.x + "&y=" + a.y + "&zoom=" + z;
-		return "http://gis.sinica.edu.tw/googlemap/TM25K_1989/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+		//return "http://gis.sinica.edu.tw/googlemap/TM25K_1989/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+		return "//rs.happyman.idv.tw/map/sinica/TM25K_1989/"+b+"/"+a.x+"/"+a.y+".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 15,
@@ -59,7 +60,7 @@ var TaiwanMapV1Options = {
 
 var TaiwanMapOptions = {
     getTileUrl: function(coord, zoom) {
-        return "http://rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
+        return "//rs.happyman.idv.tw/map/tw25k2001/zxy/" + zoom + "_" + coord.x + "_" + coord.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 17,
@@ -70,7 +71,7 @@ var TaiwanMapOptions = {
 // 沒有使用了
 var TaiwanGpxMapOptions = {
     getTileUrl: function(a, b) {
-        return 'http://rs.happyman.idv.tw/map/twmap_gpx/' + b + "_" + a.x + "_" + a.y + ".png";
+        return '/rs.happyman.idv.tw/map/twmap_gpx/' + b + "_" + a.x + "_" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 17,
@@ -92,7 +93,7 @@ var GoogleNameOptions = {
 var NLSCNameOptions = {
     getTileUrl: function(a, b) {
        // return 'http://maps.nlsc.gov.tw/S_Maps/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=EMAP2&STYLE=_null&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:' + b + "&TILEROW=" + a.y + "&TILECOL=" + a.x + "&FORMAT=image%2Fpng";
-	   return 'http://wmts.nlsc.gov.tw/wmts/EMAP2/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
+	   return '//wmts.nlsc.gov.tw/wmts/EMAP2/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -101,7 +102,7 @@ var NLSCNameOptions = {
 };
 var GPXTrackOptions = {
     getTileUrl: function(a, b) {
-        return 'http://rs.happyman.idv.tw/map/gpxtrack/' + b + "/" + a.x + "/" + a.y + ".png";
+        return '//rs.happyman.idv.tw/map/gpxtrack/' + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -123,7 +124,7 @@ var GPXTrackOptions = {
 //}
 var Taiwan_General_2011_MapOptions = {
     getTileUrl: function(a, b) {
-		return 'http://wmts.nlsc.gov.tw/wmts/PHOTO2/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
+		return '//wmts.nlsc.gov.tw/wmts/PHOTO2/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
     },
     tileSize: new google.maps.Size(256, 256),
 
@@ -134,7 +135,7 @@ var Taiwan_General_2011_MapOptions = {
 };
 var Taiwan_General_EMAP_MapOptions = {
     getTileUrl: function(a, b) {
-		return 'http://wmts.nlsc.gov.tw/wmts/EMAP/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
+		return '//wmts.nlsc.gov.tw/wmts/EMAP/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 20,
@@ -154,7 +155,7 @@ var Taiwan_General_EMAP_MapOptions = {
 //}
 var OSM_Options = {
     getTileUrl: function(a, b) {
-        return "http://a.tile.openstreetmap.org/" + b + "/" + a.x + "/" + a.y + ".png";
+        return "//a.tile.openstreetmap.org/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -163,8 +164,8 @@ var OSM_Options = {
 };
 var MOI_OSM_Options = {
     getTileUrl: function(a, b) {
-      //  return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
-	return "http://rudy.tile.basecamp.tw/" + b + "/" + a.x + "/" + a.y + ".png";
+		//  return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
+		return "//rudy.tile.basecamp.tw/" + b + "/" + a.x + "/" + a.y + ".png";
 	//return "http://map.happyman.idv.tw/~mountain/mapserv/TW50K_1966.php?zoom=" + b + "&x=" + a.x + "&y=" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
@@ -174,7 +175,7 @@ var MOI_OSM_Options = {
 };
 var MOI_OSM_TWMAP_Options = {
     getTileUrl: function(a, b) {
-        return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
+        return "//rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -183,7 +184,7 @@ var MOI_OSM_TWMAP_Options = {
 };
 var Hillshading_Options = {
     getTileUrl: function(a, b) {
-        return 'http://rs.happyman.idv.tw/map/hillshading/' + b + "/" + a.x + "/	" + a.y + ".png";
+        return '//rs.happyman.idv.tw/map/hillshading/' + b + "/" + a.x + "/	" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -202,7 +203,7 @@ var Hillshading_Options = {
 
 var Darker_Options = {
     getTileUrl: function(a, b) {
-        return "http://b.basemaps.cartocdn.com/dark_all/" + b + "/" + a.x + "/" + a.y + ".png";
+        return "//b.basemaps.cartocdn.com/dark_all/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -211,8 +212,9 @@ var Darker_Options = {
 };
 var Fandi_Options = {
     getTileUrl: function(a, b) {
-        var z = 17 - b;
-        return "http://gis.sinica.edu.tw/googlemap/JM50K_1916/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+        //var z = 17 - b;
+        //return "http://gis.sinica.edu.tw/googlemap/JM50K_1916/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+		return "//rs.happyman.idv.tw/map/sinica/JM50K_1916/"+b+"/"+a.x+"/"+a.y+".png";
     },
     tileSize: new google.maps.Size(256, 256),
     name: "蕃地",
@@ -222,8 +224,9 @@ var Fandi_Options = {
 
 var JM50K1924_Options = {
     getTileUrl: function(a, b) {
-        var z = 17 - b;
-        return "http://gis.sinica.edu.tw/googlemap/JM50K_1924/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+        //var z = 17 - b;
+        //return "http://gis.sinica.edu.tw/googlemap/JM50K_1924/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+		return "//rs.happyman.idv.tw/map/sinica/JM50K_1924/"+b+"/"+a.x+"/"+a.y+".png";
     },
     tileSize: new google.maps.Size(256, 256),
     name: "陸測",
@@ -232,8 +235,9 @@ var JM50K1924_Options = {
 };
 var TW50K1956_Options = {
     getTileUrl: function(a,b) {
- 	var z = 17-b;
-	return "http://gis.sinica.edu.tw/googlemap/TM50K_1956/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+		//var z = 17-b;
+		//return "http://gis.sinica.edu.tw/googlemap/TM50K_1956/" + z + "/" + a.x + "/IMG_" + a.x + "_" + a.y + "_" + z + ".jpg";
+	return "//rs.happyman.idv.tw/map/sinica/TM50K_1956/"+b+"/"+a.x+"/"+a.y+".png";
     },
     tileSize: new google.maps.Size(256, 256),
     name: "老5萬",
@@ -243,7 +247,7 @@ var TW50K1956_Options = {
 var TW5KArielPIC_Options = {
 	getTileUrl: function(a, b) {
 		var y_tms = (1 << b) - a.y - 1;
-        return "http://rs.happyman.idv.tw/~mountain/tw5k/"+ b + "/" + a.x + "/" + y_tms + ".png";
+        return "//rs.happyman.idv.tw/~mountain/tw5k/"+ b + "/" + a.x + "/" + y_tms + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 17,
@@ -282,8 +286,8 @@ var google_div__span_created = 0;
 var copyrights =    {
 	 'twmapv1' : "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 經建一版 1985~1989",
 	 'taiwan' : "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 經建三版 1999~2001",
-	 'general2011': "<a target=\"_blank\" href=\"http://www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖正射影像",
-	 'nlsc_emap': "<a target=\"_blank\" href=\"http://www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖",
+	 'general2011': "<a target=\"_blank\" href=\"//www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖正射影像",
+	 'nlsc_emap': "<a target=\"_blank\" href=\"//www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖",
 	 'moi_osm': '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA' + "<a target=\"_blank\" href=\"https://dl.dropboxusercontent.com/u/899714/maps/taiwan_topo.html\">Taiwan TOPO By Rudy</a>",
 	 'fandi': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 番地地形圖 1907~1916",
 	 'jm50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 日治五萬分之一(陸軍測量部 1924~1944)",
@@ -771,8 +775,8 @@ function locInfo_show(newpos, ele, extra) {
    // /* allow from all points
     if (ele > -1000) 
 	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
-	content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
-	content += "<a href='http://maps.nlsc.gov.tw/O09/mapshow.action?zoom=" + map.getZoom() + "&lon=" + newpos.lng().toFixed(5) + "&lat=" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
+	content += "<a href='//mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
+	content += "<a href='//maps.nlsc.gov.tw/O09/mapshow.action?zoom=" + map.getZoom() + "&lon=" + newpos.lng().toFixed(5) + "&lat=" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
 	content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
 				
     //*/
@@ -840,7 +844,7 @@ function tagInfo(newpos, id) {
 				content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
 				content += data[0].story;
 				content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img title='通視模擬' id=\"los_eye_img\" src=img/eye.png width=32/></a>";
-				content += "<a href='http://mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc' ><img src=img/mc.png title='地圖對照器' /></a>";
+				content += "<a href='//mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc' ><img src=img/mc.png title='地圖對照器' /></a>";
 				content += "</div>";
 			}
 			centerInfo.setContent(content);
