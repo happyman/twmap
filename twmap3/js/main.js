@@ -165,11 +165,12 @@ var OSM_Options = {
 var MOI_OSM_Options = {
     getTileUrl: function(a, b) {
 		//  return "http://rs.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
-		return "//rudy.tile.basecamp.tw/" + b + "/" + a.x + "/" + a.y + ".png";
+		//return "//rudy.tile.basecamp.tw/" + b + "/" + a.x + "/" + a.y + ".png";
 	//return "http://map.happyman.idv.tw/~mountain/mapserv/TW50K_1966.php?zoom=" + b + "&x=" + a.x + "&y=" + a.y + ".png";
+	return "//rs.happyman.idv.tw/map/rudy/" + b + "/" + a.x + "/" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
-    maxZoom: 18,
+    maxZoom: 20,
     name: "魯地圖",
     alt: "Taiwan TOPO @Rudy"
 };
