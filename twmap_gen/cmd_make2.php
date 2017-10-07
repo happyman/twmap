@@ -32,7 +32,7 @@ list($startx,$starty,$shiftx,$shifty)=explode(":",$opt['r']);
 if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) )
 	cli_error_out("參數錯誤");
 
-$version=$opt['v'];
+$version=isset($opt['v'])?$opt['v']:2016;
 $title=$opt['t'];
 $keep_color = (isset($opt['c']))? 1 : 0;
 $ph = isset($opt['p'])? $opt['p'] : 0;

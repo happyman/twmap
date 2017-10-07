@@ -47,7 +47,7 @@ $pixels['A4R'] = array("x"=>2110, "y"=>1492);
 $tiles['A3'] = array('x'=>7, 'y'=>10);
 $tiles['A3R'] = array('x'=>10, 'y'=>7);
 $pixels['A3'] = array("x"=>2110, "y"=>2984);
-$pixels['A43'] = array("x"=>2984, "y"=>2110);
+$pixels['A3R'] = array("x"=>2984, "y"=>2110);
 
 $fuzzy = 20;
 
