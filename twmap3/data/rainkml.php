@@ -1,14 +1,16 @@
 <?php
 
-// 產生 cwb 降雨 kml
+// 產生 cwb 降雨 kml'
+//http://www.cwb.gov.tw/V7/forecast/fcst/QPF.htm
 // forecast 
 //   * http://www.cwb.gov.tw/V7/forecast/fcst/Data/QPF_ChFcstPrecip12.jpg 12hr
 //   * http://www.cwb.gov.tw/V7/forecast/fcst/Data/QPF_ChFcstPrecip24.jpg 24hr
 //   observation
-//   * http://www.cwb.gov.tw/V7/observe/rainfall/Data/hk129000.jpg -2day (-1day) 
-//   * http://www.cwb.gov.tw/V7/observe/rainfall/Data/hk130000.jpg -1day (today)
+//   * http://www.cwb.gov.tw/V7/observe/rainfall/Data/hka29000.jpg -2day (-1day) 
+//   * http://www.cwb.gov.tw/V7/observe/rainfall/Data/hka30000.jpg -1day (today)
 //   * http://www.cwb.gov.tw/V7/observe/rainfall/Data/hk.jpg now, 會自動 link 到相對應的時間
-//   猜測是 hk 結束時間 hk130103 => 1/30 10:30 
+//    hk 結束時間 hka13103 => 1/30 10:30 
+//
 
 function outkml($name,$url,$type='forecast',$opacity=0.5) {
 header('Content-type: application/vnd.google-earth.kml+xml');
@@ -65,18 +67,18 @@ switch($term) {
 		break;
 		case 'o2d':
 			$name = '前日雨量';
-			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hk%s000.jpg', date("nd",strtotime("-1 day")));
+			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hka%s000.jpg', date("d",strtotime("-1 day")));
 			$type = 'observation';
 		break;
 		case 'o1d':
 			$name = '前日雨量';
-			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hk%s000.jpg', date("nd",strtotime("today")));
+			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hka%s000.jpg', date("d",strtotime("today")));
 			$type = 'observation';
 		break;
 		case 'now':
 			$name = '今日累積雨量';
 			$half = (date("i")<30)? 0 : 3;
-			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hk%s%d.jpg', date("ndG"), $half);
+			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hka%s%d.jpg', date("dG"), $half);
 			$type = 'observation';
 		break;
 		default:
