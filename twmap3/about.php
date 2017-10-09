@@ -60,6 +60,7 @@ $(document).ready(function() {
 							?><a href='<?php echo $site_twmap_html_root;?>/api/uploadpage.php'>上載</a>行跡檔.	
 						<?php } ?>
 			<li>可以在地圖上畫線/多邊形 計算長度/面積。
+			<li>POI search: 找圖上的關鍵字 <a href='<?php echo $site_twmap_html_root;?>/api/poi_search.php?name=玉山%25'>玉山%</a>
 			</ul>	
 			其他:
 			<ul>

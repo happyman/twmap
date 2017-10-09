@@ -73,6 +73,7 @@ printf("var get_waypoints_url = '%s';\n",$CONFIG['get_waypoints_url']);
 printf("var get_elev_url = '%s';\n",$CONFIG['get_elev_url']);
 printf("var viewshed_url = '%s';\n",$CONFIG['viewshed_url']);
 printf("var exportkml_url = '%s';\n", $CONFIG['exportkml_url']);
+printf("var poisearch_url = '%s';\n", $CONFIG['poisearch_url']);
 printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php?tab=0&");
 ?>
 </script>

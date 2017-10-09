@@ -22,6 +22,7 @@ $CONFIG['viewshed_url'] = $site_twmap_html_root . "api/get_line_of_sight.php";
 $CONFIG['pointdata_admin_url'] = $site_twmap_html_root . "admin/index.php";
 $CONFIG['promlist_url'] = $site_twmap_html_root . "admin/promlist.php";
 $CONFIG['exportkml_url'] = $site_twmap_html_root . "api/exportkml.php";
+$CONFIG['poisearch_url'] = $site_twmap_html_root . "api/poi_search.php";
 
 // 資料庫連線參數
 $CONFIG['db'] = array('host'=> 'localhost', 'db' => 'twmap', 'user'=> 'user', 'pass' => 'password');

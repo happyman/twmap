@@ -124,4 +124,5 @@ $CONFIG['admin'] = array();
 //  gdalwarp -t_srs EPSG:4326 dem_20m.tif dem_20m-latlong.tif
 //  source: http://data.gov.tw/node/35430
 define('twDEM_path', __ROOT__ ."db/DEM/dem_20m-latlong.tif");
+$CONFIG['poi_file'] = "/home/mountain/mapsforge/20171008/MOI_OSM_Taiwan_TOPO_Rudy.poi";
 

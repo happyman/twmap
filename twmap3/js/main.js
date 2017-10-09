@@ -1024,7 +1024,24 @@ function showCenterMarker(name) {
 	tt = cad2twd67(cj[1],cj[2],'j');
         tmploc = twd672lonlat(tt[0], tt[1], 0);
     } else {
-        // geocoding
+		// hook POI search
+		showmeerkat(poisearch_url + "?name=" + encodeURIComponent(name), {width: 600});
+
+    } // else
+    if (tmploc) {
+        var p = is_taiwan(tmploc.y, tmploc.x);
+        if (p === 0) {
+            // alert("不在台澎範圍");
+			noty({	text: '不在台澎範圍', type: 'alert',  closeWith   : ['click','timeout'], timeout     :5000 });
+            return false;
+        }
+        loc = new google.maps.LatLng(tmploc.y, tmploc.x);
+        showCenterMarker_real(loc);
+    }
+}
+function call_geocoder(name){
+	// close meerkat if it's open
+		// geocoding
         $.blockUI({
             message: "查詢中..."
         });
@@ -1105,19 +1122,7 @@ function showCenterMarker(name) {
                 return false;
             }
         }); // ajax
-    } // else
-    if (tmploc) {
-        var p = is_taiwan(tmploc.y, tmploc.x);
-        if (p === 0) {
-            // alert("不在台澎範圍");
-			noty({	text: '不在台澎範圍', type: 'alert',  closeWith   : ['click','timeout'], timeout     :5000 });
-            return false;
-        }
-        loc = new google.maps.LatLng(tmploc.y, tmploc.x);
-        showCenterMarker_real(loc);
-    }
 }
-
 function centerMarkerDragEnd(e) {
         var newpos = centerMarker.getPosition();
         console.log("centerMarker dragend");

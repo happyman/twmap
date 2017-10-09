@@ -108,12 +108,12 @@ class Hybrid_Providers_Xuite extends Hybrid_Provider_Model_OAuth2
 	 * @access public
 	 * @return void
 	 */
-	function getUserProfile($config)
+	function getUserProfile()
 	{
 
 		$param['method'] = "xuite.my.private.getMe";
 		$param['auth'] =  $this->api->access_token;
-		$url_get_str = $this->api->api_base_url .  $this->xuite_api_param($config, $param);
+		$url_get_str = $this->api->api_base_url .  $this->xuite_api_param($this->config, $param);
 		$rsp = $this->xuite_request(  $url_get_str); 
 	  $data = json_decode($rsp);
 

@@ -1,5 +1,5 @@
 <?php
-
+// ref: twmap3/js/main.js call_geocoder()
 require_once("../config.inc.php");
 
 $op = $_REQUEST['op'];
@@ -11,21 +11,21 @@ if (($op != 'get' && $op != 'set') || empty($data)) {
 $da = json_decode($data,true);
 $mem = new Memcached;
 $mem->addServer('localhost',11211);
-$key=md5($data['address']);
+$key=md5($da['address']);
 
 switch($op) {
 case 'get':
 	// 查詢結果, 如果沒有設定 memcache, 當作加入 cache 的依據
 	list($result, $msg) = geocoder($op, $da);
 	if ($result == 0 ) {
-		$mem->set($key, $data['address'],3600);
+		$mem->set($key, $da['address'],3600);
 		ajaxerr($msg);
 	}  else {
 		ajaxok($msg);
 	}
 	break;
 case 'set':
-	if ($mem->get($key) == $data['address']) {
+	if ($mem->get($key) == $da['address']) {
 		 list($result, $msg) = geocoder($op, $da);
 		 if ($result > 0 ) {
 			 $mem->delete($key);
