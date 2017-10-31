@@ -289,9 +289,9 @@ var copyrights =    {
 	 'taiwan' : "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 經建三版 1999~2001",
 	 'general2011': "<a target=\"_blank\" href=\"//www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖正射影像",
 	 'nlsc_emap': "<a target=\"_blank\" href=\"//www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖",
-	 'moi_osm': '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA' + "<a target=\"_blank\" href=\"https://dl.dropboxusercontent.com/u/899714/maps/taiwan_topo.html\">Taiwan TOPO By Rudy</a>",
-	 'fandi': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 番地地形圖 1907~1916",
-	 'jm50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 日治五萬分之一(陸軍測量部 1924~1944)",
+	 'moi_osm': '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA' + "<a target=\"_blank\" href=\"http://rudy.basecamp.tw/taiwan_topo.html\">魯地圖</a>",
+	 'fandi': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6190\">台灣歷史百年地圖</a> - 五萬分之一蕃地地形圖 1907~1916",
+	 'jm50k': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6160\">台灣歷史百年地圖</a> - 日治五萬分之一(陸地測量部 1924~1944)",
 	 'tw50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣五萬分之一(依據美國陸軍製圖局 1951~1956)",
 	 'hillshading': "<a target=\"_blank\" href=\"http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/\">內政部數值網格資料</a> - 山區陰影圖層",
 	 'tw5kariel': "台灣5000:1相片基本圖"
