@@ -8,7 +8,8 @@ $cpath = "/home/nas/twmapcache/tmp/stache";
 $cur_ver_fpath = $fpath . "/VERSION";
 $want = array("MOI_OSM_Taiwan_TOPO_Rudy.map.zip","MOI_OSM_Taiwan_TOPO_Rudy.poi.zip");
 $base = "http://rudy.basecamp.tw/";
-$ver_data = file_get_contents($base . "/index.json");
+// prevent cache
+$ver_data = file_get_contents($base . "/index.json". '?'.mt_rand());
 $dirty = 0;
 $v = json_decode($ver_data, true);
 
@@ -19,6 +20,7 @@ if (file_exists($cur_ver_fpath)) {
 }
 
 echo "cur_ver = $cur_ver ";
+// print_r($v);
 foreach($v as $vv) {
 	if (in_array($vv['name'], $want)) {
 		if ($vv['version'] != $cur_ver ) {
@@ -39,7 +41,7 @@ echo ";online_ver = $new_ver\n";
 //print_r($v);
 function do_update($base) {
 	// 1. download  and unzip 
-	global $fpath,$ver,$cpath;
+	global $fpath,$ver,$cpath,$admin_email;
 	@mkdir($fpath . "/$ver", 0755, true);
 	chdir($fpath . "/$ver");
 	$zips = array("MOI_OSM_Taiwan_TOPO_Rudy.map.zip","MOI_OSM_Taiwan_TOPO_Rudy.poi.zip","MOI_OSM_twmap_style.zip");
