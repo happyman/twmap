@@ -48,7 +48,7 @@ th {
 <?php
 
 class poi_search {
-	var $file = "/home/mountain/mapsforge/POI/MOI_OSM_Taiwan_TOPO_Rudy.poi";
+	var $file = "/home/mountain/mapsforge/cur/MOI_OSM_Taiwan_TOPO_Rudy.poi";
 	var $db;
 	var $cat; // category name
 	var $cat_desc_arr; // category description
