@@ -67,7 +67,7 @@ function show_obs(){
 	$kml = file_get_contents($url . "?".$random);
 	// dirty hack
 	$kml = str_replace("<scale>3</scale>","<scale>1</scale>",$kml);
-	$kml = str_replace("<a href=/","<a href=http://www.cwb.gov.tw/",$kml);
+	$kml = str_replace("<a href=/V7/observe/real/NewObs.htm","<a href=data/obstation.php",$kml);
 	$mat = preg_split("/<Document>/",str_replace("</Document>","<Document>",$kml));
 	echo "<!-- from  $url -->\n";
 	echo $mat[1];
