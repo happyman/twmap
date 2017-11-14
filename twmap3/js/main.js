@@ -483,6 +483,7 @@ function showCWBRainfall(fcast_type) {
         map: map,
         singleInfoWindow: true,
         //additional_marker_desc: decodeURIComponent(uri_enc),
+	additional_marker_desc: "資料來源: 中央氣象局",
         zoom: false,
     });
 	rainkml.loading = 1;
