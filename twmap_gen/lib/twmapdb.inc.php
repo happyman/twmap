@@ -968,7 +968,8 @@ function get_distance($a,$b) {
 }
 function line_of_sight($a, $b, $distance_limit = 32000, $cache = 1) {
 	$debug = 0;
-	$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
+//	$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
+	$twDEM_path = twDEM_path;
 	$db = get_conn();
 	// 1. get distance between p and p1
 	$distance = get_distance($a, $b);
