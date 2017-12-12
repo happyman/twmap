@@ -51,7 +51,6 @@ require_once("lib/functions.inc.php");
 -->
 <!-- build:css css/twmap3.css -->
 	<link rel="stylesheet" type="text/css" href="css/twmap3_main.css" />
-
 <!-- endbuild -->
 <script>
 <?php

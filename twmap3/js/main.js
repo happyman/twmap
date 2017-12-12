@@ -255,6 +255,59 @@ var TW5KArielPIC_Options = {
     name: "TW5K",
     alt: "2000年五千分之一相片基本圖"
 };
+var TM50K1966_MapType = new google.maps.ImageMapType({
+getTileUrl: function(a,b) {
+        return "//rs.happyman.idv.tw/map/sinica/TM50K_1966/"+b+"/"+a.x+"/"+a.y+".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    name: "水利圖",
+    alt: "1966 台灣省水利工程、水文站及基準點圖",
+    maxZoom: 18
+
+});
+
+var ATISMapType = new google.maps.ImageMapType({
+getTileUrl: function (tile, zoom) {
+
+	var url = 'http://gis.sinica.edu.tw/googlemap/afasi_wms.php?layers=ATIS_MNC&bbox=';
+            var lULP = new google.maps.Point(tile.x*256,(tile.y+1)*256);
+            var lLRP = new google.maps.Point((tile.x+1)*256,tile.y*256);
+
+            var projectionMap = new MercatorProjection();
+
+            var lULg = projectionMap.fromDivPixelToSphericalMercator(lULP, zoom);
+            var lLRg  = projectionMap.fromDivPixelToSphericalMercator(lLRP, zoom);
+
+            var lUL_Latitude = lULg.y;
+            var lUL_Longitude = lULg.x;
+            var lLR_Latitude = lLRg.y;
+            var lLR_Longitude = lLRg.x;
+            //GJ: there is a bug when crossing the -180 longitude border (tile does not render) - this check seems to fix it
+            if (lLR_Longitude < lUL_Longitude){
+              lLR_Longitude = Math.abs(lLR_Longitude);
+            }
+            var boundingbox = lUL_Longitude + "," + lUL_Latitude + "," + lLR_Longitude + "," + lLR_Latitude;
+			
+			return url + boundingbox;
+		
+        },
+        tileSize: new google.maps.Size(256, 256),
+        maxZoom: 19,
+        minZoom: 10,
+        name: "農航所"
+});
+
+var JM20K1921_MapType = new google.maps.ImageMapType({
+getTileUrl: function(a,b) {
+        return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1921-jpg-"+b+"-"+ a.x + "-" + a.y;
+    },
+    tileSize: new google.maps.Size(256, 256),
+    name: "堡圖",
+    alt: "1921 日治二萬分之一台灣堡圖(大正版)",
+    maxZoom: 18
+
+});
+
 // 前景
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
@@ -294,6 +347,8 @@ var copyrights =    {
 	 'jm50k': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6160\">台灣歷史百年地圖</a> - 日治五萬分之一(陸地測量部 1924~1944)",
 	 'tw50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣五萬分之一(依據美國陸軍製圖局 1951~1956)",
 	 'hillshading': "<a target=\"_blank\" href=\"http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/\">內政部數值網格資料</a> - 山區陰影圖層",
+	 'atis': "<a target=\"_blank\" href=\"/http://ngis.afasi.gov.tw/ngis\">農航所正射影像</a>",
+         'jm20k_1921': "<a target=\"_blank\" href=\"http://ndaip.sinica.edu.tw/content.jsp?option_id=2621&index_info_id=6924\">台灣堡圖(大正版)</a>",
 	 'tw5kariel': "台灣5000:1相片基本圖"
 };
 var logos =  {   
@@ -1490,7 +1545,7 @@ function initialize() {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "nlsc_emap", "theme", 'fandi', 'jm50k','tw50k','hillshading', 'tw5kariel', 'general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis","nlsc_emap", "theme", 'fandi','jm20k_1921','jm50k','tw50k','tm50k_1966','hillshading', 'tw5kariel', 'general2011']
         }
     });
 	
@@ -1534,11 +1589,14 @@ function initialize() {
     map.mapTypes.set('moi_osm', MOI_OSM_MapType);
 	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);
     map.mapTypes.set('fandi', FanDi_MapType);
+    map.mapTypes.set('jm20k_1921', JM20K1921_MapType);
+    map.mapTypes.set('tm50k_1966', TM50K1966_MapType);
     map.mapTypes.set('jm50k', JM50K1924_MapType);
     map.mapTypes.set('tw50k', TW50K1956_MapType);
 	// map.mapTypes.set('moi_osm_gpx', MOI_OSM_GPX_MapType);
 	map.mapTypes.set('hillshading', Hillshading_MapType);
 	map.mapTypes.set('tw5kariel', TW5KArielPIC_MapType);
+	map.mapTypes.set('atis', ATISMapType);
 	if (getParameterByName("theme") == 'ingress')
 		map.mapTypes.set('theme', Darker_MapType);
 	else
