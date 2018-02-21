@@ -71,7 +71,7 @@ var TaiwanMapOptions = {
 // 沒有使用了
 var TaiwanGpxMapOptions = {
     getTileUrl: function(a, b) {
-        return '/rs.happyman.idv.tw/map/twmap_gpx/' + b + "_" + a.x + "_" + a.y + ".png";
+        return '//rs.happyman.idv.tw/map/twmap_gpx/' + b + "_" + a.x + "_" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 17,
@@ -132,6 +132,17 @@ var Taiwan_General_2011_MapOptions = {
     minZoom: 9,
     name: "NLSC",
     alt: "內政部國土測量中心 2011"
+};
+var NLSC_PHOTO_MIX_MapOptions = {
+	 getTileUrl: function(a, b) {
+                return '//wmts.nlsc.gov.tw/wmts/PHOTO_MIX/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 20,
+    minZoom: 9,
+    name: "NLSC_MIX",
+    alt: "內政部國土測量中心 正射影像(混合)"
+
 };
 var Taiwan_General_EMAP_MapOptions = {
     getTileUrl: function(a, b) {
@@ -317,6 +328,7 @@ var MOI_OSM_TWMAP_MapType = new google.maps.ImageMapType(MOI_OSM_TWMAP_Options);
 //  背景
 var Taiwan_General_2011_MapType = new google.maps.ImageMapType(Taiwan_General_2011_MapOptions);
 var Taiwan_General_EMAP_MapType = new google.maps.ImageMapType(Taiwan_General_EMAP_MapOptions);
+var NLSC_PHOTO_MIX_MapType = new  google.maps.ImageMapType(NLSC_PHOTO_MIX_MapOptions);
 var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
 var MOI_OSM_MapType = new google.maps.ImageMapType(MOI_OSM_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
@@ -342,6 +354,7 @@ var copyrights =    {
 	 'taiwan' : "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 經建三版 1999~2001",
 	 'general2011': "<a target=\"_blank\" href=\"//www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖正射影像",
 	 'nlsc_emap': "<a target=\"_blank\" href=\"//www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖",
+	 'nlsc_photo_mix': "<a target=\"_blank\" href=\"//www.nlsc.gov.tw/News/Detail/1256?level=458\">NLSC</a> - 通用版電子地圖(正射混合)",
 	 'moi_osm': '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA' + "<a target=\"_blank\" href=\"http://rudy.basecamp.tw/taiwan_topo.html\">魯地圖</a>",
 	 'fandi': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6190\">台灣歷史百年地圖</a> - 五萬分之一蕃地地形圖 1907~1916",
 	 'jm50k': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6160\">台灣歷史百年地圖</a> - 日治五萬分之一(陸地測量部 1924~1944)",
@@ -1543,9 +1556,10 @@ function initialize() {
         disableDoubleClickZoom: true,
         mapTypeControlOptions: {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+           // style: google.maps.MapTypeControlStyle.DEFAULT,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis","nlsc_emap", "theme", 'fandi','jm20k_1921','jm50k','tw50k','tm50k_1966','hillshading', 'tw5kariel', 'general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis","nlsc_emap", "theme", 'fandi','jm20k_1921','jm50k','tw50k','tm50k_1966','hillshading', 'tw5kariel', 'nlsc_photo_mix','general2011']
         }
     });
 	
@@ -1585,6 +1599,7 @@ function initialize() {
     map.mapTypes.set('taiwan', TaiwanMapType);
     map.mapTypes.set('general2011', Taiwan_General_2011_MapType);
 	map.mapTypes.set('nlsc_emap', Taiwan_General_EMAP_MapType);
+	map.mapTypes.set('nlsc_photo_mix', NLSC_PHOTO_MIX_MapType);
     map.mapTypes.set('osm', OSM_MapType);
     map.mapTypes.set('moi_osm', MOI_OSM_MapType);
 	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);

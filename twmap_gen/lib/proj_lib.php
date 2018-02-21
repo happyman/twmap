@@ -164,6 +164,17 @@ function proj_geto67($p) {
 	list($x,$y)=preg_split("/\s+/",$ret);
 	return t97to67($x,$y);
 }
+function proj_geto97($p) {
+		$pp=array(deg2dms($p[0])."E",deg2dms($p[1])."N");
+	// print_r($pp);
+	$proj="proj +proj=tmerc +ellps=aust_SA +lon_0=121 +x_0=250000 +k=0.9999";
+	$k=addslashes("$pp[0] $pp[1]");
+	$cmd="echo $k | $proj";
+	// echo $cmd ."\n";
+	$ret= shell_exec("echo $k | $proj");
+	return preg_split("/\s+/",$ret);
+
+}
 function proj_geto672($p) {
 	$pp=array(deg2dms($p[0])."E",deg2dms($p[1])."N");
 	// print_r($pp);
@@ -363,3 +374,5 @@ exec($cmd,$out,$ret);
         }
         return false;
 }
+
+
