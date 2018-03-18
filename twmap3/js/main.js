@@ -146,7 +146,7 @@ var NLSC_PHOTO_MIX_MapOptions = {
 };
 var Taiwan_General_EMAP_MapOptions = {
     getTileUrl: function(a, b) {
-		return '//wmts.nlsc.gov.tw/wmts/EMAP/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
+		return '//wmts.nlsc.gov.tw/wmts/EMAP5/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 20,
