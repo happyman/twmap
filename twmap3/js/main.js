@@ -279,7 +279,7 @@ getTileUrl: function(a,b) {
 
 var ATISMapType = new google.maps.ImageMapType({
 getTileUrl: function (tile, zoom) {
-
+/*
 	var url = 'http://gis.sinica.edu.tw/googlemap/afasi_wms.php?layers=ATIS_MNC&bbox=';
             var lULP = new google.maps.Point(tile.x*256,(tile.y+1)*256);
             var lLRP = new google.maps.Point((tile.x+1)*256,tile.y*256);
@@ -302,6 +302,9 @@ getTileUrl: function (tile, zoom) {
 			return url + boundingbox;
 		
         },
+		*/
+		return "//rs.happyman.idv.tw/map/atis/"+zoom+"/"+tile.x+"/"+tile.y+".png";
+		},
         tileSize: new google.maps.Size(256, 256),
         maxZoom: 19,
         minZoom: 10,
@@ -1559,7 +1562,7 @@ function initialize() {
            // style: google.maps.MapTypeControlStyle.DEFAULT,
             position: google.maps.ControlPosition.TOP_LEFT,
             // dropdown menu 要重複一次
-            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis","nlsc_emap", "theme", 'fandi','jm20k_1921','jm50k','tw50k','tm50k_1966','hillshading', 'tw5kariel', 'nlsc_photo_mix','general2011']
+            mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis","nlsc_emap", "theme", 'fandi','jm20k_1921','jm50k','tw50k','hillshading', 'tw5kariel', 'nlsc_photo_mix','general2011']
         }
     });
 	
