@@ -219,6 +219,22 @@ function lonlat_getblock(lon, lat, ph, unit) {
     var p2 = twd672lonlat(br.x, br.y, ph);
     return [p1, p2, tl, br];
 }
+function lonlat_getblock97(lon, lat, ph, unit) {
+    unit = typeof unit !== 'undefined' ? unit : 1000;
+    var p = lonlat2twd97(lon, lat, ph);
+    var tl = {
+        x: Math.floor(p.x / unit) * unit,
+        y: Math.ceil(p.y / unit) * unit
+    };
+    var br = {
+        x: Math.ceil(p.x / unit) * unit,
+        y: Math.floor(p.y / unit) * unit
+    };
+    var p1 = twd972lonlat(tl.x, tl.y, ph);
+    var p2 = twd972lonlat(br.x, br.y, ph);
+    return [p1, p2, tl, br];
+}
+
 
 function is_taiwan(lat, lon) {
     if (lon < 119.31 || lon > 124.56 || lat < 21.88 || lat > 25.31) {
@@ -275,14 +291,23 @@ var cover_overlay;
 function coverage_overlay(op) {
 
 	console.log("coverage_overlay(" + op + ")");
+	// https://coverage.cht.com.tw/coverage/jss/mobile/mEmbr.json
+	/* 2018 update
+	"ulat":26.85073525,			  
+"ulon":126.130429314477, 
+"llat":21.415399218816,
+"llon":114.048568045892
+*/
 	var coverage = {
-"cht":{"bound":{"north":25.554136,"south":21.635736302326,"east":124.43445758443,"west":115.76012294636},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/4g_tw.png"},
+//"cht":{"bound":{"north":25.554136,"south":21.635736302326,"east":124.43445758443,"west":115.76012294636},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/4g_tw.png"},
+"cht":{"bound":{"north":26.6877899375,"south":21.593289442125,"west":114.507922814371,"east":125.832808493114},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw.png"},
 "twn":{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.26714358482,"east":122.1162269718},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/4G\/TW.png?r=2016081"},
 "fet":{"bound":{"north":27.109534289724,"south":19.921522519575,"west":114.52355246805,"east":127.14196021948},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage4G.png"}, 
-"cht2G":{"bound":{"north":27.015288659839,"south":21.614440279186,"east":122.470147573768,"west":117.924277900237},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/2g_tw.png"},
+//"cht2G":{"bound":{"north":27.015288659839,"south":21.614440279186,"east":122.470147573768,"west":117.924277900237},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/2g_tw.png"},
 "twn2G":{"bound":{"north":25.444259664518,"south":21.764367841649,"west":119.146827678062,"east":122.253772190656},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/2G\/TW.png"},
 "fet2G":{"bound":{"north":26.322813780907,"south":20.912682441736,"west":116.322882125754,"east":124.708821581148},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverageVoice.png"},
-"cht3G":{"bound":{"north":26.7914806875,"south":21.514686195825,"east":125.955588822744,"west":114.224310037633},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/3g_tw.png"},
+//"cht3G":{"bound":{"north":26.7914806875,"south":21.514686195825,"east":125.955588822744,"west":114.224310037633},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/3g_tw.png"},
+"cht3G":{"bound":{"north":26.85073525,"south":21.415399218816,"west":114.048568045892,"east":126.130429314477},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw.png"},
 "twn3G":{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.267143584823,"east":122.116226971802},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/3G\/TW.png"},
 "fet3G":{"bound":{"north":26.515893187443,"south":21.813526812557,"west":117.496893247948,"east":122.704393752052},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage3.5G.png"}};
 

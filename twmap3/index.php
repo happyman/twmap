@@ -144,7 +144,7 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 		<div id="CGRID">
 		<select title="切換 Grid" name="grid" id="changegrid" class="ui-corner-all">
 		<option value="TWD67" selected >TWD67 Grid</option><option value="TWD67PH">TWD67澎</option><option value="WGS84">經緯度</option><option value="None">無Grid</option>
-		<option value="TWD67_EXT">TWD67 EXT</option>
+		<option value="TWD67_EXT">TWD67 EXT</option><option value="TWD97" >TWD97 Grid</option><option value="TWD97PH">TWD97澎</option><option value="TWD97_EXT">TWD97 EXT</option>
 		</select>
 		</div>
 		<div id="FORECAST">
@@ -160,13 +160,10 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 		<div id="MCOVERAGE">
 		<select title="訊號" mame="mcover" id="mcover" class="ui-corner-all">
 		<option value="none" selected>訊號</option>
-		<option value="cht2G">cht2G</option>
 		<option value="cht3G">cht3G</option>
 		<option value="cht">cht4G</option>
-		<option value="twn2G">twn2G</option>
 		<option value="twn3G">twn3G</option>
 		<option value="twn">twn4G</option>
-		<option value="fet2G">fet2G</option>
 		<option value="fet3G">fet3G</option>
 		<option value="fet">fet4G</option>
 		</select>

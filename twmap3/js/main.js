@@ -363,7 +363,7 @@ var copyrights =    {
 	 'jm50k': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6160\">台灣歷史百年地圖</a> - 日治五萬分之一(陸地測量部 1924~1944)",
 	 'tw50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣五萬分之一(依據美國陸軍製圖局 1951~1956)",
 	 'hillshading': "<a target=\"_blank\" href=\"http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/\">內政部數值網格資料</a> - 山區陰影圖層",
-	 'atis': "<a target=\"_blank\" href=\"/http://ngis.afasi.gov.tw/ngis\">農航所正射影像</a>",
+	 'atis': "<a target=\"_blank\" href=\"http://image.afasi.gov.tw/\">農航所正射影像</a>",
          'jm20k_1921': "<a target=\"_blank\" href=\"http://ndaip.sinica.edu.tw/content.jsp?option_id=2621&index_info_id=6924\">台灣堡圖(大正版)</a>",
 	 'tw5kariel': "台灣5000:1相片基本圖"
 };
@@ -488,7 +488,7 @@ function showGrid(grid_type) {
     var dstBound = TW_Bounds;
     var ph = 0;
     var i;
-    if (grid_type == "TWD67PH") {
+    if (grid_type == "TWD67PH" || grid_type == "TWD97PH") {
         dstBound = PH_Bounds;
         ph = 1;
     } else if (grid_type == "WGS84") {
@@ -528,10 +528,18 @@ function showGrid(grid_type) {
         fillColor: "red",
         fillOpacity: 0.1
     });
+	
+	
     if (typeof InterBounds !== "undefined") {
+		var sw, ne;
+		if (grid_type == "TWD97" || grid_type == "TWD97_PH" || grid_type == "TWD97_EXT") {
+			sw = lonlat_getblock97(InterBounds.getSouthWest().lng(), InterBounds.getSouthWest().lat(), ph, 100);
+			ne = lonlat_getblock97(InterBounds.getNorthEast().lng(), InterBounds.getNorthEast().lat(), ph, 100);
+		} else {
         //bigPoly.setBounds(InterBounds);
-        var sw = lonlat_getblock(InterBounds.getSouthWest().lng(), InterBounds.getSouthWest().lat(), ph, 100);
-        var ne = lonlat_getblock(InterBounds.getNorthEast().lng(), InterBounds.getNorthEast().lat(), ph, 100);
+			sw = lonlat_getblock(InterBounds.getSouthWest().lng(), InterBounds.getSouthWest().lat(), ph, 100);
+			ne = lonlat_getblock(InterBounds.getNorthEast().lng(), InterBounds.getNorthEast().lat(), ph, 100);
+		}
         var minx = sw[0].x;
         var maxx = ne[1].x;
         var miny = sw[1].y;
@@ -2507,8 +2515,14 @@ var poly = [];
 var polylabel = [];
 
 function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
-    var sw = lonlat2twd67(minx, miny, ph);
-    var ne = lonlat2twd67(maxx, maxy, ph);
+	var sw, ne;
+	if (grid_type == "TWD97" || grid_type == "TWD97_PH" || grid_type == "TWD97_EXT") {
+		sw = lonlat2twd97(minx, miny, ph);
+		ne = lonlat2twd97(maxx, maxy, ph);
+	} else {
+		sw = lonlat2twd67(minx, miny, ph);
+		ne = lonlat2twd67(maxx, maxy, ph);
+	}
     // y 軸
     var i = 0;
     var j = 0;
@@ -2552,7 +2566,7 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
         adjustx = 1;
     }
     // 特別的
-    if (grid_type == 'TWD67_EXT') {
+    if (grid_type == 'TWD67_EXT' ||grid_type == 'TWD97_EXT' ) {
         if (curZoom == 16) {
             xstep = 200;
             ystep = 200;
@@ -2588,10 +2602,18 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
     var lp;
     //console.log("x="+startx +"y="+ starty +"endx="+ endx + "endy="+ endy);
     for (var y = starty; y <= endy; y += ystep) {
-        p = twd672lonlat(startx, y, ph);
-        p1 = twd672lonlat(endx, y, ph);
-        // 右邊一格
-        lp = twd672lonlat(startx + xstep, y + adjusty, ph);
+		if (grid_type == "TWD97" || grid_type == "TWD97_PH" || grid_type == "TWD97_EXT") {
+			p = twd972lonlat(startx, y, ph);
+			p1 = twd972lonlat(endx, y, ph);
+			// 右邊一格-
+			lp = twd972lonlat(startx + xstep, y + adjusty, ph);
+		} else {
+			p = twd672lonlat(startx, y, ph);
+			p1 = twd672lonlat(endx, y, ph);
+			// 右邊一格-
+			lp = twd672lonlat(startx + xstep, y + adjusty, ph);
+		}
+        
         if (!poly[i]) poly[i] = new google.maps.Polyline({
             map: map,
             path: [new google.maps.LatLng(p.y, p.x), new google.maps.LatLng(p1.y, p1.x)],
@@ -2622,10 +2644,18 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
     }
     // x 軸
     for (var x = startx; x <= endx; x += xstep) {
-        p = twd672lonlat(x, starty, ph);
-        p1 = twd672lonlat(x, endy, ph);
-        // 往上
-        lp = twd672lonlat(x, starty + ystep * adjustx, ph);
+		if (grid_type == "TWD97" || grid_type == "TWD97_PH" || grid_type == "TWD97_EXT") {
+			p = twd972lonlat(x, starty, ph);
+			p1 = twd972lonlat(x, endy, ph);
+			// 往上
+			lp = twd972lonlat(x, starty + ystep * adjustx, ph);
+
+		} else {
+			p = twd672lonlat(x, starty, ph);
+			p1 = twd672lonlat(x, endy, ph);
+			// 往上
+			lp = twd672lonlat(x, starty + ystep * adjustx, ph);
+		}
         if (!poly[i]) poly[i] = new google.maps.Polyline({
             map: map,
             path: [new google.maps.LatLng(p.y, p.x), new google.maps.LatLng(p1.y, p1.x)],
