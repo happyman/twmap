@@ -20,7 +20,7 @@ header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24 * 1)))
 
 // $type = 'gpx'; // Supports [ gpx | kml ]
 $dev = isset($_REQUEST['dev']) ? $_REQUEST['dev'] : 0;
-$type = isset($_REQUEST['type']) ? $_REQUEST['type'] : 'gpx';
+$type = isset($_REQUEST['type']) ? $_REQUEST['type'] : 'kml';
 
 if ( $dev ) {
     ini_set('display_errors', 1);
@@ -46,7 +46,7 @@ $projUTM    = new Proj('EPSG:3857', $proj4);
 // ---------- End of proj4php codes
 
 // Default value for $input is for testing purpose
-$input = '{
+$input= '{
             "shapes": [
                 {
                     "type": "rectangle",
@@ -222,9 +222,9 @@ if ( isset($_POST) && sizeof($_POST) > 0 ) {
     $input = $_POST['data'];
 } else {
     // Get posted data
-    $reset_json = file_get_contents( 'php://input' );
-
-    if ( isset($reset_json) && sizeof($reset_json) > 1 ) {
+	$reset_json = stream_get_contents(fopen("php://stdin", "r"));
+  //   $reset_json = file_get_contents( "php://stdin" );
+     if ( isset($reset_json) && strlen($reset_json) > 1 ) {
         $input = $reset_json;
         if ( $dev ) echo 'POST'.'<br/>';
     }
@@ -240,11 +240,11 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
     // Create xml document object
     if ( $type==='kml' ) {
         $filename = 'shapes.kml';
-        $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>'
+        $xmlr = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>'
                               .'<kml xmlns="http://www.opengis.net/kml/2.2">'
-							  .'<Document></Document>'
                               .'</kml>');
         //$meta = $xml->addChild('metadata');
+		$xml = $xmlr->addChild("Document");
         $xml->addChild('name', 'Exported Shapes');
         $xml->addChild('description', 'Drawn shapes exported from happyman/twmap');
         $Style = $xml->addChild('Style');
@@ -294,8 +294,9 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                 if ( $type==='kml' ) {
                     $Placemark = $Folder->addChild('Placemark');
                     $name = $Placemark->addChild('name', $shapename);
+					$Placemark->addChild('styleUrl', '#shape_style');
                     $Polygon = $Placemark->addChild('Polygon');
-                    $Polygon->addChild('styleUrl', '#shape_style');
+                    //$Polygon->addChild('styleUrl', '#shape_style');
                     $outerBoundaryIs = $Polygon->addChild('outerBoundaryIs');
                     $LinearRing = $outerBoundaryIs->addChild('LinearRing');
                     $coordinatesstr = '';
@@ -335,6 +336,7 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                 if ( $type==='kml' ) {
                     $Placemark = $Folder->addChild('Placemark');
                     $name = $Placemark->addChild('name', $shapename);
+					$Placemark->addChild('styleUrl', '#shape_style');
                     $LineString = $Placemark->addChild('LineString');
                     $coordinatesstr = '';
                     foreach( $shape->path as $ptindex => $pt ) {
@@ -541,14 +543,24 @@ if ( property_exists ($jsonShapes, 'shapes') && sizeof($jsonShapes->shapes) > 0 
                 // Write xml
                 if ( $type==='kml' ) {
                     $Placemark = $Folder->addChild('Placemark');
-                    $name = $Placemark->addChild('name', $index.': center');
+					if (isset($shape->name))
+						$name = $Placemark->addChild('name', $shape->name);
+					else
+						$name = $Placemark->addChild('name', $index.': center');
+					$Placemark->addChild('styleUrl', '#shape_style');
+					$Style = $Placemark->addChild('Style');
+					$PolyStyle = $Style->addChild('PolyStyle');
+					$PolyStyle->addChild('color', rgbToKml($shape->color,"7F"));
+					$PolyStyle->addChild('fill', '1');
+					$PolyStyle->addChild('outline', '1');
+					
                     {
                         $Point = $Placemark->addChild('Point');
                         $coordinatesstr = sprintf( '%f,%f,0 ', $shape->center->lon, $shape->center->lat );
                         $coordinates = $Point->addChild('coordinates', $coordinatesstr);
                         
                         $Polygon = $Placemark->addChild('Polygon');
-                        $Polygon->addChild('styleUrl', '#shape_style');
+                       // $Polygon->addChild('styleUrl', '#shape_style');
                         $outerBoundaryIs = $Polygon->addChild('outerBoundaryIs');
                         $LinearRing = $outerBoundaryIs->addChild('LinearRing');
 
@@ -610,4 +622,10 @@ if ( $valid && $xml ) {
 	print_r($_POST['data']);
 }
 
-
+function rgbToKml($color, $aa="ff"){
+	$color=str_replace("#","",$color);
+$rr = substr($color, 0, 2);
+$gg = substr($color, 2, 2);
+$bb = substr($color, 4, 2);
+return $aa.$bb.$gg.$rr;
+}
