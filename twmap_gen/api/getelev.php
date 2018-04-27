@@ -106,6 +106,8 @@ exit();
 					}
 					
 				}
+				// update data for generating kml
+				$('input[name="data"]').val(myshapes);
 				$('#shapes_editor a').each(function(index) {
 						$(this).click(function(event) {
 						event.preventDefault();
