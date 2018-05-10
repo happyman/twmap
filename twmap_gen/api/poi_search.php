@@ -69,7 +69,7 @@ class poi_search {
 		foreach($result as $row){
 			$this->cat[$row['id']] = array($row['id'],$row['name'],$row['parent']);
 			  if ($row['name'] == 'root')
->                                       $rootid = $row['id'];
+                                       $rootid = $row['id'];
 		}
 		foreach($result as $row) {
 			$cur = $this->cat[$row['id']];
