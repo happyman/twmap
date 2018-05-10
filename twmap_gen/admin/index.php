@@ -93,6 +93,10 @@ $(document).ready(function () {
 						title: "其他名稱",
 						edit: true,
 					},
+					sname: {
+						title: "冠字號碼",
+						edit: true,
+					},
 			<?php
 			if (isset($_GET['x']) && isset($_GET['y'])) {
 					printf('x: { title: "lon", edit: true,  defaultValue: "%s" },', $_GET['x']);
@@ -100,8 +104,8 @@ $(document).ready(function () {
 
 			} else {
 			?>
-					x: { title: "lon", edit: true },
-					y: { title: "lat", edit: true },
+					x: { title: "lon", edit: true , visibility: "hidden"},
+					y: { title: "lat", edit: true, visibility: "hidden" },
 			<?php
 			}
 			?>
@@ -139,6 +143,10 @@ $(document).ready(function () {
 	}
 					},
 					class: { title: "等", edit: true, options:  { '0': "無" , '1': "一", '2': "二", '3': "三", '4': "森" }, width: "5%"  },
+					cclass: { title: "等(地籍)", edit: true, options: {'0': "未知", '1': "主", '2': "次", '3': "補" }, width: "5%" },
+					fclass: { title: "等(森)", edit: true, options: {'0': "未知", '1': "主", '2': "次", '3': "補" }, width: "5%" },
+					fzone: { title: "測量區(森)", edit: true },
+					
 
 					status: { title: "狀態", edit: true, options: [    '存在',
     '遺失',

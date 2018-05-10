@@ -68,11 +68,13 @@ class poi_search {
 		$result = $stmt->fetchAll();
 		foreach($result as $row){
 			$this->cat[$row['id']] = array($row['id'],$row['name'],$row['parent']);
+			  if ($row['name'] == 'root')
+>                                       $rootid = $row['id'];
 		}
 		foreach($result as $row) {
 			$cur = $this->cat[$row['id']];
 			//echo  "cur=" . $row['id'] . "<br>";
-			while ($cur[0] != 392){
+			while ($cur[0] != $rootid){
 				$this->cat_desc_arr[$row['id']][] = $cur[1];
 				$cur = $this->cat[$cur[2]];
 				//echo "cur in loop=" . $cur[0] . "<br>";
@@ -80,7 +82,7 @@ class poi_search {
 		}
 	}
 	function search($name){
-		$sql = sprintf("select A.id, A.data, A.category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from poi_data A, poi_index B where A.id=B.id and data like '%s' order by category", pg_escape_string($name));
+		$sql = sprintf("select A.id, A.data, A.category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from poi_data A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 300", pg_escape_string($name));
 		$stmt = $this->db->query($sql);
 		$result= $stmt->fetchAll(PDO::FETCH_ASSOC);
 		return $result;
@@ -97,6 +99,7 @@ if ($ss === false ){
 	exit(0);
 }
 $result = $ss->search($keyword);
+error_log($result);
 if (count($result)>0) {
 	echo "<br><table id='poitable' style='width: 100%'><thead><tr><td>data<td>category<td>location<td>行政區</tr></thead><tbody>";
 //print_r($result);

@@ -47,7 +47,7 @@ function do_update($base) {
 	$zips = array("MOI_OSM_Taiwan_TOPO_Rudy.map.zip","MOI_OSM_Taiwan_TOPO_Rudy.poi.zip","MOI_OSM_twmap_style.zip");
 	foreach($zips as $zip) {
 		my_system(sprintf("wget -O %s %s",$zip , $base . $zip));
-		my_system("unzip  $zip");
+		my_system("unzip -o $zip");
 	}
 	chdir($fpath);
        // 3. clean tile cache
@@ -56,7 +56,7 @@ function do_update($base) {
 	foreach($layers as $layer) {
 	// slow method:	my_system(sprintf("tilestache-clean -q -c /var/www/etc/tilestache.cfg -l %s -b 25.31 119.31 21.88 124.56 15 16 17 18 19",$layer));
 		echo "cleaning $layer...\n";
-		exec("rm -r $cpath/$layer");
+		exec("rm -r $cpath/$layer/16");
 		
 	}
 	// 4. serve it 
