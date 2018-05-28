@@ -82,7 +82,7 @@ var Graticule = (function() {
         if (type === GMM.SATELLITE) return '#fff';
         if (type === GMM.TERRAIN) return '#000';
         var mt = overlay.getMap().mapTypes[type];
-        return (mt.textColor) ? mt.textColor : '#fff'; //ported legacy V2 map layers may have a textColor property
+        return (mt.textColor) ? mt.textColor : '#f00'; //ported legacy V2 map layers may have a textColor property
     };
 
     function gridPrecision(dDeg) {

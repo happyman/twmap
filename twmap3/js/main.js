@@ -492,7 +492,7 @@ function showGrid(grid_type) {
         dstBound = PH_Bounds;
         ph = 1;
     } else if (grid_type == "WGS84") {
-        if (!grid) grid = new Graticule(map, true);
+        if (!grid) grid = new Graticule(map, false);
         else grid.show();
         return;
     } else if (grid_type == "None") {
