@@ -869,7 +869,7 @@ function get_point($id='ALL',$is_admin=false) {
 		$where = " WHERE id=$id";
 	else
 		$where = "";
-	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index FROM point3 %s ORDER BY number,class DESC", $where);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index,fzone,fclass,sname,cclass FROM point3 %s ORDER BY number,class DESC", $where);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
 }
@@ -877,7 +877,7 @@ function get_point($id='ALL',$is_admin=false) {
 function get_point_by_class($class_num) {
 	$db=get_conn();
 	$where = sprintf("WHERE class='%d' AND owner=0",$class_num);
-	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index  FROM point3 %s ORDER BY number,ST_XMin(coord)", $where);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index,fzone,fclass,sname,cclass  FROM point3 %s ORDER BY number,ST_XMin(coord)", $where);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	// echo $sql;
 	return $db->getAll($sql);
@@ -892,7 +892,7 @@ function get_points_from_center($center, $r_in_meters) {
 }
 function get_lastest_point($num=5) {
 	$db=get_conn();
-	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index FROM point3 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
+	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index,fzone,fclass,cclass,sname FROM point3 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
 }

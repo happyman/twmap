@@ -50,6 +50,8 @@ exit();
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+ <script src="../js/papaparse.min.js"></script>
+ <script src="../js/randomColor.js"></script>
  <script>
   google.charts.load('current', {packages: ['corechart']});
     $( function() {
@@ -154,6 +156,26 @@ exit();
 						alert("輸入有誤喔");
 					}
 					});
+				$('#multiadd').click(function(event){
+					var result = Papa.parse($("#circlelines").val());
+					if (result.errors.length == 0 ) {
+						console.log(result.data);
+						var myshapes = localStorage.getItem("shapes");
+						var jsonObject = eval("(" + myshapes + ")");
+						var j = jsonObject.shapes.length;
+						for(var i=0;i<result.data.length;i++){
+							var csv = result.data[i];
+							if ($.isNumeric(csv[0]) && $.isNumeric(csv[1]) &&  Math.abs(csv[1]) <= 180 &&  Math.abs(csv[0]) <= 90) {
+								jsonObject.shapes[j++] = { "type": "circle","radius": csv[2], "center": { "lat":  csv[0],"lon": csv[1]}, "color": (csv[3]=="")?randomColor():csv[3] };
+							}				
+						}
+						// all loaded
+						parent.shapesMap.shapesClearAll();
+						localStorage.setItem("shapes",JSON.stringify(jsonObject));
+						parent.shapesMap.shapesLoad();
+						loadCirclelist();
+					}
+				});
 				loadCirclelist();			
 			});
 			</script>
@@ -163,7 +185,12 @@ exit();
 			?>
 			<form id="addcircle">
 			新圓圈中心:<br>緯度:<input type=text size=12 id="addy">經度:<input type=text size=12 id="addx">,半徑=<input type=text id="addradius" size=10 value=1000>公尺 
-			顏色:<input type=color id="addcolor"><button type="button" id="add">新增</button><br>
+			顏色:<input type=color id="addcolor">
+			<button type="button" id="add">新增</button><br>
+			或用 csv 輸入: lat,lon,radius,color (#646464)<br>
+				<textarea id="circlelines" rows="4" cols="50">
+				</textarea>
+				<button type="button" id="multiadd">多行新增</button><br>
 			</form>
 			
 			<button onclick="loadCirclelist();">重載</button>

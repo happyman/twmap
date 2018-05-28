@@ -107,8 +107,13 @@ function tell_story($d) {
 	}
 	if (strstr($d['type'],'點'))
 		$a .= sprintf("<br>狀態: %s", $d['status']);
+	// 別名
 	if (!empty($d['alias']))
 		$a .= sprintf("<br>別名: %s", $d['alias']);
+	// 森林點資訊: 有列測量區 + 等 印出
+	if (!empty($d['fzone']) && intval($d['fclass'])>0 && !empty($d['sname'])) {
+		$a .= sprintf("<br>森林點資訊: %s %s",$d['fzone'],$d['sname']);
+	} 
 
 	if ($d['mt100']>0 || $d['prominence'] >= 100) {
 		$a .= "<br>我是";

@@ -22,7 +22,7 @@ function pointcrud($inp, $owner_uid, $admin) {
 				$where[] = "contribute=1";
 			}
 			$where_str = (count($where)>0)? "WHERE ".implode(" AND ",$where) : "";
-			$sql = sprintf("SELECT id,name,alias,alias2,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute,prominence,prominence_index FROM point3 %s ORDER BY %s OFFSET %d LIMIT %d", 
+			$sql = sprintf("SELECT id,name,alias,alias2,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute,prominence,prominence_index,fclass,fzone,cclass,sname FROM point3 %s ORDER BY %s OFFSET %d LIMIT %d", 
 			$where_str, $inp['jtSorting'], $inp['jtStartIndex'], $inp['jtPageSize']);
 			$db->SetFetchMode(ADODB_FETCH_ASSOC);
 			if (($rs = $db->GetAll($sql)) === false) {
@@ -59,7 +59,7 @@ function pointcrud($inp, $owner_uid, $admin) {
 				$errmsg[] = "fail $sql" . $db->ErrorMsg();
 			}
 			$newid = $rs[0]['id'];
-			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,contribute,owner FROM point3 WHERE id=%d AND owner=%d",$newid, $owner_uid);
+			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,contribute,owner,sname,fclass,fzone,cclass FROM point3 WHERE id=%d AND owner=%d",$newid, $owner_uid);
 			if (($rs = $db->GetAll($sql)) === false) {
 				$errmsg[] = "fail $sql" . $db->ErrorMsg();
 			}
@@ -104,7 +104,7 @@ function pointcrud($inp, $owner_uid, $admin) {
 			if (($rs = $db->Execute($sql)) === false) {
 				$errmsg[] = "fail sql: $sql";
 			}
-			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute,prominence,prominence_index FROM point3 WHERE id=%d",$inp['id']);
+			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute,prominence,prominence_index,fclass,cclass,fzone,sname FROM point3 WHERE id=%d",$inp['id']);
 			if (($rs = $db->GetAll($sql)) === false) {
 				$errmsg[] = "fail $sql" . $db->ErrorMsg();
 			}
