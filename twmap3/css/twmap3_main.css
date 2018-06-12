@@ -7,9 +7,12 @@ html {
 @media (max-width: 400px) {
   html,table { font-size: 13px; }
 }
-
+#mapIdControl {
+	position:absolute; margin-top:10px;
+	left:5px
+}
 #locContainer {
-	position:absolute; margin-top:10px
+	position:absolute; margin-top:10px;
 	display: none;
 }
 #loc {
@@ -108,7 +111,7 @@ min-height: 480px;
 	font-size:18px;
 }
 button:hover { margin: -3px; }
-select:hover { margin: -3px; }
+/* select:hover { margin: -3px; } */
 input:active, 
 input:focus, 
 input:hover, 
@@ -166,7 +169,7 @@ textarea:hover {
 	cursor: pointer;
 }
 #changegname {
-	position: absolute; left:280px;
+	position: absolute; left:290px;
 	top:0px;
 	font-size:11px;
 	cursor: pointer;
@@ -196,7 +199,7 @@ textarea:hover {
 	width: 180px;
 }
 #buttons {
-	padding: 5px 5px;
+	padding: 3px 3px;
 	cursor: pointer;
 }
 body {

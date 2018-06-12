@@ -321,6 +321,16 @@ getTileUrl: function(a,b) {
     maxZoom: 18
 
 });
+var JM20K1904_MapType = new google.maps.ImageMapType({
+getTileUrl: function(a,b) {
+        return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904-jpg-"+b+"-"+ a.x + "-" + a.y;
+    },
+    tileSize: new google.maps.Size(256, 256),
+    name: "堡圖",
+    alt: "1904 日治二萬分之一台灣堡圖(明治版)",
+    maxZoom: 18
+
+});
 
 // 前景
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
@@ -364,13 +374,14 @@ var copyrights =    {
 	 'tw50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣五萬分之一(依據美國陸軍製圖局 1951~1956)",
 	 'hillshading': "<a target=\"_blank\" href=\"http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/\">內政部數值網格資料</a> - 山區陰影圖層",
 	 'atis': "<a target=\"_blank\" href=\"http://image.afasi.gov.tw/\">農航所正射影像</a>",
-         'jm20k_1921': "<a target=\"_blank\" href=\"http://ndaip.sinica.edu.tw/content.jsp?option_id=2621&index_info_id=6924\">台灣堡圖(大正版)</a>",
+	 'tm50k_1966': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6190\">台灣歷史百年地圖</a> - 水利圖 1966",
+     'jm20k_1921': "<a target=\"_blank\" href=\"http://ndaip.sinica.edu.tw/content.jsp?option_id=2621&index_info_id=6924\">台灣堡圖(大正版)</a>",
 	 'tw5kariel': "台灣5000:1相片基本圖"
 };
 var logos =  {   
-	'tw25k_v1': "經1版",
-	'tw25k_v3': "經3版",
-	'moi_osm': 'MOI_OSM' 
+	'tw25k_v1': "- 經1版",
+	'tw25k_v3': "- 經3版",
+	'moi_osm': '- MOI_OSM' 
 };
 
 function CopyrightChange(){
@@ -659,7 +670,10 @@ function restoreMapState(state) {
         }
         if (state.show_kml_layer === 0)  $("#kml_sw").trigger('click');
         if (state.zoom)map.setZoom(parseInt(state.zoom));
-        if (state.maptypeid) map.setMapTypeId(state.maptypeid);
+        if (state.maptypeid) {
+			map.setMapTypeId(state.maptypeid);
+			$('#changebmap option[value="' + state.maptypeid + '"]').prop("selected", true);
+		}
         if (state.roadmap) {
                 $("#changegname").val(state.roadmap);
                 $("#changegname").change();
@@ -847,17 +861,21 @@ function locInfo_show(newpos, ele, extra) {
 	var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
 	var comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
     var content = "<div class='infowin'>" + locInfo_name + "";
-    if (locInfo_name == "我的位置" || locInfo_name == "GPS 航跡資訊") content += permLinkURL(newpos.toUrlValue(5));
-    else content += permLinkURL(encodeURIComponent(locInfo_name));
-    if (extra.content) content += extra.content;
+    if (locInfo_name == "我的位置" || locInfo_name == "GPS 航跡資訊") 
+			content += permLinkURL(newpos.toUrlValue(5));
+    else 
+			content += permLinkURL(encodeURIComponent(locInfo_name));
+		
+    if (extra.content) 
+			content += extra.content;
     content += "<br>經緯度: " + newpos.toUrlValue(5) + "<br>" + ConvertDDToDMS(newpos.lat()) + "," + ConvertDDToDMS(newpos.lng());
     if (ele > -1000) content += "<br>高度: " + ele.toFixed(0) + "M";
     content += "<br>座標: " + comment + "<br>" + comment2 + "<br>" + comment3;
    // /* allow from all points
-    if (ele > -1000) 
+    // if (ele > -1000) 
 	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
 	content += "<a href='//mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
-	content += "<a href='//maps.nlsc.gov.tw/O09/mapshow.action?zoom=" + map.getZoom() + "&lon=" + newpos.lng().toFixed(5) + "&lat=" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
+	content += "<a href='//maps.nlsc.gov.tw/go/"  + newpos.lng().toFixed(5) + "/" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
 	content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
 				
     //*/
@@ -926,6 +944,8 @@ function tagInfo(newpos, id) {
 				content += data[0].story;
 				content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+data[0].ele+")'><img title='通視模擬' id=\"los_eye_img\" src=img/eye.png width=32/></a>";
 				content += "<a href='//mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc' ><img src=img/mc.png title='地圖對照器' /></a>";
+				content += "<a href='//maps.nlsc.gov.tw/go/"  + newpos.lng().toFixed(5) + "/" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
+				content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
 				content += "</div>";
 			}
 			centerInfo.setContent(content);
@@ -1299,6 +1319,7 @@ success: function(data) {
                     type: data[i].type,
                     class: data[i].class,
                     mt100: data[i].mt100,
+					status: data[i].status,
 					prom: data[i].prominence,
 					prom_idx: data[i].prominence_index,
 		    owner: data[1].owner
@@ -1563,8 +1584,9 @@ function initialize() {
         maxZoom: 20,
         center: init_latlng,
         overviewMapControl: true,
-        streetViewControl: false,
+        streetViewControl: true,
         disableDoubleClickZoom: true,
+		mapTypeControl: false, // use custom control
         mapTypeControlOptions: {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
            // style: google.maps.MapTypeControlStyle.DEFAULT,
@@ -1615,6 +1637,7 @@ function initialize() {
     map.mapTypes.set('moi_osm', MOI_OSM_MapType);
 	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);
     map.mapTypes.set('fandi', FanDi_MapType);
+	map.mapTypes.set('jm20k_1904', JM20K1904_MapType);
     map.mapTypes.set('jm20k_1921', JM20K1921_MapType);
     map.mapTypes.set('tm50k_1966', TM50K1966_MapType);
     map.mapTypes.set('jm50k', JM50K1924_MapType);
@@ -1640,6 +1663,9 @@ function initialize() {
     // 背景哪張圖
     map.overlayMapTypes.insertAt(0, BackgroundMapType);
     setRoadMap();
+	
+	// 顯示 control
+	 map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('mapIdControl'));
     // 控制背景圖的透明度
     var bar = document.getElementById("op");
     var container = $("#opSlider");
@@ -1799,7 +1825,10 @@ function initialize() {
         labelArray[i].bindTo('text', markerArray[i], 'title');
     }
     markers_ready = 1;
- 
+	$("#changebmap").change(function() {
+		map.setMapTypeId($("#changebmap").val());
+	});
+	
 	 $("#changemap").change(function() {
 		 var curMapType = BackgroundMapType;
 		 var newMap = $("#changemap").val();
@@ -2323,6 +2352,7 @@ function markerReloadSingle(opt){
                     "type": opt.meta.type,
                     "class": opt.meta.class,
                     "mt100": opt.meta.mt100,
+					"status": opt.meta.status,
 					"prom": opt.meta.prominence,
 					"prom_idx": opt.meta.prominence_index,
 		    "owner": opt.meta.owner
@@ -2356,6 +2386,7 @@ function markerReloadSingle(opt){
                     "type": opt.meta.type,
                     "class": opt.meta.class,
                     "mt100": opt.meta.mt100,
+					"status": opt.meta.status,
 					"prom": opt.meta.prominence,
 					"prom_idx": opt.meta.prominence_index,
 		    "owner": opt.meta.owner
@@ -2446,8 +2477,12 @@ function markerFilter() {
                 if (availableTagsMeta[i].class == '0') {
                     want = 1;
                 }
+			} else if (s[k] == '4' ) {
+				 if (availableTagsMeta[i].class === s[k] || availableTagsMeta[i].status == '森林點共用' ) {
+                    want = 1;
+                }		
             } else {
-                // 1-4 等
+                // 1-3 等
                 if (availableTagsMeta[i].class === s[k]) {
                     want = 1;
                 }

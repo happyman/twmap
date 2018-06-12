@@ -20,6 +20,8 @@ require_once("lib/functions.inc.php");
 	        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
                 <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 	   <link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />  
+		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+	   
 <!-- build:js js/vender.js -->
 	<script  src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
 	<script  src='js/proj4js-combined.js'></script>
@@ -87,6 +89,29 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 			<div id="loc"></div>
 		</div>
 		<div id="opContainer" >
+		<!-- https://fontawesome.com/cheatsheet?from=io#social-buttons   -->	
+			<div id="mapIdControl" title="選擇地圖">
+				<select title="切換背景圖" name="changebmap" id="changebmap"  style="height: 32px; font-weight: 900;font-family: FontAwesome">
+					<option value="jm20k_1904">&#xf1da; &nbsp;堡圖1904</option>
+					<option value="fandi">&#xf1da; &nbsp;蕃地1916</option>
+					<option value="jm20k_1921">&#xf1da; &nbsp;堡圖1921</option>
+					<option value="jm50k">&#xf1da; &nbsp;陸測1924</option>
+					<option value="tw50k">&#xf1da; &nbsp;老五萬1956</option>
+					<option value="tm50k_1966">&#xf129; &nbsp;水利1966</option>
+					<option value="twmapv1">&#xf1da; &nbsp;經建1 1989</option>
+					<option value="tw5kariel">&#xf1da; &nbsp;TW5K 2000</option>
+					<option value="taiwan">&#xf1da; &nbsp;經建3 2001</option>
+					<option value="moi_osm">&#xf164; &nbsp;魯地圖</option>
+					<option value="nlsc_emap">&#xf164; &nbsp;EMAP5</option>
+					<option value="roadmap">&#xf1a0; &nbsp;Google圖</option>
+					<option value="terrain">&#xf1a0; &nbsp;地形圖</option>
+					<option value="hillshading">&#xf0ac; &nbsp;陰影</option>
+					<option value="theme">&#xf0ac; &nbsp;主題</option>
+					<option value="satellite">&#xf1a0; &nbsp;衛星圖</option>
+					<option value="atis">&#xf279; &nbsp;農航所</option>
+					<option value="nlsc_photo_mix">&#xf279; &nbsp;nlsc正射圖</option>
+				</select>
+			</div>
 			<div id="less" title="背景清楚一點">
 				&nbsp;-&nbsp;
 			</div>
@@ -99,17 +124,17 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 			</div>
 			<!-- <button type="button" id="changemap" name="changemap" title="切換一版與三版地形圖" >經建三</button>-->
 			<div id="CGMAP">
-				<select title="切換前景圖" name="changemap" id="changemap">
-					<option value="moi_osm">魯地圖</option>
-					<option value="tw25k_v3">經建三</option>
-					<option value="tw25k_v1">經建一</option>
+				<select title="切換前景圖" name="changemap" id="changemap" style="height: 32px; font-family: FontAwesome, Ariel">
+					<option value="moi_osm">&#xf164; &nbsp;魯地圖</option>
+					<option value="tw25k_v3">&#xf279; &nbsp;經建三</option>
+					<option value="tw25k_v1">&#xf279; &nbsp;經建一</option>
 				</select>
 			</div>
 			 <div id='CGNAME'>
-				     <select title="切換路圖" name="road" id="changegname">
-						     <option value="GoogleNames">Google道路</option>
-							 <option value="NLSCNames">nlsc道路</option>
-							 <option value="None">無路圖</option></select>
+				     <select title="切換路圖" name="road" id="changegname" style="height: 32px; font-family: FontAwesome, Ariel;">
+						     <option value="GoogleNames">&#xf1a0; &nbsp;道路</option>
+							 <option value="NLSCNames">nlsc 道路</option>
+							 <option value="None">無道路</option></select>
 			 </div>
 		</div>
 
@@ -197,10 +222,10 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
 	<iframe id="ranking_iframe" frameborder="0" marginwidth="0" marginheight="0"  width="100%" height="100%" allowfullscreen></iframe>
 	</div>
 	<div id="consolediv" style="display:hidden"> <textarea id="console" readonly="readonly" style="width:100%;height:100%;border:0px;margin:0px;background-color:#e0f0a0;"></textarea></div>
-	  <div id="buttons">
-            <input type="button" id="delete-button" value="刪">
-            <input type="button" id="clear-button" value="全刪">
-			<input type="button" id="shapeinfo-button" value="資訊">
+	  <div id="buttons" style="font-family: Font Awesome\ 5 Free; padding: 2px; margin-top: 2px">
+            <button title="刪除形狀" id="delete-button"><i class="fa fa-times"></i></button>
+            <button title="刪除全部形狀" id="clear-button"><i class="fa fa-times-circle"></i></button>
+			<button title="顯示形狀資訊" id="shapeinfo-button"><i class="fa fa-info"></i></button>
       </div>
 <script>
 	var _gaq = _gaq || [];
