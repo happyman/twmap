@@ -858,8 +858,14 @@ function locInfo_show(newpos, ele, extra) {
         comment = "台灣 TWD67 TM2:" + Math.round(p.x) + "," + Math.round(p.y);
 		comment2 = "台灣 TWD97 TM2:" + Math.round(p2.x) + "/" + Math.round(p2.y);
     }
-	var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
-	var comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
+	/* 地籍座標三角點研究用不用占太多版面 */
+	if (surveyMarker && surveyMarker.getMap()) {
+		var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
+		comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
+		comment3 += "(公尺) cm:" + (p3.x/0.55).toFixed(2) + "," + (p3.y/0.55).toFixed(2);
+	} else {
+		comment3 = "";
+	}
     var content = "<div class='infowin'>" + locInfo_name + "";
     if (locInfo_name == "我的位置" || locInfo_name == "GPS 航跡資訊") 
 			content += permLinkURL(newpos.toUrlValue(5));
@@ -881,10 +887,21 @@ function locInfo_show(newpos, ele, extra) {
     //*/
     if (login_role == 1) {
         if (locInfo_name == "我的位置") 
-			content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "',{});return false\">新增</a>";
+			content += "<br><i class='fa fa-map-marker'></i><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "',{});return false\">新增</a>";
         else 
-			content += "<br><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "&name=" + locInfo_name + "',{});return false\">新增</a>";
-    }
+			content += "<br><i class='fa fa-map-marker'></i><a href=# onClick=\"showmeerkat('" + pointdata_admin_url + "?x=" + newpos.lng().toFixed(5) + "&y=" + newpos.lat().toFixed(5) + "&name=" + locInfo_name + "',{});return false\"><i class='fa fa-map-marker-alt'></i>新增</a>";
+	}
+	/*
+	 <div id="buttons" style="font-family: Font Awesome\ 5 Free; padding: 2px; margin-top: 2px">
+            <button title="刪除形狀" id="delete-button"><i class="fa fa-times"></i></button>
+            <button title="刪除全部形狀" id="clear-button"><i class="fa fa-times-circle"></i></button>
+			<button title="顯示形狀資訊" id="shapeinfo-button"><i class="fa fa-info"></i></button>
+      </div>
+	  */
+	if (!is_mobile()) {
+		content += "測量: <button title='起始點' onclick='smarker_set("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-play'></i></button>";
+		content += "<button title='測量終點' onclick='smarker_end("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-stop'></i></button>";
+	}
     content += "</div>";
     centerInfo.setContent(content);
     centerMarker.setTitle("座標位置");
@@ -907,10 +924,56 @@ function locInfo_show(newpos, ele, extra) {
         circle.setMap(null);
     }
 }
+// survey point marker SET / END
+var surveyMarker;
+function smarker_set(x,y){
+	if (typeof surveyMarker === "undefined") {
+	    surveyMarker = new google.maps.Marker({
+        title: "測量點",
+        position: { lat: y, lng: x },
+        draggable: true,
+		icon: 'img/baseline-visibility-24px.svg',
+        map: map,
+        zIndex: 10000
+		});
+		   google.maps.event.addListener(surveyMarker, 'click', function() {
+					 showCenterMarker(surveyMarker.getPosition().toUrlValue(5));
+            });
+	} else {
+		surveyMarker.setPosition( { lat: y, lng: x });
+	}
+	
+}
+function smarker_end(x,y) {
+	if (surveyMarker) {
+		smarker_connect({ lat: y, lng: x});
+	}
+}
+function smarker_connect(p2){
+	  // refer to getelev function
+	  console.log("connect survey line");
+	  if (surveyMarker && surveyMarker.getMap()) {
+		  var p1 = surveyMarker.getPosition();
+		  if (p1.lat() == p2.lat && p1.lng() == p2.lng) {
+			  console.log("same point"); return;
+		  }
+                                var myshapes = localStorage.getItem("shapes");
+                                /*jshint evil:true */
+                                var jsonObject = eval("(" + myshapes + ")");
+                                var i = jsonObject.shapes.length;
+                                                //{"type":"polyline","color":"#000000","path":[{"lat":"22.916469802058607","lon":"120.61181316989746"},{"lat":"22.97796167183784","lon":"120.62295398325409"}]
+                                jsonObject.shapes[i] = { "type": "polyline","color": "#ff0000", "path": [ { "lat":p1.lat()  ,"lon":p1.lng()  }, {"lat":       p2.lat, "lon":      p2.lng }] };
+                                shapesMap.shapesClearAll();
+                                localStorage.setItem("shapes",JSON.stringify(jsonObject));
+                                shapesMap.shapesLoad();
+								
+		}
+
+}
 // Tags Info
 function tagInfo(newpos, id) {
 	var ph;
-	var comment, comment2;
+	var comment, comment2,comment3;
     var ll = is_taiwan(newpos.lat(), newpos.lng());
 	ph = (ll == 2)? 1 : 0;
 	var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
@@ -922,8 +985,13 @@ function tagInfo(newpos, id) {
         comment = "台灣 TWD67 TM2: " + Math.round(p.x) + "," + Math.round(p.y);
 		comment2 = "台灣 TWD97 TM2: " + Math.round(p2.x) + "/" + Math.round(p2.y);
     }
-    var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
-	var comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
+	if (surveyMarker && surveyMarker.getMap()) {
+		var p3 = lonlat2cad(newpos.lng(), newpos.lat(),"j");
+		comment3 = "地籍座標:(日間) cj:"+ p3.x.toFixed(2) + "," + p3.y.toFixed(2);
+		comment3 += "(公尺) cm:" + (p3.x/0.55).toFixed(2) + "," + (p3.y/0.55).toFixed(2);
+	} else {
+		comment3 = "";
+	}
     $.ajax({
         dataType: 'json',
         cache: false,
@@ -946,6 +1014,10 @@ function tagInfo(newpos, id) {
 				content += "<a href='//mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc' ><img src=img/mc.png title='地圖對照器' /></a>";
 				content += "<a href='//maps.nlsc.gov.tw/go/"  + newpos.lng().toFixed(5) + "/" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
 				content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
+				if (!is_mobile()) {
+					content += "<br>測量: <button title='起始點' onclick='smarker_set("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-play'></i></button>";
+					content += "<button title='測量終點' onclick='smarker_end("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-stop'></i></button>";
+				}
 				content += "</div>";
 			}
 			centerInfo.setContent(content);
@@ -1064,7 +1136,7 @@ function showCenterMarker(name) {
             });
             circle.bindTo('center', centerMarker, 'position');
             if (!centerInfo) {
-		initialCenterInfo();
+					initialCenterInfo();
             }
             tagInfo(availableTagsLocation[i], availableTagsMeta[i].id);
             // 放入 cookie
@@ -1074,11 +1146,11 @@ function showCenterMarker(name) {
 //
            // $.cookie('twmap3_goto', name);
 	    break;
-        }
+        } 
     }
     if (got_name == 1) {
             google.maps.event.addListener(centerMarker, 'click', function() {
-                centerInfo.open(map, centerMarker);
+					centerInfo.open(map, centerMarker);
             });
             return true;
     }
@@ -1248,6 +1320,7 @@ function showCenterMarker_real(loc, name) {
     google.maps.event.addListener(centerMarker, "dragend", centerMarkerDragEnd );
     google.maps.event.addListener(centerMarker, "dragstart", centerMarkerDragStart );
     google.maps.event.addListener(centerMarker, 'click', function() {
+		console.log("from showCenterMarker_real");
         centerInfo.open(map, centerMarker);
     });
     if (!centerInfo) {
@@ -1524,7 +1597,10 @@ function initialmarkers() {
         oms.addMarker(allmarkers[i]);
     }
     oms.addListener('click', function(marker) {
-        showCenterMarker(marker.title);
+			console.log("oms click");
+			 showCenterMarker(marker.title);
+   
+       
     });
     window.oms = oms;
     // 防止 marker initial 之前 filter 已經被呼叫
@@ -1571,10 +1647,40 @@ function setRoadMap(){
                         console.log('insert GPX overlay');
                 }
 }
+
+function displayCoordinates(pnt) {
+
+		  var grid = $('#changegrid').val();
+          var lat = pnt.lat();
+          lat = lat.toFixed(4);
+          var lng = pnt.lng();
+          lng = lng.toFixed(4);
+		  var lng_text, lat_text, p;
+		  var pos, heading, heading_text = "";
+		  if (surveyMarker && surveyMarker.getMap()){
+				pos = centerMarker.getPosition();
+				 heading = google.maps.geometry.spherical.computeHeading(pos,pnt);
+				 if (heading < 0 ) heading+=360;
+				 heading_text = "<a href='javascript:map.panTo(surveyMarker.getPosition());' title='回觀測點'><i class='fa fa-map-marker'></i></a> 方向角:" + heading.toFixed(2) + "(" + ConvertDDToDMS(heading) + ")";
+		  }
+		  if (poly.length> 0  && poly[0].getMap() && (grid == "TWD67" || grid == "TWD67_EXT" || grid=="TWD67PH")) {
+			  p = lonlat2twd67(lng,lat,(grid=="TWD67PH")?1:0);
+			  lng_text = p.x.toFixed(0);
+			  lat_text = p.y.toFixed(0);
+		  } else if ( poly.length > 0  && poly[0].getMap() && (grid == "TWD97" || grid == "TWD97_EXT"||grid == "TWD97PH")) {
+			  p = lonlat2twd97(lng,lat,(grid=="TWD97PH")?1:0);
+			  lng_text = p.x.toFixed(0);
+			  lat_text = p.y.toFixed(0);
+		  } else {
+			  lng_text = lng;
+			  lat_text = lat;
+		  }
+          $("#msg").html("游標:"+grid + ":" + map.getZoom() + "/"+ lng_text + "/" + lat_text+  heading_text + '</a>');
+}
     // 切換前景圖
 
 var shapesMap;
-
+var dblclicked = 0;
 function initialize() {
     console.log('initialize');
     geocoder = new google.maps.Geocoder();
@@ -1602,9 +1708,9 @@ function initialize() {
 
     if (!is_mobile) {
         map.enableKeyDragZoom();
-        map.setOptions({
-            disableDoubleClickZoom: false
-        });
+       // map.setOptions({
+       //     disableDoubleClickZoom: false
+       // });
 		// add drawing tool
 		shapesMap = new ShapesMap( $("#delete-button")[0],$("#clear-button")[0], $("#shapeinfo-button")[0], 
 		function(shapes){
@@ -1666,6 +1772,7 @@ function initialize() {
 	
 	// 顯示 control
 	 map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('mapIdControl'));
+	 map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(document.getElementById('msg'));
     // 控制背景圖的透明度
     var bar = document.getElementById("op");
     var container = $("#opSlider");
@@ -1740,6 +1847,10 @@ function initialize() {
         locInfo(newpos);
         centerMarker.setVisible(true);
     });
+	google.maps.event.addListener(map, 'mousemove', function (event) {
+              displayCoordinates(event.latLng);               
+    });
+
 	
     if (is_mobile) {
         google.maps.event.addListener(map, 'dblclick', function(event) {
@@ -1752,16 +1863,28 @@ function initialize() {
         });
     } else {
         google.maps.event.addListener(map, 'click', function(event) {
-            map.setOptions({
-                disableDoubleClickZoom: false
-            });
-            console.log("left click fired");
-			shapesMap.selectionClear();
-            var newpos = event.latLng;
-            locInfo_name = "我的位置";
-            centerMarker.setPosition(newpos);
-            locInfo(newpos, addremove_polygon, event);
+            //map.setOptions({
+            //    disableDoubleClickZoom: false
+            //});
+			dblclicked = 0;
+			var u = setTimeout(function(){ 
+				if (dblclicked === 0 ) {
+					console.log("left click fired");
+					shapesMap.selectionClear();
+					var newpos = event.latLng;
+					locInfo_name = "我的位置";
+					centerMarker.setPosition(newpos);
+					locInfo(newpos, addremove_polygon, event);
+				}
+			},300);
         });
+		
+		google.maps.event.addListener(map, 'dblclick', function(event) {
+			 dblclicked = 1;
+			 // double click to draw a line (for azimuth)
+			 // if marker is there, means I can have 2nd point
+			 smarker_end(event.latLng.lng(), event.latLng.lat());
+		});
     }
     // 載入 Tags
     $("#tags").val("初始化中");
@@ -1812,7 +1935,7 @@ function initialize() {
         markerArray[i] = new google.maps.Marker({
             position: init_latlng,
             icon: "img/pointer01.jpg",
-            title: "init",
+            title: "Initial",
             draggable: false,
             map: map
         });

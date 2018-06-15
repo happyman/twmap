@@ -382,3 +382,5 @@ MercatorProjection.prototype.fromDivPixelToSphericalMercator = function(pixel, z
     var y = (r/2) * Math.log((1+Math.sin(latRad))/ (1-Math.sin(latRad)));
     return new google.maps.Point(x,y);
 };
+
+

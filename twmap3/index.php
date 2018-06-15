@@ -227,6 +227,8 @@ printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php
             <button title="刪除全部形狀" id="clear-button"><i class="fa fa-times-circle"></i></button>
 			<button title="顯示形狀資訊" id="shapeinfo-button"><i class="fa fa-info"></i></button>
       </div>
+	<div id="msg" style="background-color: white;">
+	</div>
 <script>
 	var _gaq = _gaq || [];
 	_gaq.push(['_setAccount', 'UA-19949015-1']);

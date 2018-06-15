@@ -219,11 +219,12 @@ exit();
 				for($i=1;$i<count($pts);$i++){
 					$sum+=get_distance($pts[$i-1],$pts[$i]);
 				}
-				printf("<br>距離: %.02f 公尺",$sum);
+				// printf("<br>距離: %.02f 公尺",$sum);
 				$wkt_str = sprintf("LINESTRING(%s)",implode(",",$pts1));
 				
 				list ($status, $result) = get_distance2($wkt_str, twDEM_path);
 				if ($status === true) {
+					printf("<br>距離: %.02f 公尺, 頭尾端點方向角: %.06f (%s)",$sum, $result['azimuth'],deg2dms($result['azimuth']));
 					distance_display($result);
 					printf("<br>高度圖");
 				}
@@ -236,6 +237,7 @@ function drawBackgroundColor() {
       var data = new google.visualization.DataTable();
       data.addColumn('number', 'X');
       data.addColumn('number', '高度');
+	  data.addColumn('number', '通視');
 
       data.addRows([
 <?php
@@ -250,7 +252,15 @@ function drawBackgroundColor() {
         vAxis: {
           title: '海拔高度(M)'
         },
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+		series: {
+<?php
+		if ($result['cross'] == 1) {
+			echo "1: { lineDashStyle: [5, 1, 3] }";
+		}
+?>
+		},
+		colors: [ 'black', 'red' ]
       };
 
       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));

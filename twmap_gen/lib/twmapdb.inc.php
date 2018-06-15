@@ -3,6 +3,7 @@
 // $Id: twmapdb.inc.php 356 2013-09-14 10:00:22Z happyman $
 //
 require_once("adodb5/adodb.inc.php");
+require_once("azimuth.php");
 
 function get_conn() {
 	global $db_host, $db_conn,$db_user, $db_pass, $db_name;
@@ -1065,6 +1066,11 @@ function get_distance2($wkt_str, $twDEM_path){
 		$ele = $elev_data[$i];
 		$dist[$i] = get_distance(explode(" ",$points[$i-1]), $point);
 		$elediff[$i] = $elev_data[$i] - $elev_data[$i-1];
+		// if we need azimuth between points
+		//$ppoint = explode(" ",$points[$i-1]);
+		//$azi_result = Calculate(array("lon"=>$ppoint[0],"lat"=>$ppoint[1],"elv"=>$elev_data[$i-1]),
+		//							array("lon"=>$point[0],"lat"=>$point[1],"elv"=>$elev_data[$i]));
+		//$azimuth[$i] = $azi_result["azimuth"];
 	
 		//  利用 dem 的 empty return 當作超出範圍 
 		if (empty($elev_data[$i])) $outofrange = 1;
@@ -1080,16 +1086,33 @@ function get_distance2($wkt_str, $twDEM_path){
 		$dist2[$i] = sqrt(pow($dist[$i],2) + pow($elediff[$i],2));
 		
 	}
-	$sum=0;$sum2=0;
+	/* 計算頭尾點的 azimuth */
+	$ppoint = explode(" ",$points[0]);$point=explode(" ",$points[count($points)-1]);
+	$azi_result = Calculate(array("lon"=>$ppoint[0],"lat"=>$ppoint[1],"elv"=>$elev_data[0]),
+							array("lon"=>$point[0],"lat"=>$point[1],"elv"=>$elev_data[count($points)-1]));
+    /* 畫出斜率 y=ax+b */
+	$sum=0;
+	for($i=0;$i<count($points);$i++) {
+		$sum+=$dist[$i];
+	}
+	$a = ($elev_data[count($points)-1]-$elev_data[0])/($sum-$dist[0]);
+	$b = $elev_data[count($points)-1] - $a * $sum;
+	/*準備好 */
+	$sum2=0;$sum=0;$cross = 0;
 	for($i=0;$i<count($points);$i++) {
 		$sum+=$dist[$i];
 		$sum2+=$dist2[$i];
+		// $sum2+=$dist2[$i];
 		$msg.=sprintf("<pre>%d %s %d h=%.02f d=%.02f d1=%.02f  \n",$i,$points[$i],$elev_data[$i],$elediff[$i],$dist[$i],$dist2[$i]);
-		if ($i>0)
-		$charts[] =sprintf("[%.02f,%.02f]",$sum,$elev_data[$i]);
+		if ($i>0) {
+			$slope_y = $a*$sum+$b;
+			if ($elev_data[$i] > $slope_y) $cross = 1;
+			$charts[] =sprintf("[%.02f,%.02f,%.02f]",$sum,$elev_data[$i], $slope_y);
+			
+		}
 	}
 	return array(true,array("step"=>20, "d"=>$sum, "d1"=>$sum2, "avgele" => $sumele / count($points),
-	"ascent"=>$ascent, "descent"=>$descent, "outofrange" => $outofrange, "maxele"=> $maxele, "minele" => $minele, "chart"=>implode(",",$charts)));
+	"ascent"=>$ascent, "descent"=>$descent, "outofrange" => $outofrange, "maxele"=> $maxele, "minele" => $minele, "chart"=>implode(",",$charts), "azimuth"=>$azi_result['azimuth'], "cross"=>$cross));
 }
 function get_administration($x,$y,$type="town") {
 	$db=get_conn();
