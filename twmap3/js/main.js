@@ -1658,7 +1658,7 @@ function displayCoordinates(pnt) {
 		  var lng_text, lat_text, p;
 		  var pos, heading, heading_text = "";
 		  if (surveyMarker && surveyMarker.getMap()){
-				pos = centerMarker.getPosition();
+				pos = surveyMarker.getPosition();
 				 heading = google.maps.geometry.spherical.computeHeading(pos,pnt);
 				 if (heading < 0 ) heading+=360;
 				 heading_text = "<a href='javascript:map.panTo(surveyMarker.getPosition());' title='回觀測點'><i class='fa fa-map-marker'></i></a> 方向角:" + heading.toFixed(2) + "(" + ConvertDDToDMS(heading) + ")";
