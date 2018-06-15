@@ -898,7 +898,7 @@ function locInfo_show(newpos, ele, extra) {
 			<button title="顯示形狀資訊" id="shapeinfo-button"><i class="fa fa-info"></i></button>
       </div>
 	  */
-	if (!is_mobile()) {
+	if (!is_mobile) {
 		content += "測量: <button title='起始點' onclick='smarker_set("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-play'></i></button>";
 		content += "<button title='測量終點' onclick='smarker_end("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-stop'></i></button>";
 	}
@@ -1014,7 +1014,7 @@ function tagInfo(newpos, id) {
 				content += "<a href='//mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc' ><img src=img/mc.png title='地圖對照器' /></a>";
 				content += "<a href='//maps.nlsc.gov.tw/go/"  + newpos.lng().toFixed(5) + "/" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
 				content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
-				if (!is_mobile()) {
+				if (!is_mobile) {
 					content += "<br>測量: <button title='起始點' onclick='smarker_set("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-play'></i></button>";
 					content += "<button title='測量終點' onclick='smarker_end("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-stop'></i></button>";
 				}
