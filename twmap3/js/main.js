@@ -1660,8 +1660,9 @@ function displayCoordinates(pnt) {
 		  if (surveyMarker && surveyMarker.getMap()){
 				pos = surveyMarker.getPosition();
 				 heading = google.maps.geometry.spherical.computeHeading(pos,pnt);
+				 var distance = google.maps.geometry.spherical.computeDistanceBetween(pos,pnt);
 				 if (heading < 0 ) heading+=360;
-				 heading_text = "<a href='javascript:map.panTo(surveyMarker.getPosition());' title='回觀測點'><i class='fa fa-map-marker'></i></a> 方向角:" + heading.toFixed(2) + "(" + ConvertDDToDMS(heading) + ")";
+				 heading_text = "&nbsp;<a href='javascript:map.panTo(surveyMarker.getPosition());' title='回觀測點'><i class='fa fa-map-marker'></i></a> 距離:" + distance.toFixed(1) + "M 方向角:" + heading.toFixed(2) + "(" + ConvertDDToDMS(heading) + ")";
 		  }
 		  if (poly.length> 0  && poly[0].getMap() && (grid == "TWD67" || grid == "TWD67_EXT" || grid=="TWD67PH")) {
 			  p = lonlat2twd67(lng,lat,(grid=="TWD67PH")?1:0);
