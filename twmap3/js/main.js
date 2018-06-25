@@ -739,12 +739,16 @@ function restoreMapState(state) {
                     CurrentLocation(position);
                     position_get = 1;
                 },
-                fail: FeatureLocation,
-                error: FeatureLocation
+                fail: function() {
+					FeatureLocation('fail');
+				},
+                error: function() {
+					FeatureLocation('error');
+				}
             });
             setTimeout(function() {
                 if (position_get === 0) {
-                    FeatureLocation();
+                    FeatureLocation('cancel');
                 }
             }, 4000);
 	}
@@ -959,7 +963,7 @@ function smarker_connect(p2){
 		  }
                                 var myshapes = localStorage.getItem("shapes");
                                 /*jshint evil:true */
-                                var jsonObject = eval("(" + myshapes + ")");
+                                var jsonObject = (myshapes) ? eval("(" + myshapes + ")") : { "shapes":[] };
                                 var i = jsonObject.shapes.length;
                                                 //{"type":"polyline","color":"#000000","path":[{"lat":"22.916469802058607","lon":"120.61181316989746"},{"lat":"22.97796167183784","lon":"120.62295398325409"}]
                                 jsonObject.shapes[i] = { "type": "polyline","color": "#ff0000", "path": [ { "lat":p1.lat()  ,"lon":p1.lng()  }, {"lat":       p2.lat, "lon":      p2.lng }] };
@@ -1590,7 +1594,7 @@ function initialmarkers() {
             //icon: iconWithColor(usualColor),
             title: availableTags[i],
             map: map,
-	    draggable: false,
+			draggable: false,
             // shadow: mysetIcon2(availableTagsMeta[i].type, 1),
             position: availableTagsLocation[i]
         });
@@ -1682,6 +1686,7 @@ function displayCoordinates(pnt) {
 
 var shapesMap;
 var dblclicked = 0;
+var really_idle = new Date();
 function initialize() {
     console.log('initialize');
     geocoder = new google.maps.Geocoder();
@@ -1834,11 +1839,20 @@ function initialize() {
     });
     // 真正載入完成
     listener = google.maps.event.addListener(map, 'idle', function() {
-        if ($("#loading").is(":visible")) {
-            $("#loading").hide();
-            $(window).resize();
-        }
-        updateView('bounds_changed');
+			var t = new Date();
+			if ( t - really_idle < 1000) {
+					console.log("skipped idle event");
+			} else {
+					if ($("#loading").is(":visible")) {
+						$("#loading").hide();
+						$(window).resize();
+					}
+					console.log('idle event');
+					really_idle = new Date();
+					updateView('bounds_changed');
+			}
+		
+        
     });
     google.maps.event.addListener(map, "rightclick", function(event) {
         map.set('disableDoubleClickZoom', true);
@@ -1849,7 +1863,7 @@ function initialize() {
         centerMarker.setVisible(true);
     });
 	google.maps.event.addListener(map, 'mousemove', function (event) {
-              displayCoordinates(event.latLng);               
+          	    displayCoordinates(event.latLng);               
     });
 
 	
@@ -2393,9 +2407,9 @@ function CurrentLocation(position) {
     MapStateRestored = 1;
 }
 
-function FeatureLocation() {
+function FeatureLocation(caller) {
     var feature = ["三角錐山", "南二子山北峰", "敷島山", "大檜山", "武陵山", "佐久間山", "錐錐谷", "丹錐山", "霧頭山", "出雲山", "西巴杜蘭", "公山", "大分山"];
-	console.log('goto featureLocation');
+	console.log('goto featureLocation from ' + caller );
     $("#tags").val(feature[Math.floor(Math.random() * feature.length)]);
     $("#goto").trigger('click');
     MapStateRestored = 1;
