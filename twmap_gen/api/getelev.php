@@ -42,7 +42,17 @@ exit();
 	//print_r($_POST);
 	$data = json_decode($_POST['data'], true);
 
-	$shapes = $data['shapes'];
+	$data_shapes = $data['shapes'];
+	// 若有多筆，表示在畫圓的 tab
+	if (count($data_shapes) > 1 ) {
+		foreach($data_shapes as $shape){
+			if ($shape['type'] == 'circle') {
+				$shapes[] = $shape;
+			}
+		}
+	} else {
+		$shapes = $data_shapes;
+	}
 	?>
 	<html>
 	<head>
@@ -215,6 +225,7 @@ exit();
 				}
 				echo "</textarea>\n";
 				downloadform();
+				$run_once = 1;
 				$sum=0;
 				for($i=1;$i<count($pts);$i++){
 					$sum+=get_distance($pts[$i-1],$pts[$i]);
@@ -280,6 +291,7 @@ function drawBackgroundColor() {
 				}
 				echo "</textarea>";
 					downloadform();
+					$run_once = 1;
 				$pts[] = $pts[0];
 				$wkt_str = sprintf("POLYGON((%s))",implode(",",$pts));
 				$result = get_AREA($wkt_str);
