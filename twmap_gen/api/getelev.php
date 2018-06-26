@@ -63,10 +63,14 @@ exit();
  <script src="../js/papaparse.min.js"></script>
  <script src="../js/randomColor.js"></script>
  <script>
-  google.charts.load('current', {packages: ['corechart']});
+ 		// load google chart
+		google.charts.load('current', {packages: ['corechart']});
     $( function() {
-    $( "#tabs" ).tabs({ active: 1 });
-  } );
+
+		// tabs
+		$( "#tabs" ).tabs({ active: 1 });
+	
+	});
   </script>
   </head><body>
   <hr>
@@ -78,6 +82,7 @@ exit();
 		switch($shape['type']) {
 			case 'circle':
 			?>
+			<h2>這是 圓圈 circle 編輯器</h2>
 			<script>
 		
 			// buggy: localStorage has race condition issue
@@ -401,8 +406,23 @@ function display_area($sqm){
 	echo "</div>";
 }
 function downloadform() {
-	printf("<form id='exportform' action='shape2track.php' method='post'><input type=hidden name='data' value='%s'>",$_POST['data']);
 	?>
+	<script>
+		function exportform(){
+		alert('here');
+			var cur_shape = localStorage.getItem("infoshapes");	
+			if ($("input[name='all']:checked").val() == 'yes') {
+				$("#data").val(localStorage.getItem("shapes"));
+			}else{
+				$("#data").val(cur_shape);
+			}
+	}
+	</script>
+	<form id='exportform' action='shape2track.php' method='post' onSubmit="exportform()">
+	<input type=hidden name='data' id='data'></input>
+	<b>Shape: </b><input type='radio' name='all' value='yes'>all</input>
+	<input type='radio' name='all' value='no' checked>cur</input>
+	<b> Type: </b>
 	<input type=radio name=type value='gpx' >GPX </input>
 	<input type=radio name=type value='kml' checked>KML </input>
 	<button type="submit">下載</button>
