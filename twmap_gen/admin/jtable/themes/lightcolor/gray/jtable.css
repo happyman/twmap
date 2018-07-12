@@ -335,6 +335,7 @@ div.jtable-main-container table.jtable tbody > tr {
 div.jtable-main-container table.jtable tbody > tr > td {
   padding: 5px;
   border-left: 1px dotted #bebebe;
+  font-size: 12px;
 }
 div.jtable-main-container table.jtable tbody > tr > td:first-child {
   border-left: none;

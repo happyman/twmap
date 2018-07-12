@@ -99,8 +99,8 @@ $(document).ready(function () {
 					},
 			<?php
 			if (isset($_GET['x']) && isset($_GET['y'])) {
-					printf('x: { title: "lon", edit: true,  defaultValue: "%s" },', $_GET['x']);
-					printf('y: { title: "lat", edit: true,  defaultValue: "%s" },', $_GET['y']);
+					printf('x: { title: "lon", edit: true,  defaultValue: "%s", visibility: "hidden" },', $_GET['x']);
+					printf('y: { title: "lat", edit: true,  defaultValue: "%s", visibility: "hidden" },', $_GET['y']);
 
 			} else {
 			?>

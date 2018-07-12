@@ -20,7 +20,7 @@ require_once("lib/functions.inc.php");
 	        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
                 <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 	   <link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />  
-		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+		<link href="css/font-awesome.min.css" rel="stylesheet" />
 	   
 <!-- build:js js/vender.js -->
 	<script  src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
@@ -76,6 +76,7 @@ printf("var viewshed_url = '%s';\n",$CONFIG['viewshed_url']);
 printf("var exportkml_url = '%s';\n", $CONFIG['exportkml_url']);
 printf("var poisearch_url = '%s';\n", $CONFIG['poisearch_url']);
 printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php?tab=0&");
+printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 ?>
 </script>
 	</head>

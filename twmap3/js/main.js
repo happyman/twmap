@@ -637,7 +637,7 @@ function permLinkURL(goto) {
 	if (typeof skml !== 'undefined' && typeof skml.mid !== 'undefined' && skml.mid !== 0){
 		skml_param = '&skml_id=' + skml.mid;
 	}
-    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity.toFixed(4) + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() + "&mcover=" + $("#mcover").val() + skml_param + "'><img src='img/permalink.png' width=30 border=0/></a>";
+    return "<a href=# id='permlinkurl' data-url='" + window.location.origin + location.pathname + "?goto=" + goto + "&zoom=" + map.getZoom() + "&opacity=" + opacity.toFixed(4) + "&mapversion=" + ver + "&maptypeid=" + map.getMapTypeId() + "&show_label=" + show_label + "&show_kml_layer=" + show_kml_layer + "&show_marker=" + show_marker + "&roadmap=" + curMap + "&grid=" + curGrid + "&theme=" + theme + "&show_delaunay=" + show_delaunay + "&rainfall="+ $("#rainfall").val() + "&mcover=" + $("#mcover").val() + skml_param + "'><img src='img/permalink.png' width=13 border=0/></a>";
 }
 
 var MapStateRestored = 0;
@@ -886,7 +886,7 @@ function locInfo_show(newpos, ele, extra) {
 	content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight("+newpos.toUrlValue(5)+","+ele.toFixed(0)+")'><img id=\"los_eye_img\"  title='通視模擬' src=img/eye.png width=32/></a>";
 	content += "<a href='//mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) +"/"+ newpos.lng().toFixed(4) + "' target='mc'><img src='img/mc.png' title='地圖對照器' /></a>";
 	content += "<a href='//maps.nlsc.gov.tw/go/"  + newpos.lng().toFixed(5) + "/" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
-	content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
+	content += "<a href=# title='獨立峰排名' onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
 				
     //*/
     if (login_role == 1) {
@@ -903,7 +903,7 @@ function locInfo_show(newpos, ele, extra) {
       </div>
 	  */
 	if (!is_mobile) {
-		content += "測量: <button title='起始點' onclick='smarker_set("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-play'></i></button>";
+		content += "<br>測量: <button title='起始點' onclick='smarker_set("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-play'></i></button>";
 		content += "<button title='測量終點' onclick='smarker_end("+ newpos.lng() + "," + newpos.lat() + ");return false'><i class='fa fa-stop'></i></button>";
 	}
     content += "</div>";
@@ -1337,9 +1337,8 @@ function showCenterMarker_real(loc, name) {
     // $.cookie('twmap3_goto', name);
     return true;
 }
-function initialCenterInfo() {
-	centerInfo = new InfoBox(myInfoBoxOptions);
-	google.maps.event.addListener(centerInfo, "domready", function() {
+var shorten_handler = function() {
+		console.log("InfoBox shorten handler");
 			$('#permlinkurl').click(function(event) {
 				event.preventDefault();
 				$('#copylink').dialog();
@@ -1351,7 +1350,8 @@ function initialCenterInfo() {
 					location.href=$('#copylinkurl').val();
 				});
 				$('#copylinkurlshort').click(function() {
-					var link = 'http://to.ly/api.php?json=0&longurl=' + encodeURIComponent($('#copylinkurl').val());
+					// wrap once
+					var link = shorten_url + "?url=" + encodeURIComponent($('#copylinkurl').val());
 					$.ajax({ url: link,dataType: 'html',
 						success: function(data){
 						$('#copylinkurl').val(data);
@@ -1361,8 +1361,11 @@ function initialCenterInfo() {
 					$('#copylinkurlshort').hide();
 					}); // end of click
 				});
-	});
-
+	};
+function initialCenterInfo() {
+	centerInfo = new InfoBox(myInfoBoxOptions);
+	google.maps.event.addListener(centerInfo, "content_changed", shorten_handler);
+    google.maps.event.addListener(centerInfo, "domready", shorten_handler);
 }
 
 function initialtags(opt) {
