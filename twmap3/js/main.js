@@ -648,9 +648,14 @@ function saveMapState() {
 	var ver = $("#changemap").val();
     var curMap = $("#changegname").val();
     var curGrid = $("#changegrid").val();
-    var state = { "zoom": map.getZoom(), "opacity": opacity, "mapversion": ver, "maptypeid": map.getMapTypeId(),
+	var mygoto = mapCenter.toUrlValue(5);
+	// if infobox is open, save that place
+	if (centerInfo && centerInfo.getVisible()) {
+		mygoto = centerInfo.getPosition().toUrlValue(5);
+	}
+	var state = { "zoom": map.getZoom(), "opacity": opacity, "mapversion": ver, "maptypeid": map.getMapTypeId(),
                   "show_label": show_label, "show_kml_layer": show_kml_layer , "show_marker": show_marker, "roadmap": curMap, "grid": curGrid, "theme": theme,
-	"goto": mapCenter.toUrlValue(5), "show_delaunay": show_delaunay , "rainfall": $("#rainfall").val(), "mcover": $('#mcover').val()};
+	"goto": mygoto, "show_delaunay": show_delaunay , "rainfall": $("#rainfall").val(), "mcover": $('#mcover').val()};	
 	
 
     localStorage.setItem("twmap_state", JSON.stringify(state));
