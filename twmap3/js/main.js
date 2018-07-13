@@ -975,6 +975,7 @@ function smarker_connect(p2){
                                 shapesMap.shapesClearAll();
                                 localStorage.setItem("shapes",JSON.stringify(jsonObject));
                                 shapesMap.shapesLoad();
+								shapesMap.lastshape_select_click();
 								
 		}
 

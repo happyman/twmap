@@ -50,10 +50,14 @@ foreach($ret['features'] as $val) {
 			$val['properties']['mt100_desc'] = "";
 		}
 		$dd = $val['properties']['class'];
-		if ($dd > 1 && $dd < 4 ) { // 2-4
+		if ($dd == 2 && $dd == 3 ) { 
 			$val['properties']['stone'] = sprintf("%d-%d",$dd, $val['properties']['number']);
 		} else {
 			$val['properties']['stone'] = "";
+		}
+		// 加上森林點資訊
+		if (!empty($val['properties']['fzone']) && intval($val['properties']['fclass'])>0 && !empty($val['properties']['sname'])){
+			$val['properties']['stone'] .= sprintf("森林點: %s %s",$val['properties']['fzone'],$val['properties']['sname']);
 		}
 		/* update sql for empty ele
 		if (intval($val['properties']['ele']) == 0){

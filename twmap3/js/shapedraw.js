@@ -721,7 +721,12 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback, _Com
 	return {
 		selectionClear: function() { selectionClear(); },
 		shapesLoad: function() {  shapesLoad(); }, 
-		shapesClearAll: function() {onClearButtonClicked();
+		shapesClearAll: function() {onClearButtonClicked() },
+		lastshape_select_click: function() {
+				// 1. select shape
+				selectionSet(_shapes[_shapes.length-1]);
+				// 2. click info
+				onInfoButtonClicked();
 		}
 	};
 }
