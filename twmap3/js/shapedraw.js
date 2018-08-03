@@ -106,7 +106,11 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback, _Com
             center: center,
             radius: parseFloat(jc.radius),
             strokeWeight: 0,
+            strokeColor: jc.color,
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
             editable: false,
+	    fillOpacity: 0.1,
             fillColor: jc.color,
             map: _map
         };

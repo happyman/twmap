@@ -312,8 +312,20 @@ getTileUrl: function (tile, zoom) {
 });
 
 var JM20K1921_MapType = new google.maps.ImageMapType({
-getTileUrl: function(a,b) {
-        return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1921-jpg-"+b+"-"+ a.x + "-" + a.y;
+getTileUrl: function(tile,zoom) {
+	
+	    var lULP = new google.maps.Point(tile.x*256,(tile.y+1)*256);
+        var lLRP = new google.maps.Point((tile.x+1)*256,tile.y*256);
+        var projectionMap = new MercatorProjection();
+        var lULg = projectionMap.fromDivPixelToLatLng(lULP, zoom);
+        var lLRg  = projectionMap.fromDivPixelToLatLng(lLRP, zoom);
+		var tileBounds = new google.maps.LatLngBounds(lULg, lLRg);
+			
+		if (tileBounds.intersects(LY_Bounds)){
+				var y_tms = (1 << zoom) - tile.y - 1;
+				return "/~mountain/lanyu1921/"+ zoom+"/"+tile.x+"/"+y_tms+".png";
+		}
+		return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1921-jpg-"+zoom+"-"+ tile.x + "-" + tile.y;
     },
     tileSize: new google.maps.Size(256, 256),
     name: "堡圖",
@@ -322,8 +334,19 @@ getTileUrl: function(a,b) {
 
 });
 var JM20K1904_MapType = new google.maps.ImageMapType({
-getTileUrl: function(a,b) {
-        return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904-jpg-"+b+"-"+ a.x + "-" + a.y;
+getTileUrl: function(tile,zoom) {
+		var lULP = new google.maps.Point(tile.x*256,(tile.y+1)*256);
+        var lLRP = new google.maps.Point((tile.x+1)*256,tile.y*256);
+        var projectionMap = new MercatorProjection();
+        var lULg = projectionMap.fromDivPixelToLatLng(lULP, zoom);
+        var lLRg  = projectionMap.fromDivPixelToLatLng(lLRP, zoom);
+		var tileBounds = new google.maps.LatLngBounds(lULg, lLRg);
+			
+		if (tileBounds.intersects(LY_Bounds)){
+				var y_tms = (1 << zoom) - tile.y - 1;
+				return "/~mountain/lanyu1904/"+ zoom+"/"+tile.x+"/"+y_tms+".png";
+		}
+        return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904-jpg-"+zoom+"-"+ tile.x + "-" + tile.y;
     },
     tileSize: new google.maps.Size(256, 256),
     name: "堡圖",
@@ -1623,6 +1646,7 @@ function initialmarkers() {
 var listener;
 var TW_Bounds;
 var PH_Bounds;
+var LY_Bounds;
 var GeoMarker;
 
 function showUploadPanel(e) {
@@ -1818,6 +1842,10 @@ function initialize() {
     PH_Bounds = new google.maps.LatLngBounds();
     PH_Bounds.extend(new google.maps.LatLng(23.15, 119.2));
     PH_Bounds.extend(new google.maps.LatLng(23.75, 119.75));
+	LY_Bounds = new google.maps.LatLngBounds();
+	LY_Bounds.extend(new google.maps.LatLng(22.100785,121.482901));
+	LY_Bounds.extend(new google.maps.LatLng(21.937729,121.627586));
+			
     google.maps.event.addListener(opSlider, 'drag', function(evt) {
         var op = opSlider.left() / range;
         if (op >= 1) op = 1;
