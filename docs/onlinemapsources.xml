@@ -1089,6 +1089,26 @@
 		<qop></qop>
 	</onlinemapsource>
 	
+	<onlinemapsource uid="198">
+        <name>USGS Historic Topo (US)</name>
+        <url><![CDATA[https://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer/tile/{$z}/{$y}/{$x}]]></url>
+        <website><![CDATA[<a href="https://www.arcgis.com/home/item.html?id=99cd5fbd98934028802b4f797c4b1732">USA Topo Maps
+</a>]]></website>
+        <minzoom>0</minzoom>
+        <maxzoom>15</maxzoom>
+        <projection>MERCATORESFERICA</projection>
+        <servers></servers>
+        <httpparam name=""></httpparam>
+        <cacheable>1</cacheable>
+        <downloadable>1</downloadable>
+        <maxtilesday>0</maxtilesday>
+        <maxthreads>0</maxthreads>
+        <xop></xop>
+        <yop></yop>
+        <zop></zop>
+        <qop></qop>
+    </onlinemapsource>
+
     <onlinemapsource uid="197">
         <name>USGS Topo (US)</name>
         <url><![CDATA[http://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/{$z}/{$y}/{$x}]]></url>
