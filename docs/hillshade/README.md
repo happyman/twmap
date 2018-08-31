@@ -14,6 +14,7 @@ note: use bilinear resampling  [5][7]
 gdalwarp  -wt Float32 -ot Float32  -co BIGTIFF=YES -co TILED=YES -co COMPRESS=LZW -co PREDICTOR=2 -t_srs "+proj=merc +ellps=sphere +R=6378137 +a=6378137 +units=m" -r bilinear -tr 10 10 raw.tiff wraped.tif
 ```
 ## 3. create hillshade tiff
+### 3.1 grayscale
 ref  [6][9]
 ```
 echo doing hillshade by gdaldem
@@ -30,7 +31,32 @@ cat shade.rmap
 129 255 255 255 0
 255 255 255 255 192
 ```
-## 4. serve it with mapnik 
+### 3.2 color relief
+create a slope tif and color tif, ref [10]
+```
+echo create slope tiff
+gdaldem slope wraped.tif slope.tif 
+gdaldem color-relief slope.tif slope.rmap hillshade-slope.tif
+
+cat slope.rmap
+0 255 255 255
+90 0 0 0
+
+cat color.rmap
+1 0 0 255
+2 46 154 88
+1000 251 255 128
+2000 224 108 31
+2500 200 55 55
+3000 163 20 227
+3200 215 15 242
+3500 204 14 93
+4000 215 244 244
+
+gdaldem color-relief wraped.tif color.rmap color.tif
+```
+
+## 4. serve tif with mapnik 
 ref: [9]
 this is my xml for reference.
 
@@ -69,7 +95,43 @@ this is my xml for reference.
 </Map>
 ```
 
-## 5. reference
+## 5. serve it 
+use tilestache to serve mapnik layer, for example: [11]
+```
+                        "hillshading-slope":
+                        {
+                                "provider": {"name": "mapnik", "mapfile": "/var/www/etc/hillshading-slope.xml"},
+                                "projection": "spherical mercator",
+                                "extension": "png",
+                                "cache lifespan": 86400,
+                                "maximum cache age": 86400
+                        },
+
+
+                        "color":
+                        {
+                                "provider": {"name": "mapnik", "mapfile": "/var/www/etc/colorrelief.xml"},
+                                "projection": "spherical mercator",
+                                "extension": "png",
+                                "cache lifespan": 86400,
+                                "maximum cache age": 86400
+                        },
+                        "colorrelief":
+                        {
+                                  "provider": { "name": "Sandwich",
+                                        "stack": [
+                                        {"src": "color", "opacity": 0.7 },
+                                        {"src": "hillshading-slope", "mode": "multiply", "opacity": 0.9}
+                                        ]
+                                },
+                                "cache lifespan": 86400,
+                                "maximum cache age": 86399
+
+                        }
+
+
+```
+## 6. reference
  * 1: http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/
  * 2: https://drive.google.com/drive/folders/0B7mj_CQDLqFCUzdRazk5TFRNWDg
  * 3: http://blog.mastermaps.com/2012/06/creating-color-relief-and-slope-shading.html
@@ -79,4 +141,6 @@ this is my xml for reference.
  * 7: http://www.gdal.org/gdalwarp.html
  * 8: http://wiki.openstreetmap.org/wiki/Shaded_relief_maps_using_mapnik
  * 9: http://www.gdal.org/gdaldem.html
+ * 10: http://blog.mastermaps.com/2012/06/creating-color-relief-and-slope-shading.html
+ * 11: http://tilestache.org/doc/TileStache.Sandwich.html
 

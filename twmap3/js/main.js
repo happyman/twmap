@@ -196,7 +196,7 @@ var MOI_OSM_TWMAP_Options = {
 };
 var Hillshading_Options = {
     getTileUrl: function(a, b) {
-        return '//rs.happyman.idv.tw/map/hillshading/' + b + "/" + a.x + "/	" + a.y + ".png";
+        return '//rs.happyman.idv.tw/map/colorrelief/' + b + "/" + a.x + "/	" + a.y + ".png";
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 19,
@@ -2453,6 +2453,7 @@ function FeatureLocation(caller) {
 }
 
 function updateView(type) {
+     if ( MapStateRestored === 0 ) return;
     //hack
     if ($('div.gmnoprint').last().find("div").first().css("font-size") != "15px") {
         $('div.gmnoprint').last().find("div").css({
