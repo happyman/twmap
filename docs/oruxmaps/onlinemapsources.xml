@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="utf-8"?>
+<onlinemapsources>
+<!-- 製造日期: 2018-09-05 15:08:26 by 地圖產生器 -->
+<onlinemapsource uid="6000">
+	<name>1899-日治臺灣全圖 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=JM400K_1899&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>14</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6001">
+	<name>1904-日治臺灣堡圖(明治版)-1:20,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904-jpg-{$z}-{$x}-{$y}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6002">
+	<name>1916-日治蕃地地形圖-1:50,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM50K_1916-jpg-{$z}-{$x}-{$y}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6003">
+	<name>1921-日治臺灣堡圖(大正版)-1:20,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1921-jpg-{$z}-{$x}-{$y}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6004">
+	<name>1924-日治地形圖(陸地測量部)-1:50,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM50K_1924-jpg-{$z}-{$x}-{$y}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6005">
+	<name>1936-五十萬分一輿地圖 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=JM500K_1936&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>14</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6006">
+	<name>1944-美軍地形圖-1:50,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=AM50K_1944&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6007">
+	<name>1945-美軍繪製臺灣城市地圖 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=AMCityPlan_1945&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6008">
+	<name>1945-台北美軍航照影像 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=Taipei_aerialphoto_1945&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/jpeg</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>11</minzoom>
+	<maxzoom>19</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6009">
+	<name>1956-臺灣地形圖-1:50,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/file-exists.php?img=TM50K_1956-jpg-{$z}-{$x}-{$y}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6010">
+	<name>1966-臺灣省水利工程、水文站及基準點位置圖 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/file-exists.php?img=TM50K_1966-jpg-{$z}-{$x}-{$y}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>15</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6011">
+	<name>1989-臺灣經建1版地形圖-1:25,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/file-exists.php?img=TM25K_1989-jpg-{$z}-{$x}-{$y}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>7</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6012">
+	<name>2001-臺灣經建3版地形圖-1:25,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/file-exists.php?img=TM25K_2001-jpg-{$z}-{$x}-{$y}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>7</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6013">
+	<name>NLSC 正射影像圖 (TW)</name>
+	<url>http://wmts.nlsc.gov.tw/wmts/PHOTO2/default/EPSG:3857/{$z}/{$y}/{$x}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>19</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6014">
+	<name>NLSC 正射影像圖混和 (TW)</name>
+	<url>http://wmts.nlsc.gov.tw/wmts/PHOTO_MIX/default/EPSG:3857/{$z}/{$y}/{$x}</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>19</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6015">
+	<name>通用版電子地圖 (TW)</name>
+	<url>http://wmts.nlsc.gov.tw/wmts/EMAP5/default/EPSG:3857/{$z}/{$y}/{$x}</url>
+	<website>&lt;a href="http://www.nlsc.gov.tw"&gt;NLSC&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6016">
+	<name>地圖產生器魯地圖+gpx (TW)</name>
+	<url>http://rs.happyman.idv.tw/map/moi_osm_gpx/{$z}/{$x}/{$y}.png</url>
+	<minzoom>11</minzoom>
+	<maxzoom>19</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6017">
+	<name>地圖產生器經建三+gpx (TW)</name>
+	<url>http://rs.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png</url>
+	<minzoom>11</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6018">
+	<name>地圖產生器 gpx (TW)</name>
+	<url>http://rs.happyman.idv.tw/map/gpxtrack/{$z}/{$x}/{$y}.png</url>
+	<minzoom>11</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6019">
+	<name>農航所正射影像 (TW)</name>
+	<url>http://rs.happyman.idv.tw/map/atis/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://gissrv4.sinica.edu.tw/gis/twhgis.aspx"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>22</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6020">
+	<name>MOI.OSM Daily (TW)</name>
+	<url>http://rudy-daily.tile.basecamp.tw/{$z}/{$x}/{$y}.png</url>
+	<minzoom>11</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6021">
+	<name>1920-日治地形圖(總督府土木局)-1:50,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=JM50K_1920&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6022">
+	<name>1921-日治地形圖-1:25,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=JM25K_1921&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/jpeg</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6023">
+	<name>1990-臺灣經建1版地形圖-1:50,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=TM50K_1990&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6024">
+	<name>1996-臺灣經建2版地形圖-1:50,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=TM50K_1996&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6025">
+	<name>2002-臺灣經建3版地形圖-1:50,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=TM50K_2002&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6026">
+	<name>1905-日治臺灣圖-1:100,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=JM100K_1905&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6027">
+	<name>1987-臺灣地形圖-1:100,000 (TW)</name>
+	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=TM100K_1987&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
+	<website>&lt;a href="http://gis.sinica.edu.tw/tileserver/"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
+	<minzoom>5</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6028">
+	<name>GOOGLE MAPS (TW)</name>
+	<url>http://mt{$s}.google.com/vt/lyrs=m@140&amp;hl=en&amp;x={$x}&amp;y={$y}&amp;z={$z}</url>
+	<website>&lt;a href="http://4umaps.eu/index.htm"&gt;4umaps.eu Maps&lt;/a&gt;</website>
+	<minzoom>3</minzoom>
+	<maxzoom>20</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>0,1</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6029">
+	<name>GOOGLE ORTOFOTOS (TW)</name>
+	<url>http://khm0.googleapis.com/kh?v=142&amp;hl=es-ES&amp;x={$x}&amp;y={$y}&amp;z={$z}&amp;token=83106</url>
+	<website>&lt;a href="http://4umaps.eu/index.htm"&gt;4umaps.eu Maps&lt;/a&gt;</website>
+	<minzoom>3</minzoom>
+	<maxzoom>20</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6030">
+	<name>GOOGLE HIBRIDO (TW)</name>
+	<url>http://mt{$s}.google.com/vt/lyrs=s,m&amp;hl=iw&amp;x={$x}&amp;y={$y}&amp;z={$z}</url>
+	<website>&lt;a href="http://4umaps.eu/index.htm"&gt;google-hibrido&lt;/a&gt;</website>
+	<minzoom>3</minzoom>
+	<maxzoom>20</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>0,1</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="100">
+	<name>TopOSM USA Contours</name>
+	<url>http://tile1.toposm.com/us/contours/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://toposm.com/us/index.html"&gt;TopOSM USA Contours&lt;/a&gt;</website>
+	<minzoom>3</minzoom>
+	<maxzoom>15</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+</onlinemapsource>
+<onlinemapsource uid="101">
+	<name>TopOSM USA Color Relief</name>
+	<url>http://tile1.toposm.com/us/color-relief/{$z}/{$x}/{$y}.jpg</url>
+	<website>&lt;a href="http://toposm.com/us/index.html"&gt;TopOSM USA Color Relief&lt;/a&gt;</website>
+	<minzoom>3</minzoom>
+	<maxzoom>15</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+</onlinemapsource>
+<onlinemapsource uid="102">
+	<name>TopOSM USA Features</name>
+	<url>http://tile1.toposm.com/us/features/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://toposm.com/us/index.html"&gt;TopOSM USA Features&lt;/a&gt;</website>
+	<minzoom>3</minzoom>
+	<maxzoom>15</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+</onlinemapsource>
+<onlinemapsource uid="103">
+	<name>Topo 4umaps (EU)</name>
+	<url>http://4umaps.eu/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://4umaps.eu/index.htm"&gt;4umaps.eu Maps&lt;/a&gt;</website>
+	<minzoom>3</minzoom>
+	<maxzoom>15</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="104">
+	<name>Hungarian (HU)</name>
+	<url>http://terkep.turistautak.hu/tiles/turistautak-domborzattal/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://map.turistautak.hu/"&gt;map.turistautak.hu Maps&lt;/a&gt;</website>
+	<minzoom>8</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="105">
+	<name>USGS Topo (US)</name>
+	<url>http://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/{$z}/{$y}/{$x}</url>
+	<website>&lt;a href="http://viewer.nationalmap.gov"&gt;USGS Maps&lt;/a&gt;</website>
+	<maxzoom>20</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="106">
+	<name>USGS Imagery Only (US)</name>
+	<url>http://basemap.nationalmap.gov/ArcGIS/rest/services/USGSImageryOnly/MapServer/tile/{$z}/{$y}/{$x}</url>
+	<website>&lt;a href="http://viewer.nationalmap.gov"&gt;USGS Maps&lt;/a&gt;</website>
+	<maxzoom>20</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="107">
+	<name>OpenStreetMap Cyclemap</name>
+	<url>http://{$s}.tile.opencyclemap.org/cycle/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.opencyclemap.org/"&gt;OpenStreetMap Cyclemap&lt;/a&gt;</website>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="108">
+	<name>OpenStreetMap Mapnik</name>
+	<url>http://{$s}.tile.openstreetmap.org/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.openstreetmap.org"&gt;OpenStreetMap Mapnik&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="109">
+	<name>OpenSeaMap</name>
+	<url>http://tiles.openseamap.org/seamark/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.openseamap.org/"&gt;OpenSeaMap&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="110">
+	<name>Statkart Toporaster 2 (NO)</name>
+	<url>http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=toporaster2&amp;zoom={$z}&amp;x={$x}&amp;y={$y}</url>
+	<website>&lt;a href="http://statkart.no"&gt;statkart.no&lt;/a&gt;</website>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>0,1,2,3</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="111">
+	<name>Statkart Topo2 (NO)</name>
+	<url>http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&amp;zoom={$z}&amp;x={$x}&amp;y={$y}</url>
+	<website>&lt;a href="http://statkart.no"&gt;statkart.no&lt;/a&gt;</website>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>0,1,2,3</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="112">
+	<name>Hike and Bike (DE)</name>
+	<url>http://toolserver.org/tiles/hikebike/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://hikebikemap.de/"&gt;Hike and Bike&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="113">
+	<name>OS Street View 1:10000 (UK)</name>
+	<url>http://os.openstreetmap.org/sv/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://os.openstreetmap.org/"&gt;OS Street View&lt;/a&gt;</website>
+	<minzoom>6</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="114">
+	<name>OpenPisteMap</name>
+	<url>http://tiles.openpistemap.org/contours/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://openpistemap.org/"&gt;OpenPisteMap&lt;/a&gt;</website>
+	<minzoom>8</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="115">
+	<name>US VFR Sectional Charts by Chartbundle (US)</name>
+	<url>http://wms.chartbundle.com/tms/1.0.0/sec/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Sectional&lt;/a&gt;</website>
+	<minzoom>4</minzoom>
+	<maxzoom>13</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+	<yop>((1&lt;&lt;$z)-1-$y)</yop>
+</onlinemapsource>
+<onlinemapsource uid="116">
+	<name>US VFR Terminal Area Charts by Chartbundle (US)</name>
+	<url>http://wms.chartbundle.com/tms/1.0.0/tac/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Terminal Area&lt;/a&gt;</website>
+	<minzoom>4</minzoom>
+	<maxzoom>14</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="117">
+	<name>US VFR World Aeronautical Charts by Chartbundle (US)</name>
+	<url>http://wms.chartbundle.com/tms/1.0.0/wac/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US World Aeronautical&lt;/a&gt;</website>
+	<minzoom>4</minzoom>
+	<maxzoom>12</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="118">
+	<name>US IFR Enroute Low Charts by Chartbundle (US)</name>
+	<url>http://wms.chartbundle.com/tms/1.0.0/enrl/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Enroute Low&lt;/a&gt;</website>
+	<minzoom>4</minzoom>
+	<maxzoom>13</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="119">
+	<name>US IFR Enroute High Charts by Chartbundle (US)</name>
+	<url>http://wms.chartbundle.com/tms/1.0.0/enrh/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Enroute High&lt;/a&gt;</website>
+	<minzoom>4</minzoom>
+	<maxzoom>12</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="120">
+	<name>US IFR Area Charts by Chartbundle (US)</name>
+	<url>http://wms.chartbundle.com/tms/1.0.0/enra/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Area&lt;/a&gt;</website>
+	<minzoom>4</minzoom>
+	<maxzoom>13</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="121">
+	<name>Freemap (SK)</name>
+	<url>http://t{$s}.freemap.sk/T/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://www.freemap.sk/"&gt;Freemap SK&lt;/a&gt;</website>
+	<minzoom>8</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>0,1,2,3</servers>
+	<cacheable>1</cacheable>
+</onlinemapsource>
+<onlinemapsource uid="122">
+	<name>OpenMaps.eu (Central Europe)</name>
+	<url>http://tmap.elte.hu/tiles3/1/{$z}/{$x}/{$y}.png</url>
+	<website>&lt;a href="http://openmaps.eu/"&gt;OpenMaps.eu&lt;/a&gt;</website>
+	<minzoom>8</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="123">
+	<name>MapQuest-OSM</name>
+	<url>http://otile{$s}.mqcdn.com/tiles/1.0.0/map/{$z}/{$x}/{$y}.jpg</url>
+	<website>Tiles Courtesy of &lt;a href="http://www.mapquest.com/" target="_blank"&gt;MapQuest&lt;/a&gt;</website>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>1,2,3,4</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="124">
+	<name>MapQuest Open Aerial</name>
+	<url>http://otile{$s}.mqcdn.com/tiles/1.0.0/sat/{$z}/{$x}/{$y}.jpg</url>
+	<website>Tiles Courtesy of &lt;a href="http://www.mapquest.com/" target="_blank"&gt;MapQuest&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>1,2,3,4</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="125">
+	<name>Israel Hiking Map (IL)</name>
+	<url>http://osm.org.il/IsraelHiking/Tiles/{$z}/{$x}/{$y}.png</url>
+	<minzoom>7</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="126">
+	<name>OpenWeatherMap Clouds</name>
+	<url>http://{$s}.tile.openweathermap.org/map/clouds/{$z}/{$x}/{$y}.png</url>
+	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<transparency>0.5</transparency>
+</onlinemapsource>
+<onlinemapsource uid="127">
+	<name>OpenWeatherMap Precipitation</name>
+	<url>http://{$s}.tile.openweathermap.org/map/precipitation/{$z}/{$x}/{$y}.png</url>
+	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<transparency>0.5</transparency>
+</onlinemapsource>
+<onlinemapsource uid="128">
+	<name>OpenWeatherMap Pressure</name>
+	<url>http://{$s}.tile.openweathermap.org/map/pressure_cntr/{$z}/{$x}/{$y}.png</url>
+	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<transparency>0.5</transparency>
+</onlinemapsource>
+<onlinemapsource uid="129">
+	<name>OpenWeatherMap Wind</name>
+	<url>http://{$s}.tile.openweathermap.org/map/wind/{$z}/{$x}/{$y}.png</url>
+	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<transparency>0.5</transparency>
+</onlinemapsource>
+<onlinemapsource uid="130">
+	<name>OpenWeatherMap Snow</name>
+	<url>http://{$s}.tile.openweathermap.org/map/snow/{$z}/{$x}/{$y}.png</url>
+	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<transparency>0.5</transparency>
+</onlinemapsource>
+<onlinemapsource uid="131">
+	<name>OpenWeatherMap Temp</name>
+	<url>http://{$s}.tile.openweathermap.org/map/temp/{$z}/{$x}/{$y}.png</url>
+	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<transparency>0.5</transparency>
+</onlinemapsource>
+<onlinemapsource uid="132">
+	<name>OpenTopoMap</name>
+	<url>http://{$s}.tile.opentopomap.org/{$z}/{$x}/{$y}.png</url>
+	<website>Kartendaten: © &lt;a href="https://openstreetmap.org/copyright" target="_blank"&gt;OpenStreetMap&lt;/a&gt;-Mitwirkende, SRTM | Kartendarstellung: © &lt;a href="http://opentopomap.org/" target="_blank"&gt;OpenTopoMap&lt;/a&gt;</website>
+	<minzoom>7</minzoom>
+	<maxzoom>15</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="133">
+	<name>Base IGN (ES)</name>
+	<url>http://www.ign.es/wmts/ign-base?request=getTile&amp;layer=IGNBaseTodo&amp;TileMatrixSet=GoogleMapsCompatible&amp;TileMatrix={$z}&amp;TileCol={$x}&amp;TileRow={$y}&amp;format=image/jpeg</url>
+	<website>&lt;a href="https://www.cnig.es/" target="_blank"&gt;Centro Nacional de Información Geográfica (ES)&lt;/a&gt;</website>
+	<minzoom>1</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="134">
+	<name>PNOA IGN (ES)</name>
+	<url>http://www.ign.es/wmts/pnoa-ma?request=getTile&amp;layer=OI.OrthoimageCoverage&amp;TileMatrixSet=GoogleMapsCompatible&amp;TileMatrix={$z}&amp;TileCol={$x}&amp;TileRow={$y}&amp;format=image/jpeg</url>
+	<website>&lt;a href="https://www.cnig.es/" target="_blank"&gt;Centro Nacional de Información Geográfica (ES)&lt;/a&gt;</website>
+	<minzoom>1</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="135">
+	<name>Raster IGN (ES)</name>
+	<url>http://www.ign.es/wmts/mapa-raster?request=getTile&amp;layer=MTN&amp;TileMatrixSet=GoogleMapsCompatible&amp;TileMatrix={$z}&amp;TileCol={$x}&amp;TileRow={$y}&amp;format=image/jpeg</url>
+	<website>&lt;a href="https://www.cnig.es/" target="_blank"&gt;Centro Nacional de Información Geográfica (ES)&lt;/a&gt;</website>
+	<minzoom>1</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6031">
+	<name>r 魯地圖 (TW)</name>
+	<url>http://rudy.tile.basecamp.tw/{$z}/{$x}/{$y}.png</url>
+	<website>魯地圖  &lt;a href="https://www.facebook.com/groups/taiwan.topo"&gt;FACEBOOK&lt;/a&gt;</website>
+	<minzoom>11</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6032">
+	<name>h 地圖產生器 魯地圖 (TW)</name>
+	<url>https://rs.happyman.idv.tw/map/moi_osm/{$z}/{$x}/{$y}.png</url>
+	<website>地圖產生器 魯地圖</website>
+	<minzoom>11</minzoom>
+	<maxzoom>16</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6033">
+	<name>h 地圖產生器經建三 (TW)</name>
+	<url>http://rs.happyman.idv.tw/map/tw25k2001/zxy/{$z}_{$x}_{$y}.png</url>
+	<website>地圖產生器 經建三 25000:1</website>
+	<minzoom>11</minzoom>
+	<maxzoom>17</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6034">
+	<name>q OpenStreetMap_Mapnik_GPS軌跡 (TW)</name>
+	<url>https://gps-b.tile.openstreetmap.org/lines/{$z}/{$x}/{$y}.png</url>
+	<website>OpenStreetMap Mapnik GPS軌跡</website>
+	<minzoom>10</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="6035">
+	<name>q CSIE_GPS軌跡 (TW)</name>
+	<url>http://map.kcwu.csie.org/gpx-tile/{$z}/{$x}/{$y}.png</url>
+	<website>CSIE GPS軌跡</website>
+	<minzoom>10</minzoom>
+	<maxzoom>18</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<servers>a,b,c</servers>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+</onlinemapsources>

@@ -262,8 +262,8 @@
 	</onlinemapsource>
     
 	<onlinemapsource uid="303">
-		<name>2013-正射影像圖 (TW)</name>
-		<url><![CDATA[http://wmts.nlsc.gov.tw/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&FORMAT=image/png&STYLE=_null&LAYER=PHOTO2&TILEMATRIXSET=EPSG:3857&TileMatrix={$z}&TileCol={$x}&TileRow={$y}]]></url>
+		<name>NLSC 正射影像圖 (TW)</name>
+		<url><![CDATA[http://wmts.nlsc.gov.tw/wmts/PHOTO2/default/EPSG:3857/{$z}/{$y}/{$x}]]></url>
 		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
 		<maxzoom>19</maxzoom>
@@ -280,10 +280,29 @@
 		<qop></qop>
 		<sop></sop>
 	</onlinemapsource>
-    
+	
+  	<onlinemapsource uid="307">
+		<name>NLSC 正射影像圖混和 (TW)</name>
+		<url><![CDATA[http://wmts.nlsc.gov.tw/wmts/PHOTO_MIX/default/EPSG:3857/{$z}/{$y}/{$x}]]></url>
+		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
+		<minzoom>5</minzoom>
+		<maxzoom>19</maxzoom>
+		<projection>MERCATORESFERICA</projection>
+		<servers></servers>
+		<httpparam name=""></httpparam>
+		<cacheable>1</cacheable>
+		<downloadable>1</downloadable>
+		<maxtilesday>0</maxtilesday>
+		<maxthreads>0</maxthreads>
+		<xop></xop>
+		<yop></yop>
+		<zop></zop>
+		<qop></qop>
+		<sop></sop>
+	</onlinemapsource>  
     <onlinemapsource uid="224">
 		<name>通用版電子地圖 (TW)</name>
-		<url><![CDATA[http://wmts.nlsc.gov.tw/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&FORMAT=image/png&STYLE=_null&LAYER=EMAP5&TILEMATRIXSET=EPSG:3857&TileMatrix={$z}&TileCol={$x}&TileRow={$y}]]></url>
+		<url><![CDATA[http://wmts.nlsc.gov.tw/wmts/EMAP5/default/EPSG:3857/{$z}/{$y}/{$x}]]></url>
 		<website><![CDATA[<a href="http://www.nlsc.gov.tw">NLSC</a>]]></website>
 		<minzoom>5</minzoom>
 		<maxzoom>18</maxzoom>
@@ -302,7 +321,7 @@
 	</onlinemapsource>
     
     <onlinemapsource uid="195"> 
-        <name>地圖產生器魯地圖 (TW)</name> 
+        <name>地圖產生器魯地圖+gpx (TW)</name> 
         <url><![CDATA[http://rs.happyman.idv.tw/map/moi_osm_gpx/{$z}/{$x}/{$y}.png]]></url> 
         <minzoom>11</minzoom> 
         <maxzoom>19</maxzoom> 
@@ -320,7 +339,7 @@
     </onlinemapsource>
     
     <onlinemapsource uid="196">
-        <name>地圖產生器經建三 (TW)</name>
+        <name>地圖產生器經建三+gpx (TW)</name>
         <url><![CDATA[http://rs.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png]]></url>
         <minzoom>11</minzoom>
         <maxzoom>17</maxzoom>
@@ -336,10 +355,31 @@
         <qop></qop>
         <sop></sop>
     </onlinemapsource>
+
+ <onlinemapsource uid="599">
+        <name>地圖產生器 gpx (TW)</name>
+        <url><![CDATA[http://rs.happyman.idv.tw/map/gpxtrack/{$z}/{$x}/{$y}.png]]></url>
+        <minzoom>11</minzoom>
+        <maxzoom>18</maxzoom>
+        <projection>MERCATORESFERICA</projection>
+        <httpparam name=""></httpparam>
+        <cacheable>1</cacheable>
+        <downloadable>1</downloadable>
+        <maxtilesday>0</maxtilesday>
+        <maxthreads>0</maxthreads>
+        <xop></xop>
+        <yop></yop>
+        <zop></zop>
+        <qop></qop>
+        <sop></sop>
+    </onlinemapsource>
+
+
+
     
-	<onlinemapsource uid="303">
-		<name>農航所正射影像 (404)</name>
-		<url><![CDATA[]]></url>
+	<onlinemapsource uid="308">
+		<name>農航所正射影像 (TW)</name>
+		<url><![CDATA[http://rs.happyman.idv.tw/map/atis/{$z}/{$x}/{$y}.png]]></url>
 		<website><![CDATA[<a href="http://gissrv4.sinica.edu.tw/gis/twhgis.aspx">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
 		<maxzoom>22</maxzoom>
@@ -358,8 +398,8 @@
 	</onlinemapsource>
     
     <onlinemapsource uid="306">
-		<name>MOI.OSM Daily (404)</name>
-		<url><![CDATA[http://rudy-daily.tile.basecamp.tw/{z}/{x}/{y}.png]]></url>
+		<name>MOI.OSM Daily (TW)</name>
+		<url><![CDATA[http://rudy-daily.tile.basecamp.tw/{$z}/{$x}/{$y}.png]]></url>
 		<minzoom>11</minzoom>
 		<maxzoom>18</maxzoom>
 		<projection>MERCATORESFERICA</projection>
@@ -375,49 +415,10 @@
 		<qop></qop>
 		<sop></sop>
 	</onlinemapsource>
-    
-	<onlinemapsource uid="209">
-		<name>1993-臺灣經建2版地形圖-1:25,000 (404)</name>
-		<url><![CDATA[http://gis.sinica.edu.tw/googlemap/TM25K_1993/{$z}/{$y}/IMG_{$y}_{$x}_{$z}.jpg]]></url>
-		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
-		<minzoom>7</minzoom>
-		<maxzoom>15</maxzoom>
-		<projection>MERCATORESFERICA</projection>
-		<servers></servers>
-		<httpparam name=""></httpparam>
-		<cacheable>1</cacheable>
-		<downloadable>1</downloadable>
-		<maxtilesday>0</maxtilesday>
-		<maxthreads>0</maxthreads>
-		<xop></xop>
-		<yop></yop>
-		<zop></zop>
-		<qop></qop>
-		<sop></sop>
-	</onlinemapsource>
-    
-	<onlinemapsource uid="211">
-		<name>2003-臺灣經建4版地形圖-1:25,000 (404)</name>
-        <url><![CDATA[http://gis.sinica.edu.tw/googlemap/TM25K_2003/{$z}/{$y}/IMG_{$y}_{$x}_{$z}.jpg]]></url>
-		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
-		<minzoom>5</minzoom>
-		<maxzoom>17</maxzoom>
-		<projection>MERCATORESFERICA</projection>
-		<servers></servers>
-		<httpparam name=""></httpparam>
-		<cacheable>1</cacheable>
-		<downloadable>1</downloadable>
-		<maxtilesday>0</maxtilesday>
-		<maxthreads>0</maxthreads>
-		<xop></xop>
-		<yop></yop>
-		<zop></zop>
-		<qop></qop>
-		<sop></sop>
-	</onlinemapsource>
+	
     
 	<onlinemapsource uid="205">
-		<name>1920-日治地形圖(總督府土木局)-1:50,000</name>
+		<name>1920-日治地形圖(總督府土木局)-1:50,000 (TW)</name>
 		<url><![CDATA[http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=JM50K_1920&STYLE=_null&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={$z}&TILEROW={$y}&TILECOL={$x}&FORMAT=image/png]]></url>
 		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
@@ -437,7 +438,7 @@
 	</onlinemapsource>
     
 	<onlinemapsource uid="203">
-		<name>1921-日治地形圖-1:25,000</name>
+		<name>1921-日治地形圖-1:25,000 (TW)</name>
 		<url><![CDATA[http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=JM25K_1921&STYLE=_null&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={$z}&TILEROW={$y}&TILECOL={$x}&FORMAT=image/jpeg]]></url>
 		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
@@ -457,7 +458,7 @@
 	</onlinemapsource>
     
 	<onlinemapsource uid="214">
-		<name>1990-臺灣經建1版地形圖-1:50,000</name>
+		<name>1990-臺灣經建1版地形圖-1:50,000 (TW)</name>
 		<url><![CDATA[http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TM50K_1990&STYLE=_null&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={$z}&TILEROW={$y}&TILECOL={$x}&FORMAT=image/png]]></url>
 		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
@@ -477,7 +478,7 @@
 	</onlinemapsource>
     
 	<onlinemapsource uid="215">
-		<name>1996-臺灣經建2版地形圖-1:50,000</name>
+		<name>1996-臺灣經建2版地形圖-1:50,000 (TW)</name>
 		<url><![CDATA[http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TM50K_1996&STYLE=_null&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={$z}&TILEROW={$y}&TILECOL={$x}&FORMAT=image/png]]></url>
 		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
@@ -497,7 +498,7 @@
 	</onlinemapsource>
     
 	<onlinemapsource uid="217">
-		<name>2002-臺灣經建3版地形圖-1:50,000</name>
+		<name>2002-臺灣經建3版地形圖-1:50,000 (TW)</name>
 		<url><![CDATA[http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TM50K_2002&STYLE=_null&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={$z}&TILEROW={$y}&TILECOL={$x}&FORMAT=image/png]]></url>
 		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
@@ -517,7 +518,7 @@
 	</onlinemapsource>
     
 	<onlinemapsource uid="218">
-		<name>1905-日治臺灣圖-1:100,000</name>
+		<name>1905-日治臺灣圖-1:100,000 (TW)</name>
 		<url><![CDATA[http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=JM100K_1905&STYLE=_null&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={$z}&TILEROW={$y}&TILECOL={$x}&FORMAT=image/png]]></url>
 		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
@@ -537,7 +538,7 @@
 	</onlinemapsource>
     
 	<onlinemapsource uid="219">
-		<name>1987-臺灣地形圖-1:100,000</name>
+		<name>1987-臺灣地形圖-1:100,000 (TW)</name>
 		<url><![CDATA[http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TM100K_1987&STYLE=_null&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={$z}&TILEROW={$y}&TILECOL={$x}&FORMAT=image/png]]></url>
 		<website><![CDATA[<a href="http://gis.sinica.edu.tw/tileserver/">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
@@ -575,7 +576,7 @@
         <sop></sop>
     </onlinemapsource>
     <onlinemapsource uid="71">
-        <name>GOOGLE ORTOFOTOS</name>      <url><![CDATA[http://khm0.googleapis.com/kh?v=142&hl=es-ES&x={$x}&y={$y}&z={$z}&token=83106]]></url>
+        <name>GOOGLE ORTOFOTOS (TW)</name>      <url><![CDATA[http://khm0.googleapis.com/kh?v=142&hl=es-ES&x={$x}&y={$y}&z={$z}&token=83106]]></url>
         <website><![CDATA[<a href="http://4umaps.eu/index.htm">4umaps.eu Maps</a>]]></website>
         <minzoom>3</minzoom>
         <maxzoom>20</maxzoom>
@@ -1386,4 +1387,151 @@
 		<sop></sop>
 	</onlinemapsource>	
 	
+	<onlinemapsource uid="204"> 
+		<name>r 魯地圖 (TW)</name> 
+		<url><![CDATA[http://rudy.tile.basecamp.tw/{$z}/{$x}/{$y}.png]]></url> 
+		<website><![CDATA[魯地圖  <a href="https://www.facebook.com/groups/taiwan.topo">FACEBOOK</a>]]></website>
+		<minzoom>11</minzoom> 
+		<maxzoom>16</maxzoom> 
+		<projection>MERCATORESFERICA</projection> 
+		<httpparam name=""></httpparam> 
+		<cacheable>1</cacheable> 
+		<downloadable>1</downloadable> 
+		<maxtilesday>0</maxtilesday> 
+		<maxthreads>0</maxthreads> 
+		<xop></xop> 
+		<yop></yop> 
+		<zop></zop> 
+		<qop></qop> 
+		<sop></sop> 
+	</onlinemapsource>
+	<onlinemapsource uid="205"> 
+		<name>r 魯地圖每日新 (TW)</name> 
+		<url><![CDATA[http://rudy-daily.tile.basecamp.tw/{$z}/{$x}/{$y}.png]]></url> 
+		<website>魯地圖每日新</website>
+		<minzoom>11</minzoom> 
+		<maxzoom>16</maxzoom> 
+		<projection>MERCATORESFERICA</projection> 
+		<httpparam name=""></httpparam> 
+		<cacheable>1</cacheable> 
+		<downloadable>1</downloadable> 
+		<maxtilesday>0</maxtilesday> 
+		<maxthreads>0</maxthreads> 
+		<xop></xop> 
+		<yop></yop> 
+		<zop></zop> 
+		<qop></qop> 
+		<sop></sop> 
+	</onlinemapsource>
+	<onlinemapsource uid="206"> 
+		<name>h 地圖產生器 魯地圖 (TW)</name> 
+		<url><![CDATA[https://rs.happyman.idv.tw/map/moi_osm/{$z}/{$x}/{$y}.png]]></url> 
+		<website>地圖產生器 魯地圖</website>
+		<minzoom>11</minzoom> 
+		<maxzoom>16</maxzoom> 
+		<projection>MERCATORESFERICA</projection> 
+		<httpparam name=""></httpparam> 
+		<cacheable>1</cacheable> 
+		<downloadable>1</downloadable> 
+		<maxtilesday>0</maxtilesday> 
+		<maxthreads>0</maxthreads> 
+		<xop></xop> 
+		<yop></yop> 
+		<zop></zop> 
+		<qop></qop> 
+		<sop></sop> 
+	</onlinemapsource>
+	<onlinemapsource uid="207"> 
+		<name>h 地圖產生器經建三 (TW)</name> 
+		<url><![CDATA[http://rs.happyman.idv.tw/map/tw25k2001/zxy/{$z}_{$x}_{$y}.png]]></url> 
+		<website>地圖產生器 經建三 25000:1</website>
+		<minzoom>11</minzoom> 
+		<maxzoom>17</maxzoom> 
+		<projection>MERCATORESFERICA</projection> 
+		<httpparam name=""></httpparam> 
+		<cacheable>1</cacheable> 
+		<downloadable>1</downloadable> 
+		<maxtilesday>0</maxtilesday> 
+		<maxthreads>0</maxthreads> 
+		<xop></xop> 
+		<yop></yop> 
+		<zop></zop> 
+		<qop></qop> 
+		<sop></sop> 
+	</onlinemapsource>
+	<onlinemapsource uid="208">
+		<name>h TWMAP_25000:1_Gpx地圖產生器 (TW)</name>
+		<url><![CDATA[http://rs.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png]]></url>
+		<website>地圖產生器 GPX軌跡地圖</website> 
+		<minzoom>11</minzoom>
+		<maxzoom>17</maxzoom>
+		<projection>MERCATORESFERICA</projection>
+		<httpparam name=""></httpparam>
+		<cacheable>1</cacheable>
+		<downloadable>1</downloadable>
+		<maxtilesday>0</maxtilesday>
+		<maxthreads>0</maxthreads>
+		<xop></xop>
+		<yop></yop>
+		<zop></zop>
+		<qop></qop>
+		<sop></sop>
+	</onlinemapsource>
+	<onlinemapsource uid="213">
+		<name>q OSM地形圖</name>
+		<url><![CDATA[http://{$s}.tile.opentopomap.org/{$z}/{$x}/{$y}.png]]></url>
+		<website><![CDATA[Kartendaten: © <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org/" target="_blank">OpenTopoMap</a>]]></website>
+		<minzoom>7</minzoom>
+		<maxzoom>15</maxzoom>
+		<projection>MERCATORESFERICA</projection>
+		<servers>a,b,c</servers>
+		<httpparam name="User-Agent">{om}</httpparam>
+		<cacheable>1</cacheable>
+		<downloadable>1</downloadable>
+		<maxtilesday>0</maxtilesday>
+		<maxthreads>0</maxthreads>
+		<xop></xop>
+		<yop></yop>
+		<zop></zop>
+		<qop></qop>
+		<sop></sop>
+	</onlinemapsource>
+	<onlinemapsource uid="219">
+		<name>q OpenStreetMap_Mapnik_GPS軌跡 (TW)</name>
+		<url><![CDATA[https://gps-b.tile.openstreetmap.org/lines/{$z}/{$x}/{$y}.png]]></url>
+		<website>OpenStreetMap Mapnik GPS軌跡</website>
+		<minzoom>10</minzoom>
+		<maxzoom>18</maxzoom>
+		<projection>MERCATORESFERICA</projection>
+		<servers></servers>
+		<httpparam name="User-Agent">{om}</httpparam>
+		<cacheable>1</cacheable>
+		<downloadable>1</downloadable>
+		<maxtilesday>0</maxtilesday>
+		<maxthreads>0</maxthreads>
+		<xop></xop>
+		<yop></yop>
+		<zop></zop>
+		<qop></qop>
+		<sop></sop>
+	</onlinemapsource>
+	<onlinemapsource uid="220">
+		<name>q CSIE_GPS軌跡 (TW)</name>
+		<url><![CDATA[http://map.kcwu.csie.org/gpx-tile/{$z}/{$x}/{$y}.png]]></url>
+		<website>CSIE GPS軌跡</website>
+		<minzoom>10</minzoom>
+		<maxzoom>18</maxzoom>
+		<projection>MERCATORESFERICA</projection>
+		<servers>a,b,c</servers>
+		<httpparam name="User-Agent">{om}</httpparam>
+		<cacheable>1</cacheable>
+		<downloadable>1</downloadable>
+		<maxtilesday>0</maxtilesday>
+		<maxthreads>0</maxthreads>
+		<xop></xop>
+		<yop></yop>
+		<zop></zop>
+		<qop></qop>
+		<sop></sop>
+	</onlinemapsource>
 </onlinemapsources>
