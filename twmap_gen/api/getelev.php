@@ -439,7 +439,12 @@ $data['elevation'] = $ele;
 $towns = get_administration($lon,$lat, "town");
 if ($towns || count($towns) > 0 ) {
 	foreach($towns as $town) {
-		$town_name[] = sprintf("%s%s%s",$town['C_Name'],$town['T_Name'],($town['permit']=='t')? "(入山)" : "" );
+		if ($town['T_Name']== '秀林鄉') {
+			$permit_remark="(銅門外免入山)";
+		} else {
+			$permit_remark=($town['permit']=='t')? "(入山)" : "";
+		}
+		$town_name[] = sprintf("%s%s%s",$town['C_Name'],$town['T_Name'],$permit_remark);
 	}
 	$data["admin"] = implode(",",$town_name);
 	$data["weather_forcast_url"] = sprintf("http://www.cwb.gov.tw/V7/forecast/town368/towns/%s.htm?type=Weather&time=7Day",$town['Town_ID']);
