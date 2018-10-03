@@ -64,8 +64,11 @@ abstract class Hybrid_Provider_Model {
    */
   public $compressed = false;
 
-    /** @var bool $useSafeUrls Enable this to replace '.' with '_' characters in the callback urls */
-    public $useSafeUrls = false;
+  /**
+   * Enable this to replace '.' with '_' characters in the callback urls
+   * @var bool $useSafeUrls
+   */
+  public $useSafeUrls = false;
 
   /**
    * Common providers adapter constructor
@@ -121,14 +124,36 @@ abstract class Hybrid_Provider_Model {
    * @return void
    * @throws Exception
    */
-  abstract protected function loginBegin();
+  abstract public function loginBegin();
 
   /**
    * Finish login
    * @return void
    * @throws Exception
    */
-  abstract protected function loginFinish();
+  abstract public function loginFinish();
+
+
+  /**
+   * Require autoload.php for 3rd party libraries
+   */
+  protected function autoLoaderInit() {
+    // Check if there is SDK in thirdparty/[providerId].
+    $filename = Hybrid_Auth::$config["path_libraries"] . "{$this->providerId}/autoload.php";
+    if (file_exists($filename)) {
+      require_once $filename;
+    }
+    else {
+      // If Composer install was executed, try to find autoload.php.
+      $vendorDir = dirname(Hybrid_Auth::$config['path_base']);
+      do {
+        if (file_exists($vendorDir . "/vendor/autoload.php")) {
+          require_once $vendorDir . "/vendor/autoload.php";
+          break;
+        }
+      } while (($vendorDir = dirname($vendorDir)) !== '/');
+    }
+  }
 
   /**
    * Generic logout, just erase current provider adapter stored data to let Hybrid_Auth all forget about it
@@ -143,7 +168,7 @@ abstract class Hybrid_Provider_Model {
   /**
    * Grab the user profile from the IDp api client
    * @return Hybrid_User_Profile
-   * @throw Exception
+   * @throws Exception
    */
   function getUserProfile() {
     Hybrid_Logger::error("HybridAuth do not provide users contacts list for {$this->providerId} yet.");
