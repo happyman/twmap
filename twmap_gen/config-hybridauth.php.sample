@@ -10,7 +10,7 @@
 
 return
 	array(
-		"base_url" => "http://map.happyman.idv.tw/twmap/lib/Hybrid/index.php",
+		"base_url" => "https://map.happyman.idv.tw/twmap/lib/Hybrid/index.php",
 
 		"providers" => array (
 			// openid providers
