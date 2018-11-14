@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <onlinemapsources>
-<!-- 製造日期: 2018-09-05 15:08:26 by 地圖產生器 -->
+<!-- 製造日期: 2018-10-03 11:09:13 by 地圖產生器 -->
 <onlinemapsource uid="6000">
 	<name>1899-日治臺灣全圖 (TW)</name>
 	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=JM400K_1899&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
@@ -375,6 +375,16 @@
 	<downloadable>1</downloadable>
 </onlinemapsource>
 <onlinemapsource uid="107">
+	<name>USGS Historic Topo (US)</name>
+	<url>https://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer/tile/{$z}/{$y}/{$x}</url>
+	<website>&lt;a href="https://www.arcgis.com/home/item.html?id=99cd5fbd98934028802b4f797c4b1732"&gt;USA Topo Maps
+&lt;/a&gt;</website>
+	<maxzoom>15</maxzoom>
+	<projection>MERCATORESFERICA</projection>
+	<cacheable>1</cacheable>
+	<downloadable>1</downloadable>
+</onlinemapsource>
+<onlinemapsource uid="108">
 	<name>OpenStreetMap Cyclemap</name>
 	<url>http://{$s}.tile.opencyclemap.org/cycle/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.opencyclemap.org/"&gt;OpenStreetMap Cyclemap&lt;/a&gt;</website>
@@ -384,7 +394,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="108">
+<onlinemapsource uid="109">
 	<name>OpenStreetMap Mapnik</name>
 	<url>http://{$s}.tile.openstreetmap.org/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.openstreetmap.org"&gt;OpenStreetMap Mapnik&lt;/a&gt;</website>
@@ -394,7 +404,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="109">
+<onlinemapsource uid="110">
 	<name>OpenSeaMap</name>
 	<url>http://tiles.openseamap.org/seamark/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.openseamap.org/"&gt;OpenSeaMap&lt;/a&gt;</website>
@@ -403,7 +413,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="110">
+<onlinemapsource uid="111">
 	<name>Statkart Toporaster 2 (NO)</name>
 	<url>http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=toporaster2&amp;zoom={$z}&amp;x={$x}&amp;y={$y}</url>
 	<website>&lt;a href="http://statkart.no"&gt;statkart.no&lt;/a&gt;</website>
@@ -413,7 +423,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="111">
+<onlinemapsource uid="112">
 	<name>Statkart Topo2 (NO)</name>
 	<url>http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&amp;zoom={$z}&amp;x={$x}&amp;y={$y}</url>
 	<website>&lt;a href="http://statkart.no"&gt;statkart.no&lt;/a&gt;</website>
@@ -423,7 +433,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="112">
+<onlinemapsource uid="113">
 	<name>Hike and Bike (DE)</name>
 	<url>http://toolserver.org/tiles/hikebike/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://hikebikemap.de/"&gt;Hike and Bike&lt;/a&gt;</website>
@@ -432,7 +442,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="113">
+<onlinemapsource uid="114">
 	<name>OS Street View 1:10000 (UK)</name>
 	<url>http://os.openstreetmap.org/sv/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://os.openstreetmap.org/"&gt;OS Street View&lt;/a&gt;</website>
@@ -442,7 +452,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="114">
+<onlinemapsource uid="115">
 	<name>OpenPisteMap</name>
 	<url>http://tiles.openpistemap.org/contours/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://openpistemap.org/"&gt;OpenPisteMap&lt;/a&gt;</website>
@@ -452,7 +462,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="115">
+<onlinemapsource uid="116">
 	<name>US VFR Sectional Charts by Chartbundle (US)</name>
 	<url>http://wms.chartbundle.com/tms/1.0.0/sec/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Sectional&lt;/a&gt;</website>
@@ -463,7 +473,7 @@
 	<downloadable>1</downloadable>
 	<yop>((1&lt;&lt;$z)-1-$y)</yop>
 </onlinemapsource>
-<onlinemapsource uid="116">
+<onlinemapsource uid="117">
 	<name>US VFR Terminal Area Charts by Chartbundle (US)</name>
 	<url>http://wms.chartbundle.com/tms/1.0.0/tac/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Terminal Area&lt;/a&gt;</website>
@@ -473,7 +483,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="117">
+<onlinemapsource uid="118">
 	<name>US VFR World Aeronautical Charts by Chartbundle (US)</name>
 	<url>http://wms.chartbundle.com/tms/1.0.0/wac/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US World Aeronautical&lt;/a&gt;</website>
@@ -483,7 +493,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="118">
+<onlinemapsource uid="119">
 	<name>US IFR Enroute Low Charts by Chartbundle (US)</name>
 	<url>http://wms.chartbundle.com/tms/1.0.0/enrl/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Enroute Low&lt;/a&gt;</website>
@@ -493,7 +503,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="119">
+<onlinemapsource uid="120">
 	<name>US IFR Enroute High Charts by Chartbundle (US)</name>
 	<url>http://wms.chartbundle.com/tms/1.0.0/enrh/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Enroute High&lt;/a&gt;</website>
@@ -503,7 +513,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="120">
+<onlinemapsource uid="121">
 	<name>US IFR Area Charts by Chartbundle (US)</name>
 	<url>http://wms.chartbundle.com/tms/1.0.0/enra/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.chartbundle.com/charts/"&gt;Chartbundle US Area&lt;/a&gt;</website>
@@ -513,7 +523,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="121">
+<onlinemapsource uid="122">
 	<name>Freemap (SK)</name>
 	<url>http://t{$s}.freemap.sk/T/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://www.freemap.sk/"&gt;Freemap SK&lt;/a&gt;</website>
@@ -523,7 +533,7 @@
 	<servers>0,1,2,3</servers>
 	<cacheable>1</cacheable>
 </onlinemapsource>
-<onlinemapsource uid="122">
+<onlinemapsource uid="123">
 	<name>OpenMaps.eu (Central Europe)</name>
 	<url>http://tmap.elte.hu/tiles3/1/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://openmaps.eu/"&gt;OpenMaps.eu&lt;/a&gt;</website>
@@ -533,7 +543,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="123">
+<onlinemapsource uid="124">
 	<name>MapQuest-OSM</name>
 	<url>http://otile{$s}.mqcdn.com/tiles/1.0.0/map/{$z}/{$x}/{$y}.jpg</url>
 	<website>Tiles Courtesy of &lt;a href="http://www.mapquest.com/" target="_blank"&gt;MapQuest&lt;/a&gt;</website>
@@ -543,7 +553,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="124">
+<onlinemapsource uid="125">
 	<name>MapQuest Open Aerial</name>
 	<url>http://otile{$s}.mqcdn.com/tiles/1.0.0/sat/{$z}/{$x}/{$y}.jpg</url>
 	<website>Tiles Courtesy of &lt;a href="http://www.mapquest.com/" target="_blank"&gt;MapQuest&lt;/a&gt;</website>
@@ -553,7 +563,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="125">
+<onlinemapsource uid="126">
 	<name>Israel Hiking Map (IL)</name>
 	<url>http://osm.org.il/IsraelHiking/Tiles/{$z}/{$x}/{$y}.png</url>
 	<minzoom>7</minzoom>
@@ -562,7 +572,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="126">
+<onlinemapsource uid="127">
 	<name>OpenWeatherMap Clouds</name>
 	<url>http://{$s}.tile.openweathermap.org/map/clouds/{$z}/{$x}/{$y}.png</url>
 	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
@@ -571,7 +581,7 @@
 	<servers>a,b,c</servers>
 	<transparency>0.5</transparency>
 </onlinemapsource>
-<onlinemapsource uid="127">
+<onlinemapsource uid="128">
 	<name>OpenWeatherMap Precipitation</name>
 	<url>http://{$s}.tile.openweathermap.org/map/precipitation/{$z}/{$x}/{$y}.png</url>
 	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
@@ -580,7 +590,7 @@
 	<servers>a,b,c</servers>
 	<transparency>0.5</transparency>
 </onlinemapsource>
-<onlinemapsource uid="128">
+<onlinemapsource uid="129">
 	<name>OpenWeatherMap Pressure</name>
 	<url>http://{$s}.tile.openweathermap.org/map/pressure_cntr/{$z}/{$x}/{$y}.png</url>
 	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
@@ -589,7 +599,7 @@
 	<servers>a,b,c</servers>
 	<transparency>0.5</transparency>
 </onlinemapsource>
-<onlinemapsource uid="129">
+<onlinemapsource uid="130">
 	<name>OpenWeatherMap Wind</name>
 	<url>http://{$s}.tile.openweathermap.org/map/wind/{$z}/{$x}/{$y}.png</url>
 	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
@@ -598,7 +608,7 @@
 	<servers>a,b,c</servers>
 	<transparency>0.5</transparency>
 </onlinemapsource>
-<onlinemapsource uid="130">
+<onlinemapsource uid="131">
 	<name>OpenWeatherMap Snow</name>
 	<url>http://{$s}.tile.openweathermap.org/map/snow/{$z}/{$x}/{$y}.png</url>
 	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
@@ -607,7 +617,7 @@
 	<servers>a,b,c</servers>
 	<transparency>0.5</transparency>
 </onlinemapsource>
-<onlinemapsource uid="131">
+<onlinemapsource uid="132">
 	<name>OpenWeatherMap Temp</name>
 	<url>http://{$s}.tile.openweathermap.org/map/temp/{$z}/{$x}/{$y}.png</url>
 	<website>Map data © &lt;a href="http://www.openweathermap.org/" target="_blank"&gt;OpenWeatherMap&lt;/a&gt;</website>
@@ -616,7 +626,7 @@
 	<servers>a,b,c</servers>
 	<transparency>0.5</transparency>
 </onlinemapsource>
-<onlinemapsource uid="132">
+<onlinemapsource uid="133">
 	<name>OpenTopoMap</name>
 	<url>http://{$s}.tile.opentopomap.org/{$z}/{$x}/{$y}.png</url>
 	<website>Kartendaten: © &lt;a href="https://openstreetmap.org/copyright" target="_blank"&gt;OpenStreetMap&lt;/a&gt;-Mitwirkende, SRTM | Kartendarstellung: © &lt;a href="http://opentopomap.org/" target="_blank"&gt;OpenTopoMap&lt;/a&gt;</website>
@@ -627,7 +637,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="133">
+<onlinemapsource uid="134">
 	<name>Base IGN (ES)</name>
 	<url>http://www.ign.es/wmts/ign-base?request=getTile&amp;layer=IGNBaseTodo&amp;TileMatrixSet=GoogleMapsCompatible&amp;TileMatrix={$z}&amp;TileCol={$x}&amp;TileRow={$y}&amp;format=image/jpeg</url>
 	<website>&lt;a href="https://www.cnig.es/" target="_blank"&gt;Centro Nacional de Información Geográfica (ES)&lt;/a&gt;</website>
@@ -637,7 +647,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="134">
+<onlinemapsource uid="135">
 	<name>PNOA IGN (ES)</name>
 	<url>http://www.ign.es/wmts/pnoa-ma?request=getTile&amp;layer=OI.OrthoimageCoverage&amp;TileMatrixSet=GoogleMapsCompatible&amp;TileMatrix={$z}&amp;TileCol={$x}&amp;TileRow={$y}&amp;format=image/jpeg</url>
 	<website>&lt;a href="https://www.cnig.es/" target="_blank"&gt;Centro Nacional de Información Geográfica (ES)&lt;/a&gt;</website>
@@ -647,7 +657,7 @@
 	<cacheable>1</cacheable>
 	<downloadable>1</downloadable>
 </onlinemapsource>
-<onlinemapsource uid="135">
+<onlinemapsource uid="136">
 	<name>Raster IGN (ES)</name>
 	<url>http://www.ign.es/wmts/mapa-raster?request=getTile&amp;layer=MTN&amp;TileMatrixSet=GoogleMapsCompatible&amp;TileMatrix={$z}&amp;TileCol={$x}&amp;TileRow={$y}&amp;format=image/jpeg</url>
 	<website>&lt;a href="https://www.cnig.es/" target="_blank"&gt;Centro Nacional de Información Geográfica (ES)&lt;/a&gt;</website>
