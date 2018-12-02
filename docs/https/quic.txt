@@ -1,0 +1,40 @@
+use caddy webserver to support QUIC
+current os: ubuntu 16.04
+date: 2018.12.01
+
+https://github.com/abiosoft/caddy-docker
+
+1. copy existing certs
+sudo cp /etc/letsencrypt/live/map.happyman.idv.tw/fullchain.pem /var/caddy/certs
+sudo cp /etc/letsencrypt/live/map.happyman.idv.tw/privkey.pem /var/caddy/certs
+2. edit caddyfile
+rs.happyman.idv.tw:443 map.happyman.idv.tw:443 ape.happyman.idv.tw:443 *.ape.happyman.idv.tw:443 {
+tls /etc/caddycerts/fullchain.pem /etc/caddycerts/privkey.pem
+proxy / 172.17.0.1:80  {
+        transparent
+}
+log stdout
+errors stdout
+}
+
+3. run caddy
+docker run -d    \
+    -e "CADDYPATH=/etc/caddycerts" \
+    -v /var/caddy/certs:/etc/caddycerts \
+    -v /var/caddy/Caddyfile:/etc/Caddyfile \
+    -p 80:80/udp -p 443:443/udp -p 2015:2015\
+    -e ACME_AGREE=true \
+    abiosoft/caddy -quic --conf /etc/Caddyfile
+
+check if docker running
+docker ps 
+docker logs _image_id_
+
+4. setup auto restart and enable iptables policy
+docker update --restart=unless-stopped _image_id_
+
+5. client test
+use chrome and HTTP/2 and SPDY indicator
+https://chrome.google.com/webstore/detail/http2-and-spdy-indicator/mpbpobfflnpcgagjijhmgnchggcjblin
+
+also dev tools Network->right click->check Protocol

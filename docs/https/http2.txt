@@ -1,0 +1,41 @@
+use mod_http2 to support http2 
+current os: ubuntu 16.04 
+date: 2018.12.01
+
+1. MPM: event
+​https://unix.stackexchange.com/questions/456940/how-to-enable-apache2-http-2-on-version-2-4-33-in-debian-stretch/456941#456941
+# Stop Apache2 web server.
+apachectl stop
+# If you don't have fpm already installed.
+apt-get install php7.0-fpm
+# Enable some mods.
+a2enmod proxy_fcgi setenvif
+# Enable php7.0-fpm configuration.
+a2enconf php7.0-fpm
+# Disable php7.0 mod.
+a2dismod php7.0
+# Disable the prefork MPM. Only one MPM can run at a time.
+a2dismod mpm_prefork
+# Enable event MPM. You could also enable mpm_worker.
+a2enmod mpm_event
+# Start Apache2 web server.
+apachectl start
+enable http2 module
+sudo a2enmod http2
+You can then simply add a line to this file:
+/etc/apache2/apache2.conf
+The line should look like:
+2. # Enabling HTTP/2 (NPN)
+Protocols h2 http/1.1
+3. curl test
+wget https://curl.haxx.se/download/curl-7.58.0.tar.gz
+tar -xvf curl-7.58.0.tar.gz
+cd curl-7.58.0
+./configure --with-nghttp2 --prefix=/usr/local --with-ssl=/usr/local/ssl
+make
+sudo make install
+sudo ldconfig
+curl --http2 -I http://localhost
+
+4. chrome test
+https://chrome.google.com/webstore/detail/http2-and-spdy-indicator/mpbpobfflnpcgagjijhmgnchggcjblin
