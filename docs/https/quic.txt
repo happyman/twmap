@@ -1,5 +1,5 @@
 use caddy webserver to support QUIC
-current os: ubuntu 16.04
+current: ubuntu 16.04, apache 2.4, docker-ce
 date: 2018.12.01
 
 https://github.com/abiosoft/caddy-docker
@@ -30,10 +30,13 @@ check if docker running
 docker ps 
 docker logs _image_id_
 
-4. setup auto restart and enable iptables policy
+4. add alt-svc header
+Header always set Alt-Svc "quic=\":443\"; ma=3000; v=\"44,43,39,35\""
+
+5. setup auto restart and enable iptables policy
 docker update --restart=unless-stopped _image_id_
 
-5. client test
+6. web client test
 use chrome and HTTP/2 and SPDY indicator
 https://chrome.google.com/webstore/detail/http2-and-spdy-indicator/mpbpobfflnpcgagjijhmgnchggcjblin
 
