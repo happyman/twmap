@@ -99,7 +99,7 @@ if ($ss === false ){
 	exit(0);
 }
 $result = $ss->search($keyword);
-error_log($result);
+error_log($result,true);
 if (count($result)>0) {
 	echo "<br><table id='poitable' style='width: 100%'><thead><tr><td>data<td>category<td>location<td>行政區</tr></thead><tbody>";
 //print_r($result);
