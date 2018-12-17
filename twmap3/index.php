@@ -135,6 +135,8 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 				     <select title="切換路圖" name="road" id="changegname" style="height: 32px; font-family: FontAwesome, Ariel;">
 						     <option value="GoogleNames">&#xf1a0; &nbsp;道路</option>
 							 <option value="NLSCNames">nlsc 道路</option>
+							 <option value="RUDY_BN">魯地圖BN</option>
+							 <option value="RUDY_DN">魯地圖DN</option>
 							 <option value="None">無道路</option></select>
 			 </div>
 		</div>
@@ -147,7 +149,7 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 			<button type=button class="ui-state-default ui-corner-all" id="goto" title="搜尋並定位">到</button>
 			<button id="kml_sw" class="ui-state-default ui-corner-all" title="山友登山軌跡(支援z=13到18)" type=button>行跡</button>
 			<button id="label_sw" class="ui-state-default ui-corner-all" title="三角點名稱"  type=button>標籤</button>
-			<button id="delaunay_sw" class="ui-state-default ui-corner-all disable" title="三角點連線"  type=button>連線</button>
+	 		<!-- <button id="delaunay_sw" class="ui-state-default ui-corner-all disable" title="三角點連線"  type=button>連線</button> -->
 			<button id="marker_reload" class="ui-state-default ui-corner-all" type=button>重載</button>
 			<select id="marker_sw_select" multiple="multiple">
       		<option selected="selected" value="a">全部</option>

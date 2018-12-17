@@ -194,6 +194,33 @@ var MOI_OSM_TWMAP_Options = {
     name: "魯地圖",
     alt: "Taiwan TOPO + twmap Style"
 };
+var RUDY_BN_Options = {
+    getTileUrl: function(a, b) {
+        return "//rs.happyman.idv.tw/map/rudy_bn/" + b + "/" + a.x + "/" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    name: "魯地圖",
+    alt: "Taiwan TOPO + BN Style"
+};
+var RUDY_DN_Options = {
+    getTileUrl: function(a, b) {
+        return "//rs.happyman.idv.tw/map/rudy_dn/" + b + "/" + a.x + "/" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    name: "魯地圖",
+    alt: "Taiwan TOPO + DN Style"
+};
+var RUDY_TN_Options = {
+    getTileUrl: function(a, b) {
+        return "//rs.happyman.idv.tw/map/rudy_tn/" + b + "/" + a.x + "/" + a.y + ".png";
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 19,
+    name: "魯地圖",
+    alt: "Taiwan TOPO + TN Style"
+};
 var Hillshading_Options = {
     getTileUrl: function(a, b) {
         return '//rs.happyman.idv.tw/map/colorrelief/' + b + "/" + a.x + "/	" + a.y + ".png";
@@ -379,6 +406,8 @@ var TW5KArielPIC_MapType = new google.maps.ImageMapType(TW5KArielPIC_Options);
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
 var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
 var GPXTrackMapType = new google.maps.ImageMapType(GPXTrackOptions);
+var RUDY_BN_MapType = new google.maps.ImageMapType(RUDY_BN_Options);
+var RUDY_DN_MapType = new google.maps.ImageMapType(RUDY_DN_Options);
 
 
 //圖資 copyright
@@ -396,7 +425,7 @@ var copyrights =    {
 	 'jm50k': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6160\">台灣歷史百年地圖</a> - 日治五萬分之一(陸地測量部 1924~1944)",
 	 'tw50k': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣五萬分之一(依據美國陸軍製圖局 1951~1956)",
 	 'hillshading': "<a target=\"_blank\" href=\"http://blog.nutsfactory.net/2016/09/14/taiwan-moi-20m-dtm/\">內政部數值網格資料</a> - 山區陰影圖層",
-	 'atis': "<a target=\"_blank\" href=\"http://image.afasi.gov.tw/\">農航所正射影像</a>",
+	 'atis': "<a target=\"_blank\" href=\"https://whgis.nlsc.gov.tw/GisMap/NLSCGisMap.aspx\">農航所正射影像</a>",
 	 'tm50k_1966': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6190\">台灣歷史百年地圖</a> - 水利圖 1966",
      'jm20k_1921': "<a target=\"_blank\" href=\"http://ndaip.sinica.edu.tw/content.jsp?option_id=2621&index_info_id=6924\">台灣堡圖(大正版)</a>",
 	 'tw5kariel': "台灣5000:1相片基本圖"
@@ -724,10 +753,11 @@ function restoreMapState(state) {
                 $("#changemap").change();
      }
        
-
+/*
 	if (state.show_delaunay == 1 ) {
 	   $("#delaunay_sw").trigger('click');
 	}
+	*/
 	var need_center_marker = 1;
 	var initial_loc = 0;
 	
@@ -1450,9 +1480,10 @@ success: function(data) {
 	    drawDelaunayTriangulation(2, { strokeColor: "#01DF01", strokeWeight: 2 });
 	    drawDelaunayTriangulation(3, { strokeColor: "#FF00FF", strokeWeight: 1 });
 		*/
-		create_survey_network(3);
-		create_survey_network(2);
-		create_survey_network(1);
+		//create_survey_network(3);
+		//create_survey_network(2);
+		//create_survey_network(1);
+
         }
             if (opt.msg) {
                 alert(opt.msg + "共" + availableTagsLocation.length + "筆資料");
@@ -1678,7 +1709,13 @@ function setRoadMap(){
 		map.overlayMapTypes.insertAt(i++, NLSCNameMapType);
 		console.log('insert NLSC overlay');
 		//map.overlayMapTypes[1].setOpacity(1);
-	}
+	} else if (name == 'RUDY_BN') {
+		map.overlayMapTypes.insertAt(i++, RUDY_BN_MapType);
+		console.log('insert RUDY_BN overlay');
+	} else if (name == 'RUDY_DN') {
+		map.overlayMapTypes.insertAt(i++, RUDY_DN_MapType);
+		console.log('insert RUDY_DN overlay');
+	} 
 	if (show_kml_layer == 1){
                  map.overlayMapTypes.insertAt(i++, GPXTrackMapType);
                         console.log('insert GPX overlay');
@@ -2008,27 +2045,16 @@ function initialize() {
 		 var curMapType = BackgroundMapType;
 		 var newMap = $("#changemap").val();
 		 if (newMap == 'tw25k_v3' || newMap == '3') {
-	//		 if (show_kml_layer == 1) {
-	//			BackgroundMapType = TaiwanGpxMapType;
-          //      BackgroundMapOptions = TaiwanGpxMapOptions;
-				
-	//		 } else {
-				BackgroundMapType = TaiwanMapType;
-                BackgroundMapOptions = TaiwanMapOptions; 
-		//	 }
-			 BackgroundMap = 'tw25k_v3';
+			BackgroundMapType = TaiwanMapType;
+            BackgroundMapOptions = TaiwanMapOptions; 
+			BackgroundMap = 'tw25k_v3';
 		} else if (newMap == 'tw25k_v1' || newMap == '1') {
 			BackgroundMapType = TaiwanMapV1MapType;
             BackgroundMapOptions = TaiwanMapV1Options;
 			BackgroundMap = 'tw25k_v1';
 		} else {
-		//	if (show_kml_layer == 1) {
-		//		BackgroundMapType = MOI_OSM_GPX_MapType;
-		//		BackgroundMapOptions = MOI_OSM_GPX_Options;
-		//	} else {
-				BackgroundMapType = MOI_OSM_TWMAP_MapType;
-				BackgroundMapOptions = MOI_OSM_TWMAP_Options;
-		//	}
+			BackgroundMapType = MOI_OSM_TWMAP_MapType;
+			BackgroundMapOptions = MOI_OSM_TWMAP_Options;
 			BackgroundMap = 'moi_osm';
 		}	
 		 if (curMapType == BackgroundMapType) {
@@ -2042,29 +2068,7 @@ function initialize() {
 	 });
     // 切換前景圖
     $('#changegname').change(function() {
-        //var curMap = (map.overlayMapTypes.length == 2) ? map.overlayMapTypes.getArray()[1].name : 'None';
-/*
-	 var curMap = (map.overlayMapTypes.getAt(1) != "undefined" && map.overlayMapTypes.getAt(1).name != 'GPXTrack') ? map.overlayMapTypes.getArray()[1].name : 'None';
-        var newMap = $('#changegname').val();
-        if (curMap == newMap) return true;
-	
-        if ($('#changegname').val() == 'None') {
-            map.overlayMapTypes.removeAt(1);
-            return true;
-        }
-        if (curMap != 'None') {
-			map.overlayMapTypes.removeAt(1);
-	}
-        if (newMap == 'GoogleNames') {
-			map.overlayMapTypes.insertAt(1, GoogleNameMapType);
-			//map.overlayMapTypes[1].setOpacity(1);
-		}
-        else if (newMap == 'NLSCNames') {
-			map.overlayMapTypes.insertAt(1, NLSCNameMapType);
-			//map.overlayMapTypes[1].setOpacity(1);
-		}
-*/
-	setRoadMap();
+		setRoadMap();
         updateView("info_only");
     });
     $('#changegrid').change(function() {
@@ -2139,15 +2143,11 @@ function initialize() {
         updateView("info_only");
 	console.log("label_sw trigger end" + show_label);
     });
+	/*
     $("#delaunay_sw").click(function() {
+		// 2018.12 取消這個功能
 	if (show_delaunay == 1 ) {
 		show_delaunay = 0;
-		// topnoty = noty({text: '取消三角點通視....', layout:'top'});
-		/*
-		cleanDelaunayTriangulation(1);
-		cleanDelaunayTriangulation(2);
-		cleanDelaunayTriangulation(3); 
-		*/
 		remove_survey_network(1);
 		remove_survey_network(2);
 		remove_survey_network(3);
@@ -2158,19 +2158,16 @@ function initialize() {
 		show_delaunay = 1;
 		// topnoty = noty({text: '三角點通視計算中....', layout:'top'});
             $("#delaunay_sw").removeClass("disable");
-			/*
-			drawDelaunayTriangulation(1, { strokeColor: "#FFFF00", strokeWeight: 3 });
-            drawDelaunayTriangulation(2, { strokeColor: "#01DF01", strokeWeight: 2 });
-            drawDelaunayTriangulation(3, { strokeColor: "#FF00FF", strokeWeight: 1 });
-			*/
+	
 			create_survey_network(3);
 			create_survey_network(2);
 			create_survey_network(1);
 			// topnoty.close();
 	}
         updateView("info_only");
+		
     });
-   
+     */
     $("#marker_reload").hide();
     //toggle_admin_role();
     // admin
@@ -2236,7 +2233,7 @@ function initialize() {
         });
         $('#kml_sw').appendTo('#mobile_setup').hide();
         $('#label_sw').appendTo('#mobile_setup').hide();
-        $('#delaunay_sw').appendTo('#mobile_setup').hide();
+        // $('#delaunay_sw').appendTo('#mobile_setup').hide();
         $('#opContainer').appendTo('#mobile_setup');
         $('#CGRID').appendTo('#mobile_setup').hide();
         $('#CGNAME').appendTo('#mobile_setup').hide();
@@ -2267,12 +2264,14 @@ function initialize() {
                 'left': '80px',
                 'font-size': '20px'
             }).show();
+			/*
             $('#delaunay_sw').removeAttr('style').css({
                 'position': 'absolute',
                 'top': '30px',
                 'left': '150px',
                 'font-size': '20px'
             }).show();
+			*/
             $('#CGRID').show();
             $('#CGNAME').show();
             $('#FORECAST').show();
