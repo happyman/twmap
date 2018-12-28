@@ -230,6 +230,28 @@ var Hillshading_Options = {
     name: "陰影",
     alt: "Taiwan hillshading"
 };
+var MOI_CONTOUR_2005_Options = {
+	 getTileUrl: function(a, b) {
+                return '//wmts.nlsc.gov.tw/wmts/MOI_CONTOUR/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 20,
+    minZoom: 16,
+    name: "MOI_等高線",
+    alt: "內政部國土測量中心 等高線2003-2005"
+
+};
+var MOI_CONTOUR_2015_Options = {
+	 getTileUrl: function(a, b) {
+                return '//wmts.nlsc.gov.tw/wmts/MOI_CONTOUR_2/default/EPSG:3857/'+b+'/'+a.y+'/'+a.x;
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 20,
+    minZoom: 16,
+    name: "MOI_等高線",
+    alt: "內政部國土測量中心 等高線2010-2015"
+
+};
 //var MOI_OSM_GPX_Options = {
 //    getTileUrl: function(a, b) {
 //        return 'http://rs.happyman.idv.tw/map/moi_osm_gpx/' + b + "/" + a.x + "/	" + a.y + ".png";
@@ -408,6 +430,8 @@ var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
 var GPXTrackMapType = new google.maps.ImageMapType(GPXTrackOptions);
 var RUDY_BN_MapType = new google.maps.ImageMapType(RUDY_BN_Options);
 var RUDY_DN_MapType = new google.maps.ImageMapType(RUDY_DN_Options);
+var MOI_CONTOUR_MapType = new google.maps.ImageMapType(MOI_CONTOUR_2005_Options);
+var MOI_CONTOUR2_MapType = new google.maps.ImageMapType(MOI_CONTOUR_2015_Options);
 
 
 //圖資 copyright
@@ -1715,7 +1739,13 @@ function setRoadMap(){
 	} else if (name == 'RUDY_DN') {
 		map.overlayMapTypes.insertAt(i++, RUDY_DN_MapType);
 		console.log('insert RUDY_DN overlay');
-	} 
+	} else if (name == 'MOI_CONTOUR') {
+		map.overlayMapTypes.insertAt(i++, MOI_CONTOUR_MapType);
+		console.log('insert MOI_CONTOUR overlay');
+	} else if (name == 'MOI_CONTOUR2') {
+		map.overlayMapTypes.insertAt(i++, MOI_CONTOUR2_MapType);
+		console.log('insert MOI_CONTOUR2 overlay');
+	}
 	if (show_kml_layer == 1){
                  map.overlayMapTypes.insertAt(i++, GPXTrackMapType);
                         console.log('insert GPX overlay');
