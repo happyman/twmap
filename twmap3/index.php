@@ -47,6 +47,7 @@ require_once("lib/functions.inc.php");
 	<script  src="js/triangle.js"></script>
 	<script  src="js/jquery.noty.js"></script>
 	<script  src="js/shapedraw.js"></script>
+	<script  src="js/loadgpx.js"></script>
 	<!-- endbuild -->
 <!--
 	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
@@ -145,7 +146,7 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 
 		<div id="map_canvas"  data-tap-disabled="true"></div>
 
-		<div id="title" class="title">
+		<div id="drop-container"><div id="drop-silhouette"></div></div>		<div id="title" class="title">
 		  <form id="gotoform" name="gotoform">
 			<span id="about" title="關於" class="ui-state-default ui-corner-all" > 地圖瀏覽器 v<?=$ver?></span> <span id="search_text"><img src='img/loading20x20.gif' /></span> <input id="tags" type="text" class="ui-corner-all"  title="輸入山頭名稱或地標,或者座標" disabled>
 			<button type=button class="ui-state-default ui-corner-all" id="goto" title="搜尋並定位">到</button>
