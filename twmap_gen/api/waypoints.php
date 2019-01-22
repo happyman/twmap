@@ -153,13 +153,15 @@ $('document').ready(function(){
 		$('.showkml').each(function(index) {
 			$(this).click(function(event) {
 				event.preventDefault();
-				parent.showmapkml($(this).data('id'),$(this).data('title'),$(this).data('link'),false);
+				//parent.showmapkml($(this).data('id'),$(this).data('title'),$(this).data('link'),false);
+				parent.showmapgpx($(this).data('id'),$(this).data('title'),$(this).data('link'),true);
 				});
 			});
 		$('.rating').each(function(index) {
 			$(this).click(function(event){
 				event.preventDefault();
-				parent.showmapkml($(this).data('id'),$(this).data('title'),$(this).data('link'),false);
+				parent.showmapgpx($(this).data('id'),$(this).data('title'),$(this).data('link'),false);
+				//parent.showmapkml($(this).data('id'),$(this).data('title'),$(this).data('link'),false);
 				parent.open_ranking_dialog($(this).data('id'),$(this).data('ratelink'),$(this).data('backurl'));
 				
 			});

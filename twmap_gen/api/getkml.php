@@ -49,6 +49,15 @@ function make_kml($mid) {
 
 	// 把地圖拿出來換成 kml
 	$gpx = map_file_name($map['filename'],'gpx');
+	
+	if (isset($_REQUEST['type']) && $_REQUEST['type'] == 'gpx') {
+		 if (!file_exists($gpx)) {
+			header(sprintf("Location: export_mid_gpx.php?mid=%d&kml=0",$mid));
+		 } else {
+			readfile($gpx);
+		}
+		exit(0);
+	}
 	if (!file_exists($gpx)) {
 		header(sprintf("Location: export_mid_gpx.php?mid=%d&kml=1",$mid));
 		exit(0);
