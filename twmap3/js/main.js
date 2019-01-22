@@ -704,7 +704,7 @@ function showmapkml(mid, marker_desc, additional_marker_desc, zoom, need_center_
 			map: map,
 			singleInfoWindow: true,
 			additional_marker_desc: decodeURIComponent(additional_marker_desc),
-			zoom: zoom,
+			zoom: zoom
 		});
 	skml.loading = 1;
 	topnoty = noty({
@@ -724,6 +724,38 @@ function showmapkml(mid, marker_desc, additional_marker_desc, zoom, need_center_
 		topnoty.close();
 	});
 }
+var sgpx;
+function showmapgpx(mid, marker_desc, additional_marker_desc, zoom, need_center_marker) {
+	if (sgpx) {
+		if (sgpx.loading == 1 ) return;
+		if (sgpx.mid == mid) { sgpx.Destroy(); sgpx.mid = 0; return; } 
+		sgpx.Destroy(); 
+	}
+	console.log("showmapgpx: mid=" + mid);
+  topnoty = noty({
+                        text: 'gpx 載入中...',
+                        layout: 'top'
+                });
+
+	$.ajax({ url: getkml_url + "?mid=" + mid + "&type=gpx", 
+		dataType: "xml", success: function(data) {
+		sgpx = new GPXParser(data, map);
+		sgpx.loading = 1;
+		  sgpx.SetTrackColour("#fffe00");     // Set the track line colour
+          	sgpx.SetTrackWidth(3);          // Set the track line width
+     //     sgpx.SetMinTrackPointDelta(0.001);      // Set the minimum distance between track points
+	if (zoom) sgpx.CenterAndZoom(data);
+          sgpx.AddTrackpointsToMap();         // Add the trackpoints
+          sgpx.AddWaypointsToMap();           // Add the waypoints
+	  sgpx.mid = mid;
+	  topnoty.close();
+		sgpx.loading = 0;
+	  sgpx.loading = 0;
+	}
+	});
+
+} 
+
 
 function permLinkURL(goto) {
 	// var ver = (BackgroundMap === 0) ? 3 : 1;
@@ -839,7 +871,8 @@ function restoreMapState(state) {
 		});
 		initial_loc = 1;
 	} else if (state.skml_id && state.skml_id !== 0) {
-		showmapkml(state.skml_id, "", "", true, need_center_marker);
+		//showmapkml(state.skml_id, "", "", true, need_center_marker);
+		showmapgpx(state.skml_id, "", "", true, need_center_marker);
 		initial_loc = 1;
 	} else if (state.goto) {
 		console.log("goto: " + state.goto);
@@ -2769,7 +2802,7 @@ function loadGpx(xml) {
 	var parser = new GPXParser(data, map);
 	parser.SetTrackColour("#ff0000"); // Set the track line colour
 	parser.SetTrackWidth(3); // Set the track line width
-	parser.SetMinTrackPointDelta(0.001); // Set the minimum distance between track points
+	//parser.SetMinTrackPointDelta(0.001); // Set the minimum distance between track points
 	parser.CenterAndZoom(data);
 	parser.AddTrackpointsToMap(); // Add the trackpoints
 	// parser.AddRoutepointsToMap(); // Add the routepoints

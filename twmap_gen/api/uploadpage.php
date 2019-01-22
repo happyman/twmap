@@ -122,7 +122,8 @@ Dropzone.options.myAwesomeDropzone = {
 });
 function skmlclick(event, ele){
 	event.preventDefault();
-	parent.showmapkml(ele.data('id'),ele.data('title'),ele.data('link'),true);
+	//parent.showmapkml(ele.data('id'),ele.data('title'),ele.data('link'),true);
+	parent.showmapgpx(ele.data('id'),ele.data('title'),ele.data('link'),true);
 }
 </script>
  

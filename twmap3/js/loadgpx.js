@@ -50,7 +50,10 @@ function GPXParser(xmlDoc, map)
 	this.map = map;
 	this.trackcolour = "#ff00ff"; // red
 	this.trackwidth = 5;
-	this.mintrackpointdelta = 0.0001
+	this.mintrackpointdelta = 0.0000001
+	this.infowindows = [];
+	this.markers = [];
+	this.polylines = [];
 }
 
 // Set the colour of the track line segements.
@@ -159,13 +162,10 @@ GPXParser.prototype.CreateMarker = function(point)
 		icon: { url: icon, scaledSize : new google.maps.Size(32, 32) },
 		map: this.map
 	});
+	this.infowindows.push(infowindow);
+	this.markers.push(marker);
 
-	marker.addListener("mouseover",
-		function()
-		{
-			infowindow.open(marker.get('map'), marker);
-		}
-	);
+	marker.addListener("mouseover", function() { infowindow.open(marker.get('map'), marker); });
 	marker.addListener("mouseout", function() { infowindow.close(); });
 }
 
@@ -213,6 +213,7 @@ GPXParser.prototype.AddTrackSegmentToMap = function(trackSegment, colour, width)
 	});
 
 	polyline.setMap(this.map);
+	this.polylines.push(polyline);
 }
 
 GPXParser.prototype.AddTrackToMap = function(track, colour, width)
@@ -290,6 +291,17 @@ GPXParser.prototype.AddWaypointsToMap = function ()
 	for (var i=0; i < waypoints.length; i++)
 	{
 		this.CreateMarker(waypoints[i]);
+	}
+}
+GPXParser.prototype.Destroy = function() {
+	var i = 0;
+	console.log("destroy gpxparser obj");
+	for(i=0;i<this.infowindows.length;i++) {
+		this.infowindows[i].setMap(null);
+		this.markers[i].setMap(null);
+	}
+	for(i=0;i<this.polylines.length;i++) {
+		this.polylines[i].setMap(null);
 	}
 }
 
