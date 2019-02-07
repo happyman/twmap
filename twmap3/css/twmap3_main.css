@@ -141,7 +141,7 @@ textarea:hover {
 	cursor: pointer;
 }
 #params {
-	position:absolute;top:6px;right:95px; width:380px; font-size: 12px;
+	position:absolute;top:6px;right:130px; width:380px; font-size: 12px;
 }
 #generate {
 /*	position:absolute;top:5px;right:10px; */
