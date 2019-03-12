@@ -11,10 +11,22 @@ function track_add($data){
 	$rs = $db->getAll($sql);
 	return $rs[0]['tid'];
 }
-function track_get($uid, $order="tid DESC"){
+function track_get($uid, $order="tid DESC",$is_admin=false){
 	$db=get_conn();
-	$sql = sprintf("select * from \"track\" where uid=%d AND status <> 3 ORDER BY %s",$uid,$order);
-	error_log($sql);
+	if ($is_admin)
+		$sql = sprintf("
+	select case 
+when -1 * A.tid IN (select mid from \"gpx_trk\") 
+then 1 
+else 0
+end as imported,  A.* from \"track\" A where (A.uid=%d OR A.contribute = 1) and A.status <>3  order by %s",$uid,$order);
+	else
+		$sql = sprintf("select case 
+when -1 * A.tid IN (select mid from \"gpx_trk\") 
+then 1 
+else 0
+end as imported, * from \"track\" A where A.uid=%d AND A.status <> 3 ORDER BY %s",$uid,$order);
+	// error_log($sql);
 	$rs = $db->getAll($sql);
 	return $rs;
 }

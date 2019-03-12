@@ -19,7 +19,7 @@ switch($action){
 			break;
 	case 'list':
 	default:
-			$rs = track_get($uid,$_GET['jtSorting']);
+			$rs = track_get($uid,$_GET['jtSorting'],is_admin());
 			break;
 }
 if ($rs === false) {
@@ -34,7 +34,7 @@ $jTableResult['Result'] = "OK";
 if ($_REQUEST['action'] == 'update')
 		$jTableResult['Record'] = track_get_single($_REQUEST['tid']);
 else
-	$jTableResult['Records'] = track_get($uid);
+	$jTableResult['Records'] = track_get($uid,$_GET['jtSorting'],is_admin());
 print json_encode($jTableResult);
 
-$trks = track_get($uid);
+//$trks = track_get($uid);

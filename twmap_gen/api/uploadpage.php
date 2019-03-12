@@ -62,6 +62,7 @@ Dropzone.options.myAwesomeDropzone = {
   $('#TrackTableContainer').jtable({
                                 title: '我的行跡',
                                 sorting: true,
+								multiSorting: true,
                                 paging: true,
                                 pageSize: 20,
                                 defaultSorting: 'tid DESC',
@@ -83,7 +84,7 @@ Dropzone.options.myAwesomeDropzone = {
 										width: "10%",
 										display: function(data){
 											// note -1 means load track id.
-											return '<a href=# class="showkml"  onclick="skmlclick(event,$(this))"  data-id="-'+ data.record.tid  + '" data-title="'+ data.record.name + '"  data-link="">' + data.record.tid + '</a>';
+											return '<a href=# class="showkml"  onclick="skmlclick(event,$(this))"  data-id="-'+ data.record.tid  + '" data-title="'+ data.record.name + '"  data-imported="' + data.record.case + '" data-link="">' + data.record.tid + '</a>';
 										}
 									},
 									name: {
@@ -92,10 +93,13 @@ Dropzone.options.myAwesomeDropzone = {
 										width: "60%",
 										display: function(data){
 											var nuoc_ngoai = "";
+											var imported = "";
 											//console.log(data.record.is_taiwan);
 											if (data.record.is_taiwan == 'f')
 												nuoc_ngoai = ' [國外]';
-											return '<a href="getkml.php?mid=-'+ data.record.tid+'" target=_top>'+data.record.name+'</a>' + nuoc_ngoai;
+											if (data.record.imported == '0')
+												imported = "(" + data.record.uid + ")";
+											return '<a href="getkml.php?mid=-'+ data.record.tid+'" target=_top>'+data.record.name+'</a>' + nuoc_ngoai + imported;
 										} 
 								
 									},
@@ -104,7 +108,17 @@ Dropzone.options.myAwesomeDropzone = {
 										edit: false,
 										width: "15%",
 										display: function(data){
-											return data.record.km_x + "x" + data.record.km_y + " (km)";
+											return data.record.km_x + "x" + data.record.km_y;
+										}
+									},
+									imported: {
+										title: "匯入",
+										edit: false,
+										width: "10%",
+										display: function(data){
+											if (data.record.imported == '1') return '👍';
+												else
+												return '未';
 										}
 									},
 									contribute: { 
