@@ -140,10 +140,14 @@ function trans($fn,$node_id,$way_id,$rel_id) {
 }
 
 // 3. final sort
-$cmd = sprintf("osmium sort --overwrite %s/trk/*.pbf -o %s/trk.pbf",$dd,$dd);
-myexec($cmd);
-$cmd = sprintf("osmium sort --overwrite %s/wpt/*.pbf -o %s/wpt.pbf",$dd,$dd);
-myexec($cmd);
+if (!file_exists($dd."/trk.pbf")) {
+	$cmd = sprintf("osmium sort --overwrite %s/trk/*.pbf -o %s/trk.pbf",$dd,$dd);
+	myexec($cmd);
+}
+if (!file_exists($dd."/wpt.pbf")) {
+	$cmd = sprintf("osmium sort --overwrite %s/wpt/*.pbf -o %s/wpt.pbf",$dd,$dd);
+	myexec($cmd);
+}
 
 // 3.1 cleanup
 //$cmd = sprintf("rm %s; rm %s; rm -r %s/trk; rm -r %s/wpt",$out_trk,$out_wpt,$dd,$dd);	
@@ -156,50 +160,70 @@ $script_dir = "/home/mountain/github/taiwan-topo/osm_scripts";
 // 4. convert to map
 $trk_pbf = "$dd/trk.pbf";
 $wpt_pbf = "$dd/wpt.pbf";
+$wpt_pbf_ren = "$dd/wpt_renum.pbf";
+$trk_pbf_ren = "$dd/trk_renum.pbf";
 $finalpbf = "$dd/Happyman.pbf";
 if (!file_exists($finalpbf)) {
-        $cmd=sprintf("osmium  renumber -s 1,1,0 %s -Oo %s", $trk_pbf, $finalpbf);
-        myexec($cmd);
-        $cmd = sprintf("bash %s/osium-append.sh %s %s",$script_dir,$finalpbf,$wpt_pbf);
-        myexec($cmd);
+	$cmd=sprintf("osmium  renumber -s 1,1,0 %s -Oo %s", $trk_pbf, $trk_pbf_ren);
+	myexec($cmd);
+	// merge
+	$cmd = sprintf("osmium fileinfo -e %s |grep -A1 'Number of nodes' |awk -F: '{print $2}'",$trk_pbf_ren);
+	exec($cmd, $out, $ret);
+	$s_node = intval(trim($out[0]))+1;
+	$s_way = intval(trim($out[1]))+1;
+	$cmd = sprintf("osmium renumber -s %d,%d,0 %s -Oo %s", $s_node, $s_way, $wpt_pbf, $wpt_pbf_ren);
+	myexec($cmd);
+	// $cmd = sprintf("bash %s/osium-append.sh %s %s",$script_dir,$finalpbf,$wpt_pbf);
+	$cmd = sprintf("osmium merge %s %s -Oo %s", $trk_pbf_ren, $wpt_pbf_ren, $finalpbf);
+	myexec($cmd);
 }
+// check if Happyman.pbf contains WaterSource
+$cmd = sprintf("osmium cat %s -f osm |grep WaterSource",$finalpbf);
+exec($cmd,$out,$ret);
+if ($ret != 0 ) {
+	echo "Happyman.pbf was not merged correctly\n";
+	exit(1);
+} else {
+	echo "Happyman.pbf contains WaterSource, looks good!\n";
+}
+echo "finally...\n";
 // note unbuffer from expect (ubuntu)
 $cmd = sprintf("export JAVACMD_OPTIONS=\"-Xmx30G\";
-                unbuffer osmosis \
-                --read-pbf \"%s\" \
-                --buffer --mapfile-writer \
-                type=ram \
-                threads=8 \
-                bbox=21.55682,118.12141,26.44212,122.31377 \
-                preferred-languages=\"zh,en\" \
-                tag-conf-file=\"%s/gpx-mapping.xml\" \
-                polygon-clipping=true way-clipping=true label-position=false \
-                zoom-interval-conf=6,0,6,10,7,11,14,12,21 \
-                map-start-zoom=10 \
-                comment=\"%s /  (c) Map: Happyman\" \
-                file=\"%s/Happyman.map\" > %s/Happyman.log 2>&1 &",
-                $finalpbf, $script_dir, $dd, $dd , $dd);
+		unbuffer osmosis \
+		--read-pbf \"%s\" \
+		--buffer --mapfile-writer \
+		type=ram \
+		threads=8 \
+		bbox=21.55682,118.12141,26.44212,122.31377 \
+		preferred-languages=\"zh,en\" \
+		tag-conf-file=\"%s/gpx-mapping.xml\" \
+		polygon-clipping=true way-clipping=true label-position=false \
+		zoom-interval-conf=6,0,6,10,7,11,14,12,21 \
+		map-start-zoom=10 \
+		comment=\"%s /  (c) Map: Happyman\" \
+		file=\"%s/Happyman.map\" > %s/Happyman.log 2>&1 &",
+		$finalpbf, $script_dir, $dd, $dd , $dd);
 
-// dirty hack: osmosis not exit after done.
+// dirty hack: osmosis not exit after done
 echo "$cmd\n";
 $pid = exec($cmd);
 echo "process in background...\n";
 while(1) {
-        system("tail -1 $dd/Happyman.log");
-        exec(sprintf("fgrep \"finished...\" %s/Happyman.log",$dd),$out,$ret);
-        if ($ret == 0 ) {
-                exec("ps ax |grep osmosis |grep java |awk '{print $1}' |xargs kill");
-                echo "done...\n";
-                break;
-        }
-        sleep(10);
+	system("tail -1 $dd/Happyman.log");
+	exec(sprintf("fgrep \"finished...\" %s/Happyman.log",$dd),$out,$ret);
+	if ($ret == 0 ) {
+		exec("ps ax |grep osmosis |grep java |awk '{print $1}' |xargs kill");
+		echo "done...\n";
+		break;
+	}
+	sleep(10);
 }
 
 // 5. publish
 
 
 function myexec($cmd){
-        printf("%s\n",$cmd);
-        exec($cmd);
+	printf("%s\n",$cmd);
+	exec($cmd);
 }
 
