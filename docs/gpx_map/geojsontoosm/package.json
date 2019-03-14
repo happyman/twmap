@@ -1,0 +1,28 @@
+{
+  "name": "geojsontoosm",
+  "version": "0.0.3",
+  "description": "Convert GeoJSON to OSM",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "geojsontoosm": "geojsontoosm"
+  },
+  "keywords": [
+    "geojson",
+    "openstreetmap"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tyrasd/geojsontoosm.git"
+  },
+  "author": "Martin Raifer",
+  "license": "MIT",
+  "dependencies": {
+    "concat-stream": "^1.5.0",
+    "geojson-stream": "0.0.0",
+    "jxon": "^1.6.1",
+    "optimist": "^0.6.1"
+  }
+}

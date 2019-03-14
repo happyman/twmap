@@ -1,0 +1,56 @@
+#!/usr/bin/env node
+
+var geojsontoosm = require('./'),
+    opt = require('optimist')
+        .usage('Usage: $0 FILE')
+        .boolean('version').describe('version','display software version')
+        .boolean('help').describe('help','print this help message')
+        .options('start_node_id', {
+            'describe': 'starting integer for node ids',
+            'default': Number.MAX_SAFE_INTEGER,
+            'type': 'number' })
+        .options('start_way_id', {
+            'describe': 'starting integer for way ids',
+            'default': Number.MAX_SAFE_INTEGER,
+            'type': 'number' })
+        .options('start_relation_id', {
+            'describe': 'starting integer for relation ids',
+            'default': Number.MAX_SAFE_INTEGER,
+            'type': 'number' }),
+    argv = opt.argv,
+    fs = require('fs'),
+    geojsonStream = require('geojson-stream'),
+    concat = require('concat-stream'),
+    pack = require('./package.json');
+
+if (argv.help) {
+    return opt.showHelp();
+}
+if (argv.version) {
+    process.stdout.write(pack.version+'\n');
+    return;
+}
+
+var filename = argv._[0] || '';
+
+var datastream = (filename ? fs.createReadStream(filename) : process.stdin);
+
+// Default is the max integer value in javascript - 9007199254740991
+// Apparently overpass doesn't support signed integers so rather than starting at 0
+// we start from the largest possible integer javascript supports. This gives the advantage
+// of avoiding collisions with ids actually allocated in OSM for now.
+var lastNodeId = argv.start_node_id,
+    lastWayId = argv.start_way_id,
+    lastRelationId = argv.start_relation_id;
+
+
+datastream
+.pipe(geojsonStream.parse())
+.pipe(concat(function(data) {
+    convert(data)
+}))
+
+function convert(data) {
+    var result = geojsontoosm(data, lastNodeId, lastWayId, lastRelationId);
+    process.stdout.write(result);
+}
