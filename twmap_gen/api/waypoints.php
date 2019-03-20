@@ -177,8 +177,10 @@ $('document').ready(function(){
 		});
 		$('#kmlbtnshow').click(function() {
 			console.log("display mid:" + $("#kmlshowmid").val());
-			if ($("#kmlshowmid").val()) 
-				parent.showmapkml($("#kmlshowmid").val(),"","",true);
+			if ($("#kmlshowmid").val()) {
+				//parent.showmapkml($("#kmlshowmid").val(),"","",true);
+				parent.showmapgpx($("#kmlshowmid").val(),"","",true);
+			}
 			});
 		});
 		

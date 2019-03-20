@@ -167,6 +167,7 @@ if (!file_exists($finalpbf)) {
 	$cmd=sprintf("osmium  renumber -s 1,1,0 %s -Oo %s", $trk_pbf, $trk_pbf_ren);
 	myexec($cmd);
 	// merge
+	$out = array();
 	$cmd = sprintf("osmium fileinfo -e %s |grep -A1 'Number of nodes' |awk -F: '{print $2}'",$trk_pbf_ren);
 	exec($cmd, $out, $ret);
 	$s_node = intval(trim($out[0]))+1;
