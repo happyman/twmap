@@ -22,10 +22,7 @@ if ($login === false) {
 <body>
 <hr>
 <p>
-<p>beta 測試中,歡迎建議.	
-<p>
-請上傳行跡檔 (gdb, gpx, kml, kmz):
-
+<p align=right>beta 測試中,歡迎建議.	<a href="uploadpage.php">重載本頁</a>|<a href="exportkml.php">下載圖資</a>|<a href="<?php echo $TWMAP3_html_root; ?>/about.php">關於</a>
 </p>
 <form action="upload.php"
       class="dropzone"
@@ -43,7 +40,7 @@ Dropzone.options.myAwesomeDropzone = {
    maxFiles: 10,
    maxFilesize: 60, // MB
    acceptedFiles: ".kml,.kmz,.gpx,.gdb",
-   dictDefaultMessage: "請將檔案拖曳到此處上傳",
+   dictDefaultMessage: "請將檔案拖曳到此處上傳(gpx,gdb,kml,kmz)",
   init: function() {
 	this.on("maxfilesexceeded", function(file){
         alert("No more files please!");
@@ -99,7 +96,7 @@ Dropzone.options.myAwesomeDropzone = {
 												nuoc_ngoai = ' [國外]';
 											if (data.record.imported == '0')
 												imported = "(" + data.record.uid + ")";
-											return '<a href="getkml.php?mid=-'+ data.record.tid+'" target=_top>'+data.record.name+'</a>' + nuoc_ngoai + imported;
+											return '<a href="/twmap/show.php?mid=-'+ data.record.tid+'" target=_download>'+data.record.name+'</a>' + nuoc_ngoai + imported;
 										} 
 								
 									},

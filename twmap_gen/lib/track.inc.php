@@ -93,6 +93,24 @@ function gpsbabel_convert($orig,$type,$dest,$dtype){
 		return array(false, implode(" ",$out));
 	}
 }
+function gpsbabel_seg2trk($orig,$dest){
+	global $debug;
+	// 將 multiple segments 轉換成 tracks
+	// gpsbabel is a bit buggy
+        // requires 1.5.4, with 
+	//$cmd = sprintf("/usr/bin/gpsbabel-1.5.4 -t -i gpx -o gpx,gpxver=1.1,garminextensions -f %s  -x track,seg2trk  -F %s", $type, $dtype, $orig, $dest);
+	$cmd = sprintf("cd %s;/usr/bin/gpsbabel_seg2trk.sh %s %s",dirname($orig),basename($orig), basename($dest));
+	exec($cmd, $out, $ret);
+	if ($debug) {
+		echo "$cmd return $ret" . print_r($out,true) . "\n";
+	}
+	if ($ret == 0){
+		return array(true,"ok");
+	} else {
+		return array(false, implode(" ",$out));
+	}
+}
+
 
 //http://php.net/manual/en/function.glob.php
 function glob_recursive($pattern, $flags = 0)
@@ -222,8 +240,9 @@ function process_track($fpath, $fname,$ext) {
 			gpsbabel_convert($fpath,$ext,$kml_fname,"kml");
 			berak;
 		case 'gpx':
-			gpsbabel_convert($fpath,$ext,$kml_fname,"kml");
-			link($fpath, $gpx_fname);
+			gpsbabel_seg2trk($fpath,$gpx_fname);
+			gpsbabel_convert($gpx_fname,$ext,$kml_fname,"kml");
+			// link($fpath, $gpx_fname);
 			break;
 		case 'kmz':
 			process_kmz_to_kml($fpath,$fname, $gpx_fname, $kml_fname);

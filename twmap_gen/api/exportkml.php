@@ -47,8 +47,8 @@ if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
 	<body>
 	<p>
 	<hr>
-	<h1>下載圖資</h1>
-	<p>地圖產生器的圖資是由小花 2010 年整裡的日治時代原點為基礎, 持續更新點位狀態及新增登山的各類興趣點, 期望提供讓山域活動者有更多有用資訊。
+	<h2>下載圖資</h2>
+	<p>地圖產生器的興趣點圖資是由小花 2010 年整裡的日治時代原點為基礎, 持續更新點位狀態及新增登山的各類興趣點, 期望提供讓山域活動者有更多有用資訊。
 	<ul>
 	<li><a href="?kml=1" target='kml'>下載所有點位資料</a>
 	<?php
@@ -59,9 +59,20 @@ if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
 		printf("<li><b>Bound(tilestache-clean)</b>: %s\n",$bound_str);
 	}
 	?>
+	<li><a href="/~mountain/gpx_map/" target=_blank>下載所有行跡(離線圖資)</a>
 	</ul>
 	<hr>
-	<a href="uploadpage.php">上傳行跡</a>(beta)
+<?php
+
+list ($login,$uid) = userid();
+if ($login === false) {
+        printf("<a href='%s/main.php?return=twmap3' target=_top>請登入</a>",$site_html_root);
+} else {
+?>
+	<a href="uploadpage.php">上傳行跡</a>
+<?php
+}
+?>
 	</body>
 	</html>
 	<?php

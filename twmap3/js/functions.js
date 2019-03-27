@@ -237,10 +237,14 @@ function lonlat_getblock97(lon, lat, ph, unit) {
 
 
 function is_taiwan(lat, lon) {
+    if (lon > 118.1 && lon < 118.52 && lat < 24.55 && lat > 24.35)
+	return 3; // 金門
+    if (lon > 119.5 && lon < 120.55 && lat < 26.4 && lat > 25.9 )
+	return 4; // 馬祖
     if (lon < 119.31 || lon > 124.56 || lat < 21.88 || lat > 25.31) {
-        return 0;
+       	return 0; // 其他
     } else if (lon > 119.72) {
-        return 1;
+        return 1; // 台灣
     } else
     // 澎湖
         return 2;

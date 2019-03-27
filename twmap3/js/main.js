@@ -1007,16 +1007,20 @@ function locInfo_show(newpos, ele, extra) {
 	comment2;
 
 	var ll = is_taiwan(newpos.lat(), newpos.lng());
-	ph = (ll == 2) ? 1 : 0;
+	ph = (ll >= 2) ? 1 : 0;
 	var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
 	var p2 = lonlat2twd97(newpos.lng(), newpos.lat(), ph);
-	if (ll == 2) {
+	if (ph == 1) { // 澎湖、金、馬
 		comment = "澎湖 TWD67 TM2:" + Math.round(p.x) + "," + Math.round(p.y);
 		comment2 = "澎湖 TWD97 TM2:" + Math.round(p2.x) + "/" + Math.round(p2.y);
 	} else {
-
-		comment = "台灣 TWD67 TM2:" + Math.round(p.x) + "," + Math.round(p.y);
-		comment2 = "台灣 TWD97 TM2:" + Math.round(p2.x) + "/" + Math.round(p2.y);
+		if (ll == 1) {
+		   comment = "台灣 TWD67 TM2:" + Math.round(p.x) + "," + Math.round(p.y);
+		   comment2 = "台灣 TWD97 TM2:" + Math.round(p2.x) + "/" + Math.round(p2.y);
+		} else {
+		   comment = "參考經緯度";
+		   comment2 = "";
+		}
 	}
 	/* 地籍座標三角點研究用不用占太多版面 */
 	if (surveyMarker && surveyMarker.getMap()) {
@@ -1163,15 +1167,20 @@ function tagInfo(newpos, id) {
 	comment2,
 	comment3;
 	var ll = is_taiwan(newpos.lat(), newpos.lng());
-	ph = (ll == 2) ? 1 : 0;
+	ph = (ll >= 2) ? 1 : 0;
 	var p = lonlat2twd67(newpos.lng(), newpos.lat(), ph);
 	var p2 = lonlat2twd97(newpos.lng(), newpos.lat(), ph);
-	if (ll == 2) {
+	if (ph == 1) {
 		comment = "澎湖 TWD67 TM2: " + Math.round(p.x) + "," + Math.round(p.y);
 		comment2 = "澎湖 TWD97 TM2: " + Math.round(p2.x) + "/" + Math.round(p2.y);
 	} else {
-		comment = "台灣 TWD67 TM2: " + Math.round(p.x) + "," + Math.round(p.y);
-		comment2 = "台灣 TWD97 TM2: " + Math.round(p2.x) + "/" + Math.round(p2.y);
+		if (ll == 1) {
+		   comment = "台灣 TWD67 TM2: " + Math.round(p.x) + "," + Math.round(p.y);
+		   comment2 = "台灣 TWD97 TM2: " + Math.round(p2.x) + "/" + Math.round(p2.y);
+		} else {
+		   comment = "參考經緯度";
+		   comment2 = "";
+		}
 	}
 	if (surveyMarker && surveyMarker.getMap()) {
 		var p3 = lonlat2cad(newpos.lng(), newpos.lat(), "j");

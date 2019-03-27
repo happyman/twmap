@@ -1095,7 +1095,7 @@ function get_distance2($wkt_str, $twDEM_path){
 	for($i=0;$i<count($points);$i++) {
 		$sum+=$dist[$i];
 	}
-	$a = ($elev_data[count($points)-1]-$elev_data[0])/($sum-$dist[0]);
+	$a = ($elev_data[count($points)-1]-$elev_data[0])/($sum);
 	$b = $elev_data[count($points)-1] - $a * $sum;
 	/*準備好 */
 	$sum2=0;$sum=0;$cross = 0;
@@ -1104,12 +1104,12 @@ function get_distance2($wkt_str, $twDEM_path){
 		$sum2+=$dist2[$i];
 		// $sum2+=$dist2[$i];
 		$msg.=sprintf("<pre>%d %s %d h=%.02f d=%.02f d1=%.02f  \n",$i,$points[$i],$elev_data[$i],$elediff[$i],$dist[$i],$dist2[$i]);
-		if ($i>0) {
+		//if ($i>0) {
 			$slope_y = $a*$sum+$b;
 			if ($elev_data[$i] > $slope_y) $cross = 1;
 			$charts[] =sprintf("[%.02f,%.02f,%.02f]",$sum,$elev_data[$i], $slope_y);
 			
-		}
+		//}
 	}
 	return array(true,array("step"=>20, "d"=>$sum, "d1"=>$sum2, "avgele" => $sumele / count($points),
 	"ascent"=>$ascent, "descent"=>$descent, "outofrange" => $outofrange, "maxele"=> $maxele, "minele" => $minele, "chart"=>implode(",",$charts), "azimuth"=>$azi_result['azimuth'], "cross"=>$cross));
