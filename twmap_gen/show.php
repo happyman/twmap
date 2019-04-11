@@ -71,8 +71,14 @@ if ($html_head == 1 ) {
 	$gpx_link = $site_url . str_replace($out_root,$out_html_root,sprintf("%s%d/%s_p.gpx",$map['path'],$map['tid'],$map['md5name']));
 	$fname = glob(sprintf("%s%d/%s_o.*",$map['path'],$map['tid'],$map['md5name']));
 	$orig_link = $site_url . str_replace($out_root,$out_html_root,$fname[0]);
+	$path_parts = pathinfo($map['name']);
+	$orig_download_name=$path_parts['basename'];
+	$gpx_download_name=$path_parts['filename']. "_p.gpx";
 	$smarty->assign('gpx_link',$gpx_link);
+	$smarty->assign('gpx_download_name',$gpx_download_name);
 	$smarty->assign('orig_link',$orig_link);
+	$smarty->assign('orig_download_name',$orig_download_name);
+	// https://stackoverflow.com/questions/13307499/http-download-file-name
 	$smarty->assign("show_link", $TWMAP3URL . "?skml_id=-".$map['tid']);
 	$links['page'] = pagelink($map);
 	$smarty->assign('links',$links);

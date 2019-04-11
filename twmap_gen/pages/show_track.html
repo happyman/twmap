@@ -2,9 +2,9 @@
 	<tr><td width="400px" valign="top" align="left">
 			<ul>
 				<li>名稱: {$map.name}
-				<li>原始航跡: <a href='{$orig_link}'>{$orig_link}</a>
+				<li>原始航跡: <a href='{$orig_link}' download='{$orig_download_name}'>{$orig_link}</a>
 				{if isset($gpx_link)}
-				<li>下載 GPX: <a href='{$gpx_link}'>{$gpx_link}</a>
+				<li>下載 GPX: <a href='{$gpx_link}' download='{$gpx_download_name}'>{$gpx_link}</a>
 				<li>外連網址: <a href='{$show_link}' target=_blank>{$show_link}</a>
 				{/if}
 			     {if $map.keepon_id && $map.keepon_id != 'NULL' && !is_numeric($map.keepon_id)}
