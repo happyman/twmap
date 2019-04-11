@@ -111,16 +111,17 @@ th {
 			if ($row['flag'] != 2 ) {
 				$html_root = $out_html_root . str_replace($out_root, "", dirname($row['filename']));
 				if ($mid_to_show > 0 ) {
+					// map database
 					if (file_exists(map_file_name($row['filename'],'gpx')))
-						$gpx_url = sprintf("%s(<a href='%s%s/%s' class=download_track target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' class=download_track target=_blank>kml</a>)",$row['title'],
-											$site_url,$html_root,basename(map_file_name($row['filename'], 'gpx')), $mid_to_show);
+						$gpx_url = sprintf("%s(<a href='%s%s/%s' download='%s.gpx' class=download_track target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' download='%s.kml' class=download_track target=_blank>kml</a>)",$row['title'], $site_url,$html_root,basename(map_file_name($row['filename'], 'gpx')), $row['title'],$mid_to_show,$row['title']);
 					else
-						$gpx_url = sprintf("%s (<a href='getkml.php?mid=%d' class=download_track target=_blank>kml</a>)",$row['title'],$mid_to_show);
+						$gpx_url = sprintf("%s (<a href='getkml.php?mid=%d' download='%s.kml' class=download_track target=_blank>kml</a>)",$row['title'],$mid_to_show, $row['title']);
 				} else { 
 					// track database
 				    $gpx_link = $site_url . str_replace($out_root,$out_html_root,sprintf("%s%d/%s_p.gpx",$row['path'],-1 * $row['mid'],$row['md5name']));
-					$gpx_url = sprintf("%s(<a href='%s' class=download_track target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' class=download_track target=_blank>kml</a>)",
-						$row['title'],$gpx_link  , $mid_to_show);
+				    $path_parts = pathinfo($row['title']);
+					$gpx_url = sprintf("%s(<a href='%s' download='%s_p.gpx' class=download_track target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' download='%s.kml' class=download_track target=_blank>kml</a>)",
+						$row['title'],$gpx_link, $path_parts['filename'], $mid_to_show, $path_parts['filename']);
 				}
 				printf("<tr><td>%s%s<td rowspan=$rowspan><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a>
 				<td rowspan=$rowspan>%s<td rowspan=$rowspan>%s<td rowspan=$rowspan>%s",
