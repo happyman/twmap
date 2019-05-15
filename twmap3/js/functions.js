@@ -290,7 +290,8 @@ function ConvertDDToDMS(D) {
 https://github.com/happyman/twmap/issues/12
 
 */
-var cover_overlay;
+//var cover_overlay;
+var cover_overlays = Array();
 
 function coverage_overlay(op) {
 
@@ -304,19 +305,37 @@ function coverage_overlay(op) {
 */
 	var coverage = {
 //"cht":{"bound":{"north":25.554136,"south":21.635736302326,"east":124.43445758443,"west":115.76012294636},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/4g_tw.png"},
-"cht":{"bound":{"north":26.6877899375,"south":21.593289442125,"west":114.507922814371,"east":125.832808493114},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw.png"},
-"twn":{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.26714358482,"east":122.1162269718},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/4G\/TW.png?r=2016081"},
-"fet":{"bound":{"north":27.109534289724,"south":19.921522519575,"west":114.52355246805,"east":127.14196021948},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage4G.png"}, 
+//"cht":{"bound":{"north":26.6877899375,"south":21.593289442125,"west":114.507922814371,"east":125.832808493114},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw.png"},
+"twn":[{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.26714358482,"east":122.1162269718},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/4G\/TW.png?r=2016081"}],
+"fet":[{"bound":{"north":27.109534289724,"south":19.921522519575,"west":114.52355246805,"east":127.14196021948},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage4G.png"}], 
 //"cht2G":{"bound":{"north":27.015288659839,"south":21.614440279186,"east":122.470147573768,"west":117.924277900237},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/2g_tw.png"},
-"twn2G":{"bound":{"north":25.444259664518,"south":21.764367841649,"west":119.146827678062,"east":122.253772190656},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/2G\/TW.png"},
-"fet2G":{"bound":{"north":26.322813780907,"south":20.912682441736,"west":116.322882125754,"east":124.708821581148},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverageVoice.png"},
+//"twn2G":{"bound":{"north":25.444259664518,"south":21.764367841649,"west":119.146827678062,"east":122.253772190656},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/2G\/TW.png"},
+//"fet2G":{"bound":{"north":26.322813780907,"south":20.912682441736,"west":116.322882125754,"east":124.708821581148},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverageVoice.png"},
 //"cht3G":{"bound":{"north":26.7914806875,"south":21.514686195825,"east":125.955588822744,"west":114.224310037633},"img":"http:\/\/221.120.19.26\/coverage\/images\/mobile\/3g_tw.png"},
-"cht3G":{"bound":{"north":26.85073525,"south":21.415399218816,"west":114.048568045892,"east":126.130429314477},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw.png"},
-"twn3G":{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.267143584823,"east":122.116226971802},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/3G\/TW.png"},
-"fet3G":{"bound":{"north":26.515893187443,"south":21.813526812557,"west":117.496893247948,"east":122.704393752052},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage3.5G.png"}};
+//"cht3G":{"bound":{"north":26.85073525,"south":21.415399218816,"west":114.048568045892,"east":126.130429314477},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw.png"},
+"twn3G":[{"bound":{"north":25.342129534416,"south":21.85034169135,"west":119.267143584823,"east":122.116226971802},"img":"https:\/\/www.taiwanmobile.com\/mobile\/calculate\/maps\/3G\/TW.png"}],
+"fet3G":[{"bound":{"north":26.515893187443,"south":21.813526812557,"west":117.496893247948,"east":122.704393752052},"img":"http:\/\/www.fetnet.net\/service\/roadtestresult\/signal\/img\/coverage3.5G.png"}],
+// 201905 cht 改成多個 coverage overlays, 所以修改成多個 overlay
+// https://coverage.cht.com.tw/coverage/jss/mobile/mobileMap.js
+// https://coverage.cht.com.tw/coverage/jss/mobile/mEmbr.json
+// 以上先 pre-process 成下面的格式
+"cht":[{"bound":{"north":25.43018,"south":24.842169,"east":122.13962,"west":120.842934},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw_n1.png"},{"bound":{"north":25.029276,"south":24.343359,"east":122.051264,"west":120.538564},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw_n2.png"},{"bound":{"north":24.677594,"south":23.795453,"east":122.071623,"west":120.126456},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw_n3.png"},{"bound":{"north":24.228047,"south":23.34593,"east":121.875136,"west":119.929961},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw_c1.png"},{"bound":{"north":23.778346,"south":22.896225,"east":121.777428,"west":119.832241},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw_c2.png"},{"bound":{"north":23.349102,"south":22.515958,"east":121.674017,"west":119.836867},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw_s1.png"},{"bound":{"north":22.919832,"south":22.135679,"east":121.669127,"west":119.940022},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw_s2.png"},{"bound":{"north":22.372363,"south":21.784372,"east":121.747311,"west":120.450631},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_tw_s3.png"},{"bound":{"north":26.649731,"south":25.675754,"east":120.539653,"west":119.875697},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_li.png"},{"bound":{"north":23.829135,"south":23.155507,"east":119.750269,"west":119.291055},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_ph.png"},{"bound":{"north":25.765986,"south":23.609424,"east":119.542326,"west":118.071174},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/4g_km.png"}],
+"cht3G":[{"bound":{"north":25.43018,"south":24.842178,"east":122.139592,"west":120.842909},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw_n1.png"},{"bound":{"north":25.029284,"south":24.343359,"east":122.051273,"west":120.538555},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw_n2.png"},{"bound":{"north":24.677597,"south":23.795474,"east":122.071777,"west":120.126585},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw_n3.png"},{"bound":{"north":24.227892,"south":23.345766,"east":121.875341,"west":119.930157},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw_c1.png"},{"bound":{"north":23.778187,"south":22.896059,"east":121.777333,"west":119.832157},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw_c2.png"},{"bound":{"north":23.349203,"south":22.516062,"east":121.674229,"west":119.837071},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw_s1.png"},{"bound":{"north":22.919834,"south":22.135668,"east":121.669168,"west":119.940435},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw_s2.png"},{"bound":{"north":22.372341,"south":21.784289,"east":121.747479,"west":120.450794},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_tw_s3.png"},{"bound":{"north":26.638896352988,"south":25.685195668379,"east":120.54003645266,"west":119.87593395},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_li.png"},{"bound":{"north":23.82888325,"south":23.155240570044,"east":119.750629983516,"west":119.291551544694},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_ph.png"},{"bound":{"north":25.755553664373,"south":23.617318030723,"east":119.543362995567,"west":118.07252925},"img":"https:\/\/coverage.cht.com.tw\/coverage\/images\/mobile\/3g_km.png"}]
 
+};
 
-
+for (var i=0; i<cover_overlays.length; i++){
+	if (typeof cover_overlays[i] == "object") {
+			 cover_overlays[i].setMap(null);
+	}
+}
+if (op != 'none' && typeof coverage[op] != 'undefined') {
+	for(i=0;i<coverage[op].length;i++) {
+		cover_overlays[i] = new google.maps.GroundOverlay(coverage[op][i].img, coverage[op][i].bound, {      opacity:0.7  } );
+		cover_overlays[i].setMap(map);
+	}
+}
+/*
 	if (typeof cover_overlay == "object") {
 		cover_overlay.setMap(null);
 		console.log('cover_overlay set null');
@@ -325,7 +344,10 @@ function coverage_overlay(op) {
 		cover_overlay = new google.maps.GroundOverlay(coverage[op].img, coverage[op].bound, {      opacity:0.7  } );
 		cover_overlay.setMap(map);
 	}
+	*/
 }
+
+	
 function export_points(xmin,ymin,xmax,ymax){
 	var url = exportkml_url + "?bound=" + xmin + "," + ymin + "," + xmax + "," + ymax;
 	showmeerkat(url ,{ 'width': '600'} );
