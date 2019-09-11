@@ -19,7 +19,7 @@ if (!empty($q)) {
 	$sql .= " where name like '%" . addslashes($q) . "%'";
 	$order = " order by length(name)";
 } else if (!empty($id)) {
-	$sql .= " where id = $id";
+	$sql .= " where id = ". pg_escape_string($id);
 	$order = "";
 }
 
