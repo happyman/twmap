@@ -221,6 +221,26 @@ var RUDY_TN_Options = {
 	name: "魯地圖",
 	alt: "Taiwan TOPO + TN Style"
 };
+var Happyman_Options = {
+        getTileUrl: function (a, b) {
+                return "//rs.happyman.idv.tw/map/happyman/" + b + "/" + a.x + "/" + a.y + ".png";
+        },
+        tileSize: new google.maps.Size(256, 256),
+        maxZoom: 21,
+        name: "Happyman航跡圖",
+        alt: "航跡圖層"
+};
+var Compartment_Options = {
+        getTileUrl: function (a, b) {
+                return "//rs.happyman.idv.tw/map/forest/" + b + "/" + a.x + "/" + a.y + ".png";
+        },
+        tileSize: new google.maps.Size(256, 256),
+        maxZoom: 21,
+        name: "林班界圖",
+        alt: "林班界圖層"
+};
+
+
 var Hillshading_Options = {
 	getTileUrl: function (a, b) {
 		return '//rs.happyman.idv.tw/map/colorrelief/' + b + "/" + a.x + "/	" + a.y + ".png";
@@ -430,6 +450,9 @@ var NLSCNameMapType = new google.maps.ImageMapType(NLSCNameOptions);
 var GPXTrackMapType = new google.maps.ImageMapType(GPXTrackOptions);
 var RUDY_BN_MapType = new google.maps.ImageMapType(RUDY_BN_Options);
 var RUDY_DN_MapType = new google.maps.ImageMapType(RUDY_DN_Options);
+//var RUDY_TN_MapType = new google.maps.ImageMapType(RUDY_TN_Options);
+var Happyman_MapType = new google.maps.ImageMapType(Happyman_Options);
+var Compartment_MapType = new google.maps.ImageMapType(Compartment_Options);
 var MOI_CONTOUR_MapType = new google.maps.ImageMapType(MOI_CONTOUR_2005_Options);
 var MOI_CONTOUR2_MapType = new google.maps.ImageMapType(MOI_CONTOUR_2015_Options);
 
@@ -1903,6 +1926,12 @@ function setRoadMap() {
 	} else if (name == 'MOI_CONTOUR2') {
 		map.overlayMapTypes.insertAt(i++, MOI_CONTOUR2_MapType);
 		console.log('insert MOI_CONTOUR2 overlay');
+	} else if ( name == 'Happyman') {
+		map.overlayMapTypes.insertAt(i++, Happyman_MapType);
+                console.log('insert Happyman overlay');
+	} else if ( name == 'Compartment' ) {
+		map.overlayMapTypes.insertAt(i++, Compartment_MapType);
+                console.log('insert Compartment overlay');
 	}
 	if (show_kml_layer == 1) {
 		map.overlayMapTypes.insertAt(i++, GPXTrackMapType);
