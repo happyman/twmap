@@ -6,31 +6,29 @@ require_once("adodb5/adodb.inc.php");
 require_once("azimuth.php");
 
 function get_conn() {
-	global $db_host, $db_conn,$db_user, $db_pass, $db_name;
+	//global $db_host, $db_conn,$db_user, $db_pass, $db_name, $db_port;
+	global $db_dsn;
 
 	if ($db_conn != null && $db_conn->IsConnected())
 		return $db_conn;
 
 	// error_log("new conection");
-    // db_conn = ADONewConnection('mysqli');
+    	// db_conn = ADONewConnection('mysqli');
 	//$status = $db_conn->PConnect('localhost', $db_user, $db_pass, $db_name);
-	$db_conn = ADONewConnection('postgres9');
-	$status = $db_conn->PConnect($db_host, $db_user, $db_pass, $db_name);
+	//$dsn = sprintf("postgres9://%s:%s@%s:%s/%s?persist",$db_user,$db_pass,$db_host,$db_port,$db_name);
+	$db_conn = ADONewConnection($db_dsn);
+	//$status = $db_conn->PConnect($db_host, $db_user, $db_pass, $db_name);
 
-	if ($status === true ) {
-		if ($db_conn->IsConnected() !== true) {
+	//if ($status === true ) {
+	if ($db_conn->IsConnected() !== true) {
 			error_log("db can't connect");
 			//return false;
 			exit("no db connection");
-		}
-		//$db_conn->SetFetchMode(ADODB_FETCH_ASSOC);
-		$ADODB_FETCH_MODE = 'ADODB_FETCH_ASSOC';
-		$db_conn->debug = false;
-		return $db_conn;
-	} else {
-		error_log("db can't connect");
-		exit("no db connection");
 	}
+		//$db_conn->SetFetchMode(ADODB_FETCH_ASSOC);
+		//$ADODB_FETCH_MODE = 'ADODB_FETCH_ASSOC';
+	$db_conn->debug = false;
+	return $db_conn;
 
 }
 function logsql($sql,$rs){
@@ -637,7 +635,7 @@ function getCallingFunctionName($completeTrace=false) {
   depends on mapnik (nik4), gdal (ocr2ocr)
  */
 function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
-	global $db_name,$db_user,$db_pass,$db_host;
+	global $gdal_dsn;
 	// 1. 檢查 table 存在與否
 	if ($type=='waypoints')
 		$table='gpx_wp';
@@ -651,13 +649,13 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 		$sql = sprintf("DELETE FROM \"%s\" WHERE mid=%s",$table,$mid);
 		$db->Execute($sql);
 		// 2. add data by ogr2ogr
-		$cmd = sprintf("ogr2ogr -update -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
-				$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type,$table);
+		$cmd = sprintf("ogr2ogr -update -append -f PostgreSQL \"%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
+				$gdal_dsn,$gpx_file,$table,$mid,$type,$table);
 
 	} else {
 		// 1. append
-		$cmd = sprintf("ogr2ogr -append -f PostgreSQL \"PG:dbname=%s user=%s password=%s host=%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
-				$db_name,$db_user,$db_pass,$db_host,$gpx_file,$table,$mid,$type, $table);
+		$cmd = sprintf("ogr2ogr -append -f PostgreSQL \"%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
+				$gdal_dsn,$gpx_file,$table,$mid,$type, $table);
 	}
 	//echo $cmd . "\n";
 	exec($cmd,$out,$ret);
@@ -667,7 +665,6 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
  */
 function import_gpx_to_gis($mid){
 	// table gpx_waypoints
-	global $db_name,$db_user,$db_pass,$db_host;
 	// 0. 先檢查 gpx 存在與否
 	if ($mid > 0 ){
 		$row = map_get_single($mid);
@@ -1132,7 +1129,7 @@ function get_administration($x,$y,$type="town") {
 // bound is xmin,ymin,xmax,ymax: bounding box
 // owner 
 function ogr2ogr_export_points($fpath, $bound, $owner=0) {
-		global $db_name,$db_user,$db_pass,$db_host;
+		global $gdal_dsn;
 		if (empty($fpath)) return array(false, "file can't be empty");
 		// 如果 output already exists, 檢查是否為最新, 否的話更新. output file permission not check.
 		if (file_exists($fpath)){
@@ -1153,7 +1150,7 @@ function ogr2ogr_export_points($fpath, $bound, $owner=0) {
 			//$spat = sprintf("-spat %.06f %.06f %.06f %.06f",$bound[0],$bound[1],$bound[2],$bound[3]);
 			$spat = sprintf('AND (coord &&  ST_MakeEnvelope(%.06f,%.06f,%.06f,%.06f))',$bound[0],$bound[1],$bound[2],$bound[3]);
 		} else $spat = "";
-		$cmd = sprintf("ogr2ogr -f GeoJSON 	-dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s  PG:\"host=%s dbname=%s user=%s password=%s\" -where \"%s %s\"  point3 ", $fpath, $db_host, $db_name, $db_user, $db_pass, $owner_str, $spat);
+		$cmd = sprintf("ogr2ogr -f GeoJSON 	-dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s \"%s\" -where \"%s %s\"  point3 ", $fpath, $gdal_dsn, $owner_str, $spat);
 		// echo $cmd;
 		exec($cmd, $out, $ret);
 		if ($ret == 0 ) return array(true, "ok");
@@ -1161,14 +1158,14 @@ function ogr2ogr_export_points($fpath, $bound, $owner=0) {
 }
 
 function ogr2ogr_export_gpx($mid, $merged_gpx) {
-	global $db_name,$db_user,$db_pass,$db_host;
+	global $gdal_dsn;
 	$trk_gpx =  tempnam("/tmp","EXPT") . ".gpx";
-	$cmd = sprintf("ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES %s PG:\"host=%s dbname=%s user=%s password=%s\" -where \"mid=%d\" gpx_trk ", $trk_gpx, $db_host, $db_name, $db_user, $db_pass, $mid);
+	$cmd = sprintf("ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES %s %s -where \"mid=%d\" gpx_trk ", $trk_gpx, $gdal_dsn, $mid);
 	// echo $cmd;
 	exec($cmd, $out, $ret);
 	if ($ret != 0 ) return array(false, "export trk failed");
 	$wpt_gpx =  tempnam("/tmp","EXPW") . ".gpx";
-	$cmd2 = sprintf("ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES %s PG:\"host=%s dbname=%s user=%s password=%s\" -where \"mid=%d\" gpx_wp ", $wpt_gpx, $db_host, $db_name, $db_user, $db_pass, $mid);
+	$cmd2 = sprintf("ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES %s %s -where \"mid=%d\" gpx_wp ", $wpt_gpx, $gdal_dsn, $mid);
 	// echo $cmd2;
 	exec($cmd2, $out, $ret);
 	if ($ret != 0 ) return array(false, "export wpt failed");
