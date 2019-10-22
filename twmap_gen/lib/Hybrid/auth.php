@@ -62,7 +62,8 @@ $row = login_user($mylogin);
 $_SESSION['uid'] = $row['uid'];
 //
 //// after login hook
-$maps = map_get($row['uid']);
+// 看看是不是有漏搬的檔案
+$maps = map_get_ids($row['uid'],10);
 foreach($maps as $map) {
   map_migrate($out_root, $row['uid'], $map['mid']);
 }

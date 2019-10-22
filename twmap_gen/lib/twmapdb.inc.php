@@ -7,10 +7,10 @@ require_once("azimuth.php");
 
 function get_conn() {
 	//global $db_host, $db_conn,$db_user, $db_pass, $db_name, $db_port;
-	global $db_dsn;
+	global $db_dsn,$db_conn;
 
-	if ($db_conn != null && $db_conn->IsConnected())
-		return $db_conn;
+	//if ($db_conn != null && $db_conn->IsConnected())
+	//	return $db_conn;
 
 	// error_log("new conection");
     	// db_conn = ADONewConnection('mysqli');
@@ -47,12 +47,17 @@ function logsql($sql,$rs){
 function fetch_user($mylogin) {
 	$sql = sprintf("select * from \"user\" where email='%s' and type='%s'", $mylogin['email'],$mylogin['type']);
 	$db = get_conn();
+		$mem = new Memcached;
+	$mem->addServer('localhost',11211);
+	$key=sprintf("fetch_user_%s_%s",$mylogin['email'],$mylogin['type']);
+	$answer = $mem->get($key);
+	if ($answer !== FALSE ) {
+		return $answer;
+	}
 	$rs = $db->GetAll($sql);
 	logsql($sql,$rs);
 	if (count($rs) == 0) return false;
-	//$res = mysql_query($sql);
-	//$row = mysql_fetch_array($res);
-	//return $row;
+	$mem->set($key, $rs[0], 86400);
 	return $rs[0];
 }
 function login_user($mylogin) {
@@ -66,9 +71,13 @@ function login_user($mylogin) {
 		logsql($sql,$rs);
 	} else {
 		// 新增 counter
+		$mem = new Memcached;
+		$mem->addServer('localhost',11211);
+		$key=sprintf("fetch_user_%s_%s",$mylogin['email'],$mylogin['type']);
 		$sql = sprintf("update \"user\" SET \"login\"=%d, \"name\"='%s' WHERE \"uid\"=%d",$row['login']+1, pg_escape_string($mylogin['nick']),$row['uid']);
 		//$res = mysql_query($sql);
 		$rs = $db->Execute($sql);
+		$mem->delete($key);
 		logsql($sql,$rs);
 	}
 	// 是否加上 login record ?
@@ -136,15 +145,19 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="loca
 		$mid = $row[0];
 		$sql = sprintf("UPDATE \"map\" SET \"locX\"=%d,\"locY\"=%d,\"shiftX\"=%d,\"shiftY\"=%d,\"size\"=%d,\"flag\"=0,\"cdate\"=CURRENT_TIMESTAMP,\"title\"='%s',\"version\"=%d,\"filename\"='%s',\"gpx\"=%d WHERE \"mid\"=%d",$startx, $starty, $shiftx, $shifty, $size,$title,$version,$file, $gpx, $mid);
 		$rs = $db->Execute($sql);
+		$mem = new Memcached;
+		$mem->addServer('localhost',11211);
+		$key=sprintf("map_get_single_%s",$mid);
+		$mem->delete($key);
 		logsql($sql,$rs);
 		if (!$rs) return FALSE;
 		return $mid;
 	}
 }
-// 取出所有 uid 產生的地圖
-function map_get($uid) {
+// 取出所有 uid 產生的地圖 id
+function map_get_ids($uid, $limit = 10) {
 	$db=get_conn();
-	$sql = sprintf("select * from \"map\" where uid=%d",$uid);
+	$sql = sprintf("select mid from \"map\" where uid=%d ORDER BY \"cdate\" DESC LIMIT %d",$uid, $limit);
 	$rs=$db->GetAll($sql);
 	logsql($sql,$rs);
 	return $rs;
@@ -188,13 +201,22 @@ function map_full($uid,$limit,$mapexist=0) {
 // 只取一張地圖
 function map_get_single($mid){
 	$db=get_conn();
+	$mem = new Memcached;
+	$mem->addServer('localhost',11211);
+	$key=sprintf("map_get_single_%s",$mid);
+	$answer = $mem->get($key);
+	if ($answer !== FALSE ) {
+		return $answer;
+	}
 	$sql = sprintf("select * from \"map\" WHERE \"mid\"=%d",$mid);
 	$res = $db->GetAll($sql);
 	logsql($sql,$res);
 	if (count($res) == 0)
 		return null;
-	else
+	else {
+		$mem->set($key,$res[0],86400);
 		return $res[0];
+	}
 }
 function map_accessed($mid) {
 	$db=get_conn();
@@ -286,15 +308,17 @@ function map_migrate($root,$uid,$mid) {
 	// 0. 檢查是新的結構?
 	$dir = sprintf("%s/%06d/%d",$root,$uid,$mid);
 	// if (file_exists($dir) && is_dir($dir)) return true;
-	// 1. 建立目錄
-	@mkdir($dir,0755,true);
+
 	$row = map_get_single($mid);
 	if ($row == false) return false;
 	// 檢查檔案是否在正確目錄
+
 	$newfilename = sprintf("%s/%s",$dir, basename($row['filename']));
 	if ($row['filename'] == $newfilename ) {
 		return true;
 	}
+	// 1. 建立目錄
+	@mkdir($dir,0755,true);
 	map_block($root,$uid,1);
 	$files = map_files($row['filename']);
 	//$files = map_files(sprintf("%s/%06d/%s",$root,$uid,basename($row['filename'])));
@@ -356,6 +380,10 @@ function map_del($mid) {
 	$db=get_conn();
 	$sql = sprintf("update \"map\" set \"flag\" = 2, \"size\"= 0, \"ddate\"=NOW()  WHERE \"mid\" = %d",$mid);
 	$rs =$db->Execute($sql);
+	$mem = new Memcached;
+	$mem->addServer('localhost',11211);
+	$key=sprintf("map_get_single_%s",$mid);
+	$mem->delete($key);
 	logsql($sql,$rs);
 	return $rs;
 }
@@ -381,6 +409,10 @@ function map_expire($mid) {
 	// update db
 	$sql = sprintf("UPDATE \"map\" set \"flag\" = 1,\"size\"=0  WHERE \"mid\" = %d",$mid);
 	$rs= $db->Execute($sql);
+	$mem = new Memcached;
+	$mem->addServer('localhost',11211);
+	$key=sprintf("map_get_single_%s",$mid);
+	$mem->delete($key);
 	logsql($sql,$rs);
 	return $rs;
 
@@ -868,17 +900,27 @@ function get_point($id='ALL',$is_admin=false) {
 	else
 		$where = "";
 	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index,fzone,fclass,sname,cclass FROM point3 %s ORDER BY number,class DESC", $where);
+	$mem = new Memcached;
+	$mem->addServer('localhost',11211);
+	$key=sprintf("get_point_%s",$id);
+	$answer = $mem->get($key);
+	if ($answer !== FALSE ) {
+		return $answer;
+	}
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
-	return $db->getAll($sql);
+	$answer = $db->getAll($sql);
+	$mem->set($key, $answer, 86400);
+	return $answer;
 }
-// 取出　class_num 等基石, 官方點
+// 取出　class_num 等基石, 官方點, 沒有用到
 function get_point_by_class($class_num) {
 	$db=get_conn();
 	$where = sprintf("WHERE class='%d' AND owner=0",$class_num);
 	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index,fzone,fclass,sname,cclass  FROM point3 %s ORDER BY number,ST_XMin(coord)", $where);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	// echo $sql;
-	return $db->getAll($sql);
+	$answer = $db->getAll($sql);
+	return $answer;
 }
 /* 取出範圍內所有 features, 官方點 */
 function get_points_from_center($center, $r_in_meters) {

@@ -5,7 +5,8 @@ require_once("../config.inc.php");
 
 function pointcrud($inp, $owner_uid, $admin) {
 		$db=get_conn();
-
+					$mem = new Memcached;
+					$mem->addServer('localhost',11211);
 
 	switch($inp['action']) {
 
@@ -57,6 +58,9 @@ function pointcrud($inp, $owner_uid, $admin) {
 					$inp['fclass'],$inp['cclass'],pg_escape_string($inp['fzone']), pg_escape_string($inp['sname']));
 			if (($rs = $db->GetAll($sql)) === false) {
 				$errmsg[] = "fail $sql" . $db->ErrorMsg();
+			} else {
+				// clear cache
+					$mem->delete("get_point_ALL");
 			}
 			$newid = $rs[0]['id'];
 			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,contribute,owner,sname,fclass,fzone,cclass FROM point3 WHERE id=%d AND owner=%d",$newid, $owner_uid);
@@ -103,6 +107,10 @@ function pointcrud($inp, $owner_uid, $admin) {
 			}
 			if (($rs = $db->Execute($sql)) === false) {
 				$errmsg[] = "fail sql: $sql";
+			} else {
+				// clear cache
+					$mem->delete("get_point_ALL");
+					$mem->delete(sprintf("get_point_%s",$inp['id']));
 			}
 			$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) as y,owner,contribute,prominence,prominence_index,fclass,cclass,fzone,sname FROM point3 WHERE id=%d",$inp['id']);
 			if (($rs = $db->GetAll($sql)) === false) {
@@ -118,6 +126,8 @@ function pointcrud($inp, $owner_uid, $admin) {
 			if (($rs = $db->Execute($sql)) === false) {
 				$errmsg[] = "fail sql: $sql";
 			}
+			$mem->delete("get_point_ALL");
+			$mem->delete(sprintf("get_point_%s",$inp['id']));
 			break;
 
 
