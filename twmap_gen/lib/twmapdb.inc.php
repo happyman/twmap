@@ -335,6 +335,12 @@ function map_migrate($root,$uid,$mid) {
 	//$res = mysql_query($sql);
 	$rs = $db->Execute($sql);
 	error_log("migrate $mid:$sql");
+	
+                $mem = new Memcached;
+                $mem->addServer('localhost',11211);
+                $key=sprintf("map_get_single_%s",$mid);
+                $mem->delete($key);
+
 	map_block($root,$uid,0);
 	return true;
 
