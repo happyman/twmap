@@ -74,8 +74,7 @@ function fetch_user($mylogin) {
 	$rs = $db->GetAll($sql);
 	logsql($sql,$rs);
 	if (count($rs) == 0) return false;
-	memcached_set($key,$rs[9]);
-	return $rs[0];
+	return memcached_set($key,$rs[0]);
 }
 function login_user($mylogin) {
 	$row = fetch_user($mylogin);
