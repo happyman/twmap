@@ -958,7 +958,33 @@ function is_admin() {
 		return true;
 	return false;
 }
+function request_rest_api($url, $data) {
+		
+		$content=json_encode($data);
+		//$content = http_build_query($params, '', '&');
+		$header = array(
+			"Content-Type: application/x-www-form-urlencoded",
+			"Content-Length: ".strlen($content)
+		);
+		$options = array(
+			'http' => array(
+				'method' => 'POST',
+				'content' => $content,
+				'header' => implode("\r\n", $header)
+			)
+			
+		);
+		return file_get_contents($url, false, stream_context_create($options));
+}
 
+function get_elev_moidemd($lat,$lon) {
+	$data = array(array((float)$lon,(float)$lat))	;
+	$ret = request_rest_api("http://127.0.0.1:8895/v1/elevations",$data);
+	if ($ret === false) return -20000;
+	$data = json_decode($ret, true);
+	if (isset($data[0])) return $data[0];
+	return -10000;
+}
 function get_elev($twDEM_path, $lat,$lon, $cache=1) {
 	if ($cache) {
 	$key=sprintf("ele_%.06f_%.06f",$lat,$lon);
@@ -992,7 +1018,17 @@ function get_elev_multi($twDEM_path, $points ) {
 	}
 	return false;
 }
+function get_elev_moidemd_multi($points) {
+	foreach($points as $pp) {
+		$p = explode(" ",$pp);
+		$data[] = array((float)$p[0],(float)$p[1]);
+	}	
+	//$data = array(array((float)$lon,(float)$lat))	;
+	$ret = request_rest_api("http://127.0.0.1:8895/v1/elevations",$data);
+	if ($ret === false) return false;
+	return json_decode($ret, true);
 
+}
 function get_distance_postgis($a,$b) {
 	$db = get_conn();
 	$sql = sprintf("SELECT ST_distance_Sphere(ST_setSRID(ST_makepoint(%f,%f),4326),ST_setSRID(ST_makepoint(%f,%f),4326)) as distance",
@@ -1017,8 +1053,8 @@ function line_of_sight($a, $b, $distance_limit = 32000, $cache = 1) {
 	$db = get_conn();
 	// 1. get distance between p and p1
 	$distance = get_distance($a, $b);
-	$start_ele = (isset($a[2]) && $a[2]>0) ? $a[2] : get_elev($twDEM_path, $a[1], $a[0], 1);
-	$end_ele = (isset($b[2]) && $b[2]>0) ? $b[2] : get_elev($twDEM_path, $b[1], $b[0], 1);
+	$start_ele = (isset($a[2]) && $a[2]>0) ? $a[2] : get_elev($twDEM_path,$a[1], $a[0]);
+	$end_ele = (isset($b[2]) && $b[2]>0) ? $b[2] : get_elev($twDEM_path,$b[1], $b[0]);
 	if ($distance == 0 )
 		return array(false,$a, "same point");
 	else if ($distance > $distance_limit)
@@ -1052,7 +1088,7 @@ function line_of_sight($a, $b, $distance_limit = 32000, $cache = 1) {
 		return array(false, $a, "error query $sql ".print_r($res,true));
 	}
 	$points = explode(",",$mat[1]);
-		$elev_data = get_elev_multi($twDEM_path, $points);
+		$elev_data = get_elev_multi($twDEM_path,$points);
 	
 	for($i=1;$i<count($points);$i++) {
 		$point = explode(" ",$points[$i]);
@@ -1066,14 +1102,83 @@ function line_of_sight($a, $b, $distance_limit = 32000, $cache = 1) {
 		// echo "ERR\n";
 		$ret = array(false, $point, "stop");
 		if ($cache) 
-			$mem->set($key, $ret, 86400);
+				memcached_set($key,$ret);
+		
 		return $ret;
 		break;
 		}
 	}
 	$ret = array(true, $b, "OK");
 	if ($cache)
-		$mem->set($key, $ret, 86400);
+		memcached_set($key,$ret);
+	return $ret;
+
+}
+function line_of_sight2($a, $b, $distance_limit = 32000, $cache = 1) {
+	$debug = 0;
+//	$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
+	$twDEM_path = twDEM_path;
+	$db = get_conn();
+	// 1. get distance between p and p1
+	$distance = get_distance($a, $b);
+	$start_ele = (isset($a[2]) && $a[2]>0) ? $a[2] : get_elev_moidemd($a[1], $a[0]);
+	$end_ele = (isset($b[2]) && $b[2]>0) ? $b[2] : get_elev_moidemd($b[1], $b[0]);
+	if ($distance == 0 )
+		return array(false,$a, "same point");
+	else if ($distance > $distance_limit)
+		return array(false,$a, "exceed distance limit");
+	// plus 2, human height
+	$start_ele+=2;
+	// load from cache
+	if ($cache) {
+		$key=sprintf("los_%.06f_%.06f_%d-%.06f_%.06f_%d-%d",$a[0],$a[1],$start_ele,$b[0],$b[1],$end_ele,$distance_limit);
+		$answer = memcached_query($key);
+		// $answer = FALSE;
+		if ($answer !== FALSE ) {
+			// echo "[cached] ";
+			return $answer;
+		}
+	}
+	$Y = $end_ele - $start_ele;
+	$ratio = $Y / $distance;
+	if ($debug) {
+		echo "distance: $distance\n";
+		echo "ratio: $ratio\n";
+	}
+	$step = 60.0 / 1000 / 111.325;
+
+	$sql = sprintf("select st_astext( ST_Segmentize(st_makeline(ST_setSRID(ST_makepoint(%f,%f),4326),ST_setSRID(ST_makepoint(%f,%f),4326)), %f)) as linestring" ,$a[0],$a[1],$b[0],$b[1],$step);
+	//echo $sql;
+	$db->SetFetchMode(ADODB_FETCH_ASSOC);
+	$res = $db->getAll($sql);
+	//print_r($res);
+	if (!preg_match("/LINESTRING\((.*)\)/",$res[0]['linestring'],$mat)) {
+		return array(false, $a, "error query $sql ".print_r($res,true));
+	}
+	$points = explode(",",$mat[1]);
+		$elev_data = get_elev_moidemd_multi($points);
+	
+	for($i=1;$i<count($points);$i++) {
+		$point = explode(" ",$points[$i]);
+		$ele = $elev_data[$i];
+		$dist = get_distance($a, $point);
+		//$dist = $i * 60;
+		$expect_ele = round($dist * $ratio + $start_ele);
+		if ($debug)
+			printf("%.06f,%.06f => dist: $dist ele: $ele, expect: $expect_ele\n",$point[1],$point[0]);
+		if ($ele > round($expect_ele)) {
+		// echo "ERR\n";
+		$ret = array(false, $point, "stop");
+		if ($cache) 
+				memcached_set($key,$ret);
+		
+		return $ret;
+		break;
+		}
+	}
+	$ret = array(true, $b, "OK");
+	if ($cache)
+		memcached_set($key,$ret);
 	return $ret;
 
 }
@@ -1092,7 +1197,7 @@ function get_distance2($wkt_str, $twDEM_path){
 	}
 	
 	$points = explode(",",$mat[1]);
-	$elev_data = get_elev_multi($twDEM_path, $points);
+	$elev_data = get_elev_moidemd_multi($points);
 	$maxele = 0;
 	$minele = 9999;
 	$sumele = 0;

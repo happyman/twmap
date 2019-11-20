@@ -20,14 +20,14 @@ tw_chk($lon,$lat);
 if ($lon1 !== null) {
 	// 2. 檢查兩點是否可通視
 	tw_chk($lon1,$lat1);
-	list($st, $end_point, $msg) = line_of_sight(array($lon,$lat,$z),array($lon1,$lat1,$z1));
+	list($st, $end_point, $msg) = line_of_sight2(array($lon,$lat,$z),array($lon1,$lat1,$z1));
 	ajaxok(array($st,$end_point,$msg));
 } else {
 	// 2. get_points_from_center
 	$points = get_points_from_center(array($lon,$lat), 32000);
 	// 3. 計算
 	foreach($points as $point){
-		list ($st, $end_point, $msg) = line_of_sight(array($lon,$lat,$z),array($point['x'],$point['y'],$point['ele'],32000));
+		list ($st, $end_point, $msg) = line_of_sight2(array($lon,$lat,$z),array($point['x'],$point['y'],$point['ele'],32000));
 		$result[] = array($st,$end_point,$point['name'],$point['ele'],$msg);
 
 	}

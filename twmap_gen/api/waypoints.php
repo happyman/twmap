@@ -33,7 +33,7 @@ function mid_show($id){
 
 if (empty($detail) || $detail == 0 ){
 // 傳回高度
-    $ele = get_elev(twDEM_path, $y, $x, 1);
+    $ele = get_elev_moidemd($y, $x, 1);
 	header('Access-Control-Allow-Origin: *');
 	$ret = array("wpt"=>$wpt_data,"trk"=>$trk_data,"ele"=>$ele);
 	list($st,$info) = userid();
