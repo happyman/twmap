@@ -251,7 +251,6 @@ class garminKMZ {
 			<color>80ffffff</color>
 			<Icon>
 			<href>%s</href>
-			<drawOrder>1</drawOrder>
 			</Icon>
 			<LatLonBox>
 			<north>%f</north>
