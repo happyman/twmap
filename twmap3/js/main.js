@@ -305,6 +305,15 @@ var JM50K1924_Options = {
 	alt: "日治五萬分之一(陸軍測量部 1924)",
 	maxZoom: 17
 };
+var JM50K1924NEW_Options = {
+	getTileUrl: function (a, b) {
+		return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=JM50K_1924_new-jpg-"+b+"-"+a.x+"-"+a.y;
+	},
+	tileSize: new google.maps.Size(256, 256),
+	name: "陸測new",
+	alt: "日治五萬分之一(陸軍測量部 1924 new)",
+	maxZoom: 17
+};
 var TW50K1956_Options = {
 	getTileUrl: function (a, b) {
 		return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=TM50K_1956-jpg-"+b+"-"+a.x+"-"+a.y;
@@ -410,7 +419,15 @@ var JM20K1904_MapType = new google.maps.ImageMapType({
 		maxZoom: 18
 
 	});
-
+var DebugTile_Options = {
+	getTileUrl: function (a, b) {
+		return "//tile.happyman.idv.tw/map/debug/" + a.x + "/" + a.y + "/" + b + ".png";
+	},
+	tileSize: new google.maps.Size(256, 256),
+	maxZoom: 19,
+	name: "debug",
+	alt: "Debug XYZ tile"
+};
 // 前景
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
@@ -426,9 +443,11 @@ var MOI_OSM_MapType = new google.maps.ImageMapType(MOI_OSM_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
 var FanDi_MapType = new google.maps.ImageMapType(Fandi_Options);
 var JM50K1924_MapType = new google.maps.ImageMapType(JM50K1924_Options);
+var JM50K1924NEW_MapType = new google.maps.ImageMapType(JM50K1924NEW_Options);
 var TW50K1956_MapType = new google.maps.ImageMapType(TW50K1956_Options);
 var Hillshading_MapType = new google.maps.ImageMapType(Hillshading_Options);
 var TW5KArielPIC_MapType = new google.maps.ImageMapType(TW5KArielPIC_Options);
+var DebugTile_MapType = new google.maps.ImageMapType(DebugTile_Options);
 
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
@@ -1983,7 +2002,7 @@ function initialize() {
 				// style: google.maps.MapTypeControlStyle.DEFAULT,
 				position: google.maps.ControlPosition.TOP_LEFT,
 				// dropdown menu 要重複一次
-				mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis", "nlsc_emap", "theme", 'fandi', 'jm20k_1921', 'jm50k', 'tw50k', 'hillshading', 'tw5kariel', 'nlsc_photo_mix', 'general2011']
+				mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis", "nlsc_emap", "theme", 'debug', 'fandi', 'jm20k_1921', 'jm50k', 'tw50k', 'hillshading', 'tw5kariel', 'nlsc_photo_mix', 'general2011']
 			}
 		});
 
@@ -2185,10 +2204,12 @@ function initialize() {
 	map.mapTypes.set('moi_osm', MOI_OSM_MapType);
 	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);
 	map.mapTypes.set('fandi', FanDi_MapType);
+	map.mapTypes.set('debug',DebugTile_MapType);
 	map.mapTypes.set('jm20k_1904', JM20K1904_MapType);
 	map.mapTypes.set('jm20k_1921', JM20K1921_MapType);
 	map.mapTypes.set('tm50k_1966', TM50K1966_MapType);
 	map.mapTypes.set('jm50k', JM50K1924_MapType);
+	map.mapTypes.set('jm50k_1924', JM50K1924NEW_MapType);
 	map.mapTypes.set('tw50k', TW50K1956_MapType);
 	// map.mapTypes.set('moi_osm_gpx', MOI_OSM_GPX_MapType);
 	map.mapTypes.set('hillshading', Hillshading_MapType);
