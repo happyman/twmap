@@ -165,8 +165,9 @@ $block_msg = map_blocked($out_root, $_SESSION['uid']);
 if ($block_msg != null) {
     error_out($block_msg);
 }
+$datum=(isset($inp['97datum']))? 'TWD97': 'TWD67';
 $outpath = sprintf("%s/%06d", $out_root, $_SESSION['uid']);
-$outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%d%s", $outpath, $startx * 1000, $starty * 1000, $shiftx, $shifty, $version, ($ph == 1) ? 'p' : "");
+$outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%d%s_%s", $outpath, $startx * 1000, $starty * 1000, $shiftx, $shifty, $version, ($ph == 1) ? 'p' : "", $datum);
 $outimage = $outfile_prefix . ".tag.png";
 $outgpx = $outfile_prefix . ".gpx";
 
@@ -190,7 +191,9 @@ if ($inp['gps'] == 1 || $inp['gps'] == 2) {
 // 呼叫 cmd_line make, 他也需要 gpx aware
 // -l 傳入 email:formid 作為識別 channel 與 msg owner
 showmem("before call cmd_make.php");
-$cmd = sprintf("php cmd_make2.php -r %d:%d:%d:%d -O %s -v %d -t '%s' -i %s -p %d %s -l %s:%s %s %s %s %s", $startx, $starty, $shiftx, $shifty, $outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $_SESSION['mylogin']['email'], $inp['formid'], isset($inp['grid_100M']) ? '-e' : '',
+$cmd = sprintf("php cmd_make2.php -r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -l %s:%s %s %s %s %s", $startx, $starty, $shiftx, $shifty, 
+isset($inp['97datum'])? 'TWD97': 'TWD67',
+$outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $_SESSION['mylogin']['email'], $inp['formid'], isset($inp['grid_100M']) ? '-e' : '',
  // 是否包含 100M grid
 isset($inp['inc_trace']) ? '-G' : '',
  //是否包含已知 gps trace
@@ -227,7 +230,7 @@ if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
 } else {
     $save_gpx = 0;
 }
-$mid = map_add($_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx);
+$mid = map_add($_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx, NULL, isset($inp['97datum'])? 97 : 67);
 
 // 最後搬移到正確目錄
 map_migrate($out_root, $_SESSION['uid'], $mid);

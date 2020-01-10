@@ -59,7 +59,7 @@ $(document).ready(function(){
 	progressbar.children().css("background","lightgreen");
 
 });
-function map_action(action, mid) {
+function map_action(action, params) {
 	if (action == 'del') {
 		if (confirm("確定嘛?")){
 			$.blockUI({ css: {
@@ -71,7 +71,7 @@ function map_action(action, mid) {
 					opacity: .5,
 					color: '#fff'
 			} });
-			$.post("backend_del.php", { mid: mid } ,function(data){
+			$.post("backend_del.php", { mid: params } ,function(data){
 				$.unblockUI();
 				if (data.status == "ok") {
 					$( "#tabs").tabs("load",2);
@@ -92,7 +92,7 @@ function map_action(action, mid) {
 					opacity: .5,
 					color: '#fff'
 			} });
-			$.post("backend_del.php", { mid: mid , op: "recycle"} ,function(data){
+			$.post("backend_del.php", { mid: params , op: "recycle"} ,function(data){
 				$.unblockUI();
 				if (data.status == "ok") {
 					$( "#tabs").tabs("load",2);
@@ -104,19 +104,19 @@ function map_action(action, mid) {
 		}
 
 	} else if (action == 'view') {
-		$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=3&mid="+mid );
+		$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=3&mid="+ params );
 		$("#tabs").tabs("option", "active", 3);
 	} else if (action == 'link') {
-		win=window.open("show.php?mid="+mid, "_blank","height=600,width=1024,toolbar=no,menubar=no,location=yes,status=yes,scrollbars=yes,resizable=yes");
+		win=window.open("show.php?mid="+ params, "_blank","height=600,width=1024,toolbar=no,menubar=no,location=yes,status=yes,scrollbars=yes,resizable=yes");
 		win.focus();
 	} else if (action == 'recreate') {
-		$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php?recreate=1&"+mid);
+		$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php?recreate=1&"+ params);
 		$("#tabs").tabs("option", "active", 0);
 	} else if (action == 'recreate_gpx') {
-		$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php?recreate_gpx=1&"+ mid);
+		$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php?recreate_gpx=1&"+ params);
 		$("#tabs").tabs("option", "active", 0);
 	} else if (action == 'mapshow') {
-		$("#mapbrowse").attr('src',mid);
+		$("#mapbrowse").attr('src', params);
 		$("#tabs").tabs("option", "active", 1);
 
 

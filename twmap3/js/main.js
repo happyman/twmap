@@ -422,6 +422,7 @@ var JM20K1904_MapType = new google.maps.ImageMapType({
 var DebugTile_Options = {
 	getTileUrl: function (a, b) {
 		return "//tile.happyman.idv.tw/map/debug/" + a.x + "/" + a.y + "/" + b + ".png";
+		//eturn "https://chart.apis.google.com/chart?chst=d_text_outline&chs=256x256&chf=bg,s,00000044&chld=FFFFFF|32|h|000000|b|||x="+a.x+"|y="+a.y+"|z="+b+"||||__";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	maxZoom: 19,
@@ -664,7 +665,7 @@ function showGrid(grid_type) {
 	if (typeof InterBounds !== "undefined") {
 		var sw,
 		ne;
-		if (grid_type == "TWD97" || grid_type == "TWD97_PH" || grid_type == "TWD97_EXT") {
+		if (grid_type == "TWD97" || grid_type == "TWD97PH" || grid_type == "TWD97_EXT") {
 			sw = lonlat_getblock97(InterBounds.getSouthWest().lng(), InterBounds.getSouthWest().lat(), ph, 100);
 			ne = lonlat_getblock97(InterBounds.getNorthEast().lng(), InterBounds.getNorthEast().lat(), ph, 100);
 		} else {
@@ -2493,7 +2494,7 @@ function initialize() {
 			ismakingmap = 0;
 			$.unblockUI();
 
-			url = callmake_url + callmake + "&title=" + $('#inputtitle').val();
+			url = callmake_url + callmake + "&title=" + $('#inputtitle').val() + "&datum=" + $('#datum').val();
 
 			if (confirm("程式將會傳送參數給地圖產生器,確定嘛?")) {
 				if (parent.location != window.location)
@@ -3211,7 +3212,7 @@ var polylabel = [];
 function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
 	var sw,
 	ne;
-	if (grid_type == "TWD97" || grid_type == "TWD97_PH" || grid_type == "TWD97_EXT") {
+	if (grid_type == "TWD97" || grid_type == "TWD97PH" || grid_type == "TWD97_EXT") {
 		sw = lonlat2twd97(minx, miny, ph);
 		ne = lonlat2twd97(maxx, maxy, ph);
 	} else {
@@ -3298,7 +3299,7 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
 	var lp;
 	//console.log("x="+startx +"y="+ starty +"endx="+ endx + "endy="+ endy);
 	for (var y = starty; y <= endy; y += ystep) {
-		if (grid_type == "TWD97" || grid_type == "TWD97_PH" || grid_type == "TWD97_EXT") {
+		if (grid_type == "TWD97" || grid_type == "TWD97PH" || grid_type == "TWD97_EXT") {
 			p = twd972lonlat(startx, y, ph);
 			p1 = twd972lonlat(endx, y, ph);
 			// 右邊一格-
@@ -3343,7 +3344,7 @@ function lonlat_range_getblock(minx, miny, maxx, maxy, ph, grid_type) {
 	}
 	// x 軸
 	for (var x = startx; x <= endx; x += xstep) {
-		if (grid_type == "TWD97" || grid_type == "TWD97_PH" || grid_type == "TWD97_EXT") {
+		if (grid_type == "TWD97" || grid_type == "TWD97PH" || grid_type == "TWD97_EXT") {
 			p = twd972lonlat(x, starty, ph);
 			p1 = twd972lonlat(x, endy, ph);
 			// 往上

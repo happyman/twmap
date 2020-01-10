@@ -71,8 +71,8 @@ if (loggedin == 1 ) {
             var mat = [];
             // 只處理我的 format
             if (!(mat = raw.data.msg.match(pat))) {
-                //	console.log(raw.data.msg);
-                //	console.log("not match" + mat[1]);
+                	console.log(raw.data.msg);
+                	console.log("not match" + mat[1]);
                 return;
             }
             // 只處理同一個 form 的
@@ -121,7 +121,8 @@ if (loggedin == 1 ) {
                 makeprogress.progressbar("value", Number(pst));
             } else {
                 // console.log(raw.data);
-                $("#log_message").prepend(logmsg + "<br>\n");
+		// log window
+                $("#log_message").prepend(logmsg);
                 if (logmsg.indexOf("err:") === 0) {
                     // 出錯了 要 keep 嘛?
                     clearProgress();

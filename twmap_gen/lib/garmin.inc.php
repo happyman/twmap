@@ -219,11 +219,13 @@ class garminKMZ {
 		$zipname = str_replace("png","kmz",$this->fname);
 		file_put_contents("$dir/doc.kml",$this->kml);
 		$output=array();
+		/*
 		if ($this->debug) {
 			$cmd="ls -lRa $dir";
 			exec($cmd,$output,$ret);
 			error_log("run $cmd\n".print_r($output,true)."\nret=".$ret);
 		}
+		*/
 		$output=array();
 		$cmd = sprintf("cd %s; zip %s doc.kml files/*.jpg; rm -r files doc.kml " ,$dir,basename($zipname));
 		exec($cmd, $output, $ret);

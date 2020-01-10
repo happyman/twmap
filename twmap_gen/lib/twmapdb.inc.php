@@ -136,7 +136,7 @@ function is_gpx_imported($mid) {
 	return $rs[0];
 }
 // 寫到 map table
-function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="localhost",$file,$size=0,$version=1,$gpx=0,$keepon_id=NULL) {
+function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="localhost",$file,$size=0,$version=1,$gpx=0,$keepon_id=NULL,$datum) {
 
 	// 若不是 keepon 來的, 檢查是否已經有同樣參數的地圖,有的話表示是重新產生
 	// 不更新 mid, 只更新 size, version, title, cdate, flag 等參數
@@ -145,7 +145,7 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="loca
 	if ($row === FALSE || $keepon_id != NULL ) {
 		// 新地圖
 		// 使用 postgresql 要改 default
-		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, '%s') returning mid", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==NULL)?'NULL':$keepon_id);
+		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\",\"datum\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, '%s', %s) returning mid", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==NULL)?'NULL':$keepon_id,$datum);
 		$rs = $db->getAll($sql);
 		logsql($sql,$rs);
 		if (!isset($rs[0]['mid'])) {
@@ -157,7 +157,7 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="loca
 	} else {
 		// 重新產生的地圖, 連檔名都要更新
 		$mid = $row[0];
-		$sql = sprintf("UPDATE \"map\" SET \"locX\"=%d,\"locY\"=%d,\"shiftX\"=%d,\"shiftY\"=%d,\"size\"=%d,\"flag\"=0,\"cdate\"=CURRENT_TIMESTAMP,\"title\"='%s',\"version\"=%d,\"filename\"='%s',\"gpx\"=%d WHERE \"mid\"=%d",$startx, $starty, $shiftx, $shifty, $size,$title,$version,$file, $gpx, $mid);
+		$sql = sprintf("UPDATE \"map\" SET \"locX\"=%d,\"locY\"=%d,\"shiftX\"=%d,\"shiftY\"=%d,\"size\"=%d,\"flag\"=0,\"cdate\"=CURRENT_TIMESTAMP,\"title\"='%s',\"version\"=%d,\"filename\"='%s',\"gpx\"=%d,\"datum\"=%s WHERE \"mid\"=%d",$startx, $starty, $shiftx, $shifty, $size,$title,$version,$file, $gpx, $datum, $mid);
 		$rs = $db->Execute($sql);
 		$key=sprintf("map_get_single_%s",$mid);
 		memcached_delete($key);
@@ -692,11 +692,12 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 		// 2. add data by ogr2ogr
 		$cmd = sprintf("ogr2ogr -update -append -f PostgreSQL \"%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
 				$gdal_dsn,$gpx_file,$table,$mid,$type,$table);
-
+		echo $cmd . "\n";
 	} else {
 		// 1. append
 		$cmd = sprintf("ogr2ogr -append -f PostgreSQL \"%s\" %s -sql \"select %s.*,%d as mid from %s %s\"",
 				$gdal_dsn,$gpx_file,$table,$mid,$type, $table);
+		echo $cmd . "\n";
 	}
 	//echo $cmd . "\n";
 	exec($cmd,$out,$ret);
@@ -720,7 +721,7 @@ function import_gpx_to_gis($mid){
 			$gpx_file_tmp = sprintf("%s/%d/%s_p.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
 			$gpx_file = sprintf("%s/%d/%s_x.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
 			$cmd = sprintf("gpsbabel -i gpx -f %s -x discard,matchcmt=base64 -o gpx -F %s",$gpx_file_tmp,$gpx_file);
-			echo $cmd;
+			echo $cmd . "\n";
 			exec($cmd,$ret,$out);
 		} else 
 			return array(false, "tid incorrect");
@@ -813,8 +814,6 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 	// moi_osm_gpx 
 	$cmd2 = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l moi_osm_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	exec($cmd2);
-	$cmd3 = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l moi_osm -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
-	exec($cmd3);
 	error_log("tilestache_clean: ". $cmd);
 	/*
 	   利用 tilestache-clean 的 output 來砍另一層 cache 

@@ -207,6 +207,11 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 		<div id="inputtitleform" style="display:none">
 			<br>請輸入地圖標題: <br><br><input id="inputtitle" type="text" size="2" />
 			<br>
+			<select id="datum">
+				<option value="TWD67" >TWD67 紅色框</option>
+				<option value="TWD97" selected>TWD97 綠色框</option>
+			</select>
+			<br>
 			<input type="button" id='inputtitlebtn' value="送出" />
 			<input type="button" id='inputtitlebtn2' value="取消" />
 		</div>

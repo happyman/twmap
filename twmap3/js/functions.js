@@ -1,4 +1,5 @@
 var polygon;
+var polygon2; // for twd97
 
 function addremove_polygon(event) {
     var point = event.latLng;
@@ -25,6 +26,7 @@ function addremove_polygon(event) {
     if ((maxiX - miniX < 0.0088) || (miniY - maxiY < 0.0088)) {
         miniX = 9999; miniY = 0; maxiX = 0; maxiY = 9999;
         if (polygon) polygon.setMap(null);
+		if (polygon2) polygon2.setMap(null);
         $("#params").html("尚未選圖");
         callmake = null;
         return;
@@ -36,14 +38,26 @@ function addremove_polygon(event) {
     var br = twd672lonlat((data.x + data.shiftx) * 1000, (data.y - data.shifty) * 1000, ph);
     var tr = twd672lonlat((data.x + data.shiftx) * 1000, data.y * 1000, ph);
     var bl = twd672lonlat(data.x * 1000, (data.y - data.shifty) * 1000, ph);
+	// TWD97
+	var tl2 = twd972lonlat((data.x+1) * 1000, data.y * 1000, ph);
+    var br2 = twd972lonlat(((data.x+1) + data.shiftx) * 1000, (data.y - data.shifty) * 1000, ph);
+    var tr2 = twd972lonlat(((data.x+1) + data.shiftx) * 1000, data.y * 1000, ph);
+    var bl2 = twd972lonlat((data.x+1) * 1000, (data.y - data.shifty) * 1000, ph);
     var points = [
         new google.maps.LatLng(tl.y, tl.x),
         new google.maps.LatLng(tr.y, tr.x),
         new google.maps.LatLng(br.y, br.x),
         new google.maps.LatLng(bl.y, bl.x)
     ];
+	var points2 = [
+		new google.maps.LatLng(tl2.y, tl2.x),
+        new google.maps.LatLng(tr2.y, tr2.x),
+        new google.maps.LatLng(br2.y, br2.x),
+        new google.maps.LatLng(bl2.y, bl2.x)
+	];
     if (polygon) {
         polygon.setPath(points);
+		polygon2.setPath(points2);
     } else {
         polygon = new google.maps.Polygon({
             path: points,
@@ -53,12 +67,22 @@ function addremove_polygon(event) {
             fillColor: '#FF0000',
             fillOpacity: 0.2
         });
+		polygon2 = new google.maps.Polygon({
+            path: points2,
+            strokeColor: "#00FF00",
+            strokeOpacity: 1,
+            strokeWeight: 1,
+            fillColor: '#00FF00',
+            fillOpacity: 0.1
+        });
         google.maps.event.addListener(polygon, 'click', addremove_polygon);
+		google.maps.event.addListener(polygon2, 'click', addremove_polygon);
         google.maps.event.addListener(polygon, 'rightclick', function () {
 			export_points(miniX,miniY,maxiX,maxiY);
 		});
     }
     polygon.setMap(map);
+	polygon2.setMap(map);
     // hide marker
     centerMarker.setVisible(false);
     return true;
@@ -86,7 +110,7 @@ function update_params(ph) {
 	else if ($("#changemap").val() == 'tw25k_v1') ver = 1;
 	else ver = 3;
 	
-    $("#params").html("X:" + data.x + "Y:" + data.y + " 東:" + data.shiftx + " 南:" + data.shifty + " km 共 " + page + 
+    $("#params").html("TWD67:" + data.x + ":" + data.y + " " + data.shiftx + "x" + data.shifty + " km 共 " + page + 
                 '<button type="button" id="generate" name="generate" title="將參數傳送到地圖產生器" class="ui-state-default ui-corner-all" >產生</button>');
     callmake = "x=" + data.x + "&y=" + data.y + "&shiftx=" + data.shiftx + "&shifty=" + data.shifty + "&ph=" + ph + "&version=" + ver;
 	$("#generate").click(generate_btn_click);

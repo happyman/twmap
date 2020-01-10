@@ -179,12 +179,14 @@ function im_tagimage($fpath, $inp_startx, $inp_starty) {
  * @param  integer $ver    [description]
  * @return [type]          [description]
  */
-function im_addgrid($fpath, $step_m = 100, $ver=3) {
+function im_addgrid($fpath, $step_m = 100, $ver=3, $v3img) {
 	list ($w, $h) = getimagesize($fpath);
+	/*
 	if ($ver == 3)
 		$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
 	else if ($ver == 2016)
 		$v3img = dirname(__FILE__) . "/../imgs/v2016image.png";
+	*/
 	$step = 315 / (1000 / $step_m );
 	for($i=0; $i<$w; $i+=$step) {
 			$poly[] = sprintf(" -draw 'line %d,%d %d,%d'", round($i),0 ,round($i),$h);
@@ -192,13 +194,13 @@ function im_addgrid($fpath, $step_m = 100, $ver=3) {
 	for($i=0; $i<$h; $i+=$step) {
 			$poly[] = sprintf(" -draw 'line %d,%d %d,%d'", 0,round($i), $w, round($i));
 	}
-	if ($ver == 3) {
+//	if ($ver == 3) {
 		// 因為格線會蓋掉 logo, 再蓋回去
 		$cmd = sprintf("convert %s -fill none -stroke black %s -alpha off - | composite -gravity northeast %s - png:%s", $fpath, implode("", $poly),$v3img, $fpath);
-	} else {
+//	} else {
 		// TODO
-		$cmd = sprintf("convert %s -fill none -stroke black -alpha off %s png:%s", $fpath, implode("", $poly), $fpath);
-	}
+//		$cmd = sprintf("convert %s -fill none -stroke black -alpha off %s png:%s", $fpath, implode("", $poly), $fpath);
+//	}
 	echo "$cmd\n";
 	exec($cmd,$out,$ret);
 	return ($ret==0)?true:false;

@@ -8,8 +8,8 @@ set_time_limit(0);
 
 $opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3");
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
-	echo "Usage: $argv[0] -r 236:2514:6:4 [-g gpx:0:0] [-c] [-G]-O dir [-e] -v 1|3 -t title -i localhost\n";
-	echo "       -r params: startx:starty:shiftx:shifty\n";
+	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 [-g gpx:0:0] [-c] [-G]-O dir [-e] -v 1|3 -t title -i localhost\n";
+	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
 	echo "       -O outdir: /home/map/out/000003\n";
 	echo "       -v 1|3|2016: version of map,default 3\n";
 	echo "       -t title: title of image\n";
@@ -28,7 +28,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	exit(1);
 }
 // parse param
-list($startx,$starty,$shiftx,$shifty)=explode(":",$opt['r']);
+list($startx,$starty,$shiftx,$shifty,$datum)=explode(":",$opt['r']);
 if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) )
 	cli_error_out("參數錯誤");
 
@@ -44,13 +44,23 @@ if ($version != 1 && $version != 3 && $version != 2016)
 	$version = 3;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
 $outpath=$opt['O'];
+$a3 = (isset($opt['3']))? 1 : 0;
 if (!file_exists($outpath)) {
 	$ret = mkdir($outpath, 0755, true);
 	if ($ret === FALSE) {
 		cli_error_out("無法建立 $outpath");
 	}
 }
-$outfile_prefix=sprintf("%s/%dx%d-%dx%d-v%d%s",$outpath,$startx*1000,$starty*1000,$shiftx,$shifty,$version,($ph==1)?"p":"");
+switch($datum){
+	case 'TWD97':
+		break;
+	case 'TWD67':
+	default:
+		$datum = 'TWD67';
+		break;
+}
+	
+$outfile_prefix=sprintf("%s/%dx%d-%dx%d-v%d%s_%s",$outpath,$startx*1000,$starty*1000,$shiftx,$shifty,$version,($ph==1)?"p":"",$datum);
 $outimage=$outfile_prefix . ".tag.png";
 $outimage_orig=$outfile_prefix . ".orig.tag.png";
 $outimage_gray=$outfile_prefix . ".gray.png";
@@ -73,24 +83,25 @@ switch($version){
 	if ($ph == 1 ) {
 		cli_error_out("無澎湖圖資");
 	}
-	$g = new STB($stbpath, $startx, $starty, $shiftx, $shifty);
+	$g = new STB($stbpath, $startx, $starty, $shiftx, $shifty, $datum);
 	break;
 	case 3:
-	$g = new STB2($tilepath, $startx, $starty, $shiftx, $shifty, $ph);
+	$g = new STB2($tilepath, $startx, $starty, $shiftx, $shifty, $ph, $datum);
 	$g->version = 3;
 	break;
 	case 2016:
-	$g = new STB2($tilepath, $startx, $starty, $shiftx, $shifty, $ph);
+	$g = new STB2($tilepath, $startx, $starty, $shiftx, $shifty, $ph, $datum);
 	$g->version = 2016;
 	break;
 }
+
 if (isset($opt['G'])) {
 	$g->include_gpx = 1;
 } 
 if (!empty($log_channel)) {
 	$g->setLog($log_channel);
 	// cli_msglog("setup log channel ".md5($log_channel));
-	cli_msglog("start log here ^_^");
+	cli_msglog("start log here ^_^ (" . $datum . ")");
 	cli_msglog("ps%0");
 }
 if (!empty($g->err)) 
@@ -172,38 +183,16 @@ if ($jump <= $stage ) {
 	} else {
 		write_and_forget($im,$outimage,$BETA);
 	}
-	/*
-	if (isset($opt['G'])) {
-		cli_msglog("add GPX layer to PNG");
-		// 直接從 gis 資料庫取得 svg
-		$bbox[0] =  array($startx * 1000,$starty * 1000);
-		$bbox[1] =  array(($startx+$shiftx)*1000, ($starty-$shifty)*1000);
-		$bbox[2] =  array($shiftx * 315, $shifty * 315);
-		list($ret, $msg) = mapnik_svg_gen($bbox, $outimage, $outsvg_big);
-		if ($ret == false) {
-				@unlink($outimage_orig);
-				@unlink($outimage);
-				cli_error_out("mapnik_svg2_gen fail: $msg");
-			}
-		list ($ret,$msg) = svg2png($outsvg_big, $outimage, $bbox[2]);
-			if ($ret == false) {
-				@unlink($outimage_orig);
-				@unlink($outimage);
-				cli_error_out("svg2png fail: $msg");
-			}
-		 cli_msglog("convert svg to png success");
-		 cli_msglog("ps%+3");
-	} // end of -G
-	*/
+
 	// 加上 grid
 	if (isset($opt['e'])) {
 		cli_msglog("add 100M grid to image...");
-		im_addgrid($outimage, 100, $version);
+		im_addgrid($outimage, 100, $version, $g->v3img);
 		cli_msglog("ps%+3");
 	}
-	// 若是 moi_osm 則加上 1000 
-	if ($version == 2016){
-		im_addgrid($outimage, 1000, $version);
+	// 若是 moi_osm 則加上 1000 or TWD97  and logo
+	if ($version == 2016 || $datum == 'TWD97' ){
+		im_addgrid($outimage, 1000, $version, $g->v3img);
 	}
 	// happyman
 	cli_msglog("ps%40");
@@ -279,7 +268,7 @@ if ($stage == $jumpstop) {
 cli_msglog("ps%80");
 if ($stage >= $jump ) {
 	cli_msglog("save description...");
-	$desc=new ImageDesc( basename($outimage), $title, $startx*1000, $starty*1000, $shiftx, $shifty, $simage, $outx, $outy, $remote_ip, $version );
+	$desc=new ImageDesc( basename($outimage), $title, $startx*1000, $starty*1000, $shiftx, $shifty, $simage, $outx, $outy, $remote_ip, $version, $datum );
 	$desc->save($outtext);
 	cli_msglog("make kmz file...");
 	require_once("lib/garmin.inc.php");
@@ -302,7 +291,7 @@ cli_msglog("ps%90");
 if ($stage >= $jump) {
 	// 產生 pdf
 	require_once("lib/print_pdf.inc.php");
-	$pdf = new print_pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix), 'outfile' => $outpdf, 'infiles' => $simage, 'a3' => $opt['3']? 1 : 0 ));
+	$pdf = new print_pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix), 'outfile' => $outpdf, 'infiles' => $simage, 'a3' => $a3 ));
 	$pdf->print_cmd = 0;
 	$pdf->doit();
 	cli_msglog("save pdf for print...");
@@ -330,7 +319,7 @@ exit(0);
 function cli_msglog($str){
 	global $log_channel, $BETA;
 	if (!empty($log_channel))
-		notify_web($log_channel,array($str),$BETA);
+		notify_web($log_channel,array($str ."<br>"),$BETA);
 	printf("%s\n",$str);
 	//error_log($str);
 }

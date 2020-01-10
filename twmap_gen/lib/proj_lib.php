@@ -92,7 +92,18 @@ function proj_67toge($p) {
 function proj_67toge2($p) {
 	$x=$p[0];$y=$p[1];
 	$r=cs2cs_t67to97($x,$y, 0);
+	return proj_97toge2($r);
+	/*
 	$x=$r[0]; $y=$r[1];
+	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=121 +x_0=250000 +k=0.9999";
+	$ret=shell_exec("echo $x $y | $proj");
+	list($x,$y)=preg_split("/\s+/",$ret);
+	$r=dms2deg($x,$y);
+	return $r;
+	*/
+}
+function proj_97toge2($p){
+	$x=$p[0];$y=$p[1];
 	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=121 +x_0=250000 +k=0.9999";
 	$ret=shell_exec("echo $x $y | $proj");
 	list($x,$y)=preg_split("/\s+/",$ret);
@@ -134,7 +145,18 @@ function proj_67toge4($p){
 function ph_proj_67toge2($p) {
 	$x=$p[0];$y=$p[1];
 	$r=cs2cs_t67to97($x,$y,1);
+	return ph_proj_97toge2($r);
+	/*
 	$x=$r[0]; $y=$r[1];
+	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=119 +x_0=250000 +k=0.9999";
+	$ret=shell_exec("echo $x $y | $proj");
+	list($x,$y)=preg_split("/\s+/",$ret);
+	$r=dms2deg($x,$y);
+	return $r;
+	*/
+}
+function ph_proj_97toge2($p){
+	$x=$p[0];$y=$p[1];
 	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=119 +x_0=250000 +k=0.9999";
 	$ret=shell_exec("echo $x $y | $proj");
 	list($x,$y)=preg_split("/\s+/",$ret);

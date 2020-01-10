@@ -37,8 +37,9 @@ Class STB {
 	var $tileX, $tileY; // 幾 乘 幾 merge 用
 	var $err = array();
 	var $log_channel = "";
+	var $datum;
 
-	function __construct($stbdir, $startx, $starty, $sx, $sy) {
+	function __construct($stbdir, $startx, $starty, $sx, $sy, $datum='TWD67') {
 		if ($sx > 35 || $sy > 35) {
 			$this->err[] = "Sorry We Cannot create too big map";
 			return FALSE;
@@ -48,9 +49,15 @@ Class STB {
 			$this->starty = $starty;
 			$this->shiftx = $sx;
 			$this->shifty = $sy;
-			$this->stbindex= $stbdir . "/stb-index" ;
+			$this->datum = $datum;
+			if ($this->datum == 'TWD97'){
+				$this->stbindex= $stbdir . "/stb-index-97" ;
+				$this->arrayfile = "/tmp/sorted_array_web-97";
+			} else {
+				$this->stbindex= $stbdir . "/stb-index";
+				$this->arrayfile = "/tmp/sorted_array_web";
+			}
 			$this->stbdir= $stbdir;
-			$this->arrayfile = "/tmp/sorted_array_web";
 		} else {
 
 			$this->err[] =	"No Index file... bye";
@@ -70,8 +77,15 @@ Class STB {
 	function doLog($msg) {
 		if (empty($this->log_channel))
 			echo $msg;
-		else
+		else {
+			if (preg_match("/nbr:(.*)/",$msg,$mat)){
+				$msg = $mat[1];
+			} else {
+				$msg.= "<br>";	
+			}
+
 			notify_web($this->log_channel, array($msg));
+		}
 	}
 	function load_index() {
 		// return FALSE when error
@@ -104,7 +118,7 @@ Class STB {
 			$this->y[$j]=$array[$j]['y'];
 			$this->f[$j]=$array[$j]['f'];
 		}
-		$this->doLog("index loaded..");
+		$this->doLog("index loaded..". $this->arrayfile . "\n");
 		return TRUE;
 	}
 	// whichmap given x,y => return png index
@@ -191,6 +205,10 @@ Class STB {
 		$this->createfromim = 0;
 	}
 	function createpng($tag=0, $gray=0, $fuzzy=0, $x=1, $y=1, $d=0, $borders=array()) {
+		if ($this->datum=="TWD97")
+				$this->v3img = dirname(__FILE__) . "/../imgs/v1image97.png";
+			else
+				$this->v3img = dirname(__FILE__) . "/../imgs/v1image.png";
 		if ($this->createfromim == 1 ) { // just load image from im or filename
 			$cim=$this->im;
 		} else {  // load from STB files
@@ -295,13 +313,13 @@ Class STB {
 class ImageDesc {
 	var $desc;
 	function ImageDesc($file,$title,$startx,$starty,$shiftx,$shifty,
-		$imgs,$px,$py,$host="localhost",$version=3) {
+		$imgs,$px,$py,$host="localhost",$version=3,$datum) {
 			$this->desc = array( "file"=> $file, "title" => $title,
 				"locX"=> $startx, "locY"=> $starty, "host" => $host,
 				"tileX"=>$shiftx, "tileY"=>$shifty,
 				"date"=>date("d-M-Y H:i"),
 				"imgs"=>$imgs, "px"=>$px, "py"=>$py, 
-				"version"=>$version );
+				"version"=>$version, "datum"=>$datum );
 		}
 	function save($file) {
 		arrayfile($file, $this->desc, "DUMP");
@@ -373,10 +391,12 @@ Class STB2 extends STB {
 	var $ph; // 澎湖
 	var $version = 3; // 那個圖
 	var $include_gpx = 0; // 是否包含 gpx
+	var $datum;
+	var $v3img; 
 
 	private $zoom = 16;
 
-	function __construct($basedir, $startx, $starty, $sx, $sy, $ph=0) {
+	function __construct($basedir, $startx, $starty, $sx, $sy, $ph=0, $datum) {
 		if ($sx > 35 || $sy > 35) {
 			$this->err[] = "Sorry We Cannot create too big map";
 			return FALSE;
@@ -387,6 +407,7 @@ Class STB2 extends STB {
 			$this->shiftx = $sx;
 			$this->shifty = $sy;
 			$this->ph = $ph;
+			$this->datum = $datum;
 			return TRUE;
 /*
 		if (is_dir( $basedir . "/". $this->zoom )) {
@@ -411,12 +432,21 @@ Class STB2 extends STB {
 		global $tmppath;
 		global $tilecachepath;
 		if ($this->version == 3) {
-			$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
+			if ($this->datum=="TWD97")
+				$v3img = dirname(__FILE__) . "/../imgs/v3image97.png";
+			else
+				$v3img = dirname(__FILE__) . "/../imgs/v3image2.png";
 			$image_ps_args = array("-equalize  -gamma 2.2");
 		}else if ($this->version == 2016){
-			$v3img = dirname(__FILE__) . "/../imgs/v2016image.png";
+			if ($this->datum=="TWD97")
+				$v3img = dirname(__FILE__) . "/../imgs/v2016image97.png";
+			else
+				$v3img = dirname(__FILE__) . "/../imgs/v2016image.png";
 			$image_ps_args = array("-normalize");
 		}
+		// 給外面 access
+		$this->v3img = $v3img;
+		// $this->doLog( "logo image: " . $this->v3img);
 		if ($this->createfromim == 1 ) { // just load image from im or filename
 			$cim=$this->im;
 		} else {  
@@ -427,10 +457,11 @@ Class STB2 extends STB {
 					//error_log("call $i $j");
 					// list ($status, $fname) =img_from_tiles($this->stbdir, $i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $tmppath, $tilecachepath);
 					$tileurl = $this->gettileurl();
+					$options=array("tile_url"=> $tileurl, "image_ps_args"=> $image_ps_args, "tmpdir"=> "/dev/shm", "datum"=> $this->datum);
 					// tmppath => /dev/shm
-					list ($status, $fname) =img_from_tiles2($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag ,"/dev/shm", $tileurl, $image_ps_args);
+					list ($status, $fname) =img_from_tiles3($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $options); // "/dev/shm", $tileurl, $image_ps_args);
 					// 產生 progress
-					$this->doLog( "$pscount /  $pstotal");
+					$this->doLog( sprintf("nbr:%s/%s ",$pscount,$pstotal));
 					$this->doLog( sprintf("ps%%+%d", 20 * $pscount/$pstotal));
 					$pscount++;
 					if ($status === FALSE ) {
@@ -447,7 +478,7 @@ Class STB2 extends STB {
 			$outi = $outimage = tempnam($tmppath,"MTILES");
 			$montage_bin = "montage";
 			$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
-				implode(" ",$fn), $this->shiftx ,$this->shifty, $v3img, $this->shiftx*315, $this->shifty*315, $outi);
+				implode(" ",$fn), $this->shiftx ,$this->shifty, $this->v3img, $this->shiftx*315, $this->shifty*315, $outi);
 			if ($debug_flag)
 				$this->doLog( $cmd );
 			exec($cmd);
@@ -496,15 +527,15 @@ Class STB2 extends STB {
 	switch($this->version){
 		case 3:
 			if ($this->include_gpx==0){
-				return 'http://rs.happyman.idv.tw/map/tw25k2001/zxy/%s_%s_%s.png';
+				return 'http://tile.happyman.idv.tw/map/tw25k2001/%s/%s/%s.png';
 			} else 
-				return 'http://rs.happyman.idv.tw/map/twmap_gpx/%s_%s_%s.png';
+				return 'http://tile.happyman.idv.tw/map/twmap_gpx/%s_%s_%s.png';
 		break;
 		case 2016:
 			if ($this->include_gpx==0){
-				return 'http://rs.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
+				return 'http://tile.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
 			} else 
-				return 'http://rs.happyman.idv.tw/map/moi_gpx_nocache/%s/%s/%s.png';
+				return 'http://tile.happyman.idv.tw/map/moi_happyman_nocache/%s/%s/%s.png';
 		break;
 	}
 }

@@ -59,6 +59,9 @@ var called = 0;
 // 兩條路徑, 1: from main.php?GET
 //           2. from list.php SESSION
 if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
+	// 選取範圍 TWD97 的 X 剛好多1km
+	if ( $_SESSION['makeparam']['datum'] == 'TWD97') 
+		$_SESSION['makeparam']['x']++;
 ?>
 	called = 1;
 	$("#mapform input[name=startx]").val("<?php echo $_SESSION['makeparam']['x'];?>");
@@ -75,7 +78,8 @@ if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 	$("#mapform select[name=anyshifty]").attr("disabled", true);
 	$("#mapform select[name=version]").val("<?php echo $_SESSION['makeparam']['version']; ?>");
 	$("#mapform select[name=ph]").val("<?php echo $_SESSION['makeparam']['ph']; ?>");
-	$("#mapform input[name=ph").attr("readonly", true);
+	$("#mapform input[name=ph]").attr("readonly", true);
+	$("#mapform input[name=97datum]").attr("checked", <?php echo ($_SESSION['makeparam']['datum'] == 'TWD97')?"true":"false"; ?> );
 
 <?php
 	if (isset($_SESSION['makeparam']['title'])) {
