@@ -529,7 +529,7 @@ Class STB2 extends STB {
 			if ($this->include_gpx==0){
 				return 'http://tile.happyman.idv.tw/map/tw25k2001/%s/%s/%s.png';
 			} else 
-				return 'http://tile.happyman.idv.tw/map/twmap_gpx/%s_%s_%s.png';
+				return 'http://tile.happyman.idv.tw/map/twmap_happyman_nocache/%s/%s/%s.png';
 		break;
 		case 2016:
 			if ($this->include_gpx==0){
