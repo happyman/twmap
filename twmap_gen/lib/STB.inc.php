@@ -462,7 +462,7 @@ Class STB2 extends STB {
 					list ($status, $fname) =img_from_tiles3($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $options); // "/dev/shm", $tileurl, $image_ps_args);
 					// 產生 progress
 					$this->doLog( sprintf("nbr:%s/%s ",$pscount,$pstotal));
-					$this->doLog( sprintf("ps%%+%d", 20 * $pscount/$pstotal));
+					$this->doLog( sprintf("nbr:ps%%+%d", 20 * $pscount/$pstotal));
 					$pscount++;
 					if ($status === FALSE ) {
 						error_log("error $fname");

@@ -101,7 +101,7 @@ if (isset($opt['G'])) {
 if (!empty($log_channel)) {
 	$g->setLog($log_channel);
 	// cli_msglog("setup log channel ".md5($log_channel));
-	cli_msglog("start log here ^_^ (" . $datum . ")");
+	cli_msglog("start log here ^_^ (" . $datum . ")\n");
 	cli_msglog("ps%0");
 }
 if (!empty($g->err)) 
@@ -319,7 +319,7 @@ exit(0);
 function cli_msglog($str){
 	global $log_channel, $BETA;
 	if (!empty($log_channel))
-		notify_web($log_channel,array($str ."<br>"),$BETA);
+		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$BETA);
 	printf("%s\n",$str);
 	//error_log($str);
 }
