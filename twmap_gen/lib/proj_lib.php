@@ -83,11 +83,11 @@ function proj_67toge($p) {
 	$x=$p[0];$y=$p[1];
 	$r=t67to97($x,$y);
 	$x=$r[0]; $y=$r[1];
-	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=121 +x_0=250000 +k=0.9999";
+	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=121 +x_0=250000 +k=0.9999  -f '%.8f'";
 	$ret=shell_exec("echo $x $y | $proj");
-	list($x,$y)=preg_split("/\s+/",$ret);
-	$r=dms2deg($x,$y);
-	return $r;
+	return preg_split("/\s+/",$ret);
+	//$r=dms2deg($x,$y);
+	//return $r;
 }
 function proj_67toge2($p) {
 	$x=$p[0];$y=$p[1];
@@ -104,11 +104,11 @@ function proj_67toge2($p) {
 }
 function proj_97toge2($p){
 	$x=$p[0];$y=$p[1];
-	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=121 +x_0=250000 +k=0.9999";
+	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=121 +x_0=250000 +k=0.9999  -f '%.8f'";
 	$ret=shell_exec("echo $x $y | $proj");
-	list($x,$y)=preg_split("/\s+/",$ret);
-	$r=dms2deg($x,$y);
-	return $r;
+	return preg_split("/\s+/",$ret);
+//	$r=dms2deg($x,$y);
+	//return $r;
 }
 /**
  * proj_67toge3 
@@ -159,9 +159,9 @@ function ph_proj_97toge2($p){
 	$x=$p[0];$y=$p[1];
 	$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=119 +x_0=250000 +k=0.9999";
 	$ret=shell_exec("echo $x $y | $proj");
-	list($x,$y)=preg_split("/\s+/",$ret);
-	$r=dms2deg($x,$y);
-	return $r;
+	return preg_split("/\s+/",$ret);
+	//$r=dms2deg($x,$y);
+	//return $r;
 }
 // 澎湖 twd67 to Google Earth
 // http://wiki.osgeo.org/wiki/Taiwan_datums
