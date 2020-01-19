@@ -21,6 +21,8 @@ return
 			"Yahoo" => array (
 				"enabled" => true,
 				"keys"    => array ( "key" => "", "secret" =>""),
+				"scope"  => "sdpp-w",
+				// https://stackoverflow.com/questions/55313554/get-user-email-from-yahoo-when-user-logs-in-throuh-yahoo-app
 			),
 
 			"Google" => array (

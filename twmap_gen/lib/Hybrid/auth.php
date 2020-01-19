@@ -22,7 +22,7 @@ case 'google':
 	$adapter = $hybridauth->authenticate( "Google" );
 	break;
 case 'yahoo':
-	$adapter = $hybridauth->authenticate( "OpenID", array( "openid_identifier" => "https://me.yahoo.com"));
+	$adapter = $hybridauth->authenticate( "Yahoo");
 	break;
 case 'facebook':
 	$adapter = $hybridauth->authenticate( "Facebook" );
@@ -47,6 +47,8 @@ $user_profile = $adapter->getUserProfile();
 
 require_once("../../config.inc.php");
 
+//print_r($user_profile);
+//exit;
 if (isset($user_profile->email) && isset($user_profile->displayName)) {
 	$mylogin['email'] = $user_profile->email;
 	$mylogin['type'] = $_REQUEST['provider'];
