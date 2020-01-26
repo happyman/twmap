@@ -812,8 +812,8 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 		}
 	$cmd = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	// moi_osm_gpx 
-	$cmd2 = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l moi_osm_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
-	exec($cmd2);
+	$cmd2 = sprintf("ssh happyman@tile tilestache-clean -c ~/etc/tile_main_8089.cfg -l gpxtrack -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	system($cmd2);
 	error_log("tilestache_clean: ". $cmd);
 	/*
 	   利用 tilestache-clean 的 output 來砍另一層 cache 
@@ -869,9 +869,9 @@ function remove_gpx_from_gis($mid){
 function get_waypoint($x,$y,$r=10,$detail=0){
 	$db=get_conn();
 	if ($detail == 0)
-		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name from gpx_wp WHERE ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY name",$x,$y,$r/1000/111.325);
+		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name from gpx_wp WHERE ST_DWithin(wkb_geometry,ST_GeomFromEWKT('SRID=4326;POINT(%f %f)') , %f ) ORDER BY name",$x,$y,$r/1000/111.325);
 	else {
-		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name,\"gpx_wp.ele\" AS ele,ST_AsText(wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename,map.path,map.md5name from gpx_wp A, meta as map WHERE  ST_DWithin(wkb_geometry,ST_GeomFromText('POINT(%f %f)',4326) , %f ) AND A.mid = map.idid  ORDER BY map.title",$x,$y,$r/1000/111.325);
+		$sql = sprintf("SELECT DISTINCT \"gpx_wp.name\" AS name,\"gpx_wp.ele\" AS ele,ST_AsText(wkb_geometry) as loc,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename,map.path,map.md5name from gpx_wp A, meta as map WHERE  ST_DWithin(wkb_geometry,ST_GeomFromEWKT('SRID=4326;POINT(%f %f)') , %f ) AND A.mid = map.idid  ORDER BY map.title",$x,$y,$r/1000/111.325);
 	}
 	// error_log($sql);
 	$rs = $db->getAll($sql);	
@@ -894,7 +894,7 @@ function get_track($x,$y,$r=10,$detail=0){
 // http://gis.stackexchange.com/questions/44914/how-do-i-getthe-area-of-a-wgs84-polygon-in-square-meters
 function get_AREA($wkt_str) {
 	$db=get_conn();
-	$sql =  sprintf("SELECT ST_Area( ST_Transform( ST_SetSRID( ST_GeomFromText( '%s' ) , 4326) , 900913))", $wkt_str);
+	$sql =  sprintf("SELECT ST_Area( ST_Transform( ST_SetSRID( ST_GeomFromEWKT('SRID=4326;%s'), 900913))", $wkt_str);
 	// error_log($sql);
 	$rs = $db->getAll($sql);	
 	echo $db->errorMsg();
@@ -930,7 +930,7 @@ function get_point_by_class($class_num) {
 /* 取出範圍內所有 features, 官方點 */
 function get_points_from_center($center, $r_in_meters) {
 	$db = get_conn();
-	$sql = sprintf("SELECT id,name,class,number,ele,ST_X(coord) AS x, ST_Y(coord) AS y,prominence,prominence_index FROM point3 WHERE owner = 0 AND ST_DWithin(coord, ST_GeomFromText('POINT(%f %f)',4326) , %f ) ORDER BY number,ST_XMin(coord)",$center[0],$center[1],$r_in_meters/1000/111.325);
+	$sql = sprintf("SELECT id,name,class,number,ele,ST_X(coord) AS x, ST_Y(coord) AS y,prominence,prominence_index FROM point3 WHERE owner = 0 AND ST_DWithin(coord, ST_GeomFromEWKT('SRID=4326;POINT(%f %f)') , %f ) ORDER BY number,ST_XMin(coord)",$center[0],$center[1],$r_in_meters/1000/111.325);
 	// echo $sql;
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
         return $db->getAll($sql);
@@ -1186,7 +1186,7 @@ function get_distance2($wkt_str, $twDEM_path){
 	$db = get_conn();
 	$step = 20.0 / 1000 / 111.325;
 			
-	$sql = sprintf("select st_astext( ST_Segmentize(ST_SetSRID( ST_GeomFromText( '%s' ) , 4326), %f)) as linestring" ,$wkt_str,$step);
+	$sql = sprintf("select st_astext( ST_Segmentize(ST_SetSRID( ST_GeomFromEWKT('SRID=4326;%s'), %f)) as linestring" ,$wkt_str,$step);
 	// echo $sql;
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
 	$res = $db->getAll($sql);
