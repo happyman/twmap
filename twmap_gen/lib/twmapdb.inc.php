@@ -1186,7 +1186,7 @@ function get_distance2($wkt_str, $twDEM_path){
 	$db = get_conn();
 	$step = 20.0 / 1000 / 111.325;
 			
-	$sql = sprintf("select st_astext( ST_Segmentize(ST_SetSRID( ST_GeomFromEWKT('SRID=4326;%s'), %f)) as linestring" ,$wkt_str,$step);
+	$sql = sprintf("select st_astext( ST_Segmentize(ST_GeomFromText('%s',4326), %f)) as linestring" ,$wkt_str,$step);
 	// echo $sql;
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
 	$res = $db->getAll($sql);
