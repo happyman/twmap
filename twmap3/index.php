@@ -260,6 +260,13 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 			comfortZone: 20,
 			maxWidth: 2000
 		});
+		// accept message from iframe (point3 admin)
+		window.onmessage = function(e){
+    			if (e.data.function == 'markerReloadSingle') {
+				markerReloadSingle(e.data);
+			}
+	
+    		};
 	});
 	var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
 	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';

@@ -23,14 +23,17 @@ $params['action'] = 'list';
                 <h1 align=right>興趣點編輯器</h1>
                 <div id="PointTableContainer" style="width:100%"></div>
                 <script type="text/javascript">
-
 $(document).ready(function () {
 		  function refresh_markers(action,data){
+			// 改成 postMessage API, 否則過不了 same origin 
+			window.parent.postMessage({ "function": "markerReloadSingle",  "action": action, "meta": data, "id": data.id  },'*');
+			/*
 		  	window.parent.markerReloadSingle({
 		  		"action": action,
 		  		"meta": data,
 		  		"id": data.id
 		  	});
+			*/
 		  }
 		  $('#PointTableContainer').jtable({
                                 title: '編輯',
@@ -138,7 +141,7 @@ $(document).ready(function () {
     '山屋',
     '吊橋'],
 	display: function(data) {
-		var $img = $('<span><img src="http://map.happyman.idv.tw/icon/' + encodeURIComponent(data.record.type) + '.png" />' + data.record.type + '</span>' );
+		var $img = $('<span><img src="//map.happyman.idv.tw/icon/' + encodeURIComponent(data.record.type) + '.png" />' + data.record.type + '</span>' );
 		return $img;
 	}
 					},
