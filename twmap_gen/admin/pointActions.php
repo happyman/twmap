@@ -48,7 +48,7 @@ function pointcrud($inp, $owner_uid, $admin) {
 				$contribute = 1; 
 			else
 				$contribute = 0;
-			$pp = sprintf("ST_GeomFromText('SRID=4326;POINT(%f %f)')",$inp['x'],$inp['y']);
+			$pp = sprintf("ST_GeomFromEWKT('SRID=4326;POINT(%f %f)')",$inp['x'],$inp['y']);
 			$inp['number'] = (empty($inp['number']))? "NULL": intval($inp['number']);
 			$inp['ele'] = (empty($inp['ele']))? "NULL": intval($inp['ele']);
 			$sql = sprintf("insert into point3 (id, name,alias,type,class,number,status,ele,mt100,checked,comment,coord,owner,contribute,alias2,prominence,prominence_index,fclass,cclass,fzone,sname) values ( DEFAULT, '%s','%s','%s','%s',%s
@@ -77,7 +77,7 @@ function pointcrud($inp, $owner_uid, $admin) {
 				$contribute = intval($inp['contribute']);
 			else
 				$contribute = 0;
-			$pp = sprintf("ST_GeomFromText('SRID=4326;POINT(%f %f)')",$inp['x'],$inp['y']);
+			$pp = sprintf("ST_GeomFromEWKT('SRID=4326;POINT(%f %f)')",$inp['x'],$inp['y']);
 			$inp['number'] = (empty($inp['number']))? "NULL": intval($inp['number']);
 			$inp['ele'] = (empty($inp['ele']))? "NULL": intval($inp['ele']);
 			$inp['alias2'] = (empty($inp['alias2']))? "": intval($inp['alias2']);
