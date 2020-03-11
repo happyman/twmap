@@ -299,7 +299,7 @@ class garminKMZ {
 				break;
 			}
 			if ($start == 1) 
-				$this->fromGPS .= $out[$i];
+				$this->fromGPS .= $out[$i] . "\n";
 
 		}
 	}
