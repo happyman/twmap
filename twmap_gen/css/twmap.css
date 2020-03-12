@@ -9,6 +9,7 @@ img { image-rendering: -moz-crisp-edges; -ms-interpolation-mode:bicubic; }
 cursor:pointer;
 }
 #mapbrowse { width: 100%; }
+#browse { height: 600px; }
 #greeting {
 display: block;
 position: absolute;

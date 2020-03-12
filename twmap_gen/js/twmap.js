@@ -33,6 +33,7 @@ if (loggedin == 1 ) {
   }
 }
     $("#tabs").tabs({
+	heightStyle: "fill",
         activate: function(event, ui) {
             var index = $("#tabs").tabs('option', 'active');
             if (index == 1) {
@@ -54,6 +55,11 @@ if (loggedin == 1 ) {
         }
     });
     $("#tabs").tabs("option", "active", initial_tab);
+// set minimal height for browse window
+	$("#tabs").tabs().css({
+   'min-height': '600px',
+   'overflow': 'auto'
+});
     $(".showtip").tipTip();
     $("#log_message").hide();
     // ape stuff
