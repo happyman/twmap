@@ -1,5 +1,15 @@
 <?php
-
+// v8
+// observation
+// https://www.cwb.gov.tw/V8/C/P/Rainfall/Rainfall_QZJ.html
+// 昨日: https://www.cwb.gov.tw/Data/rainfall/2020-04-02_0000.QZJ8.jpg (今日凌晨)
+// 前日: https://www.cwb.gov.tw/Data/rainfall/2020-04-01_0000.QZJ8.jpg
+// 今日: https://www.cwb.gov.tw/Data/rainfall/2020-04-02_1600.QZJ8.jpg (目前時間)
+//  forecast 
+// https://www.cwb.gov.tw/V8/C/W/analysis.html
+// 12hr: https://www.cwb.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_12.png
+// 24hr: https://www.cwb.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_24.png
+// v7
 // 產生 cwb 降雨 kml'
 //http://www.cwb.gov.tw/V7/forecast/fcst/QPF.htm
 // forecast 
@@ -24,7 +34,7 @@ echo "\n";
 function outkml($name,$url,$type='forecast',$opacity=0.5) {
 kmlhead();
 if ($type  == 'observation')
-	show_obs();
+	//show_obs();
 ?>
 <GroundOverlay>
         <name><?php echo $name; ?></name>
@@ -37,18 +47,22 @@ if ($type  == 'observation')
 <?php 
 if ($type=='forecast') {
 ?>
-                <north>25.87155034385115</north>
-                <south>21.5903425805556</south>
-                <east>122.5509623333182</east>
-                <west>118.7021084512983</west>
-                <rotation>-0.08483965398068617</rotation>
+	<LatLonBox>
+		<north>25.77516359334955</north>
+		<south>21.81582388299667</south>
+		<east>122.3146176402033</east>
+		<west>118.839658837004</west>
+	</LatLonBox>
 <?php
 } else {
 ?>
-                <north>25.86751629674119</north>
-                <south>21.87007933951254</south>
-                <east>123.4476480835544</east>
-                <west>119.3977113750858</west>
+	<LatLonBox>
+		<north>25.92518592100197</north>
+		<south>21.51995816401952</south>
+		<east>123.6015201651759</east>
+		<west>119.1778952067079</west>
+	</LatLonBox>
+				
 <?php
 }
 ?>
@@ -79,29 +93,32 @@ $term=$_GET['term'];
 switch($term) {
 		case 'f12h':
 			$name = '定量降水預報1';
-			$url =  'http://www.cwb.gov.tw/V7/forecast/fcst/Data/QPF_ChFcstPrecip12.jpg';
+			$url =  'https://www.cwb.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_12.png';
 			$type = 'forecast';
 		break;
 		case 'f24h':
 			$name = '定量降水預報2';
-			$url =  'http://www.cwb.gov.tw/V7/forecast/fcst/Data/QPF_ChFcstPrecip24.jpg';
+			$url =  'https://www.cwb.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_24.png';
 			$type = 'forecast';
 			//$type = 'observation';
 		break;
 		case 'o2d':
 			$name = '前日雨量';
-			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s000.jpg', date("d",strtotime("-1 day")));
+			//$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s000.jpg', date("d",strtotime("-1 day")));
+			$url=sprintf("https://www.cwb.gov.tw/Data/rainfall/%s_0000.QZJ8.jpg",date("Y-m-d",strtotime("-1 day")));
 			$type = 'observation';
 		break;
 		case 'o1d':
-			$name = '前日雨量';
-			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s000.jpg', date("d",strtotime("today")));
+			$name = '昨日雨量';
+			//$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s000.jpg', date("d",strtotime("today")));
+			$url=sprintf("https://www.cwb.gov.tw/Data/rainfall/%s_0000.QZJ8.jpg",date("Y-m-d",strtotime("today")));
 			$type = 'observation';
 		break;
 		case 'now':
 			$name = '今日累積雨量';
 			$half = (date("i")<30)? 0 : 3;
-			$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s%d.jpg', date("dG"), $half);
+			$url=sprintf("https://www.cwb.gov.tw/Data/rainfall/%s_%d%d0.QZJ8.jpg",date("Y-m-d",strtotime("today")),date("H"),$half);
+			//$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s%d.jpg', date("dG"), $half);
 			$type = 'observation';
 		break;
 		default:
