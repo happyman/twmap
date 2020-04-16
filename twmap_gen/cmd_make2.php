@@ -161,6 +161,7 @@ if ($jump <= $stage ) {
 		$param['fit_a4'] = 0;
 		// no more detection
 		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
+		$param['datum']=$datum;
 		cli_msglog("create SVG: $outsvg");
 		list($ret,$msg) = gpx2svg($param, $outsvg);
 		if ($ret === false ) {

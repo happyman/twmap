@@ -118,11 +118,12 @@ function proj_97toge2($p){
  * @return void
  */
 function proj_67toge3($p) {
-	$proj = "proj -I +proj=tmerc  +towgs84=-752,-358,-179,-.0000011698,.0000018398,.0000009822,.00002329 +lat_0=0 +lon_0=121 +x_0=250000 +y_0=0 +k=0.9999 +ellps=aust_SA ";
+	$proj = "proj -I +proj=tmerc  +towgs84=-752,-358,-179,-.0000011698,.0000018398,.0000009822,.00002329 +lat_0=0 +lon_0=121 +x_0=250000 +y_0=0 +k=0.9999 +ellps=aust_SA -f '%.8f'";
 	$ret = shell_exec("echo ".$p[0]." ". $p[1]. " | $proj");
 	list($x,$y)=preg_split("/\s+/",$ret);
-	$r=dms2deg($x,$y);
-	return $r;
+	return preg_split("/\s+/",$ret);
+	//$r=dms2deg($x,$y);
+	//return $r;
 }
 /**
  * proj_67toge4 
@@ -190,6 +191,17 @@ function proj_geto97($p) {
 		$pp=array(deg2dms($p[0])."E",deg2dms($p[1])."N");
 	// print_r($pp);
 	$proj="proj +proj=tmerc +ellps=aust_SA +lon_0=121 +x_0=250000 +k=0.9999";
+	$k=addslashes("$pp[0] $pp[1]");
+	$cmd="echo $k | $proj";
+	// echo $cmd ."\n";
+	$ret= shell_exec("echo $k | $proj");
+	return preg_split("/\s+/",$ret);
+
+}
+function proj_geto97_ph($p) {
+		$pp=array(deg2dms($p[0])."E",deg2dms($p[1])."N");
+	// print_r($pp);
+	$proj="proj +proj=tmerc +ellps=aust_SA +lon_0=119 +x_0=250000 +k=0.9999";
 	$k=addslashes("$pp[0] $pp[1]");
 	$cmd="echo $k | $proj";
 	// echo $cmd ."\n";

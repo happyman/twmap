@@ -63,18 +63,18 @@ if ($inp['gps'] == 1) {
 
             // 輸入的是 gpx , 讀出邊界範圍, 本 svg 不做為轉檔之用, 因為尚未得到圖檔大小
             $svg = new gpxsvg(array("gpx" => $tmp_gpx, "width" => 1024, "fit_a4" => 1, "auto_shrink" => (isset($inp['auto_shrink'])) ? 1 : 0,
-			"show_label_trk" => (isset($inp['trk_label'])) ? 1 : 0, "show_label_wpt" => $inp['wpt_label']));
+			"show_label_trk" => (isset($inp['trk_label'])) ? 1 : 0, "show_label_wpt" => $inp['wpt_label'], "datum"=> isset($inp['97datum'])? 'TWD97': 'TWD67'));
             $ret = $svg->process();
             msglog("svg get_bound processed");
             if ($ret === false) {
                 @unlink($tmp_gpx);
                 error_out("讀取 gpx 失敗" . print_r($svg->_err, true));
             }
-            $inp['startx'] = $svg->bound_twd67['tl'][0] / 1000;
-            $inp['starty'] = $svg->bound_twd67['tl'][1] / 1000;
-            $inp['shiftx'] = ($svg->bound_twd67['br'][0] - $svg->bound_twd67['tl'][0]) / 1000;
-            $inp['shifty'] = ($svg->bound_twd67['tl'][1] - $svg->bound_twd67['br'][1]) / 1000;
-            $inp['ph'] = $svg->bound_twd67['ph'];
+            $inp['startx'] = $svg->bound_twdtm2['tl'][0] / 1000;
+            $inp['starty'] = $svg->bound_twdtm2['tl'][1] / 1000;
+            $inp['shiftx'] = ($svg->bound_twdtm2['br'][0] - $svg->bound_twdtm2['tl'][0]) / 1000;
+            $inp['shifty'] = ($svg->bound_twdtm2['tl'][1] - $svg->bound_twdtm2['br'][1]) / 1000;
+            $inp['ph'] = $svg->bound_twdtm2['ph'];
             unset($svg);
         }
     }

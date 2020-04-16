@@ -812,7 +812,7 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 		}
 	$cmd = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	// moi_osm_gpx 
-	$cmd2 = sprintf("ssh happyman@tile tilestache-clean -c ~/etc/tile_main_8089.cfg -l gpxtrack -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd2 = sprintf("ssh happyman@tile tilestache-clean -c /home/happyman/etc/tile_main_8089.cfg -l gpxtrack -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	system($cmd2);
 	error_log("tilestache_clean: ". $cmd);
 	/*

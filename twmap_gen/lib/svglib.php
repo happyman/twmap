@@ -6,7 +6,7 @@ class gpxsvg {
 	var $height;
 	var $bgimg; // background image
 	var $bound = array();
-	var $bound_twd67 = array();
+	var $bound_twdtm2 = array();
 	var $ratio=array(); // 經緯度差 * $ratio = px
 	var $track;
 	var $fontsize;
@@ -23,6 +23,7 @@ class gpxsvg {
 	var $initparams; // 初始參數
 	var $auto_shrink = 0; // 1 表示自動更縮小到可以產生的範圍, 在 keepon 有大範圍地圖適用
 	var $limit = array("km_x" => 24001, "km_y" => 24001); // 24x24 格
+	var $datum = 'TWD67';
 	var $_err;
 
 	function __construct($params) {
@@ -37,9 +38,35 @@ class gpxsvg {
 		$this->initparams = array("width"=>$this->width, "bgimg"=> $this->bgimg, "logotext" => $this->logotext , "gpx"=>$this->gpx , "input_bound67"=> $this->input_bound67, "show_label_trk"=>$this->show_label_trk, "show_label_wpt" =>  $this->show_label_wpt , "do_fit_a4" => $this->do_fit_a4 );
 		$this->colorize = (isset($params['colorize']))? $params['colorize'] : "";
 		$this->auto_shrink = (isset($params['auto_shrink']))? $params['auto_shrink'] : 0;
-
+		$this->datum = (isset($params['datum']))? $params['datum'] : 'TWD67';
+	
 
 	}
+	function coordtotm2($a, $ph) {
+		if ($ph == 1) {
+			if ($this->datum == 'TWD97')
+				return proj_geto97_ph($a);
+			else
+				return proj_geto672_ph($a);
+		}
+		if ($this->datum == 'TWD97')
+			return proj_geto97($a);
+		else
+			return proj_geto672($a);
+	}
+		function tm2tocoord($a, $ph) {
+		if ($ph == 1) {
+			if ($this->datum == 'TWD97')
+				return ph_proj_97toge2($a);
+		else
+				return proj_67toge2_ph($a);
+		}
+		if ($this->datum == 'TWD97')
+			return proj_97toge2($a);
+		else
+			return proj_67toge2($a);
+	}
+	
 	function dump() {
 		print_r($this);
 	}
@@ -112,6 +139,7 @@ class gpxsvg {
 
 	}
 	// 偵測到底 gpx 範圍多大
+	/*
 	function detect_bbox(){
 			list($x,$y,$x1,$y1) = $this->get_bbox(file_get_contents($this->gpx));
 			//if ($this->taiwan == 0)
@@ -127,7 +155,7 @@ class gpxsvg {
 			$tl = array( floor($tx / 1000)*1000, ceil($ty / 1000)*1000);
 			$br = array( ceil($tx1 / 1000)*1000, floor($ty1 / 1000)*1000);
 			//  
-			$this->bound_twd67 = array("tl" => $tl, "br" => $br , "ph"=> ($this->taiwan==2)?1:0);
+			$this->bound_twdtm2 = array("tl" => $tl, "br" => $br , "ph"=> ($this->taiwan==2)?1:0);
 			if ($br[0] - $tl[0] >= $this->limit['km_x'] || $tl[1] - $br[1] >= $this->limit['km_y'] ) {
 				$over = 1;
 			} else {
@@ -136,6 +164,7 @@ class gpxsvg {
 			return array(true, array("is_taiwan"=> $this->taiwan,
 			"x"=> ($br[0] - $tl[0])/1000 , "y"=> ($tl[1] - $br[1])/1000, "over" => $over, "bbox" => "$y $x $y1 $x1"));
 	}
+	*/
 	function process() {
 		if (!isset($this->gpx) || !file_exists($this->gpx)) {
 			$this->_err[] = "no gpx file input";
@@ -153,13 +182,13 @@ class gpxsvg {
 			return false;
 		} 
 		if ($this->taiwan == 1 ) {
-			list($tx, $ty) = proj_geto672(array($x,$y));
-			list($tx1, $ty1) = proj_geto672(array($x1,$y1));
+			list($tx, $ty) = $this->coordtotm2(array($x,$y),0);
+			list($tx1, $ty1) = $this->coordtotm2(array($x1,$y1),0);
 		} else {
-			list($tx, $ty) = proj_geto672_ph(array($x,$y));
-			list($tx1, $ty1) = proj_geto672_ph(array($x1,$y1));
+			list($tx, $ty) = $this->coordtotm2(array($x,$y),1);
+			list($tx1, $ty1) = $this->coordtotm2(array($x1,$y1),1);
 		}
-		// 若是自動 get_bound 的話  多 expend 一格
+		// cmd_make 帶入已算參數, 免重算
 		if (isset($this->input_bound67['x'])) {
 			// 免算
 			$tl = array($this->input_bound67['x'], $this->input_bound67['y']);
@@ -204,12 +233,12 @@ class gpxsvg {
 		if ($this->fontsize < $this->default_fontsize)
 			$this->fontsize = $this->default_fontsize;
 		// 存入 bounds
-		$this->bound_twd67 = array("tl" => $tl, "br" => $br , "ph"=> ($this->taiwan==2)?1:0);
+		$this->bound_twdtm2 = array("tl" => $tl, "br" => $br , "ph"=> ($this->taiwan==2)?1:0);
 
 		if ($this->taiwan == 1) {
-			$this->bound = array("tl" => proj_67toge2($tl), "br"=>  proj_67toge2($br));
+			$this->bound = array("tl" => $this->tm2tocoord($tl,0), "br"=>  $this->tm2tocoord($br,0));
 		} else {
-			$this->bound = array("tl" => proj_67toge2_ph($tl), "br"=>  proj_67toge2_ph($br));
+			$this->bound = array("tl" => $this->tm2tocoord($tl,1), "br"=>  $this->tm2tocoord($br,1));
 		}
 
 		// 計算比例
@@ -292,9 +321,9 @@ class gpxsvg {
 				$this->waypoint[$j] = $waypoint;
 				$this->waypoint[$j]['rel'] = $this->rel_px($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']);
 				if ($this->taiwan == 1)
-					$this->waypoint[$j]['tw67'] = proj_geto672(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']));
+					$this->waypoint[$j]['tw67'] = $this->coordtotm2(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']),0);
 				else
-					$this->waypoint[$j]['tw67'] = proj_geto672_ph(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']));
+					$this->waypoint[$j]['tw67'] = $this->coordtotm2(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']),1);
 				$j++;
 			}
 		}
@@ -332,9 +361,9 @@ class gpxsvg {
 			"-->\n",
 			$this->bound['tl'][1], $this->bound['tl'][0],
 			$this->bound['br'][1], $this->bound['br'][0],
-			$this->bound_twd67['tl'][0], $this->bound_twd67['tl'][1],
-			($this->bound_twd67['br'][0]-$this->bound_twd67['tl'][0])/1000, 
-			($this->bound_twd67['tl'][1]-$this->bound_twd67['br'][1])/1000,
+			$this->bound_twdtm2['tl'][0], $this->bound_twdtm2['tl'][1],
+			($this->bound_twdtm2['br'][0]-$this->bound_twdtm2['tl'][0])/1000, 
+			($this->bound_twdtm2['tl'][1]-$this->bound_twdtm2['br'][1])/1000,
 			($this->taiwan==2)?1:0);
 		printf("<!-- bound_ele: %f %f -->\n",$this->ele_bound[0], $this->ele_bound[1]);
 	}
