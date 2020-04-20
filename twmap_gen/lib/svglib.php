@@ -139,7 +139,7 @@ class gpxsvg {
 
 	}
 	// 偵測到底 gpx 範圍多大
-	/*
+	// used in track.inc.php
 	function detect_bbox(){
 			list($x,$y,$x1,$y1) = $this->get_bbox(file_get_contents($this->gpx));
 			//if ($this->taiwan == 0)
@@ -164,7 +164,7 @@ class gpxsvg {
 			return array(true, array("is_taiwan"=> $this->taiwan,
 			"x"=> ($br[0] - $tl[0])/1000 , "y"=> ($tl[1] - $br[1])/1000, "over" => $over, "bbox" => "$y $x $y1 $x1"));
 	}
-	*/
+	
 	function process() {
 		if (!isset($this->gpx) || !file_exists($this->gpx)) {
 			$this->_err[] = "no gpx file input";
