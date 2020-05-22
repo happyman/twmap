@@ -419,13 +419,26 @@ var JM20K1904_MapType = new google.maps.ImageMapType({
 		maxZoom: 18
 
 	});
+var Geo2016_Options = {
+		getTileUrl: function (a, b) {
+		var y_tms = (1 << b) - a.y - 1;
+		return "//tile.happyman.idv.tw/map/geo2016/" + b + "/" + a.x + "/" + y_tms + ".png";
+	},
+	tileSize: new google.maps.Size(256, 256),
+	//maxZoom: 19,
+	maxZoom: 16,
+	name: "台灣地質圖 2016",
+	alt: "Taiwan Geologic Map 2016"
+};
+
 var DebugTile_Options = {
 	getTileUrl: function (a, b) {
-		return "//tile.happyman.idv.tw/map/debug/" + a.x + "/" + a.y + "/" + b + ".png";
+		 return "//tile.happyman.idv.tw/map/debug/" + a.x + "/" + a.y + "/" + b + ".png";
 		//eturn "https://chart.apis.google.com/chart?chst=d_text_outline&chs=256x256&chf=bg,s,00000044&chld=FFFFFF|32|h|000000|b|||x="+a.x+"|y="+a.y+"|z="+b+"||||__";
 	},
 	tileSize: new google.maps.Size(256, 256),
-	maxZoom: 19,
+	//maxZoom: 19,
+	maxZoom: 16,
 	name: "debug",
 	alt: "Debug XYZ tile"
 };
@@ -448,6 +461,7 @@ var JM50K1924NEW_MapType = new google.maps.ImageMapType(JM50K1924NEW_Options);
 var TW50K1956_MapType = new google.maps.ImageMapType(TW50K1956_Options);
 var Hillshading_MapType = new google.maps.ImageMapType(Hillshading_Options);
 var TW5KArielPIC_MapType = new google.maps.ImageMapType(TW5KArielPIC_Options);
+var Geo2016_MapType = new google.maps.ImageMapType(Geo2016_Options);
 var DebugTile_MapType = new google.maps.ImageMapType(DebugTile_Options);
 
 // 前景路圖
@@ -2003,7 +2017,7 @@ function initialize() {
 				// style: google.maps.MapTypeControlStyle.DEFAULT,
 				position: google.maps.ControlPosition.TOP_LEFT,
 				// dropdown menu 要重複一次
-				mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis", "nlsc_emap", "theme", 'debug', 'fandi', 'jm20k_1921', 'jm50k', 'tw50k', 'hillshading', 'tw5kariel', 'nlsc_photo_mix', 'general2011']
+				mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis", "nlsc_emap", "theme", 'debug', 'geo2016', 'fandi', 'jm20k_1921', 'jm50k', 'tw50k', 'hillshading', 'tw5kariel', 'nlsc_photo_mix', 'general2011']
 			}
 		});
 
@@ -2206,6 +2220,7 @@ function initialize() {
 	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);
 	map.mapTypes.set('fandi', FanDi_MapType);
 	map.mapTypes.set('debug',DebugTile_MapType);
+	map.mapTypes.set('geo2016',Geo2016_MapType);
 	map.mapTypes.set('jm20k_1904', JM20K1904_MapType);
 	map.mapTypes.set('jm20k_1921', JM20K1921_MapType);
 	map.mapTypes.set('tm50k_1966', TM50K1966_MapType);
