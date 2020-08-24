@@ -194,7 +194,7 @@ class garminKMZ {
 		$str = '<?xml version="1.0" encoding="utf-8"?>
 			<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
 			<Document>';
-		$str .= sprintf("\n<name>地圖產生器 %dx%d-%dx%d(%d)</name>",
+		$str .= sprintf("\n<name>地圖產生器 %dx%d-%dx%d(%s)</name>",
 			$this->startx,$this->starty,$this->shiftx,$this->shifty,$this->datum);
 		return $str;
 
