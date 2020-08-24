@@ -273,7 +273,7 @@ if ($stage >= $jump ) {
 	$desc->save($outtext);
 	cli_msglog("make kmz file...");
 	require_once("lib/garmin.inc.php");
-	$kmz = new garminKMZ(3,3,$outimage,$ph);
+	$kmz = new garminKMZ(3,3,$outimage,$ph,$datum);
 	if ($BETA == 1 )
 		$kmz->setDebug(1);
 	// 加上行跡資料

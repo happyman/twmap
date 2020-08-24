@@ -24,8 +24,9 @@ class garminKMZ {
 	var $kml;
 	var $fromGPS; // content convert from gpx
 	var $ph; // 澎湖
+	var $datum;
 	var $debug = 0;
-	function __construct($cutx,$cuty,$fname,$ph=0) {
+	function __construct($cutx,$cuty,$fname,$ph=0,$datum='TWD97') {
 		if (preg_match("/(\d+)x(\d+)-(\d+)x(\d+)/",basename($fname),$r)){
 			if (file_exists($fname)) {
 				$this->cutx = $cutx;
@@ -36,6 +37,7 @@ class garminKMZ {
 				$this->shifty = $r[4];
 				$this->fname = $fname;
 				$this->ph = $ph;
+				$this->datum = $datum;
 				//echo "ok";
 				return true;
 			}
@@ -60,59 +62,7 @@ class garminKMZ {
 		$r = $this->transcoord($WN,$ES, $EN, $WS);
 		return $r;
 	}
-	/**
-	 * makeOrux 
-	 * 產生 oruxmap 格式的附檔 => buggy
-	 * @param mixed $title 
-	 * @access public
-	 * @return void
-	 */
-	function makeOrux($title,$reload_flag=0) {
-		$dir=dirname($this->fname);
-		$zipname = str_replace(".png",".oruxmap.zip",$this->fname);
-		if (file_exists($zipname))
-			unlink($zipname);
-
-		$zipname = str_replace(".png",".oruxmap.7z",$this->fname);
-		if ($reload_flag == 0 && file_exists($zipname))
-			return ture;
-		mkdir("$dir/oruxmap");
-		$r = $this->get_image_bounds();
-		list ($r['pix_x'],$r['pix_y']) = getimagesize($this->fname);
-		$oruxparam = sprintf("-i=%s -d=\"WGS 1984Global Definition\"  -p=\"LATITUDE/LONGITUDE\" -r=\"geo,0,0,%f,%f,N;geo,%d,%d,%f,%f,N,geo,%d,0,%f,%f,N,geo,0,%d,%f,%f,N\" -sqlite -z=50,25,12.5,6.5  -n=\"%s\" -o=\"%s\"",$this->fname,$r['W'],$r['N'],$r['pix_x'],$r['pix_y'],$r['E'],$r['S'], $r['pix_x'], $r['E1'],$r['N1'], $r['pix_y'],$r['W1'],$r['S1'], $title,"$dir/oruxmap");
-		$oruxparam = sprintf("-i=%s -r=\"geo,0,0,%f,%f,N;geo,%d,%d,%f,%f,N,geo,%d,0,%f,%f,N,geo,0,%d,%f,%f,N\" -sqlite -z=50,25,12.5,6.5  -n=\"%s\" -o=\"%s\"",$this->fname,$r['W'],$r['N'],$r['pix_x'],$r['pix_y'],$r['E'],$r['S'], $r['pix_x'], $r['E1'],$r['N1'], $r['pix_y'],$r['W1'],$r['S1'], $title,"$dir/oruxmap");
-
-		/* wwwrun 不一定要有 shell, 但一定要有 java home
-		 * #!/bin/sh
-		 * export LC_ALL="zh_TW.UTF-8"
-		 * export JAVA_BINDIR=/usr/lib64/jvm/jre/bin
-		 * export JAVA_HOME=/usr/lib64/jvm/jre
-		 * export JAVA_ROOT=/usr/lib64/jvm/jre
-		 * java -Xmx1024m -jar OruxMapsDesktop.jar "$@"
-		 */
-		$cmd = sprintf("cd /opt/OruxMapsDesktop;./OruxMapsDesktop.sh %s",$oruxparam);
-		// echo $cmd;
-		exec($cmd, $output, $ret);
-		if ($this->debug)
-			error_log("run $cmd\n".print_r($output,true)."\nret=".$ret);
-		if ($ret != 0 ) {
-			error_log("fail: $cmd");
-			return false;
-		}
-
-		$output=array();
-		$cmd = sprintf("cd $dir/oruxmap; export LC_ALL=zh_TW.UTF-8; 7z a %s $title/* ;rm -r $dir/oruxmap", $zipname);
-		exec($cmd, $output,$ret);
-		if ($this->debug)
-			error_log("run $cmd\n".print_r($output,true)."\nret=".$ret);
-		//echo "<head><meta charset=\"utf-8\" />";
-		//echo $cmd;
-		//print_r($output);
-		if ($ret == 0 ) {
-			return true;
-		}
-		error_log("fail $cmd");
-	}
+	
 	function makekml() {
 		$cutx = $this->cutx;
 		$cuty = $this->cuty;
@@ -187,16 +137,23 @@ class garminKMZ {
 	 */
 	function transcoord($p1,$p2,$p3,$p4) {
 		$r = array();
+		if ($this->datum == 'TWD97'){
+			$proj_func = "proj_97toge2";
+			$ph_proj_func = "ph_proj_97toge2";
+		}   else {
+			$proj_func = "proj_67toge2";
+			$ph_proj_func = "ph_proj_67toge2";
+		}
 		if ($this->ph == 1 ) {
-			list ($r['W'],$r['N']) = ph_proj_67toge2($p1);
-			list ($r['E'],$r['S']) = ph_proj_67toge2($p2);
-			list ($r['E1'],$r['N1']) = ph_proj_67toge2($p3);
-			list ($r['W1'],$r['S1']) = ph_proj_67toge2($p4);
+			list ($r['W'],$r['N']) = $ph_proj_func($p1);
+			list ($r['E'],$r['S']) = $ph_proj_func($p2);
+			list ($r['E1'],$r['N1']) = $ph_proj_func($p3);
+			list ($r['W1'],$r['S1']) = $ph_proj_func($p4);
 		} else {
-			list ($r['W'],$r['N']) = proj_67toge2($p1);
-			list ($r['E'],$r['S']) = proj_67toge2($p2);
-			list ($r['E1'],$r['N1']) = proj_67toge2($p3);
-			list ($r['W1'],$r['S1']) = proj_67toge2($p4);
+			list ($r['W'],$r['N']) = $proj_func($p1);
+			list ($r['E'],$r['S']) = $proj_func($p2);
+			list ($r['E1'],$r['N1']) = $proj_func($p3);
+			list ($r['W1'],$r['S1']) = $proj_func($p4);
 		}
 		return $r;
 	}
@@ -237,8 +194,8 @@ class garminKMZ {
 		$str = '<?xml version="1.0" encoding="utf-8"?>
 			<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
 			<Document>';
-		$str .= sprintf("\n<name>地圖產生器 %dx%d-%dx%d</name>",
-			$this->startx,$this->starty,$this->shiftx,$this->shifty);
+		$str .= sprintf("\n<name>地圖產生器 %dx%d-%dx%d(%d)</name>",
+			$this->startx,$this->starty,$this->shiftx,$this->shifty,$this->datum);
 		return $str;
 
 	}
