@@ -180,6 +180,15 @@ var MOI_OSM_Options = {
 	name: "魯地圖",
 	alt: "Taiwan TOPO @Rudy"
 };
+var MOI_OSM_EN_Options = {
+	getTileUrl: function (a, b) {
+		return "//tile.happyman.idv.tw/map/rudy_en/" + b + "/" + a.x + "/" + a.y + ".png";
+	},
+	tileSize: new google.maps.Size(256, 256),
+	maxZoom: 20,
+	name: "Rudy MAP",
+	alt: "Taiwan TOPO @Rudy"
+};
 var MOI_OSM_TWMAP_Options = {
 	getTileUrl: function (a, b) {
 		return "//tile.happyman.idv.tw/map/moi_osm/" + b + "/" + a.x + "/" + a.y + ".png";
@@ -454,6 +463,7 @@ var Taiwan_General_EMAP_MapType = new google.maps.ImageMapType(Taiwan_General_EM
 var NLSC_PHOTO_MIX_MapType = new google.maps.ImageMapType(NLSC_PHOTO_MIX_MapOptions);
 var OSM_MapType = new google.maps.ImageMapType(OSM_Options);
 var MOI_OSM_MapType = new google.maps.ImageMapType(MOI_OSM_Options);
+var MOI_OSM_EN_MapType = new google.maps.ImageMapType(MOI_OSM_EN_Options);
 var Darker_MapType = new google.maps.ImageMapType(Darker_Options);
 var FanDi_MapType = new google.maps.ImageMapType(Fandi_Options);
 var JM50K1924_MapType = new google.maps.ImageMapType(JM50K1924_Options);
@@ -2017,7 +2027,7 @@ function initialize() {
 				// style: google.maps.MapTypeControlStyle.DEFAULT,
 				position: google.maps.ControlPosition.TOP_LEFT,
 				// dropdown menu 要重複一次
-				mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis", "nlsc_emap", "theme", 'debug', 'geo2016', 'fandi', 'jm20k_1921', 'jm50k', 'tw50k', 'hillshading', 'tw5kariel', 'nlsc_photo_mix', 'general2011']
+				mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', 'moi_osm_en', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis", "nlsc_emap", "theme", 'debug', 'geo2016', 'fandi', 'jm20k_1921', 'jm50k', 'tw50k', 'hillshading', 'tw5kariel', 'nlsc_photo_mix', 'general2011']
 			}
 		});
 
@@ -2217,6 +2227,7 @@ function initialize() {
 	map.mapTypes.set('nlsc_photo_mix', NLSC_PHOTO_MIX_MapType);
 	map.mapTypes.set('osm', OSM_MapType);
 	map.mapTypes.set('moi_osm', MOI_OSM_MapType);
+	map.mapTypes.set('moi_osm_en', MOI_OSM_EN_MapType);
 	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);
 	map.mapTypes.set('fandi', FanDi_MapType);
 	map.mapTypes.set('debug',DebugTile_MapType);

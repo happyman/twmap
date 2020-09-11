@@ -106,6 +106,7 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 					<option value="tw5kariel">&#xf1da; &nbsp;TW5K 2000</option>
 					<option value="taiwan">&#xf1da; &nbsp;經建3 2001</option>
 					<option value="moi_osm">&#xf164; &nbsp;魯地圖</option>
+					<option value="moi_osm_en">&#xf164; &nbsp;RUDY</option>
 					<option value="nlsc_emap">&#xf164; &nbsp;EMAP5</option>
 					<option value="roadmap">&#xf1a0; &nbsp;Google圖</option>
 					<option value="terrain">&#xf1a0; &nbsp;地形圖</option>
