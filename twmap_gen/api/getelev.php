@@ -439,18 +439,18 @@ $data['elevation'] = $ele;
 $towns = get_administration($lon,$lat, "town");
 if ($towns || count($towns) > 0 ) {
 	foreach($towns as $town) {
-		if ($town['T_Name']== '秀林鄉') {
+		if ($town['townname']== '秀林鄉') {
 			$permit_remark="(銅門外免入山)";
 		} else {
 			$permit_remark=($town['permit']=='t')? "(入山)" : "";
 		}
-		$town_name[] = sprintf("%s%s%s",$town['C_Name'],$town['T_Name'],$permit_remark);
+		$town_name[] = sprintf("%s%s[%s]%s",$town['countyname'],$town['townname'],$town['villname'],$permit_remark);
 	}
 	$data["admin"] = implode(",",$town_name);
-	$data["weather_forcast_url"] = sprintf("http://www.cwb.gov.tw/V7/forecast/town368/towns/%s.htm?type=Weather&time=7Day",$town['Town_ID']);
-	if (!empty($town['cwb_tribe_code'])) {
-		$data["tribe_weather"] = get_tribe_weather($town['cwb_tribe_code']);
-	}
+	$data["weather_forcast_url"] = sprintf("https://www.cwb.gov.tw/V8/C/W/Town/Town.html?TID=%s",$town['Town_ID']);
+	//if (!empty($town['cwb_tribe_code'])) {
+	$data["tribe_weather"] = get_tribe_weather_url(sprintf("%s%s",$town['countyname'],$town['townname']));
+	//}
 }
 // 取得是否在國家公園內
 $nps = get_administration($lon,$lat, "nature_park");

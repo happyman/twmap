@@ -1259,6 +1259,7 @@ function get_distance2($wkt_str, $twDEM_path){
 	return array(true,array("step"=>20, "d"=>$sum, "d1"=>$sum2, "avgele" => $sumele / count($points),
 	"ascent"=>$ascent, "descent"=>$descent, "outofrange" => $outofrange, "maxele"=> $maxele, "minele" => $minele, "chart"=>implode(",",$charts), "azimuth"=>$azi_result['azimuth'], "cross"=>$cross));
 }
+// update to 2020 version, with 飛地
 function get_administration($x,$y,$type="town") {
 	$db=get_conn();
 	if ($type == "nature_park") {
@@ -1266,11 +1267,24 @@ function get_administration($x,$y,$type="town") {
 	} else if ($type == "nature_reserve") {
 		$table = "nature_reserve";
 	} else {
-		$table = "tw_town_2014";
+		$table = "tw_town_2020";
 	}
 	$sql = sprintf("select * from \"%s\" where ST_intersects(geom, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry)=true",$table, $x,$y,10);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	return $db->getAll($sql);
+}
+// from cwb V8 (tribe_home table)
+function get_tribe_weather_url($key){
+	$db=get_conn();
+	$sql = sprintf("select * from tribe_home where tribe_town='%s'",$key);
+	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
+	$data =  $db->getAll($sql);
+	$ret = array();
+	if (count($data) > 0) {
+		foreach($data as $d)
+		$ret[]= sprintf("<a href=%s target=cwb>%s</a>",$d['cwb_link'],$d['tribe_name']);
+	}
+	return implode($ret,",");
 }
 // use to export points to KML 
 // fpath is output geojson file. 

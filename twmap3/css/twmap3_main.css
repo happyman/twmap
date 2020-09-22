@@ -288,6 +288,9 @@ height: 100%;
     -webkit-box-shadow: 0 0  8px #000;
     box-shadow: 0 0 8px #000;
 }
+a:visited {
+  color: pink;
+}
 @media (max-width: 900px) {
   .infowin { font-size: 15px;	padding: 3px; }
 
