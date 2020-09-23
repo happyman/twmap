@@ -2,11 +2,16 @@
 require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
 
-if (!isset($_REQUEST['name'])){
+if (php_sapi_name() == "cli")
+	$keyword = $argv[1];
+else
+	$keyword = $_REQUEST['name'];
+
+
+if (empty($keyword)){
 	echo "請輸入要搜尋的名稱";
 	exit(0);
 }
-$keyword = $_REQUEST['name'];
 ?>
 <html>
 <head><title>POI search</title>
@@ -82,7 +87,9 @@ class poi_search {
 		}
 	}
 	function search($name){
-		$sql = sprintf("select A.id, A.data, A.category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from poi_data A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 300", pg_escape_string($name));
+		// version 1
+		//$sql = sprintf("select A.id, A.data, A.category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from poi_data A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 300", pg_escape_string($name));
+		$sql = sprintf("select A.id as id, A.data as data, A.category as category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from (select id,data,category from poi_data inner join poi_category_map using (id)) A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 300", pg_escape_string($name));
 		$stmt = $this->db->query($sql);
 		$result= $stmt->fetchAll(PDO::FETCH_ASSOC);
 		return $result;
@@ -110,7 +117,7 @@ if (count($result)>0) {
 			$towns = get_administration($data['Lon'],$data['Lat'], "town");
 			if ($towns || count($towns) > 0 ) {
 				foreach($towns as $town) {
-					$town_name[] = sprintf("%s%s%s",$town['C_Name'],$town['T_Name'],($town['permit']=='t')? "(入山)" : "" );
+					$town_name[] = sprintf("%s%s%s",$town['countyname'],$town['townname'],($town['permit']=='t')? "(入山)" : "" );
 				}
 				$town_string = implode(",",$town_name);
 			} else {
