@@ -11,6 +11,7 @@ if(!isset($_SESSION)) {
 if ( isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1) {
 	if ( isset($_SESSION['redirto'])) {
 		unset($_SESSION['redirto']);
+		session_write_close();
 		header("Location: ". $_SESSION['redirto']);
 	} else
 		header("Location: main.php");

@@ -1,6 +1,10 @@
 <?php
 // $Id: show.php 362 2013-10-19 02:16:56Z happyman $
-session_start();
+// https://ma.ttias.be/php-session-locking-prevent-sessions-blocking-in-requests/
+session_start([
+    'read_and_close' => true,
+]);
+
 require_once("config.inc.php");
 
 $html_head = 1;

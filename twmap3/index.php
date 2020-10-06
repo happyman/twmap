@@ -1,6 +1,8 @@
 <?php
 if(!ob_start("ob_gzhandler")) ob_start();
-session_start();
+session_start([
+    'read_and_close' => true,
+]);
 $ver = trim(file_get_contents("VERSION"));
 require_once("lib/functions.inc.php");
 ?>

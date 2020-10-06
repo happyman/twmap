@@ -1,6 +1,8 @@
 <?php
 if (!isset($_SESSION))
-	session_start();
+	session_start( [
+    'read_and_close' => true,
+]);
 require_once("lib/functions.inc.php");
 list($st, $info) = login_info();
                                 if ($st === false ) {
