@@ -2,8 +2,6 @@
 
 // 1. 檢查是不是在 2013/9/6 - 2013/10/18 之間產生的地圖
 // 如果是就重新產生,不然就直接 redirect
-//
-session_start();
 require_once("config.inc.php");
 
 $mid = $_GET['mid'];
