@@ -41,6 +41,7 @@ var theme = "default";
 // 預設開啟
 var show_kml_layer = 1;
 var show_delaunay = 0;
+var drag_gpx_as_shape = 0; // drag GPX and load as polyline shape
 var GPSLayer; // external kml layer
 // 以下為底圖
 
@@ -851,7 +852,8 @@ function saveMapState() {
 		"goto": mygoto,
 		"show_delaunay": show_delaunay,
 		"rainfall": $("#rainfall").val(),
-		"mcover": $('#mcover').val()
+		"mcover": $('#mcover').val(),
+		"drag_gpx_as_shape": drag_gpx_as_shape
 	};
 
 	localStorage.setItem("twmap_state", JSON.stringify(state));
@@ -877,6 +879,8 @@ function restoreMapState(state) {
 		map.setMapTypeId(state.maptypeid);
 		$('#changebmap option[value="' + state.maptypeid + '"]').prop("selected", true);
 	}
+	if (state.drag_gpx_as_shape == 1)
+		drag_gpx_as_shape = 1;
 	if (state.roadmap) {
 		$("#changegname").val(state.roadmap);
 		$("#changegname").change();
@@ -2763,7 +2767,8 @@ function initialize() {
 				"mcover": getParameterByName("mcover"),
 				"goto": getParameterByName("goto"),
 				"kml": getParameterByName("kml"),
-				"skml_id": getParameterByName("skml_id")
+				"skml_id": getParameterByName("skml_id"),
+				"drag_gpx_as_shape": getParameterByName("drag_gpx_as_shape")
 			};
 			$.extend(true, state, st);
 			//console.log(state);
@@ -2883,6 +2888,9 @@ function loadGpx(xml) {
 	parser.AddTrackpointsToMap(); // Add the trackpoints
 	// parser.AddRoutepointsToMap(); // Add the routepoints
 	parser.AddWaypointsToMap(); // Add the waypoints
+	// happyman
+	if (drag_gpx_as_shape == 1 )
+		parser.showShapes();
 
 }
 

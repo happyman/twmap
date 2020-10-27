@@ -54,6 +54,8 @@ function GPXParser(xmlDoc, map)
 	this.infowindows = [];
 	this.markers = [];
 	this.polylines = [];
+	// add shapes happyman
+	this.shapes = [];
 }
 
 // Set the colour of the track line segements.
@@ -181,7 +183,7 @@ GPXParser.prototype.AddTrackSegmentToMap = function(trackSegment, colour, width)
 	}
 
 	var pointarray = [];
-
+	var pointarray2 = [];
 	// process first point
 	var lastlon = parseFloat(trackpoints[0].getAttribute("lon")) || 0;
 	var lastlat = parseFloat(trackpoints[0].getAttribute("lat")) || 0;
@@ -202,6 +204,7 @@ GPXParser.prototype.AddTrackSegmentToMap = function(trackSegment, colour, width)
 			lastlat = lat;
 			latlng = new google.maps.LatLng(lat,lon);
 			pointarray.push(latlng);
+			pointarray2.push( { "lat": lat, "lon": lon } );
 		}
 
 	}
@@ -212,8 +215,24 @@ GPXParser.prototype.AddTrackSegmentToMap = function(trackSegment, colour, width)
 		strokeWeight: width
 	});
 
+	this.shapes.push( { "type": "polyline", "color": "#0000FF", "path": pointarray2 });
 	polyline.setMap(this.map);
 	this.polylines.push(polyline);
+}
+// showShapes happyman
+GPXParser.prototype.showShapes = function() {
+	var myshapes = localStorage.getItem("shapes");
+    /*jshint evil:true */
+	var jsonObject = (myshapes) ? eval("(" + myshapes + ")") : {"shapes": []};
+	var j = jsonObject.shapes.length;
+	for(var i = 0; i < this.shapes.length; i++) {
+		jsonObject.shapes[j++] = this.shapes[i];
+	}
+	shapesMap.shapesClearAll();
+	localStorage.setItem("shapes", JSON.stringify(jsonObject));
+	shapesMap.shapesLoad();
+	shapesMap.lastshape_select_click();
+
 }
 
 GPXParser.prototype.AddTrackToMap = function(track, colour, width)
