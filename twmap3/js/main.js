@@ -431,8 +431,8 @@ var JM20K1904_MapType = new google.maps.ImageMapType({
 	});
 var Geo2016_Options = {
 		getTileUrl: function (a, b) {
-		var y_tms = (1 << b) - a.y - 1;
-		return "//tile.happyman.idv.tw/map/geo2016/" + b + "/" + a.x + "/" + y_tms + ".png";
+		// var y_tms = (1 << b) - a.y - 1;
+		return "//tile.happyman.idv.tw/map/geo2016/" + b + "/" + a.x + "/" + a.y + ".png";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	//maxZoom: 19,
