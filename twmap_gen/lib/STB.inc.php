@@ -527,15 +527,15 @@ Class STB2 extends STB {
 	switch($this->version){
 		case 3:
 			if ($this->include_gpx==0){
-				return 'http://tile.happyman.idv.tw/map/tw25k2001/%s/%s/%s.png';
+				return 'http://make.happyman.idv.tw/map/tw25k2001/%s/%s/%s.png';
 			} else 
-				return 'http://tile.happyman.idv.tw/map/twmap_happyman_nocache/%s/%s/%s.png';
+				return 'http://make.happyman.idv.tw/map/twmap_happyman_nocache/%s/%s/%s.png';
 		break;
 		case 2016:
 			if ($this->include_gpx==0){
-				return 'http://tile.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
+				return 'http://make.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
 			} else 
-				return 'http://tile.happyman.idv.tw/map/moi_happyman_nocache/%s/%s/%s.png';
+				return 'http://make.happyman.idv.tw/map/moi_happyman_nocache/%s/%s/%s.png';
 		break;
 	}
 }

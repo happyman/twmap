@@ -402,14 +402,14 @@ function img_from_tiles2($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpd
 	for($j=$a[1];$j<=$b[1];$j++) {
 		for ($i=$a[0]; $i<=$b[0]; $i++) {
 			$imgname = sprintf("%d_%d.png",$i,$j);
-			if (file_exists("$dir/$imgname") && !is_link("$dir/$imgname")) {
+			if (file_exists("$dir/$imgname") && !is_link("$dir/$imgname") && filesize("$dir/$imagename") > 0 ) {
 				if ($debug) {
 					error_log("$dir/$imgname ok ". filesize("$dir/$imgname"));
 				}
 				$img[] =  $imgname;
 			} else {
 				if ($debug) {
-					error_log("$dir/$imgname not exist");
+					error_log("$dir/$imgname not exist or zero-sized");
 				}
 				// clean tmpdir
 				exec("rm -r $dir");
