@@ -234,6 +234,13 @@ if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
 }
 $mid = map_add($_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx, NULL, isset($inp['97datum'])? 97 : 67);
 
+if ($mid === false ) {
+    $files = map_files($outimage);
+    foreach ($files as $f) {
+        @unlink($f);
+    }
+    error_out("寫入資料庫失敗,請回報");
+}
 // 最後搬移到正確目錄
 map_migrate($out_root, $_SESSION['uid'], $mid);
 
