@@ -12,7 +12,7 @@ if (empty($_SESSION['loggedin'])) {
 
 require_once ("config.inc.php");
 ini_set("memory_limit", "512M");
-ini_set("max_execution_time", "300");
+ini_set("max_execution_time", "600");
 ignore_user_abort(true);
 
 // 2. check _POST
@@ -235,11 +235,7 @@ if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
 $mid = map_add($_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx, NULL, isset($inp['97datum'])? 97 : 67);
 
 if ($mid === false ) {
-    $files = map_files($outimage);
-    foreach ($files as $f) {
-        @unlink($f);
-    }
-    error_out("寫入資料庫失敗,請回報");
+    error_out("寫入資料庫失敗,請回報 $outimage");
 }
 // 最後搬移到正確目錄
 map_migrate($out_root, $_SESSION['uid'], $mid);
