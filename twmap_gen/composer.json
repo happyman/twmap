@@ -1,0 +1,10 @@
+{
+    "name": "happyman/twmap",
+    "description": "地圖產生器",
+    "type": "project",
+    "license": "MIT",
+    "require" : {
+        "hybridauth/hybridauth" : "~3.0",
+    	"smarty/smarty": "~3.1"
+    }
+}

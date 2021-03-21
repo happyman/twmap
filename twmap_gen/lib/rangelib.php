@@ -93,7 +93,18 @@ function merge3($tileX,$tileY,$imgs) {
 	$im = imageCreate($width,$height);
 	$co=0;
 	for ($i=0;$i<$total;$i++) {
-		$src = imageCreateFromPng($imgs[$i]);
+		// if load from remote
+		if (preg_match('/^http/',$imgs[$i])){
+			$ch = curl_init();
+    		curl_setopt($ch, CURLOPT_URL, $imgs[$i]); 
+  			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // good edit, thanks!
+    		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1); // also, this seems wise considering output is image.
+    		$data = curl_exec($ch);
+   			curl_close($ch);
+			$src = imagecreatefromstring($data);   
+		} else {
+			$src = imageCreateFromPng($imgs[$i]);
+		}
 		// status bar
 		//if (($bar=intval($i/$total*10))!=$lastbar) {
 		//	echo "= " . $bar*10 . "% "; $lastbar=$bar;

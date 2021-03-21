@@ -22,7 +22,7 @@ if (isset($_GET['mid'])){
 	$lastest_mid = "&mid=".$_GET['mid'];
 } else {
 	// 若沒參數就取最新的
-	$row = map_get_gpx(1);
+	$row = map_get_lastest(1,0);
 	if (count($row) == 1 )
 		$lastest_mid = "&mid=".$row[0]['mid'];
 }

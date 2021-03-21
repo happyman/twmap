@@ -162,16 +162,17 @@ else {
 if (map_full($_SESSION['uid'], $user['limit'], $recreate_flag)) {
     error_out("$recreate_flag 已經達到數量限制" . $user['limit']);
 }
+$datum=(isset($inp['97datum']))? 'TWD97': 'TWD67';
+$outpath = sprintf("%s/%06d", $out_root_tmp, $_SESSION['uid']);
+$outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%d%s_%s", $outpath, $startx * 1000, $starty * 1000, $shiftx, $shifty, $version, ($ph == 1) ? 'p' : "", $datum);
+$outimage = $outfile_prefix . ".tag.png";
+$outgpx = $outfile_prefix . ".gpx";
 
 $block_msg = map_blocked($out_root, $_SESSION['uid']);
 if ($block_msg != null) {
     error_out($block_msg);
 }
-$datum=(isset($inp['97datum']))? 'TWD97': 'TWD67';
-$outpath = sprintf("%s/%06d", $out_root, $_SESSION['uid']);
-$outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%d%s_%s", $outpath, $startx * 1000, $starty * 1000, $shiftx, $shifty, $version, ($ph == 1) ? 'p' : "", $datum);
-$outimage = $outfile_prefix . ".tag.png";
-$outgpx = $outfile_prefix . ".gpx";
+
 
 $svg_params = "";
 

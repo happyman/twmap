@@ -62,7 +62,8 @@ function create_rows($maps,$startsn=0) {
 		$rows[$i]['y'] = $maps[$i]['locY'];
 		$rows[$i]['grid'] = sprintf("%dx%d",$maps[$i]['shiftX'], $maps[$i]['shiftY']);
 		$rows[$i]['pages'] = $maps[$i]['pageX'] * $maps[$i]['pageY'];
-		if (map_file_exists($maps[$i]['filename'], 'pdf'))
+		//if (map_file_exists($maps[$i]['filename'], 'pdf'))
+		if (strtotime($rows[$i]['date'] ) > strtotime('2013-06-27'))
 			$rows[$i]['pagetype'] = '<img src="imgs/pdf_icon.png" width="32px" alt="PDF" />';
 		else
 

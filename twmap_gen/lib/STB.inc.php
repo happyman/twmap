@@ -38,28 +38,34 @@ Class STB {
 	var $err = array();
 	var $log_channel = "";
 	var $datum;
+	var $tmpdir = "/dev/shm";
 
-	function __construct($stbdir, $startx, $starty, $sx, $sy, $datum='TWD67') {
+	function __construct($stbdir, $startx, $starty, $sx, $sy, $datum='TWD67',$tmpdir="") {
 		if ($sx > 35 || $sy > 35) {
 			$this->err[] = "Sorry We Cannot create too big map";
 			return FALSE;
 		}
-		if (file_exists( $stbdir . "/stb-index" )) {
+		$testfd = @fopen($stbdir . "/stb-index","r");
+		if ($testfd) {
 			$this->startx = $startx;
 			$this->starty = $starty;
 			$this->shiftx = $sx;
 			$this->shifty = $sy;
 			$this->datum = $datum;
+			if (!empty($tmpdir)){
+				$this->tmpdir = $tmpdir;
+			}
 			if ($this->datum == 'TWD97'){
 				$this->stbindex= $stbdir . "/stb-index-97" ;
-				$this->arrayfile = "/tmp/sorted_array_web-97";
+				$this->arrayfile = $this->tmpdir . "/sorted_array_web-97";
 			} else {
 				$this->stbindex= $stbdir . "/stb-index";
-				$this->arrayfile = "/tmp/sorted_array_web";
+				$this->arrayfile = $this->tmpdir . "/sorted_array_web";
 			}
 			$this->stbdir= $stbdir;
-		} else {
 
+			// print_r($this);
+		} else {
 			$this->err[] =	"No Index file... bye";
 			return FALSE;
 		}
@@ -219,6 +225,7 @@ Class STB {
 			if ($images === FALSE) {
 				return FALSE;
 			}
+			// if stbdir contains http, download from remote
 			$im=merge3($this->tileX, $this->tileY, $images);
 			$this->doLog("image marged..");
 			$cim=cropimage($im,$this->movX,$this->movY,
@@ -393,10 +400,11 @@ Class STB2 extends STB {
 	var $include_gpx = 0; // 是否包含 gpx
 	var $datum;
 	var $v3img; 
+	var $tmpdir = "/dev/shm";
 
 	private $zoom = 16;
 
-	function __construct($basedir, $startx, $starty, $sx, $sy, $ph=0, $datum) {
+	function __construct($basedir, $startx, $starty, $sx, $sy, $ph=0, $datum, $tmpdir="") {
 		if ($sx > 35 || $sy > 35) {
 			$this->err[] = "Sorry We Cannot create too big map";
 			return FALSE;
@@ -408,6 +416,9 @@ Class STB2 extends STB {
 			$this->shifty = $sy;
 			$this->ph = $ph;
 			$this->datum = $datum;
+		if (!empty($tmpdir)) {
+			$this->tmpdir = $tmpdir;
+		}
 			return TRUE;
 /*
 		if (is_dir( $basedir . "/". $this->zoom )) {
@@ -457,7 +468,7 @@ Class STB2 extends STB {
 					//error_log("call $i $j");
 					// list ($status, $fname) =img_from_tiles($this->stbdir, $i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $tmppath, $tilecachepath);
 					$tileurl = $this->gettileurl();
-					$options=array("tile_url"=> $tileurl, "image_ps_args"=> $image_ps_args, "tmpdir"=> "/dev/shm", "datum"=> $this->datum);
+					$options=array("tile_url"=> $tileurl, "image_ps_args"=> $image_ps_args, "tmpdir"=> $this->tmpdir, "datum"=> $this->datum);
 					// tmppath => /dev/shm
 					list ($status, $fname) =img_from_tiles3($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $options); // "/dev/shm", $tileurl, $image_ps_args);
 					// 產生 progress

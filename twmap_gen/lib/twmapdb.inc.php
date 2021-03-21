@@ -72,6 +72,7 @@ function fetch_user($mylogin) {
 		return $answer;
 	}
 	$rs = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	if (count($rs) == 0) return false;
 	return memcached_set($key,$rs[0]);
@@ -96,12 +97,14 @@ function login_user($mylogin) {
 	}
 	// 是否加上 login record ?
 	//
+	$db->close();
 	return fetch_user($mylogin);
 }
 function get_user($uid){
 	$db=get_conn();
 	$sql = sprintf("select * from \"user\" where uid=%s",$uid);
 	$rs = $db->getAll($sql);
+	$db->close();
 	if (count($rs) == 1 )
 		return $rs[0];
 	else
@@ -112,6 +115,7 @@ function map_exists($uid,$startx,$starty,$shiftx,$shifty,$version,$gpx=0) {
 	$sql = sprintf("SELECT \"mid\" from \"map\" WHERE \"uid\"='%s' AND \"locX\"=%d AND \"locY\"=%d AND \"shiftX\"=%d and \"shiftY\"=%d and \"version\"=%d and \"gpx\"=%d",$uid,$startx,$starty,$shiftx,$shifty,$version,$gpx);
 	$rs = $db->GetAll($sql);
 	logsql($sql,$rs);
+	$db->close();
 	if (count($rs) == 0 ) return false;
 	return $rs[0];
 }
@@ -119,6 +123,7 @@ function keepon_map_exists($uid,$keepon_id){
 	$db=get_conn();
 	$sql = sprintf("SELECT * from  \"map\" WHERE \"uid\"='%s' AND \"keepon_id\"='%s' AND \"flag\" <> 2",$uid,$keepon_id);
 	$rs = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	if (count($rs) == 0 ) return false;
 	return $rs[0];
@@ -131,6 +136,7 @@ function is_gpx_imported($mid) {
 	$title = str_replace("-GPX自動轉檔","%",$row['title']);
 	$sql = sprintf("SELECT \"mid\",\"title\" FROM \"map\" WHERE \"mid\" IN (SELECT DISTINCT \"mid\" FROM \"gpx_wp\") AND \"mid\" <> %d AND \"locX\"=%d AND \"locY\"=%d AND \"shiftX\"=%d and \"shiftY\"=%d and \"version\"=%d and \"gpx\"=1 AND \"title\" LIKE '%s'",$mid, $row['locX'],$row['locY'],$row['shiftX'],$row['shiftY'],$row['version'],pg_escape_string($title));
 	$rs = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	if (count($rs) == 0 ) return false;
 	return $rs[0];
@@ -148,6 +154,7 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="loca
 		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\",\"datum\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, '%s', %s) returning mid", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==NULL)?'NULL':$keepon_id,$datum);
 		$rs = $db->getAll($sql);
 		logsql($sql,$rs);
+	$db->close();
 		if (!isset($rs[0]['mid'])) {
 			//error_log("err sql: $sql");
 			return FALSE;
@@ -162,6 +169,7 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="loca
 		$key=sprintf("map_get_single_%s",$mid);
 		memcached_delete($key);
 		logsql($sql,$rs);
+	$db->close();
 		if (!$rs) return FALSE;
 		return $mid;
 	}
@@ -172,6 +180,7 @@ function map_get_ids($uid, $limit = 10) {
 	$sql = sprintf("select mid from \"map\" where uid=%d ORDER BY \"cdate\" DESC LIMIT %d",$uid, $limit);
 	$rs=$db->GetAll($sql);
 	logsql($sql,$rs);
+	$db->close();
 	return $rs;
 }
 // 取 ok, expired  flag = 0 or 1 的地圖, 用來算限制
@@ -179,6 +188,7 @@ function map_list_get($uid) {
 	$db=get_conn();
 	$sql = sprintf("select * from \"map\" where \"uid\"=%s AND (flag = 1 or flag = 0) ORDER BY mid",$uid);
 	$rs = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	return $rs;
 }
@@ -186,6 +196,7 @@ function map_list_count($uid) {
 	$db=get_conn();
 	$sql = sprintf("select count(*) from \"map\" WHERE \"uid\"=%d AND (flag = 1 or flag = 0)",$uid);
 	$row = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$row);
 	return $row[0][0];
 }
@@ -194,6 +205,7 @@ function map_get_ok($uid) {
 	$db=get_conn();
 	$sql = sprintf("select * from \"map\" WHERE \"uid\"=%d AND flag=0",$uid);
 	$rs = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	return $rs;
 
@@ -220,6 +232,7 @@ function map_get_single($mid){
 	}
 	$sql = sprintf("select * from \"map\" WHERE \"mid\"=%d",$mid);
 	$res = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$res);
 	if (count($res) == 0)
 		return null;
@@ -231,6 +244,7 @@ function map_accessed($mid) {
 	$db=get_conn();
 	$sql = sprintf("update \"map\" SET \"count\"=\"count\"+1 WHERE \"mid\"=%s",$mid);
 	$rs = $db->Execute($sql);
+	$db->close();
 	logsql($sql,$rs);
 	return $rs;
 }
@@ -238,6 +252,7 @@ function map_get_hot($num) {
 	$db=get_conn();
 	$sql = sprintf("SELECT * FROM \"map\" WHERE \"flag\" !=2  AND \"host\" != '210.59.147.226' and \"count\" > 0 ORDER BY \"count\" DESC LIMIT %d",$num);
 	$rs =$db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	return $rs;
 }
@@ -252,6 +267,7 @@ function map_get_lastest($num,$gpx=0) {
 	//  MySQL use LIMIT 0 num
 	$sql = sprintf("SELECT * FROM \"map\" WHERE \"flag\"=0 and \"count\" > 0 %s ORDER BY \"cdate\" DESC LIMIT %d",$where,$num);
 	$rs =$db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	return $rs;
 
@@ -262,6 +278,7 @@ function map_get_lastest_by_uid($num,$uid) {
 	$where = "AND \"uid\"=$uid";
 	$sql = sprintf("SELECT * FROM \"map\" WHERE \"flag\"=0 %s ORDER BY \"cdate\" DESC LIMIT %d",$where,$num);
 	$rs = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	return $rs;
 }
@@ -344,6 +361,7 @@ function map_migrate($root,$uid,$mid) {
 	$sql = sprintf("update \"map\" set \"filename\"='%s' WHERE \"mid\" = %d",pg_escape_string($newfilename),$mid);
 	//$res = mysql_query($sql);
 	$rs = $db->Execute($sql);
+	$db->close();
 	error_log("migrate $mid:$sql");
     $key=sprintf("map_get_single_%s",$mid);
 	memcached_delete($key);
@@ -395,6 +413,7 @@ function map_del($mid) {
 	$rs =$db->Execute($sql);
 	$key=sprintf("map_get_single_%s",$mid);
 	memcached_delete($key);
+	$db->close();
 	logsql($sql,$rs);
 	return $rs;
 }
@@ -420,6 +439,7 @@ function map_expire($mid) {
 	// update db, add expire date col
 	$sql = sprintf('UPDATE "map" set "flag" = 1,"size"=0,"edate"=NOW()  WHERE "mid" = %d',$mid);
 	$rs= $db->Execute($sql);
+	$db->close();
 	$key=sprintf("map_get_single_%s",$mid);
 	memcached_delete($key);
 	logsql($sql,$rs);
@@ -434,6 +454,7 @@ function get_old_maps($days) {
 	// 刪除 days 天之前的地圖, 不管大小了
 	$sql = sprintf("select * from \"map\" WHERE \"flag\" = 0 AND EXTRACT(EPOCH FROM cdate) < %s  and count < 100 and \"uid\" != 3 ",$tdiff);
 	$rs= $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	return $rs;
 
@@ -454,6 +475,7 @@ function map_totalsize() {
 	$db=get_conn();
 	$sql = sprintf("select sum(size) as totalsize from \"map\"");
 	$res = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$res);
 	return $res[0]['totalsize'];
 }
@@ -486,6 +508,7 @@ function stats() {
 	logsql($sql,$rs2);
 	$all_users = intval($rs2[0]['count']);
 
+	$db->close();
 	return array($total_maps, $size, $all_users, $active_users, $maxmid);
 }
 
@@ -603,6 +626,7 @@ function map_overlap($bounds, $gpx=1, $max=0){
 	}
 	//$res = mysql_query($sql);
 	$res = $db->GetAll($sql);
+	$db->close();
 	logsql($sql,$rs);
 	return $res;
 }
@@ -685,6 +709,7 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 	$db=get_conn();
 	$sql = sprintf("SELECT relname FROM pg_class WHERE relname = '%s'",$table);
 	$rs = $db->getAll($sql);
+	$db->close();
 	if (isset($rs[0]['relname']) && $rs[0]['relname'] == $table) {
 		// 1. delete mid from table (prevent dup)
 		$sql = sprintf("DELETE FROM \"%s\" WHERE mid=%s",$table,$mid);
@@ -739,6 +764,7 @@ function is_gpx_in_gis($mid){
 	$db = get_conn();
 	$sql = sprintf("SELECT count(*) from gpx_trk WHERE mid=%d",$mid);
 	$rs = $db->getAll($sql);
+	$db->close();
 	if ($rs[0][0] == 0 ) {
 		return false;
 	}
@@ -860,6 +886,7 @@ function remove_gpx_from_gis($mid){
 		$db->Execute($sql_str);
 	}
 	$result = $db->CompleteTrans();
+	$db->close();
 	if ($result === false) {
 		return array(false,"sql transaction fail");
 	}
@@ -875,6 +902,7 @@ function get_waypoint($x,$y,$r=10,$detail=0){
 	}
 	// error_log($sql);
 	$rs = $db->getAll($sql);	
+	$db->close();
 	return $rs;
 }
 function get_track($x,$y,$r=10,$detail=0){
@@ -886,6 +914,7 @@ function get_track($x,$y,$r=10,$detail=0){
                 $sql = sprintf("SELECT A.\"gpx_trk.name\" AS name,A.mid as mid,map.uid,map.flag,map.title,map.keepon_id,map.filename,map.path,map.md5name from gpx_trk A,meta as map WHERE ST_Crosses(  wkb_geometry, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry) AND A.mid = map.idid ", $x,$y,$r);
        // error_log($sql);
         $rs = $db->getAll($sql);
+	$db->close();
         return $rs;
 }
 
@@ -897,12 +926,12 @@ function get_AREA($wkt_str) {
 	$sql =  sprintf("SELECT ST_Area( ST_Transform( ST_SetSRID( ST_GeomFromEWKT('SRID=4326;%s'), 900913))", $wkt_str);
 	// error_log($sql);
 	$rs = $db->getAll($sql);	
+	$db->close();
 	echo $db->errorMsg();
 	return $rs;
 }
 
 function get_point($id='ALL',$is_admin=false) {
-	$db=get_conn();
 	if ($id !== 'ALL') 
 		$where = " WHERE id=$id";
 	else
@@ -913,8 +942,10 @@ function get_point($id='ALL',$is_admin=false) {
 	if ($answer !== FALSE ) {
 		return $answer;
 	}
+	$db=get_conn();
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	$answer = $db->getAll($sql);
+	$db->close();
 	return memcached_set($key, $answer);
 }
 // 取出　class_num 等基石, 官方點, 沒有用到
@@ -925,6 +956,7 @@ function get_point_by_class($class_num) {
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	// echo $sql;
 	$answer = $db->getAll($sql);
+	$db->close();
 	return $answer;
 }
 /* 取出範圍內所有 features, 官方點 */
@@ -933,13 +965,17 @@ function get_points_from_center($center, $r_in_meters) {
 	$sql = sprintf("SELECT id,name,class,number,ele,ST_X(coord) AS x, ST_Y(coord) AS y,prominence,prominence_index FROM point3 WHERE owner = 0 AND ST_DWithin(coord, ST_GeomFromEWKT('SRID=4326;POINT(%f %f)') , %f ) ORDER BY number,ST_XMin(coord)",$center[0],$center[1],$r_in_meters/1000/111.325);
 	// echo $sql;
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
-        return $db->getAll($sql);
+	$data = $db->getAll($sql);
+	$db->close();
+        return $data;
 }
 function get_lastest_point($num=5) {
 	$db=get_conn();
 	$sql = sprintf("SELECT id,name,alias,type,class,number,status,ele,mt100,checked,comment,ST_X(coord) AS x,ST_Y(coord) AS y,owner,prominence,prominence_index,fzone,fclass,cclass,sname FROM point3 WHERE owner=0 ORDER BY id DESC LIMIT %d", $num);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
-	return $db->getAll($sql);
+	$data = $db->getAll($sql);
+	$db->close();
+	return $data;
 }
 function userid() {
 	global $CONFIG;
@@ -1035,6 +1071,7 @@ function get_distance_postgis($a,$b) {
 	//echo $sql;
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
 	$result = $db->getAll($sql);
+	$db->close();
 	//print_r($result);
 	return $result[0]['distance'];
 }
@@ -1049,7 +1086,6 @@ function line_of_sight($a, $b, $distance_limit = 32000, $cache = 1) {
 	$debug = 0;
 //	$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
 	$twDEM_path = twDEM_path;
-	$db = get_conn();
 	// 1. get distance between p and p1
 	$distance = get_distance($a, $b);
 	$start_ele = (isset($a[2]) && $a[2]>0) ? $a[2] : get_elev($twDEM_path,$a[1], $a[0]);
@@ -1080,8 +1116,10 @@ function line_of_sight($a, $b, $distance_limit = 32000, $cache = 1) {
 
 	$sql = sprintf("select st_astext( ST_Segmentize(st_makeline(ST_setSRID(ST_makepoint(%f,%f),4326),ST_setSRID(ST_makepoint(%f,%f),4326)), %f)) as linestring" ,$a[0],$a[1],$b[0],$b[1],$step);
 	//echo $sql;
+	$db = get_conn();
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
 	$res = $db->getAll($sql);
+	$db->close();
 	//print_r($res);
 	if (!preg_match("/LINESTRING\((.*)\)/",$res[0]['linestring'],$mat)) {
 		return array(false, $a, "error query $sql ".print_r($res,true));
@@ -1117,7 +1155,6 @@ function line_of_sight2($a, $b, $distance_limit = 32000, $cache = 1) {
 	$debug = 0;
 //	$twDEM_path = "../db/DEM/twdtm_asterV2_30m.tif";
 	$twDEM_path = twDEM_path;
-	$db = get_conn();
 	// 1. get distance between p and p1
 	$distance = get_distance($a, $b);
 	$start_ele = (isset($a[2]) && $a[2]>0) ? $a[2] : get_elev_moidemd($a[1], $a[0]);
@@ -1148,8 +1185,10 @@ function line_of_sight2($a, $b, $distance_limit = 32000, $cache = 1) {
 
 	$sql = sprintf("select st_astext( ST_Segmentize(st_makeline(ST_setSRID(ST_makepoint(%f,%f),4326),ST_setSRID(ST_makepoint(%f,%f),4326)), %f)) as linestring" ,$a[0],$a[1],$b[0],$b[1],$step);
 	//echo $sql;
+	$db = get_conn();
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
 	$res = $db->getAll($sql);
+	$db->close();
 	//print_r($res);
 	if (!preg_match("/LINESTRING\((.*)\)/",$res[0]['linestring'],$mat)) {
 		return array(false, $a, "error query $sql ".print_r($res,true));
@@ -1190,6 +1229,7 @@ function get_distance2($wkt_str, $twDEM_path){
 	// echo $sql;
 	$db->SetFetchMode(ADODB_FETCH_ASSOC);
 	$res = $db->getAll($sql);
+	$db->close();
 	// print_r($res);
 	if (!preg_match("/LINESTRING\((.*)\)/",$res[0]['linestring'],$mat)) {
 		return array(false, "error query $sql ".print_r($res,true));
@@ -1271,7 +1311,9 @@ function get_administration($x,$y,$type="town") {
 	}
 	$sql = sprintf("select * from \"%s\" where ST_intersects(geom, ST_Buffer(ST_MakePoint(%f,%f)::geography,%d)::geometry)=true",$table, $x,$y,10);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
-	return $db->getAll($sql);
+	$data = $db->getAll($sql);
+	$db->close();
+	return $data;
 }
 // from cwb V8 (tribe_home table)
 function get_tribe_weather_url($key){
@@ -1279,6 +1321,7 @@ function get_tribe_weather_url($key){
 	$sql = sprintf("select * from tribe_home where tribe_town='%s'",$key);
 	$db->SetFetchMode(ADODB_FETCH_ASSOC); 
 	$data =  $db->getAll($sql);
+	$db->close();
 	$ret = array();
 	if (count($data) > 0) {
 		foreach($data as $d)
@@ -1298,6 +1341,7 @@ function ogr2ogr_export_points($fpath, $bound, $owner=0) {
 			$db=get_conn();
 			$sql = sprintf("select * from point3 where owner=0 AND mdate >= '%s'",date('Y-m-d H:i:s',filemtime($fpath)));
 			$result = $db->getAll($sql);
+	$db->close();
 			if (count($result) > 0 )
 				unlink($fpath);
 			else
@@ -1344,13 +1388,17 @@ class map_rank {
 	function get_rank($mid,$uid){
 		$db=get_conn();
 		$sql = sprintf("select * from map_rank WHERE mid=%d AND uid=%d",$mid,$uid);
-		return $db->getAll($sql);
+		$data =  $db->getAll($sql);
+		$db->close();
+		return $data;
 	}
 	function del_rank($mid,$uid){
 		$db=get_conn();
 		$sql = sprintf("delete from map_rank where mid=%d AND uid=%d",$mid,$uid);
 		// echo $sql;
-		return $db->Execute($sql);
+		$ret =  $db->Execute($sql);
+		$db->close();
+		return $ret;
 	}
 	function set_rank($mid,$uid,$score,$comment) {
 		$db=get_conn();
@@ -1361,6 +1409,7 @@ class map_rank {
 			$sql = sprintf("insert into map_rank(\"uid\",\"mid\",\"score\",\"comment\") VALUES (%d,%d,%f,'%s')",$uid,$mid,$score,pg_escape_string($comment));
 		}
 		$rs = $db->Execute($sql);
+		$db->close();
 		if (!$rs)
 			return array(false,"fail $sql");
 		else
@@ -1370,6 +1419,7 @@ class map_rank {
 		$db=get_conn();
 		$sql = sprintf("select COUNT(*) as count, AVG(score) as score FROM map_rank WHERE mid=%d",$mid);
 		$avg = $db->getAll($sql);
+		$db->close();
 		// $score_text = array("無","糟糕","不佳","普通","好","精選");
 		if ($avg[0]['count'] == 0) {
 			return array("count"=>0,"score"=>NULL,"text"=>"無", "icon"=>"rate_0.png");

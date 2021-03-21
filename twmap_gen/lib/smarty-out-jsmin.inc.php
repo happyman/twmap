@@ -4,7 +4,7 @@
  * inspired by
  * @link http://code.google.com/p/jsmin-php/
  */
-function smarty_out_jsmin($source, &$smarty){
+function smarty_out_jsmin($source, $smarty){
 
 	$source = preg_replace_callback(
         //'|\{jsmin\}(.*?)\{\/jsmin\}|s',

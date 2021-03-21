@@ -3,13 +3,13 @@
 </div>
 <!-- end of facebook -->
 <style>
-	.login_xuite { display: inline-block; background: url(imgs/openid-logos.png) repeat scroll -1px -187px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
-	.login_xuite:hover { margin: -3px; }
-	.login_gmail { display: inline-block; background: url(imgs/openid-logos.png) repeat scroll -1px -1px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
+	.login_microsoft { display: inline-block; background: url(imgs/openid-logos.png?20210322) repeat scroll -1px -187px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
+	.login_microsoft:hover { margin: -3px; }
+	.login_gmail { display: inline-block; background: url(imgs/openid-logos.png?20210322) repeat scroll -1px -1px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
 	.login_gmail:hover { margin: -3px; }
-	.login_yahoo { display: inline-block; background: url(imgs/openid-logos.png) repeat scroll -1px -63px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
+	.login_yahoo { display: inline-block; background: url(imgs/openid-logos.png?20210322) repeat scroll -1px -63px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
 	.login_yahoo:hover { margin: -3px; }
-	.login_facebook { display: inline-block; background: url(imgs/openid-logos.png) repeat scroll -1px -456px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
+	.login_facebook { display: inline-block; background: url(imgs/openid-logos.png?20210322) repeat scroll -1px -456px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
 	.login_facebook:hover { margin: -3px; }
 	#login { display: block; height: 300px; }
 	p { font-size: 2em }
@@ -30,10 +30,11 @@
 		<p> <a href="login.php?from=show{$lastest_mid}" class="showtip" title="請登入喔">按此登入</a>
 		{else}
 		<p>
-		<img src='icons/twmap3.jpg' style='float:right'/>請登入使用 <span style="font-size: 14px">(<a href="http://www.xuite.net/" target="_blank">Xuite</a> <a href="http://tw.yahoo.com/" target=_blank>Yahoo</a> <a href="http://gmail.com/" target=_blank>Gmail</a> <a href="http://www.facebook.com/" target=_blank>Facebook</a> 任一方式)</span>
+		<img src='icons/twmap3.jpg' style='float:right'/>請登入使用 <span style="font-size: 14px">
+			(<a href="http://live.com/" target="_blank">microsoft</a> <a href="http://tw.yahoo.com/" target=_blank>Yahoo</a> <a href="http://gmail.com/" target=_blank>Google</a> <a href="http://www.facebook.com/" target=_blank>Facebook</a> 任一方式)</span>
 		<form action="lib/Hybrid/auth.php" method="GET">
 			<input name="provider" id='provider' type="hidden">
-			<a class="showtip login_xuite" title="使用 Xuite 登入"></a>
+			<a class="showtip login_microsoft" title="使用 Microsoft 登入"></a>
 			<a class="showtip login_gmail" title="使用 Gmail 帳號登入"></a>
 			<a class="showtip login_yahoo" title="使用 Yahoo 登入" ></a>
 			<a class="showtip login_facebook" title="使用 facebook 登入"></a>
@@ -47,7 +48,7 @@
 {/if}
 <script>
 	$(function(){
-		$('.login_xuite').click(function() { $('#provider').val('xuite'); $('form').submit(); });
+		$('.login_microsoft').click(function() { $('#provider').val('microsoftgraph'); $('form').submit(); });
 		$('.login_gmail').click(function() { $('#provider').val('google'); $('form').submit(); });
 		$('.login_yahoo').click(function() { $('#provider').val('yahoo'); $('form').submit(); });
 		$('.login_facebook').click(function() { $('#provider').val('facebook'); $('form').submit(); });

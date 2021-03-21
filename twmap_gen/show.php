@@ -218,6 +218,8 @@ default:
 			$tdata[] = sprintf("<a href='$html_root/%s' rel='gallery' class='pirobox_gall'><img border=0 src='$html_root/%s' width=%s></a>\n",basename($imgs),basename($imgs), round(500/$map['pageX']));
 		}	
 		$smarty->assign("imgdata",$tdata);
+	} else {
+		$smarty->assign("imgdata",array());
 	}
 	$smarty->assign("map",$map);
 	$smarty->assign("links",$links);

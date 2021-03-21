@@ -7,10 +7,10 @@
 // ----------------------------------------------------------------------------------------
 //	HybridAuth Config file: http://hybridauth.sourceforge.net/userguide/Configuration.html
 // ----------------------------------------------------------------------------------------
-
+// migrate to 3.0
 return
 	array(
-		"base_url" => "https://map.happyman.idv.tw/twmap/lib/Hybrid/index.php",
+		"callback" => "https://map.happyman.idv.tw/twmap/lib/Hybrid/auth.php",
 
 		"providers" => array (
 			// openid providers
@@ -21,8 +21,7 @@ return
 			"Yahoo" => array (
 				"enabled" => true,
 				"keys"    => array ( "key" => "", "secret" =>""),
-				"scope"  => "sdpp-w",
-				// https://stackoverflow.com/questions/55313554/get-user-email-from-yahoo-when-user-logs-in-throuh-yahoo-app
+				"scope"  => "email profile"
 			),
 
 			"Google" => array (
@@ -38,6 +37,14 @@ return
 				"scope" =>  "email, public_profile",
 				"trustForwarded" => true
 			),
+
+                        "MicrosoftGraph" => array(
+                                "enabled" => true,
+                                "keys" => array("id" => "", "secret" => ""),
+                                'tenant' => 'consumers',
+
+                        ),
+
 
 			"Twitter" => array (
 				"enabled" => false,

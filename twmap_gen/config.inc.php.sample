@@ -1,6 +1,7 @@
 <?php
 // $Id$
 define('__ROOT__', dirname(__FILE__). "/");
+require_once(__ROOT__."vendor/autoload.php");
 require_once(__ROOT__. "lib/rangelib.php");
 require_once(__ROOT__."lib/STB.inc.php");
 require_once(__ROOT__."lib/svglib.php");
@@ -8,6 +9,8 @@ require_once(__ROOT__."lib/phpwee-php-minifier/phpwee.php");
 
 $protocol = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
 $out_root = "/srv/www/htdocs/map/out";
+// tmpdir for backend_make
+$out_root_tmp = "/home/nas/twmapcache/tmp/out";
 $out_html_root = "/map/out";
 $site_url = $protocol . "map.happyman.idv.tw";
 $site_html_root = "/twmap";
@@ -86,10 +89,10 @@ if (php_sapi_name() != "cli") {
 				'secret' => ''));
 
 	/* template */
-	require_once(__ROOT__."lib/twmapdb.inc.php");
-	require_once(__ROOT__."lib/smarty/Smarty.class.php");
-
+	//require_once(__ROOT__."lib/twmapdb.inc.php");
 	$smarty = new Smarty();
+	// composer autoload require_once(__ROOT__."lib/smarty/Smarty.class.php");
+	require_once(__ROOT__."lib/smarty-out-jsmin.inc.php");
 	$smarty->error_reporting = E_ALL & ~E_NOTICE;
 	$smarty->setTemplateDir(__ROOT__.'pages');
 	$smarty->setCompileDir($tmppath .'/smarty/tcache');

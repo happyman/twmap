@@ -1,7 +1,13 @@
 <?php
+// auth.php use hybridauth3
+// 2021.3.18
+
+require_once("../../config.inc.php");
 $config = require("../../config-hybridauth.php");
-require_once("load.inc.php");
-session_start();
+require_once("Xuite.php");
+use Hybridauth\Hybridauth;
+use Hybridauth\HttpClient;
+use Hybridauth\Storage\Session;
 
 // 設定為開啟新視窗
 if ( isset($_REQUEST['action']) && $_REQUEST['action'] != "logout" && (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1)) {
@@ -13,10 +19,19 @@ else
 	exit();
 }
 
-$hybridauth = new Hybrid_Auth( $config );
+$hybridauth = new Hybridauth($config);
+$storage = new Session();
 
 $mylogin = array();
-$provider = isset($_SESSION['mylogin']['type']) ? $_SESSION['mylogin']['type'] : $_REQUEST['provider'];
+$provider = isset($_SESSION['mylogin']['type']) ? $_SESSION['mylogin']['type'] : isset($_REQUEST['provider']) ? $_REQUEST['provider'] : "";
+if (!empty($provider)){
+	$storage->set('provider', $provider);
+}
+if ($provider = $storage->get('provider')) {
+	$hybridauth->authenticate($provider);
+	$storage->set('provider', null);
+}
+/*
 switch($provider) {
 case 'google':
 	$adapter = $hybridauth->authenticate( "Google" );
@@ -34,28 +49,29 @@ default:
 	out_err("不正確的登入種類");	
 	break;
 }
+*/
+$adapter = $hybridauth->getAdapter($provider);
+
 if ( isset($_REQUEST['action']) && $_REQUEST['action'] == 'logout' ) {
-	$adapter->logout();
+	$adapter->disconnect();
 	out_ok("登出","../../logout.php");
 	exit;
 }
-//$adapter = $hybridauth->authenticate( "Xuite" );
-//  "https://yahoo.com/"))
 
 // return Hybrid_User_Profile object intance
 $user_profile = $adapter->getUserProfile();
 
-require_once("../../config.inc.php");
+
 
 //print_r($user_profile);
 //exit;
 if (isset($user_profile->email) && isset($user_profile->displayName)) {
 	$mylogin['email'] = $user_profile->email;
-	$mylogin['type'] = $_REQUEST['provider'];
+	$mylogin['type'] = $provider;
 	$mylogin['nick'] = $user_profile->displayName;
 
 } else {
-	$adapter->logout();
+	$adapter->disconnect();
 	out_err("沒有 email 資訊, 登入失敗");
 }
 $_SESSION['loggedin'] = 1;
