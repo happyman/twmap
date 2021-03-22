@@ -4,7 +4,6 @@
 
 require_once("../../config.inc.php");
 $config = require("../../config-hybridauth.php");
-require_once("Xuite.php");
 use Hybridauth\Hybridauth;
 use Hybridauth\HttpClient;
 use Hybridauth\Storage\Session;
