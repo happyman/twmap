@@ -2,6 +2,7 @@
 
 require_once("../config.inc.php");
 
+session_start();
 if (empty($_SESSION['loggedin'])) {
 	// 如果從地圖瀏覽器導過來
 	$_SESSION['redirto'] = $_SERVER["REQUEST_URI"];

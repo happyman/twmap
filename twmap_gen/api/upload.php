@@ -1,6 +1,7 @@
 <?php
 require_once("../config.inc.php");
 
+session_start();
 $debug = 1;
 $cli = 0;
 $keepon_id = "";
