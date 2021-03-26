@@ -50,14 +50,15 @@
 				</tr>
 			</tbody>
 			<tbody class="gpx_recreate_mode">
+			        <tr>
 				<td><span class="step" id="step_marker_type2">2</span></td>
-				<tr><td>航跡</td>
+				<td>航跡</td>
 					<td>已存在 gpx 檔<input type=text name="gpxfilename" size=40 readonly>
 						<br>
 						<input type=hidden name="gpxmid">
 					</td>
 				</tr>
-				<tr><td>標記</td>
+				<tr><td></td><td>標記</td>
 					<td>
 						<label><input type="checkbox" name="trk_label" value="1">航跡標記</label>
 						<label><input type="radio" name="wpt_label" checked value="1">航點標記:另建索引</label>
@@ -162,8 +163,9 @@
 			<tr><td colspan=3>
 	<a href='https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168?fref=ts' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a> 
 	<img src='imgs/discuss_icon.png'/>
+		<br>
+		<a href='#' onclick='testnotify()'>打開 log dialog(debug 用)</a>
 		</tr>
-
 
 		</table>
 	</FORM>

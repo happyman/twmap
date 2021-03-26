@@ -39,7 +39,7 @@ module.exports = function(grunt) {
       source: {
         files: [{
           src: [
-            'dist/twmap_gen/js/main.js',
+            'dist/twmap_gen/js/twmap.js',
             'dist/twmap_gen/css/main.css',
             'dist/twmap3/js/vender.js',
             'dist/twmap3/css/twmap3.css'

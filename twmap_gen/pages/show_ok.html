@@ -84,7 +84,8 @@ done
 			</td>
 			<td valign="top" align="right" height="800">
 				 {if isset($links.pdf) }
-				 <iframe src="http://docs.google.com/viewer?url={$links.pdf|urlencode}&embedded=true" width="512" style="border: none;" height="800"></iframe>
+				 <!-- <iframe src="http://docs.google.com/viewer?url={$links.pdf|urlencode}&embedded=true" width="512" style="border: none;" height="800"></iframe> -->
+				 <iframe src="{$links.pdf}" width="512" style="border: none;" height="800"></iframe>
 				 {else}
 				 {html_table loop=$imgdata cols=$map.pageX table_attr='style="border: 0px; border-spacing: 0px;padding-top: 95px" width=512' }  
 				 {/if}

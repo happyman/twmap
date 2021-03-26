@@ -62,7 +62,7 @@ $(document).ready(function() {
 			</ul>	
 			其他:
 			<ul>
-                        <li>參考 <a href="http://blog.yam.com/amimitea/article/48657866" target="_blank">介紹文</a>
+                        <li>參考 <a href="https://hiking.biji.co/index.php?q=review&act=info&review_id=1695" target="_blank">介紹文</a>
                         <li><a href="https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168" target="_blank">建議或討論</a>
 			<li><?php echo $greetings_admin; ?>
                         </ul>

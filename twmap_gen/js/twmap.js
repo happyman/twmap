@@ -205,6 +205,10 @@ function clearProgress() {
     makeprogress.hide();
     $("#log_message").text("").hide();
 }
+// 開啟 log 視窗 
+function testnotify() {
+ $.get('api/notifyweb.php?c=' + user_email + ":" + $("#formid").val());
+}
 
 
 // google
