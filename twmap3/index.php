@@ -5,6 +5,7 @@ session_start([
 ]);
 $ver = trim(file_get_contents("VERSION"));
 require_once("lib/functions.inc.php");
+list ($st, $info) = login_info();
 ?>
 <!DOCTYPE html>
 <html>
@@ -59,9 +60,7 @@ require_once("lib/functions.inc.php");
 <!-- endbuild -->
 <script>
 <?php
-require_once("lib/functions.inc.php");
 // 檢查是否登入
-list ($st, $info) = login_info();
 if ($st === true) {
 	echo "var login_role = 1;\n";
 	printf("var login_uid = %d\n",$info['uid']);

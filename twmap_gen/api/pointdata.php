@@ -2,7 +2,7 @@
 require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
 
-//session_start();
+session_start();
 $id = (isset($_REQUEST['id']))? $_REQUEST['id'] : NULL;
 // id == ALL
 // lastest == 5

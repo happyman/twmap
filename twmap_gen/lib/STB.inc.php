@@ -420,22 +420,6 @@ Class STB2 extends STB {
 			$this->tmpdir = $tmpdir;
 		}
 			return TRUE;
-/*
-		if (is_dir( $basedir . "/". $this->zoom )) {
-			$this->stbdir = $basedir;
-			$this->startx = $startx;
-			$this->starty = $starty;
-			$this->shiftx = $sx;
-			$this->shifty = $sy;
-			$this->ph = $ph;
-			return TRUE;
-		} else {
-
-			$this->err[] =	"No image dir $basedir... bye";
-			$this->doLog($print_r($this->err, true));
-			return FALSE;
-		}
-*/
 	} 
 	// tag = 2 處理縮圖
 
@@ -465,8 +449,6 @@ Class STB2 extends STB {
 			$this->doLog( "check tiles...");
 			for($j=$this->starty; $j>$this->starty-$this->shifty; $j--){
 				for($i=$this->startx; $i<$this->startx+$this->shiftx; $i++){
-					//error_log("call $i $j");
-					// list ($status, $fname) =img_from_tiles($this->stbdir, $i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $tmppath, $tilecachepath);
 					$tileurl = $this->gettileurl();
 					$options=array("tile_url"=> $tileurl, "image_ps_args"=> $image_ps_args, "tmpdir"=> $this->tmpdir, "datum"=> $this->datum);
 					// tmppath => /dev/shm
