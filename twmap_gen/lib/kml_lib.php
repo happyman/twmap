@@ -60,6 +60,6 @@ global $cdata;
 <coordinates><?=$r[0]?>,<?=$r[1]?>,3000</coordinates>
 </Point>
 </Placemark>
-<? 
+<?php
 } 
 ?>
