@@ -192,9 +192,9 @@ if ($inp['gps'] == 1 || $inp['gps'] == 2) {
 }
 
 // 呼叫 cmd_line make, 他也需要 gpx aware
-// -l 傳入 email:formid 作為識別 channel 與 msg owner
+// -l 傳入 email:formid 作為識別 channel 與 msg owner -m 傳入 tmpdir
 showmem("before call cmd_make.php");
-$cmd = sprintf("php cmd_make2.php -r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -l %s:%s %s %s %s %s", $startx, $starty, $shiftx, $shifty, 
+$cmd = sprintf("php cmd_make2.php -r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s:%s %s %s %s %s", $startx, $starty, $shiftx, $shifty, 
 isset($inp['97datum'])? 'TWD97': 'TWD67',
 $outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $_SESSION['mylogin']['email'], $inp['formid'], isset($inp['grid_100M']) ? '-e' : '',
  // 是否包含 100M grid
