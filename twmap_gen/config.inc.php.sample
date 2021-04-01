@@ -18,7 +18,7 @@ $site_html_root = "/twmap";
 define('WWWRUN_UID', 33);
 
 // 放一版的圖資目錄
-$stbpath = "/home/happyman/stb";
+$stbpath = 'http://make.happyman.idv.tw/~happyman/stb';
 // 放從 TMS 的圖磚
 // 放3版 1x1 的圖檔
 $tilecachepath = "/mnt/twmapcache/cache";

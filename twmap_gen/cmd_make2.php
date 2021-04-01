@@ -8,7 +8,7 @@ set_time_limit(0);
 
 $opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3");
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
-	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 [-g gpx:0:0] [-c] [-G]-O dir [-e] -v 1|3|2016 -t title -i localhost\n";
+	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 [-g gpx:0:0] [-c] [-G] -O dir [-e] -v 1|3|2016 -t title [-i localhost]\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
 	echo "       -O outdir: /home/map/out/000003\n";
 	echo "       -v 1|3|2016: version of map,default 3\n";
