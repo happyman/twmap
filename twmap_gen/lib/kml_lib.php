@@ -1,4 +1,4 @@
-<?
+<?php
 // $Id: kml_lib.php 125 2010-12-24 03:19:07Z happyman $
 //function t67to97($x,$y) {
 //  $A= 0.00001549; 

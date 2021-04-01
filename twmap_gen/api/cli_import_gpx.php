@@ -4,7 +4,7 @@
 */
 require_once("../config.inc.php");
 $id = `id -u`;
-$opt=getopt("rd:m:c:hkt:");
+$opt=getopt("rd:m:c:hkt:i");
 if (isset($opt['h'])){
 	echo $argv[0] . " [-c count] [-r][-d cache_dir][-m start_mid|-t start_tid][-h]\n";
 	echo "      -c count: do how many records\n";
@@ -13,6 +13,7 @@ if (isset($opt['h'])){
 	echo "      -m mid: jump to do from this mid. -m 0 will auto select mid\n";
 	echo "      -t tid: jump to do from this tid. -t 0 will auto select tid\n";
 	echo "      -k : keepon only\n";
+	echo "      -i : list imported only\n";
 	echo "      -h: this help\n";
 	echo "      must run as www user\n\n";
 	exit(0);
@@ -79,14 +80,19 @@ if (count($rs) > 0 ) {
 	foreach($rs as $row) {
 	// debug==	三筆就好 if ($i++ > 3) break;
 		if ($do_count > 0 && $i > $do_count) break;
+		if (!isset($row['mid']))
+			$row['mid'] = -1 * $row['tid'];
 		if ($row['keepon_id'] != 'NULL' && $row['keepon_id'] != '')
 			$url = keepon_Id_to_Url($row['keepon_id']);
 		else
-			$url = '';
-		if (!isset($row['mid']))
-			$row['mid'] = -1 * $row['tid'];
-			
-		printf("%s %d %d %-30s %s",(is_gpx_in_gis($row['mid']))? "i": "-",$i++, $row['mid'],$row['title'],$url);
+			$url = sprintf('https://map.happyman.idv.tw/twmap/show.php?mid=%s',$row['mid']);
+		$imported = is_gpx_in_gis($row['mid']);
+		if (isset($opt['i'])) {
+			if ($imported === false) continue;
+			printf("%d %d %-30s %s",$i++,-1*$row['mid'],$row['title'],$url);
+		} else {
+			printf("%s %d %d %-30s %s",($imported)? "i": "-",$i++, $row['mid'],$row['title'],$url);
+		}
 		if ($real_do == 1) {
 			printf(" *\n");
 			list($ret,$msg) = import_gpx_to_gis($row['mid']);
