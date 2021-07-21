@@ -1,27 +1,37 @@
 <b>地圖產生器</b>-第 {$twmap_gen_version} 版
+{if $show_stats}
 <p>自 2010/11/21 起系統共產生了 {$created} 張地圖, 尚存在 {$total_maps} 張地圖, 使用空間 {$size} <br>
 登入使用者 {$all_users} 位, 有產生地圖 {$active_users} 位,平均每人產生 {$avg_maps} 張地圖
+{/if}
 <br>
-<b>Tutorials</b>
+<b>網路教學</b>
 <ul>
-	<li><a href="http://peter821231.blogspot.tw/2013/06/v247.html?spref=fb">澎澎的Blog 介紹文</a>
+	<li><a href='https://blog.freetimegears.com.tw/mountaineering-knowledge/map-produce/'>【地圖產生器教學】如何製作紙本地圖？ 2020.2</a></li>
+	<li><a href='https://hiking.biji.co/index.php?q=review&act=info&review_id=1695'>「地圖產生器」應用操作文 2016.9 </a></li>
+	<li><a href="http://peter821231.blogspot.tw/2013/06/v247.html?spref=fb">澎澎的Blog 介紹文【地圖產生器v2.47(happyman)】 2013.6.18</a>
+	<li><a href='https://www.adventuretaiwan.com/make-the-maps/'>登山新手必學-如何使用地圖產生器</a></li>
 	<li><a href="http://blog.yam.com/amimitea/article/48657866">地圖產生器v2.44的使用方式</a>
-        <li><a href="https://sites.google.com/site/mobilegpshiking/hang-ji-xia-zai/de-tu-chan-sheng-qi---xia-zai-hang-ji">地圖產生器下載行跡教學</a>
+    <li><a href="https://sites.google.com/site/mobilegpshiking/hang-ji-xia-zai/de-tu-chan-sheng-qi---xia-zai-hang-ji">地圖產生器下載行跡教學</a>
 </ul>
 <b>作者的話</b>
 <p>
 登山前能夠免於奔波,到處去印地圖,花多一點時間去準備規劃登山行程不是更好!
-<br>
 山越爬越有意思, 還都得歸功這套圖的幫忙. 大家不妨多利用!
 <p>
-歡迎幫忙開發, 原始碼在 <a href="https://github.com/happyman/twmap">https://github.com/happyman/twmap</a>,歡迎 fork / feedback.
-<p><a href='http://map.happyman.idv.tw/~mountain/fb/privacy.php' target=_blank>隱私條款</a>
+<b>協助開發</b>	
+<p>
+歡迎幫忙，完整原始碼在 <a href="https://github.com/happyman/twmap">https://github.com/happyman/twmap</a>,歡迎 fork / feedback.
+<p><b>Powered by</b></p>
+<p>Ubuntu Linux、PHP 7.x、HybridAuth、google maps API、imagemagick、gpsbabel、proj、inkscape、Ghostscript、APE comet server、...</p>
+<p><b>Hosted on</b></p>
+<p>高雄大學資管系(NUKIM)、中央研究院人文社會科學研究中心(SINICA) 感謝感謝~</p>
+<p><b>Other Information</b></p>
+<p><a href='http://map.happyman.idv.tw/~mountain/fb/privacy.php' target=_blank>隱私條款(Privacy Policy)</a>
+<p><a href='http://map.happyman.idv.tw/~mountain/fb/delete.php' target=_blank>使用者資料刪除(Request for account deletion)</a>
 <p>
 <img src='imgs/discuss_icon.png'/>
-<a href='https://www.facebook.com/pages/%E5%9C%B0%E5%9C%96%E7%94%A2%E7%94%9F%E5%99%A8/283886151658168' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a>
-<p>
-<button id="changelogctl" class="ui-state-default ui-corner-all hp">檢視更新紀錄</button>
-<div id="changelog">
+<a href='https://www.facebook.com/twmapgen/' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a>
+<p><b>更新紀錄</b>
 <pre> 
 2021/03/22 地圖產生器 v2.91 加上microtsoft,移除xuite oauth登入.
 2020/09/11 地圖瀏覽器 v4.33 加上英文版魯地圖
@@ -143,22 +153,4 @@
 2004/4/10 v1.0 第一版可以抓出地圖, 加上座標, 需手動切圖 -- thanx to hsunwei
 2004/4/2 beta 存入 sorted index, 以加速搜尋.
 </pre>
-</div>
-<script>
-	var show=0;
-	$("#changelog").hide();
-	$(document).ready(function() {
 
-		$("#changelogctl").click(function(){
-			if (show==1) {
-				$("#changelog").hide();
-				show=0;
-				} else {
-				$("#changelog").show();
-				show=1;
-			}
-		});
-
-
-	});
-</script>

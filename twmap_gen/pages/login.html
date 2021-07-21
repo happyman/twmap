@@ -12,13 +12,14 @@
 	.login_facebook { display: inline-block; background: url(imgs/openid-logos.png?20210322) repeat scroll -1px -456px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
 	.login_facebook:hover { margin: -3px; }
 	#login { display: block; height: 300px; }
-	p { font-size: 2em }
+	#login p { font-size: 2em }
 </style>
 <div id=tabs>
 	<ul>
 		<li><a href="#login" class="showtip" title="請登入">產生</a></li>
 		<li><a href="#browse" class="showtip" title="瀏覽地圖選取範圍">瀏覽</a></li>
 		<li><a href="show.php?tab=1{$lastest_mid}" class="showtip" title="下載地圖">顯示</a></li>
+		<li><a href="about.php">關於</a></li>
 		<li><a href="othermap.php?align=left&target=_top">其他地圖</a></li>
 	</ul>
 	<div id="browse">
@@ -41,6 +42,8 @@
 		</form>
 		{/if}
 		<p>由於主機磁碟空間有限,請大家配合登入使用.
+		<br>
+		<a href=# id='about'>關於本站 About this site</a>
 	</div>
 </div> 
 {if !isset($showing) }
@@ -48,6 +51,11 @@
 {/if}
 <script>
 	$(function(){
+		// about
+		$('#about').click(function(){
+			var $tabs = $('#tabs').tabs();
+			$tabs.tabs('option',"active",3);
+		});
 		$('.login_microsoft').click(function() { $('#provider').val('microsoftgraph'); $('form').submit(); });
 		$('.login_gmail').click(function() { $('#provider').val('google'); $('form').submit(); });
 		$('.login_yahoo').click(function() { $('#provider').val('yahoo'); $('form').submit(); });
