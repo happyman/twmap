@@ -15,6 +15,9 @@ ini_set("memory_limit", "512M");
 ini_set("max_execution_time", "600");
 ignore_user_abort(true);
 
+// 1.1 save _SESSION 避免被 expire 掉
+$MY_SESSION = $_SESSION;
+
 // 2. check _POST
 $inp = $_POST;
 
@@ -94,7 +97,7 @@ else if ($inp['gps'] == 2) {
     // a. 從 mid 確認 expire 是不是 1, 然後檔案存不存在
 
     $row = map_get_single($inp['gpxmid']);
-    if ($row['flag'] == 1 && $row['gpx'] == 1 && $row['uid'] == $_SESSION['uid']) {
+    if ($row['flag'] == 1 && $row['gpx'] == 1 && $row['uid'] == $MY_SESSION['uid']) {
         $tmp_gpx = str_replace(".tag.png", ".gpx", $row['filename']);
         if (!file_exists($tmp_gpx)) error_out("gpx 檔案已經消失");
     }
@@ -150,25 +153,25 @@ $gpx = ($inp['gps'] > 0) ? 1 : 0;
 
 // error_log("$stbpath, $startx, $starty, $shiftx, $shifty");
 // 1. 檢查產生地圖數量是否超過上限
-$user = fetch_user($_SESSION['mylogin']);
+$user = fetch_user($MY_SESSION['mylogin']);
 
 // 1. 看看本圖是否為重新產生?
-if (map_exists($_SESSION['uid'], $xx, $yy, $shiftx, $shifty, $version, $gpx)) {
+if (map_exists($MY_SESSION['uid'], $xx, $yy, $shiftx, $shifty, $version, $gpx)) {
     $recreate_flag = 1;
 }
 else {
     $recreate_flag = 0;
 }
-if (map_full($_SESSION['uid'], $user['limit'], $recreate_flag)) {
+if (map_full($MY_SESSION['uid'], $user['limit'], $recreate_flag)) {
     error_out("$recreate_flag 已經達到數量限制" . $user['limit']);
 }
 $datum=(isset($inp['97datum']))? 'TWD97': 'TWD67';
-$outpath = sprintf("%s/%06d", $out_root_tmp, $_SESSION['uid']);
+$outpath = sprintf("%s/%06d", $out_root_tmp, $MY_SESSION['uid']);
 $outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%d%s_%s", $outpath, $startx * 1000, $starty * 1000, $shiftx, $shifty, $version, ($ph == 1) ? 'p' : "", $datum);
 $outimage = $outfile_prefix . ".tag.png";
 $outgpx = $outfile_prefix . ".gpx";
 
-$block_msg = map_blocked($out_root, $_SESSION['uid']);
+$block_msg = map_blocked($out_root, $MY_SESSION['uid']);
 if ($block_msg != null) {
     error_out($block_msg);
 }
@@ -196,7 +199,7 @@ if ($inp['gps'] == 1 || $inp['gps'] == 2) {
 showmem("before call cmd_make.php");
 $cmd = sprintf("php cmd_make2.php -r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s:%s %s %s %s %s", $startx, $starty, $shiftx, $shifty, 
 isset($inp['97datum'])? 'TWD97': 'TWD67',
-$outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $_SESSION['mylogin']['email'], $inp['formid'], isset($inp['grid_100M']) ? '-e' : '',
+$outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $MY_SESSION['mylogin']['email'], $inp['formid'], isset($inp['grid_100M']) ? '-e' : '',
  // 是否包含 100M grid
 isset($inp['inc_trace']) ? '-G' : '',
  //是否包含已知 gps trace
@@ -215,7 +218,7 @@ if ($ret != 0) {
 }
 
 // before register, check count again
-if (map_full($_SESSION['uid'], $user['limit'], $recreate_flag)) {
+if (map_full($MY_SESSION['uid'], $user['limit'], $recreate_flag)) {
     $files = map_files($outimage);
     foreach ($files as $f) {
         @unlink($f);
@@ -233,13 +236,13 @@ if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
 } else {
     $save_gpx = 0;
 }
-$mid = map_add($_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx, NULL, isset($inp['97datum'])? 97 : 67);
+$mid = map_add($MY_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx, NULL, isset($inp['97datum'])? 97 : 67);
 
 if ($mid === false ) {
     error_out("寫入資料庫失敗,請回報 $outimage");
 }
 // 最後搬移到正確目錄
-map_migrate($out_root, $_SESSION['uid'], $mid);
+map_migrate($out_root, $MY_SESSION['uid'], $mid);
 
 
 $okmsg = msglog("done");
@@ -249,7 +252,7 @@ $okmsg = msglog("done");
 // sleep(1);
 // in case the http connection is broken. seealso js:twmap.js
 // add finished!final_mid (注意 :, 看 notify_web in STB.inc.php)
-$log_channel = sprintf("%s:%s",$_SESSION['mylogin']['email'], $inp['formid']);
+$log_channel = sprintf("%s:%s",$MY_SESSION['mylogin']['email'], $inp['formid']);
 msglog("notify web $log_channel with $mid");
 notify_web($log_channel,array("finished!$mid"));
 ok_out(implode("", $okmsg), $mid);

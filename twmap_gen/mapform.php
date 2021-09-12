@@ -298,6 +298,9 @@ $('#create3').click(function() {
 $('#switch_bt1').click(function() {
 	$('#bt1').trigger('click');
 });
+// keep log in every 5 mins
+setInterval(function(){$.post('refresh_session.php');},300000);
+
 $(document).ready(function(){
 	//alert("here");
 	//if (called != 1 )

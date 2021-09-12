@@ -7,9 +7,10 @@ if (empty($argv[1])) {
 	exit;
 }
 $uid = intval($argv[1]);
-$maps = map_get_ids($uid,100);
+printf("processing %s...\n",$uid);
+$maps = map_get_ids($uid,300);
 foreach($maps as $map) {
-	print_r($map);
+	// print_r($map);
  map_migrate($out_root, $uid, $map['mid']);
 }
 
