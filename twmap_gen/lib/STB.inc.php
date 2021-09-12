@@ -45,6 +45,10 @@ Class STB {
 			$this->err[] = "Sorry We Cannot create too big map";
 			return FALSE;
 		}
+		if ($this->is_taiwan($startx,$startx+$sx,$starty-$sy,$starty,0) === false){
+			$this->err[] = "不在台澎範圍內";
+			return FALSE;
+		}
 		$testfd = @fopen($stbdir . "/stb-index","r");
 		if ($testfd) {
 			$this->startx = $startx;
@@ -70,6 +74,17 @@ Class STB {
 			return FALSE;
 		}
 	} 
+	// bound check
+	function is_taiwan($minx,$maxx,$miny,$maxy,$ph){
+		if ($ph == 1 ){
+			if ($minx >= 280 && $maxx <= 330 && $miny >= 2500 && $maxy <= 2630 )
+			return true;
+		}else{
+			if ($minx >= 150 && $maxx <= 355 && $miny >= 2420 && $maxy <= 2800 )
+			return true; 
+		}
+		return false;
+	}
 	/**
 	 * setLog 
 	 *  打開 log
@@ -409,13 +424,17 @@ Class STB2 extends STB {
 			$this->err[] = "Sorry We Cannot create too big map";
 			return FALSE;
 		}
-			$this->stbdir = $basedir;
-			$this->startx = $startx;
-			$this->starty = $starty;
-			$this->shiftx = $sx;
-			$this->shifty = $sy;
-			$this->ph = $ph;
-			$this->datum = $datum;
+		if ($this->is_taiwan($startx,$startx+$sx,$starty-$sy,$starty,$ph) === false){
+			$this->err[] = "不在台澎範圍內";
+			return FALSE;
+		}
+		$this->stbdir = $basedir;
+		$this->startx = $startx;
+		$this->starty = $starty;
+		$this->shiftx = $sx;
+		$this->shifty = $sy;
+		$this->ph = $ph;
+		$this->datum = $datum;
 		if (!empty($tmpdir)) {
 			$this->tmpdir = $tmpdir;
 		}

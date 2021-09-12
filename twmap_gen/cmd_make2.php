@@ -30,7 +30,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 }
 // parse param
 list($startx,$starty,$shiftx,$shifty,$datum)=explode(":",$opt['r']);
-if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) )
+if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) || empty($datum))
 	cli_error_out("參數錯誤");
 
 $version=isset($opt['v'])?$opt['v']:2016;
@@ -111,7 +111,7 @@ if (!empty($log_channel)) {
 	cli_msglog("ps%0");
 }
 if (!empty($g->err)) 
-	cli_error_out(print_r($g->err,true));
+	cli_error_out(implode($g->err,":"));
 
 
 $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
