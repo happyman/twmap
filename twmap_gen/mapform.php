@@ -299,7 +299,15 @@ $('#switch_bt1').click(function() {
 	$('#bt1').trigger('click');
 });
 // keep log in every 5 mins
-setInterval(function(){$.post('refresh_session.php');},300000);
+function refresh_session() {
+	$.get('refresh_session.php', function( data ) {
+		console.log(data);
+		if (data.trim() == 'FAIL') {
+			window.location.href = 'logout.php';
+		}
+	});
+}
+setInterval(refresh_session,300000);
 
 $(document).ready(function(){
 	//alert("here");
