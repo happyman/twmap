@@ -60,18 +60,14 @@ if ( isset($_REQUEST['action']) && $_REQUEST['action'] == 'logout' ) {
 // return Hybrid_User_Profile object intance
 $user_profile = $adapter->getUserProfile();
 
-
-
-//print_r($user_profile);
-//exit;
-if (isset($user_profile->email) && isset($user_profile->displayName)) {
+if (isset($user_profile->email) && !empty($user_profile->email) && isset($user_profile->displayName)) {
 	$mylogin['email'] = $user_profile->email;
 	$mylogin['type'] = $provider;
 	$mylogin['nick'] = $user_profile->displayName;
 
 } else {
 	$adapter->disconnect();
-	out_err("沒有 email 資訊, 登入失敗");
+	out_err("沒有 email 資訊, 登入失敗 " . print_r($user_profile, true));
 }
 $_SESSION['loggedin'] = 1;
 $_SESSION['mylogin'] = $mylogin;
@@ -99,6 +95,7 @@ function out_err($str="") {
 <html>
 <h1>認證失敗 <?php echo $str;?></h1>
 <?php
+exit();
 }
 function out_ok($str,$url) {
 	header("Location: $url");
