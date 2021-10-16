@@ -39,6 +39,13 @@ function track_get_single($tid){
 	else
 		return NULL;
 }
+// 取得 uid 下所有 track
+function track_get_all($uid){
+	$db=get_conn();
+	$sql = sprintf("select * from \"track\" where uid=%d",$uid);
+	$rs = $db->getAll($sql);
+	return $rs;
+}
 function track_expire($uid,$tid){
 	$db=get_conn();
 	$sql = sprintf("update \"track\" SET status=3,ddate=now() where uid=%d and tid=%d",$uid,$tid);

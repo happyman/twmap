@@ -380,7 +380,7 @@ function map_migrate($root,$uid,$mid) {
 }
 // 檢查是否動作: 刪除/新增 不准做
 function map_blocked($root, $uid) {
-	$blockfile = sprintf("%s/%06d/.block",$root,$uid);
+	$blockfile = sprintf("%s/%s/%06d/.block",$root,gethashdir($uid),$uid);
 
 	if (file_exists($blockfile)){
 		return "出圖或資料結構更新中..請稍候再試";
@@ -388,7 +388,7 @@ function map_blocked($root, $uid) {
 	return null;
 }
 function map_block($root, $uid, $action=1) {
-	$blockfile = sprintf("%s/%06d/.block",$root,$uid);
+	$blockfile = sprintf("%s/%s/%06d/.block",$root,gethashdir($uid),$uid);
 	if ($action == 1 ) {
 		$ret = touch($blockfile);
 	} else {
