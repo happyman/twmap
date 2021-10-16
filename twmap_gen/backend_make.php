@@ -12,7 +12,7 @@ if (empty($_SESSION['loggedin'])) {
 
 require_once ("config.inc.php");
 ini_set("memory_limit", "512M");
-ini_set("max_execution_time", "600");
+ini_set("max_execution_time", "3600");
 ignore_user_abort(true);
 
 // 1.1 save _SESSION 避免被 expire 掉
@@ -194,6 +194,8 @@ if ($inp['gps'] == 1 || $inp['gps'] == 2) {
     $svg_params = sprintf("-g %s:%d:%d", $outgpx, (isset($inp['trk_label'])) ? 1 : 0, $inp['wpt_label']);
 }
 
+$MYUID = $MY_SESSION['uid'];
+
 // 呼叫 cmd_line make, 他也需要 gpx aware
 // -l 傳入 email:formid 作為識別 channel 與 msg owner -m 傳入 tmpdir
 showmem("before call cmd_make.php");
@@ -218,7 +220,7 @@ if ($ret != 0) {
 }
 
 // before register, check count again
-if (map_full($MY_SESSION['uid'], $user['limit'], $recreate_flag)) {
+if (map_full($MYUID, $user['limit'], $recreate_flag)) {
     $files = map_files($outimage);
     foreach ($files as $f) {
         @unlink($f);
@@ -236,13 +238,13 @@ if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
 } else {
     $save_gpx = 0;
 }
-$mid = map_add($MY_SESSION['uid'], $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx, NULL, isset($inp['97datum'])? 97 : 67);
+$mid = map_add($MYUID, $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $_SERVER['REMOTE_ADDR'], $outimage, map_size($outimage), $version, $save_gpx, NULL, isset($inp['97datum'])? 97 : 67);
 
 if ($mid === false ) {
     error_out("寫入資料庫失敗,請回報 $outimage");
 }
 // 最後搬移到正確目錄
-map_migrate($out_root, $MY_SESSION['uid'], $mid);
+map_migrate($out_root, $MYUID, $mid);
 
 
 $okmsg = msglog("done");

@@ -329,10 +329,18 @@ function map_file_name($outimage, $ftype) {
 	return $fname;
 
 }
+function gethashdir($i) {
+        $s = sprintf("%04s",dechex($i % 65535));
+        $l1 = substr($s,0,2);
+        $l2 = substr($s,2,2);
+        return sprintf("%02s/%02s",$l1,$l2);
+}
+
 // 建立好之後,改變 structure 到 uid/mid/files
 function map_migrate($root,$uid,$mid) {
 	// 0. 檢查是新的結構?
-	$dir = sprintf("%s/%06d/%d",$root,$uid,$mid);
+	#$dir = sprintf("%s/%06d/%d",$root,$uid,$mid);
+	$dir = sprintf("%s/%s/%06d/%d",$root,gethashdir($uid),$uid,$mid);
 	// if (file_exists($dir) && is_dir($dir)) return true;
 
 	$row = map_get_single($mid);

@@ -81,7 +81,7 @@ if (!empty($_FILES)) {
 
 		// 3. add metadata to database
 		$tid = track_add(array("name"=>$_FILES['file']['name'],
-		"uid"=>$uid, "status"=> $st, "path"=> sprintf("%s/%06d/track/",$out_root, $uid), 
+		"uid"=>$uid, "status"=> $st, "path"=> sprintf("%s/%s/%06d/track/",$out_root,gethashdir($uid), $uid), 
 		"md5name"=> $fname, "size"=>$meta['size'],
 		"bbox"=>$meta['bbox'], "km_x"=>$meta['km_x'], "km_y"=> $meta['km_y'], "is_taiwan"=>$meta['is_taiwan'],"keepon_id" => $keepon_id));
 		if (intval($tid) == 0 ){
@@ -90,7 +90,7 @@ if (!empty($_FILES)) {
 			exit(1);
 		
 		}	
-		$saveFile = sprintf("%s/%06d/track/%s/%s_o.%s",$out_root,$uid,$tid,$fname,$ext);
+		$saveFile = sprintf("%s/%s/%06d/track/%s/%s_o.%s",$out_root,gethashdir($uid),$uid,$tid,$fname,$ext);
 		migrate_track($targetFile,$saveFile);
 		// if keepon_id then call keepon_api to report url happyman
 		if ($st === 0) {
