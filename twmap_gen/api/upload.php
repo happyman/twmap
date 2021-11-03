@@ -48,7 +48,7 @@ if (!empty($_FILES)) {
 		exit(1);
 	}
 	$fname = md5(sprintf("%d_%s",$uid,$_FILES['file']['name']));
-    $targetFile = sprintf("%s/%06d/track/tmp/%s/%s_o.%s", $out_root, $uid, $fname, $fname, $ext);
+    $targetFile = sprintf("%s/%s/%06d/track/tmp/%s/%s_o.%s", $out_root, gethashdir($uid), $uid, $fname, $fname, $ext);
     
     if ($_FILES['file']['error'] == UPLOAD_ERR_OK){ 
 		@mkdir(dirname($targetFile), 0755, true);
