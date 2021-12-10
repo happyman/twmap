@@ -931,11 +931,11 @@ function get_track($x,$y,$r=10,$detail=0){
 // http://gis.stackexchange.com/questions/44914/how-do-i-getthe-area-of-a-wgs84-polygon-in-square-meters
 function get_AREA($wkt_str) {
 	$db=get_conn();
-	$sql =  sprintf("SELECT ST_Area( ST_Transform( ST_SetSRID( ST_GeomFromEWKT('SRID=4326;%s'), 900913))", $wkt_str);
+	$sql =  sprintf("SELECT ST_Area(ST_Transform( ST_GeomFromEWKT('SRID=4326;%s'),3857))", $wkt_str);
 	// error_log($sql);
 	$rs = $db->getAll($sql);	
 	$db->close();
-	echo $db->errorMsg();
+	//echo $db->errorMsg();
 	return $rs;
 }
 

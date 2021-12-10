@@ -399,7 +399,7 @@ function display_area($sqm){
 	}
 	echo "</ul>";
 	for($i=0;$i<count($unit_n);$i++){
-		printf("<div id='tab_%d'>面積: %.02f %s",$i,$sqm * $unit_a[$i], $unit_n[$i]);
+		printf("<div id='tab_%d'><h2>面積: %.02f %s</h2>",$i,$sqm * $unit_a[$i], $unit_n[$i]);
 		if ($unit_a[$i] != 1 ) 
 			printf("<br>註: 1 平方公尺 = %f %s</div>",$unit_a[$i], $unit_n[$i]);
 	}
