@@ -199,11 +199,11 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 		<select title="訊號" mame="mcover" id="mcover" class="ui-corner-all">
 		<option value="none" selected>訊號</option>
 		<option value="cht3G">cht3G</option>
-		<option value="cht">cht4G</option>
+		<option value="cht">cht4+5G</option>
 		<option value="twn3G">twn3G</option>
-		<option value="twn">twn4G</option>
+		<option value="twn">twn4+5G</option>
 		<option value="fet3G">fet3G</option>
-		<option value="fet">fet4G</option>
+		<option value="fet">fet4+5G</option>
 		</select>
 		</div>
 
