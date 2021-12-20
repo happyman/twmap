@@ -204,7 +204,7 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 		<option value="twn">twn4+5G</option>
 		<option value="fet3G">fet3G</option>
 		<option value="fet">fet4+5G</option>
-		<option value="aptg5g">aptg5G</option>
+		<option value="aptg">aptg4+5G</option>
 		</select>
 		</div>
 
