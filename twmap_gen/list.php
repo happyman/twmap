@@ -23,14 +23,14 @@ if (!isset($_REQUEST['iDisplayStart']))  {
 else {
 	$maps = map_list_get($_SESSION['uid']);
 
-	$start = $_REQUEST['iDisplayStart'];
-	$limit = $_REQUEST['iDisplayLength'];
+	$start = intval($_REQUEST['iDisplayStart']);
+	$limit = intval($_REQUEST['iDisplayLength']);
 	$result_map = array();
 	for($i=$start; $i< $start + $limit; $i++) {
 		if (isset($maps[$i]))
 			$result_map[] = $maps[$i];
 	}
-	$response['sEcho'] = $_REQUEST['sEcho'];
+	$response['sEcho'] = intval($_REQUEST['sEcho']);
 	$response['iTotalRecords'] = count($maps);
 	$response['iTotalDisplayRecords'] = count($maps);
 	$response['aaData'] = create_rows($result_map,$start);
