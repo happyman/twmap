@@ -19,3 +19,28 @@ var TW5KArielPIC_Options = {
     name: "TW5K",
     alt: "2000年五千分之一相片基本圖"
 };
+
+2022.2.6 因為要用 mapproxy 去 serve 故轉換為 x,y,z
+handle tw5k2000 tile
+
+convert tms to xyz
+https://github.com/barbosaale/tms-to-xyz
+
+python tms-to-xyz.py tw5k/
+
+補上 0-9 的 tile
+
+1. create empty png for missing tile
+(https://stackoverflow.com/questions/6350813/how-to-get-8-bit-gray-and-alpha-channel-depths-with-imagemagick)
+
+convert -size 256x256 xc:transparent -depth 8  -channel A -fx 0.5 empty.png
+2. create tile
+(https://wiki.openstreetmap.org/wiki/Tiletool)
+
+tiletool  -e empty.png  -z 10 -b 10/853-859/437-448 -i tw5k -o tw5k2
+mv tw5k2/* tw5k
+
+可以之後改 tileurl
+https://github.com/happyman/twmap/commit/0eabb1380db8fb7ecf73e8e6e7280a39565c17ce
+
+
