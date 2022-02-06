@@ -335,10 +335,11 @@ var TW50K1956_Options = {
 };
 var TW5KArielPIC_Options = {
 	getTileUrl: function (a, b) {
-		var y_tms = (1 << b) - a.y - 1;
-		return "//tile.happyman.idv.tw/map/tw5k/" + b + "/" + a.x + "/" + y_tms + ".png";
+		// var y_tms = (1 << b) - a.y - 1;
+		return "//tile.happyman.idv.tw/map/tw5k/" + b + "/" + a.x + "/" + a.y + ".png";
 	},
 	tileSize: new google.maps.Size(256, 256),
+	minZoom: 10,
 	maxZoom: 17,
 	name: "TW5K",
 	alt: "2000年五千分之一相片基本圖"
