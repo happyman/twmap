@@ -704,19 +704,9 @@ function ShapesMap(_deleteButton, _clearButton, _infoButton, _Infocallback, _Com
         //_map = createMap(_mapContainer);
 		_map = map;
         _drawingManager = drawingManagerCreate(_map);
-       
-        google.maps.event.addDomListener(
-            _deleteButton, 
-            'click', 
-            onDeleteButtonClicked);
-        google.maps.event.addDomListener(
-            _clearButton, 
-            'click', 
-            onClearButtonClicked);
-		google.maps.event.addDomListener(
-			_infoButton,
-			'click',
-			onInfoButtonClicked);
+        _deleteButton.addEventListener('click', onDeleteButtonClicked);
+        _clearButton.addEventListener('click', onClearButtonClicked);
+		_infoButton.addEventListener('click',onInfoButtonClicked);
         shapesLoad();
     }
 

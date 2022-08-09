@@ -356,15 +356,15 @@ function initialize() {
 			opSlider.setValueX(range * opacity);
 			showOp(opacity);
 	});
-
-	google.maps.event.addDomListener(document.getElementById('less'), 'click', function() {
+	// https://stackoverflow.com/questions/71990197/how-to-address-adddomlistener-deprecation-in-google-maps
+	document.getElementById('less').addEventListener('click', function() {
 			var op = opacity - 0.1;
 			if (op <= 0) return;
 			changeBackgroundOpacity(op);
 			opSlider.setValueX(range * opacity);
 			showOp(opacity);
 	});
-	google.maps.event.addDomListener(document.getElementById('more'), 'click', function() {
+	document.getElementById('more').addEventListener('click', function() {
 			var op = opacity + 0.1;
 			if (op >= 1) return;
 			changeBackgroundOpacity(op);

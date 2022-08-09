@@ -10,7 +10,7 @@ require_once("config.inc.php");
 $opt = getopt("t:r");
 
 if (!isset($opt['t'])){
-	echo "Usage: $argv[0] -t 180 -d\n";
+	echo "Usage: $argv[0] -t 180 [-r]\n";
 	echo "       -r: real run, default is dry run\n";
 	echo "       -t days: expire maps xx days ago\n";
 	exit(0);

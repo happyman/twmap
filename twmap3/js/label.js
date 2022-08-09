@@ -37,7 +37,8 @@ Label.prototype.onAdd = function() {
 				function() { me.draw(); }),
 		google.maps.event.addListener(this, 'text_changed',
 				function() { me.draw(); }),
-		google.maps.event.addDomListener(this.div_,"click",function(e) {
+		this.div_.addEventListener('click',function(e){
+		// google.maps.event.addDomListener(this.div_,"click",function(e) {
 				if (me.clickfunc) {
 				// 把點的 label text 送給 clickfunc
 				me.clickfunc(me.get('text').toString());
