@@ -58,9 +58,10 @@ function ExtDraggableObject(src, opt_drag) {
     opt_drag_.toleranceY = Infinity;
   }
 
-  mouseDownEvent_ = event_.addDomListener(src, "mousedown", mouseDown_);
-  mouseUpEvent_ = event_.addDomListener(target_, "mouseup", mouseUp_);
-
+  //mouseDownEvent_ = event_.addDomListener(src, "mousedown", mouseDown_);
+  src.addEventListener("mousedown", mouseDown_);
+  //mouseUpEvent_ = event_.addDomListener(target_, "mouseup", mouseUp_);
+  target_.addEventListener( "mouseup", mouseUp_);
   setCursor_(false);
   if (opt_drag_.container) {
 
@@ -161,7 +162,8 @@ function ExtDraggableObject(src, opt_drag) {
     originalY_ = src.offsetTop;
     formerX_ = originalX_;
     formerY_ = originalY_;
-    mouseMoveEvent_ = event_.addDomListener(target_, "mousemove", mouseMove_);
+    // mouseMoveEvent_ = event_.addDomListener(target_, "mousemove", mouseMove_);
+    target_.addEventListener("mousemove", mouseMove_);
     if (src.setCapture) {
       src.setCapture();
     }

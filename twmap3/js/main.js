@@ -2198,7 +2198,7 @@ function initialize() {
 		});
 
 	if (!is_mobile) {
-		map.enableKeyDragZoom();
+		// map.enableKeyDragZoom();
 		// map.setOptions({
 		//     disableDoubleClickZoom: false
 		// });
@@ -2312,7 +2312,7 @@ function initialize() {
 		opSlider.setValueX(range * opacity);
 		showOp(opacity);
 	});
-	google.maps.event.addDomListener(document.getElementById('less'), 'click', function (event) {
+	document.getElementById('less').addEventListener('click', function (event) {
 		var op = opacity - 0.1;
 		if (op < 0)
 			op = 0; // return;
@@ -2321,7 +2321,7 @@ function initialize() {
 		showOp(opacity);
 		event.preventDefault();
 	});
-	google.maps.event.addDomListener(document.getElementById('more'), 'click', function (event) {
+	document.getElementById('more').addEventListener('click', function (event) {
 		var op = opacity + 0.1;
 		if (op > 1)
 			op = 1; // return;

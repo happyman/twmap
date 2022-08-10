@@ -28,7 +28,6 @@ list ($st, $info) = login_info();
 <!-- build:js js/vender.js -->
 	<script  src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
 	<script  src='js/proj4js-combined.js'></script>
-	<script  src="js/keydragzoom-2.0.6.js"></script>
 	<script  src="js/infobox.js"></script>
 	<script  src='js/ExtDraggableObject.js'></script>
 	<script  src="js/label.js"></script>
