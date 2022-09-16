@@ -9,8 +9,8 @@
 	.login_gmail:hover { margin: -3px; }
 	.login_yahoo { display: inline-block; background: url(imgs/openid-logos.png?20210322) repeat scroll -1px -63px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
 	.login_yahoo:hover { margin: -3px; }
-	.login_facebook { display: inline-block; background: url(imgs/openid-logos.png?20210322) repeat scroll -1px -456px rgb(255, 255, 255); height:63px; width:100px; cursor: pointer; }
-	.login_facebook:hover { margin: -3px; }
+	.login_github { display: inline-block; background: url(imgs/github_login.jpg) rgb(255, 255, 255); height:46px; width:286px; cursor: pointer; }
+	.login_github:hover { margin: -3px; }
 	#login { display: block; height: 300px; }
 	#login p { font-size: 2em }
 </style>
@@ -32,23 +32,20 @@
 		{else}
 		<p>
 		<img src='icons/twmap3.jpg' style='float:right'/>請登入使用 <span style="font-size: 14px">
-			(<a href="http://live.com/" target="_blank">microsoft</a> <a href="http://tw.yahoo.com/" target=_blank>Yahoo</a> <a href="http://gmail.com/" target=_blank>Google</a> <a href="http://www.facebook.com/" target=_blank>Facebook</a> 任一方式)</span>
+			(<a href="http://live.com/" target="_blank">microsoft</a> <a href="http://tw.yahoo.com/" target=_blank>Yahoo</a> <a href="http://gmail.com/" target=_blank>Google</a> <a href="https://github.com/" target=_blank>github</a> 任一方式)</span>
 		<form action="lib/Hybrid/auth.php" method="GET">
 			<input name="provider" id='provider' type="hidden">
 			<a class="showtip login_microsoft" title="使用 Microsoft 登入"></a>
 			<a class="showtip login_gmail" title="使用 Gmail 帳號登入"></a>
 			<a class="showtip login_yahoo" title="使用 Yahoo 登入" ></a>
-			<a class="showtip login_facebook" title="使用 facebook 登入"></a>
+			<a class="showtip login_github" title="使用 github 登入"></a>
 		</form>
 		{/if}
 		<p>由於主機磁碟空間有限,請大家配合登入使用.
 		<br>
-		<a href=# id='about'>關於本站 About this site</a>
+		<a href=# id='about'>關於本站</a>
 	</div>
 </div> 
-{if !isset($showing) }
-<script src="//connect.facebook.net/en_US/all.js"></script>
-{/if}
 <script>
 	$(function(){
 		// about
@@ -59,15 +56,8 @@
 		$('.login_microsoft').click(function() { $('#provider').val('microsoftgraph'); $('form').submit(); });
 		$('.login_gmail').click(function() { $('#provider').val('google'); $('form').submit(); });
 		$('.login_yahoo').click(function() { $('#provider').val('yahoo'); $('form').submit(); });
-		$('.login_facebook').click(function() { $('#provider').val('facebook'); $('form').submit(); });
-{if !isset($showing) }
-		FB.init({ appId: {$fb_appid}, xfbml: true, status: true, cookie: true });
-		FB.getLoginStatus(function (response) { // 有 fb 就 自動登入 fb
-			if(response && response.status == 'connected') {
-			 	if (confirm("您已經在 facebook 登入,請問是否用 facebook 身分登入?"))
-					$('.login_facebook').trigger('click');
-				}});
-{/if}
+		$('.login_github').click(function() { $('#provider').val('github'); $('form').submit(); });
 
-	});
-</script>
+
+		});
+	</script>
