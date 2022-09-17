@@ -20,8 +20,12 @@ $db=get_conn();
 $tracks = track_get_all($uid);
 foreach($tracks as $row){
 	$newpath = sprintf("%s/%s/%06d/track/",$out_root,gethashdir($uid), $uid);
-	$oldpath = sprintf("%s/%06d/track/",$out_root,$uid);
-	//if ($row['path'] == $newpath) continue;
+	// $oldpath = sprintf("%s/%06d/track/",$out_root,$uid);
+	$oldpath = $row['path'];
+	if ($row['path'] == $newpath) {
+		printf("%s samme\n",$newpath);
+		continue;
+	}
 	$cmd = sprintf("mkdir -p %s;mv %s %s",dirname($newpath),$oldpath,$newpath);
 	echo "$cmd\n";
 	exec($cmd);
