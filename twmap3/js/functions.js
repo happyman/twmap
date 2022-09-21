@@ -366,8 +366,15 @@ function coverage_overlay(op) {
                 "typeImg": null,
                 "type": "4G5G"
             }
+
+https://apis.fetnet.net/eservice/api/serviceCoverageController/getServiceCoverageInfo
+2022/9/21
+"serviceCoverageMapInfoList":[{"southwest":"20.912682441736,116.322882125754","northeast":"26.322813780907,124.708821581148","imageUrl":"https://ecare.fetnet.net/DigService/resources/serviceCoverage/coverageVoice.png","name":"語音涵蓋","typeImg":null,"type":"VOICE"},
+{"southwest":"21.813526812557,117.496893247948","northeast":"26.515893187443,122.704393752052","imageUrl":"https://ecare.fetnet.net/DigService/resources/serviceCoverage/coverage3.5G.png","name":"UMTS上網涵蓋","typeImg":null,"type":"UTMS"},
+// 5G
+{"southwest":"21.357521455642,116.04888306975","northeast":"26.634589252325,125.43662458532","imageUrl":"https://ecare.fetnet.net/DigService/resources/serviceCoverage/Coverage4g5g.png","name":"4.5G+5G網路涵蓋率","typeImg":null,"type":"4G5G"}],
 */
-"fet":[{"bound":{"north":27.14942156425,"south":20.836803614465,"west":115.147497884158,"east":125.88518063312},"img":"https://ecare.fetnet.net/DigService/resources/serviceCoverage/Coverage4g5g.png"}],
+"fet":[{"bound":{"north":26.634589252325,"south":21.357521455642,"west":116.04888306975,"east":125.43662458532},"img":"https://ecare.fetnet.net/DigService/resources/serviceCoverage/Coverage4g5g.png"}],
 "fet3G":[{"bound":{"north":26.515893187443,"south":21.813526812557,"west":117.496893247948,"east":122.704393752052},"img":"https://ecare.fetnet.net/DigService/resources/serviceCoverage/coverage3.5G.png"}],
 // #59 
 'aptg': [{'img': 'https://www.aptg.com.tw/coverage1/N_MOCN202107.png', 'bound': {'north': 25.319524, 'south': 24.118276, 'west': 119.39645, 'east': 122.36755}}, {'img': 'https://www.aptg.com.tw/coverage1/M_MOCN202107.png', 'bound': {'north': 24.149725, 'south': 22.948875, 'west': 118.738465, 'east': 121.681535}}, {'img': 'https://www.aptg.com.tw/coverage1/S_MOCN202107.png', 'bound': {'north': 23.039725, 'south': 21.838875, 'west': 119.047514, 'east': 121.966486}}, {'img': 'https://www.aptg.com.tw/coverage1/KM_MOCN202107.png', 'bound': {'north': 24.922454, 'south': 23.924146, 'west': 116.99133, 'east': 119.45467}}, {'img': 'https://www.aptg.com.tw/coverage1/LJ_MOCN202107.png', 'bound': {'north': 26.805656, 'south': 25.804944, 'west': 118.720987, 'east': 121.229013}}]
