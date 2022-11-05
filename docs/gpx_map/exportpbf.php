@@ -10,8 +10,8 @@ require_once("exportpbf.inc.php"); // store $dbuser, $dbpass, $debug flag
 // 1. export trk and wpt from postgresql
 // 2. convert geojson to osm, with special tag for rudy map.
 // 3. sort and convert to pbf
-// 4. convert pbf to map (require taiwan_topo script)
-// x. publish using release.php
+// 4. convert pbf to map
+// x. publish
 $opt = getopt("d:s:");
 if (!isset($opt['d'])) {
 	$dd = date("Ymd_His");
@@ -19,23 +19,33 @@ if (!isset($opt['d'])) {
 	$dd = $opt['d'];
 }
 //$dd = "test";
-$split_bucket = 5000;
+$split_bucket = 3000;
 @mkdir($dd);
 $out_trk = $dd . "/trk_".$dd.".json";
 $out_wpt = $dd . "/wpt_".$dd.".json";
 
+$rmt_trk = "/tmp/trk_".$dd.".json";
+$rmt_wpt = "/tmp/wpt_".$dd.".json";
+
 if (!file_exists($out_trk)) {
 	// 1. export
-	$cmd = sprintf("ogr2ogr -explodecollections -f GeoJSON %s \"PG:host=localhost dbname=twmap user=%s password=%s\" -sql 'select abs(mid),A.*  from gpx_trk A,taiwan_poly B where ST_Within(A.wkb_geometry,B.wkb_geometry) order by abs(mid)'",$out_trk,$dbuser,$dbpass);
+	$cmd = sprintf("ssh mountain@%s \"ogr2ogr -explodecollections -f GeoJSON %s 'PG:host=localhost dbname=twmap user=%s password=%s' -sql 'select abs(mid),A.*  from gpx_trk A,taiwan_poly B where ST_Within(A.wkb_geometry,B.wkb_geometry) order by abs(mid)'; gzip %s\"",$dbhost,$rmt_trk,$dbuser,$dbpass,$rmt_trk);
 	echo "#export gpx_trk table...\n";
 	if ($debug)  	printf("%s\n",$cmd);
+	$cmd3 = sprintf("rsync -av -e ssh mountain@%s:%s.gz $dd;gzip -cd $dd/%s.gz > %s", $dbhost,$rmt_trk,basename($out_trk),$out_trk); 
 	exec($cmd);
+	if ($debug)  	printf("%s\n",$cmd3);
+	exec($cmd3);
 }
 if (!file_exists($out_wpt)) {
-	$cmd = sprintf("ogr2ogr -explodecollections -f GeoJSON %s \"PG:host=localhost dbname=twmap user=%s password=%s\" -sql 'select abs(mid),A.*  from gpx_wp A,taiwan_poly B where ST_Within(A.wkb_geometry,B.wkb_geometry) order by abs(mid)'",$out_wpt,$dbuser,$dbpass);
+	$cmd = sprintf("ssh mountain@%s \"ogr2ogr -explodecollections -f GeoJSON %s 'PG:host=localhost dbname=twmap user=%s password=%s' -sql 'select abs(mid),A.*  from gpx_wp A,taiwan_poly B where ST_Within(A.wkb_geometry,B.wkb_geometry) order by abs(mid)';gzip %s\"",$dbhost,$rmt_wpt,$dbuser,$dbpass,$rmt_wpt);
 	echo "#export gpx_wp table...\n";
 	if ($debug) 	printf("%s\n",$cmd);
 	exec($cmd);
+	$cmd3 = sprintf("rsync -av -e ssh mountain@%s:%s.gz $dd;gzip -cd $dd/%s.gz > %s", $dbhost,$rmt_wpt,basename($out_wpt),$out_wpt);
+	exec($cmd);
+	if ($debug)     printf("%s\n",$cmd3);
+	exec($cmd3);
 }
 
 
@@ -151,30 +161,29 @@ if (!file_exists($dd."/wpt.pbf")) {
 
 // 3.1 cleanup
 //$cmd = sprintf("rm %s; rm %s; rm -r %s/trk; rm -r %s/wpt",$out_trk,$out_wpt,$dd,$dd);	
-printf("stage 1: postgresql to osm pbf =>  %s/trk.pbf %s/wpt.pbf\n",$dd,$dd);
+printf("postgresql to osm pbf =>  %s/trk.pbf %s/wpt.pbf\n",$dd,$dd);
 //exec($cmd);
 
 
 
-$script_dir = "/home/mountain/github/taiwan-topo/osm_scripts";
 // 4. convert to map
 $trk_pbf = "$dd/trk.pbf";
 $wpt_pbf = "$dd/wpt.pbf";
 $wpt_pbf_ren = "$dd/wpt_renum.pbf";
 $trk_pbf_ren = "$dd/trk_renum.pbf";
 $finalpbf = "$dd/Happyman.pbf";
+$finalmap = "$dd/Happyman.map";
 if (!file_exists($finalpbf)) {
 	$cmd=sprintf("osmium  renumber -s 1,1,0 %s -Oo %s", $trk_pbf, $trk_pbf_ren);
 	myexec($cmd);
 	// merge
-	$out = array();
 	$cmd = sprintf("osmium fileinfo -e %s |grep -A1 'Number of nodes' |awk -F: '{print $2}'",$trk_pbf_ren);
+	$out = array();
 	exec($cmd, $out, $ret);
 	$s_node = intval(trim($out[0]))+1;
 	$s_way = intval(trim($out[1]))+1;
 	$cmd = sprintf("osmium renumber -s %d,%d,0 %s -Oo %s", $s_node, $s_way, $wpt_pbf, $wpt_pbf_ren);
 	myexec($cmd);
-	// $cmd = sprintf("bash %s/osium-append.sh %s %s",$script_dir,$finalpbf,$wpt_pbf);
 	$cmd = sprintf("osmium merge %s %s -Oo %s", $trk_pbf_ren, $wpt_pbf_ren, $finalpbf);
 	myexec($cmd);
 }
@@ -188,39 +197,44 @@ if ($ret != 0 ) {
 	echo "Happyman.pbf contains WaterSource, looks good!\n";
 }
 echo "finally...\n";
-// note unbuffer from expect (ubuntu)
-$cmd = sprintf("export JAVACMD_OPTIONS=\"-Xmx30G\";
-		unbuffer osmosis \
-		--read-pbf \"%s\" \
-		--buffer --mapfile-writer \
-		type=ram \
-		threads=8 \
-		bbox=21.55682,118.12141,26.44212,122.31377 \
-		preferred-languages=\"zh,en\" \
-		tag-conf-file=\"%s/gpx-mapping.xml\" \
-		polygon-clipping=true way-clipping=true label-position=false \
-		zoom-interval-conf=6,0,6,10,7,11,14,12,21 \
-		map-start-zoom=10 \
-		comment=\"%s /  (c) Map: Happyman\" \
-		file=\"%s/Happyman.map\" > %s/Happyman.log 2>&1 &",
-		$finalpbf, $script_dir, $dd, $dd , $dd);
+if (!file_exists($finalmap)){
+	$cmd = sprintf("export JAVACMD_OPTIONS=\"-Xmx30G\";
+			unbuffer $osmosis_bin \
+			--read-pbf \"%s\" \
+			--buffer --mapfile-writer \
+			type=ram \
+			threads=8 \
+			bbox=21.55682,118.12141,26.44212,122.31377 \
+			preferred-languages=\"zh,en\" \
+			tag-conf-file=\"%s\" \
+			polygon-clipping=true way-clipping=true label-position=false \
+			zoom-interval-conf=6,0,6,10,7,11,14,12,21 \
+			map-start-zoom=10 \
+			comment=\"%s /  (c) Map: Happyman\" \
+			file=\"%s/Happyman.map\" > %s/Happyman.log 2>&1 &",
+			$finalpbf, $mapping_xml, $dd, $dd , $dd);
 
-// dirty hack: osmosis not exit after done
-echo "$cmd\n";
-$pid = exec($cmd);
-echo "process in background...\n";
-while(1) {
-	system("tail -1 $dd/Happyman.log");
-	exec(sprintf("fgrep \"finished...\" %s/Happyman.log",$dd),$out,$ret);
-	if ($ret == 0 ) {
-		exec("ps ax |grep osmosis |grep java |awk '{print $1}' |xargs kill");
-		echo "done...\n";
-		break;
+	// not yet
+	echo "$cmd\n";
+	$pid = exec($cmd);
+	echo "process in background...\n";
+	while(1) {
+		system("tail -1 $dd/Happyman.log");
+		exec(sprintf("fgrep \"finished...\" %s/Happyman.log",$dd),$out,$ret);
+		if ($ret == 0 ) {
+			exec("ps ax |grep osmosis |grep java |awk '{print $1}' |xargs kill");
+			echo "done...\n";
+			break;
+		}
+		sleep(10);
 	}
-	sleep(10);
 }
 
 // 5. publish
+printf("copy to remote osmosis/%s/Happyman.map . and please release manually\n", $dd);
+$cmd = sprintf("scp %s mountain@%s:/tmp/Happyman_%s.map; ssh mountain@%s \"mkdir osmosis/%s;mv /tmp/Happyman_%s.map osmosis/%s/Happyman.map\"",$finalmap, $dbhost,$dd, $dbhost, $dd, $dd, $dd);
+myexec($cmd);
+
 
 
 function myexec($cmd){
