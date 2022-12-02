@@ -255,7 +255,8 @@ class Minifier
                             // check for some regex that breaks stuff
                             if ($this->a == '/' && ($this->b == '\'' || $this->b == '"')) {
                                 $this->saveRegex();
-                                continue;
+                                // continue;
+				break;
                             }
 
                             echo $this->a;

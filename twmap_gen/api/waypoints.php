@@ -88,7 +88,7 @@ th {
 		$rowspan=count($rows);
 		for($i =0; $i < count($rows); $i++) {
 			$row = $rows[$i];
-			$wpt_icon =  sprintf("<img src='/twmap/icons/%s' />",($row['type']=='wpt')? 'wpt.png':'trk.png');
+			$wpt_icon =  sprintf("<img src='%s/icons/%s' />",$site_html_root,($row['type']=='wpt')? 'wpt.png':'trk.png');
 			if ($i > 0 ) {
 				printf("<tr><td>%s%s</tr>",$wpt_icon, $row['name']);
 				continue;
@@ -132,10 +132,10 @@ th {
 				printf("<tr><td>%s%s<td rowspan=$rowspan>
 				<a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a>
 				<td rowspan=$rowspan><a href='export_mid_gpx.php?mid=%d&kml=1' class=download_track target=_blank>%s (kml)</a>
-				<td rowspan=$rowspan><img src='/twmap/icons/op_delete.png' title='原始 gpx 已刪除'/><td rowspan=$rowspan>%s", 
+				<td rowspan=$rowspan><img src='%s/icons/op_delete.png' title='原始 gpx 已刪除'/><td rowspan=$rowspan>%s", 
 				$wpt_icon,$row['name'], 
 				$mid_to_show,$row['title'],rawurlencode($show_url),mid_show($mid_to_show), $mid_to_show, 
-				$row['title'],$rank_str);
+				$row['title'],$site_html_root,$rank_str);
 			}
 		}
 	}	

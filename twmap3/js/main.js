@@ -1039,7 +1039,13 @@ function locInfo(newpos, callback, param) {
 				}
 				var extra_info;
 				if (data.rsp.admin) {
-					extra_info = "<br><a class='weather-link' href='" + data.rsp.weather_forcast_url + "' target=_blank>" + data.rsp.admin + "</a>";
+					// 原鄉預報 forecast TOFIX
+					if ( data.rsp.weather_forcast_url ) {
+					    extra_info = "<br><a class='weather-link' href='" + data.rsp.weather_forcast_url + "' target=_blank>" + data.rsp.admin + "</a>";
+					}
+					else {
+						extra_info = "<br>" + data.rsp.admin;
+					}
 				}
 				if (data.rsp.nature) {
 					extra_info += "<br>" + data.rsp.nature;
@@ -1271,7 +1277,7 @@ function tagInfo(newpos, id) {
 				content += "<br>其他: <a href=# id='los_link' onClick='javascript:show_line_of_sight(" + newpos.toUrlValue(5) + "," + data[0].ele + ")'><img title='通視模擬' id=\"los_eye_img\" src=img/eye.png width=32/></a>";
 				content += "<a href='//mc.basecamp.tw/#" + map.getZoom() + "/" + newpos.lat().toFixed(4) + "/" + newpos.lng().toFixed(4) + "' target='mc' ><img src=img/mc.png title='地圖對照器' /></a>";
 				content += "<a href='//maps.nlsc.gov.tw/go/" + newpos.lng().toFixed(5) + "/" + newpos.lat().toFixed(5) + "' target='nlsc'><img src='img/nlsc-1.png' width=32 title='NLSC' ></a>";
-				content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='/icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
+				content += "<a href=# onClick=\"showmeerkat('" + promlist_url + "',{}); return false;\"><img src='icon/%E7%8D%A8%E7%AB%8B%E5%B3%B0.png' /></a>";
 				content += "<a href='//www.windy.com/"+  newpos.lat().toFixed(3) + "/" +  newpos.lng().toFixed(3) +"/meteogram?rain,"+  newpos.lat().toFixed(3) + "," +  newpos.lng().toFixed(3) + "," + map.getZoom()  +",m:ejkajw7' target='windy'><img src='img/windy.png' title='windy'/></a>";
 
 				if (!is_mobile) {
@@ -1879,7 +1885,7 @@ function mysetIcon2(type, isShadow) {
 		else
 			return icon[6];
 	} else {
-		return "//map.happyman.idv.tw/icon/" + encodeURIComponent(type) + ".png";
+		return "icon/" + encodeURIComponent(type) + ".png";
 	}
 }
 function pad(num, size) {

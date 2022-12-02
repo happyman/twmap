@@ -12,21 +12,21 @@
   "author": "happyman",
   "license": "GPL",
   "devDependencies": {
-    "grunt": ">=1.3.0",
-    "grunt-contrib-compass": "~0.2.0",
-    "grunt-contrib-concat": "~0.5.1",
-    "grunt-contrib-copy": "~0.8.1",
-    "grunt-contrib-cssmin": "~0.14.0",
-    "grunt-contrib-jshint": "~0.11.3",
-    "grunt-contrib-uglify": "^5.0.0",
-    "grunt-contrib-watch": "~0.4.3",
-    "grunt-filerev": "~2.3.1",
-    "grunt-phplint": "^0.1.0",
-    "grunt-usemin": "~3.1.1",
-    "matchdep": "~0.1.2"
+    "grunt": "*",
+    "grunt-contrib-compass": "*",
+    "grunt-contrib-concat": "*",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-cssmin": "*",
+    "grunt-contrib-jshint": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-filerev": "*",
+    "grunt-phplint": "*",
+    "grunt-usemin": "*",
+    "matchdep": "*"
   },
   "dependencies": {
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-rsync": "^2.0.1"
+    "grunt-contrib-clean": "*",
+    "grunt-rsync": "*"
   }
 }

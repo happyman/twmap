@@ -1,18 +1,27 @@
 <?php
-/*
-V5.19  23-Apr-2014  (c) 2000-2014 John Lim. All rights reserved.
-  Released under both BSD license and Lesser GPL library license.
-  Whenever there is any discrepancy between the two licenses,
-  the BSD license will take precedence.
-  Set tabs to 4 for best viewing.
-
-  Latest version is available at http://adodb.sourceforge.net
-
-  Informix port by Mitchell T. Young (mitch@youngfamily.org)
-
-  Further mods by "Samuel CARRIERE" <samuel_carriere@hotmail.com>
-
-*/
+/**
+ * Informix driver.
+ *
+ * @deprecated
+ *
+ * This file is part of ADOdb, a Database Abstraction Layer library for PHP.
+ *
+ * @package ADOdb
+ * @link https://adodb.org Project's web site and documentation
+ * @link https://github.com/ADOdb/ADOdb Source code and issue tracker
+ *
+ * The ADOdb Library is dual-licensed, released under both the BSD 3-Clause
+ * and the GNU Lesser General Public Licence (LGPL) v2.1 or, at your option,
+ * any later version. This means you can use it in proprietary products.
+ * See the LICENSE.md file distributed with this source code for details.
+ * @license BSD-3-Clause
+ * @license LGPL-2.1-or-later
+ *
+ * @copyright 2000-2013 John Lim
+ * @copyright 2014 Damien Regad, Mark Newnham and the ADOdb community
+ * @author Mitchell T. Young <mitch@youngfamily.org>
+ * @author Samuel Carriere <samuel_carriere@hotmail.com>
+ */
 
 // security - hide paths
 if (!defined('ADODB_DIR')) die();
@@ -54,7 +63,7 @@ class ADODB_informix72 extends ADOConnection {
 	var $sysTimeStamp = 'CURRENT';
 	var $cursorType = IFX_SCROLL; // IFX_SCROLL or IFX_HOLD or 0
 
-	function ADODB_informix72()
+	function __construct()
 	{
 		// alternatively, use older method:
 		//putenv("DBDATE=Y4MD-");
@@ -81,7 +90,7 @@ class ADODB_informix72 extends ADOConnection {
 
 
 
-	function _insertid()
+	protected function _insertID($table = '', $column = '')
 	{
 		$sqlca =ifx_getsqlca($this->lastQuery);
 		return @$sqlca["sqlerrd1"];
@@ -244,12 +253,12 @@ class ADODB_informix72 extends ADOConnection {
 		return $false;
 	}
 
-   function xMetaColumns($table)
-   {
+	function xMetaColumns($table)
+	{
 		return ADOConnection::MetaColumns($table,false);
-   }
+	}
 
-	 function MetaForeignKeys($table, $owner=false, $upper=false) //!Eos
+	public function metaForeignKeys($table, $owner = '', $upper = false, $associative = false)
 	{
 		$sql = "
 			select tr.tabname,updrule,delrule,
@@ -376,7 +385,10 @@ class ADODB_informix72 extends ADOConnection {
 	function _close()
 	{
 		$this->lastQuery = false;
-		return ifx_close($this->_connectionID);
+		if($this->_connectionID) {
+			return ifx_close($this->_connectionID);
+		}
+		return true;
 	}
 }
 
@@ -391,14 +403,14 @@ class ADORecordset_informix72 extends ADORecordSet {
 	var $canSeek = true;
 	var $_fieldprops = false;
 
-	function ADORecordset_informix72($id,$mode=false)
+	function __construct($id,$mode=false)
 	{
 		if ($mode === false) {
 			global $ADODB_FETCH_MODE;
 			$mode = $ADODB_FETCH_MODE;
 		}
 		$this->fetchMode = $mode;
-		return $this->ADORecordSet($id);
+		parent::__construct($id);
 	}
 
 
@@ -488,12 +500,15 @@ class ADORecordset_informix72 extends ADORecordSet {
 		is running. All associated result memory for the specified result identifier will automatically be freed.	*/
 	function _close()
 	{
-		return ifx_free_result($this->_queryID);
+		if($this->_queryID) {
+			return ifx_free_result($this->_queryID);
+		}
+		return true;
 	}
 
 }
 /** !Eos
-* Auxiliar function to Parse coltype,collength. Used by Metacolumns
+* Auxiliary function to Parse coltype,collength. Used by Metacolumns
 * return: array ($mtype,$length,$precision,$nullable) (similar to ifx_fieldpropierties)
 */
 function ifx_props($coltype,$collength){

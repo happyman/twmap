@@ -1334,8 +1334,9 @@ function get_tribe_weather_url($key){
 	if (count($data) > 0) {
 		foreach($data as $d)
 		$ret[]= sprintf("<a href=%s target=cwb>%s</a>",$d['cwb_link'],$d['tribe_name']);
+		return implode($ret,",");
 	}
-	return implode($ret,",");
+	return "";
 }
 // use to export points to KML 
 // fpath is output geojson file. 

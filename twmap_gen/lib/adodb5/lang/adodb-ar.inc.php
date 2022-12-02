@@ -1,32 +1,52 @@
 <?php
-// by "El-Shamaa, Khaled" <k.el-shamaa#cgiar.org>
+/**
+ * Arabic language strings.
+ *
+ * This file is part of ADOdb, a Database Abstraction Layer library for PHP.
+ *
+ * @package ADOdb
+ * @link https://adodb.org Project's web site and documentation
+ * @link https://github.com/ADOdb/ADOdb Source code and issue tracker
+ *
+ * The ADOdb Library is dual-licensed, released under both the BSD 3-Clause
+ * and the GNU Lesser General Public Licence (LGPL) v2.1 or, at your option,
+ * any later version. This means you can use it in proprietary products.
+ * See the LICENSE.md file distributed with this source code for details.
+ * @license BSD-3-Clause
+ * @license LGPL-2.1-or-later
+ *
+ * @copyright 2000-2013 John Lim
+ * @copyright 2014 Damien Regad, Mark Newnham and the ADOdb community
+ * @author El-Shamaa, Khaled <k.el-shamaa@cgiar.org>
+ */
+
 $ADODB_LANG_ARRAY = array (
 			'LANG'			    => 'ar',
-	    DB_ERROR			=> 'ÎØÃ ÛíÑ ãÍÏÏ',
-	    DB_ERROR_ALREADY_EXISTS	=> 'ãæÌæÏ ãÓÈŞÇ',
-	    DB_ERROR_CANNOT_CREATE	=> 'áÇ íãßä ÅäÔÇÁ',
-	    DB_ERROR_CANNOT_DELETE	=> 'áÇ íãßä ÍĞİ',
-	    DB_ERROR_CANNOT_DROP	=> 'áÇ íãßä ÍĞİ',
-	    DB_ERROR_CONSTRAINT 	=> 'ÚãáíÉ ÅÏÎÇá ããäæÚÉ',
-	    DB_ERROR_DIVZERO		=> 'ÚãáíÉ ÇáÊŞÓíã Úáì ÕİÑ',
-	    DB_ERROR_INVALID		=> 'ÛíÑ ÕÍíÍ',
-	    DB_ERROR_INVALID_DATE	=> 'ÕíÛÉ æŞÊ Ãæ ÊÇÑíÎ ÛíÑ ÕÍíÍÉ',
-	    DB_ERROR_INVALID_NUMBER	=> 'ÕíÛÉ ÑŞã ÛíÑ ÕÍíÍÉ',
-	    DB_ERROR_MISMATCH		=> 'ÛíÑ ãÊØÇÈŞ',
-	    DB_ERROR_NODBSELECTED	=> 'áã íÊã ÅÎÊíÇÑ ŞÇÚÏÉ ÇáÈíÇäÇÊ ÈÚÏ',
-	    DB_ERROR_NOSUCHFIELD	=> 'áíÓ åäÇáß ÍŞá ÈåĞÇ ÇáÇÓã',
-	    DB_ERROR_NOSUCHTABLE	=> 'áíÓ åäÇáß ÌÏæá ÈåĞÇ ÇáÇÓã',
-	    DB_ERROR_NOT_CAPABLE	=> 'ŞÇÚÏÉ ÇáÈíÇäÇÊ ÇáãÑÊÈØ ÈåÇ ÛíÑ ŞÇÏÑÉ',
-	    DB_ERROR_NOT_FOUND		=> 'áã íÊã ÅíÌÇÏå',
-	    DB_ERROR_NOT_LOCKED 	=> 'ÛíÑ ãŞİæá',
-	    DB_ERROR_SYNTAX		=> 'ÎØÃ İí ÇáÕíÛÉ',
-	    DB_ERROR_UNSUPPORTED	=> 'ÛíÑ ãÏÚæã',
-	    DB_ERROR_VALUE_COUNT_ON_ROW => 'ÚÏÏ ÇáŞíã İí ÇáÓÌá',
-	    DB_ERROR_INVALID_DSN	=> 'DSN ÛíÑ ÕÍíÍ',
-	    DB_ERROR_CONNECT_FAILED	=> 'İÔá ÚãáíÉ ÇáÅÊÕÇá',
-	    0			       => 'áíÓ åäÇáß ÃÎØÇÁ', // DB_OK
-	    DB_ERROR_NEED_MORE_DATA	=> 'ÇáÈíÇäÇÊ ÇáãÒæÏÉ ÛíÑ ßÇİíÉ',
-	    DB_ERROR_EXTENSION_NOT_FOUND=> 'áã íÊã ÅíÌÇÏ ÇáÅÖÇİÉ ÇáãÊÚáŞÉ',
-	    DB_ERROR_NOSUCHDB		=> 'áíÓ åäÇáß ŞÇÚÏÉ ÈíÇäÇÊ ÈåĞÇ ÇáÇÓã',
-	    DB_ERROR_ACCESS_VIOLATION	=> 'ÓãÇÍíÇÊ ÛíÑ ßÇİíÉ'
+	    DB_ERROR			=> 'Ø®Ø·Ø£ ØºÙŠØ± Ù…Ø­Ø¯Ø¯',
+	    DB_ERROR_ALREADY_EXISTS	=> 'Ù…ÙˆØ¬ÙˆØ¯ Ù…Ø³Ø¨Ù‚Ø§',
+	    DB_ERROR_CANNOT_CREATE	=> 'Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø¥Ù†Ø´Ø§Ø¡',
+	    DB_ERROR_CANNOT_DELETE	=> 'Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø­Ø°Ù',
+	    DB_ERROR_CANNOT_DROP	=> 'Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø­Ø°Ù',
+	    DB_ERROR_CONSTRAINT 	=> 'Ø¹Ù…Ù„ÙŠØ© Ø¥Ø¯Ø®Ø§Ù„ Ù…Ù…Ù†ÙˆØ¹Ø©',
+	    DB_ERROR_DIVZERO		=> 'Ø¹Ù…Ù„ÙŠØ© Ø§Ù„ØªÙ‚Ø³ÙŠÙ… Ø¹Ù„Ù‰ ØµÙØ±',
+	    DB_ERROR_INVALID		=> 'ØºÙŠØ± ØµØ­ÙŠØ­',
+	    DB_ERROR_INVALID_DATE	=> 'ØµÙŠØºØ© ÙˆÙ‚Øª Ø£Ùˆ ØªØ§Ø±ÙŠØ® ØºÙŠØ± ØµØ­ÙŠØ­Ø©',
+	    DB_ERROR_INVALID_NUMBER	=> 'ØµÙŠØºØ© Ø±Ù‚Ù… ØºÙŠØ± ØµØ­ÙŠØ­Ø©',
+	    DB_ERROR_MISMATCH		=> 'ØºÙŠØ± Ù…ØªØ·Ø§Ø¨Ù‚',
+	    DB_ERROR_NODBSELECTED	=> 'Ù„Ù… ÙŠØªÙ… Ø¥Ø®ØªÙŠØ§Ø± Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø¨Ø¹Ø¯',
+	    DB_ERROR_NOSUCHFIELD	=> 'Ù„ÙŠØ³ Ù‡Ù†Ø§Ù„Ùƒ Ø­Ù‚Ù„ Ø¨Ù‡Ø°Ø§ Ø§Ù„Ø§Ø³Ù…',
+	    DB_ERROR_NOSUCHTABLE	=> 'Ù„ÙŠØ³ Ù‡Ù†Ø§Ù„Ùƒ Ø¬Ø¯ÙˆÙ„ Ø¨Ù‡Ø°Ø§ Ø§Ù„Ø§Ø³Ù…',
+	    DB_ERROR_NOT_CAPABLE	=> 'Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ù‡Ø§ ØºÙŠØ± Ù‚Ø§Ø¯Ø±Ø©',
+	    DB_ERROR_NOT_FOUND		=> 'Ù„Ù… ÙŠØªÙ… Ø¥ÙŠØ¬Ø§Ø¯Ù‡',
+	    DB_ERROR_NOT_LOCKED 	=> 'ØºÙŠØ± Ù…Ù‚ÙÙˆÙ„',
+	    DB_ERROR_SYNTAX		=> 'Ø®Ø·Ø£ ÙÙŠ Ø§Ù„ØµÙŠØºØ©',
+	    DB_ERROR_UNSUPPORTED	=> 'ØºÙŠØ± Ù…Ø¯Ø¹ÙˆÙ…',
+	    DB_ERROR_VALUE_COUNT_ON_ROW => 'Ø¹Ø¯Ø¯ Ø§Ù„Ù‚ÙŠÙ… ÙÙŠ Ø§Ù„Ø³Ø¬Ù„',
+	    DB_ERROR_INVALID_DSN	=> 'DSN ØºÙŠØ± ØµØ­ÙŠØ­',
+	    DB_ERROR_CONNECT_FAILED	=> 'ÙØ´Ù„ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¥ØªØµØ§Ù„',
+	    0			       => 'Ù„ÙŠØ³ Ù‡Ù†Ø§Ù„Ùƒ Ø£Ø®Ø·Ø§Ø¡', // DB_OK
+	    DB_ERROR_NEED_MORE_DATA	=> 'Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø²ÙˆØ¯Ø© ØºÙŠØ± ÙƒØ§ÙÙŠØ©',
+	    DB_ERROR_EXTENSION_NOT_FOUND=> 'Ù„Ù… ÙŠØªÙ… Ø¥ÙŠØ¬Ø§Ø¯ Ø§Ù„Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…ØªØ¹Ù„Ù‚Ø©',
+	    DB_ERROR_NOSUCHDB		=> 'Ù„ÙŠØ³ Ù‡Ù†Ø§Ù„Ùƒ Ù‚Ø§Ø¹Ø¯Ø© Ø¨ÙŠØ§Ù†Ø§Øª Ø¨Ù‡Ø°Ø§ Ø§Ù„Ø§Ø³Ù…',
+	    DB_ERROR_ACCESS_VIOLATION	=> 'Ø³Ù…Ø§Ø­ÙŠØ§Øª ØºÙŠØ± ÙƒØ§ÙÙŠØ©'
 );

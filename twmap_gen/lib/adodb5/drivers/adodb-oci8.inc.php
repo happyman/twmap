@@ -1,18 +1,25 @@
 <?php
-/*
-
-  version V5.19  23-Apr-2014  (c) 2000-2014 John Lim. All rights reserved.
-
-  Released under both BSD license and Lesser GPL library license.
-  Whenever there is any discrepancy between the two licenses,
-  the BSD license will take precedence.
-
-  Latest version is available at http://adodb.sourceforge.net
-
-  Code contributed by George Fourlanos <fou@infomap.gr>
-
-  13 Nov 2000 jlim - removed all ora_* references.
-*/
+/**
+ * FileDescription
+ *
+ * This file is part of ADOdb, a Database Abstraction Layer library for PHP.
+ *
+ * @package ADOdb
+ * @link https://adodb.org Project's web site and documentation
+ * @link https://github.com/ADOdb/ADOdb Source code and issue tracker
+ *
+ * The ADOdb Library is dual-licensed, released under both the BSD 3-Clause
+ * and the GNU Lesser General Public Licence (LGPL) v2.1 or, at your option,
+ * any later version. This means you can use it in proprietary products.
+ * See the LICENSE.md file distributed with this source code for details.
+ * @license BSD-3-Clause
+ * @license LGPL-2.1-or-later
+ *
+ * @copyright 2000-2013 John Lim
+ * @copyright 2014 Damien Regad, Mark Newnham and the ADOdb community
+ * @author John Lim
+ * @author George Fourlanos <fou@infomap.gr>
+ */
 
 // security - hide paths
 if (!defined('ADODB_DIR')) die();
@@ -42,14 +49,13 @@ You can also modify the date format using the ALTER SESSION command.
 # returns false if no LOB descriptor
 function oci_lob_desc($type) {
 	switch ($type) {
-		case OCI_B_BFILE: $result = OCI_D_FILE; break;
-		case OCI_B_CFILEE: $result = OCI_D_FILE; break;
-		case OCI_B_CLOB: $result = OCI_D_LOB; break;
-		case OCI_B_BLOB: $result = OCI_D_LOB; break;
-		case OCI_B_ROWID: $result = OCI_D_ROWID; break;
-		default: $result = false; break;
+		case OCI_B_BFILE:  return OCI_D_FILE;
+		case OCI_B_CFILEE: return OCI_D_FILE;
+		case OCI_B_CLOB:   return OCI_D_LOB;
+		case OCI_B_BLOB:   return OCI_D_LOB;
+		case OCI_B_ROWID:  return OCI_D_ROWID;
 	}
-	return $result;
+	return false;
 }
 
 class ADODB_oci8 extends ADOConnection {
@@ -88,7 +94,6 @@ END;
 	var $connectSID = false;
 	var $_bind = false;
 	var $_nestedSQL = true;
-	var $_hasOciFetchStatement = false;
 	var $_getarray = false; // currently not working
 	var $leftOuter = '';  // oracle wierdness, $col = $value (+) for LEFT OUTER, $col (+)= $value for RIGHT OUTER
 	var $session_sharing_force_blob = false; // alter session on updateblob if set to true
@@ -102,11 +107,20 @@ END;
 
 	// var $ansiOuter = true; // if oracle9
 
-	function ADODB_oci8()
-	{
-		$this->_hasOciFetchStatement = ADODB_PHPVER >= 0x4200;
-		if (defined('ADODB_EXTENSION')) $this->rsPrefix .= 'ext_';
-	}
+	/*
+	 * Legacy compatibility for sequence names for emulated auto-increments
+	 */
+	public $useCompactAutoIncrements = false;
+
+	/*
+	 * Defines the schema name for emulated auto-increment columns
+	 */
+	public $schema = false;
+
+	/*
+	 * Defines the prefix for emulated auto-increment columns
+	 */
+	public $seqPrefix = 'SEQ_';
 
 	/*  function MetaColumns($table, $normalize=true) added by smondino@users.sourceforge.net*/
 	function MetaColumns($table, $normalize=true)
@@ -116,20 +130,25 @@ END;
 		$schema = '';
 		$this->_findschema($table, $schema);
 
-		$false = false;
 		$save = $ADODB_FETCH_MODE;
 		$ADODB_FETCH_MODE = ADODB_FETCH_NUM;
-		if ($this->fetchMode !== false) $savem = $this->SetFetchMode(false);
+		if ($this->fetchMode !== false) {
+			$savem = $this->SetFetchMode(false);
+		}
 
-		if ($schema)
+		if ($schema){
 			$rs = $this->Execute(sprintf($this->metaColumnsSQL2, strtoupper($schema), strtoupper($table)));
-		else
+		}
+		else {
 			$rs = $this->Execute(sprintf($this->metaColumnsSQL,strtoupper($table)));
+		}
 
-		if (isset($savem)) $this->SetFetchMode($savem);
+		if (isset($savem)) {
+			$this->SetFetchMode($savem);
+		}
 		$ADODB_FETCH_MODE = $save;
 		if (!$rs) {
-			return $false;
+			return false;
 		}
 		$retarr = array();
 		while (!$rs->EOF) {
@@ -139,28 +158,36 @@ END;
 			$fld->max_length = $rs->fields[2];
 			$fld->scale = $rs->fields[3];
 			if ($rs->fields[1] == 'NUMBER') {
-				if ($rs->fields[3] == 0) $fld->type = 'INT';
+				if ($rs->fields[3] == 0) {
+					$fld->type = 'INT';
+				}
 				$fld->max_length = $rs->fields[4];
 			}
 			$fld->not_null = (strncmp($rs->fields[5], 'NOT',3) === 0);
 			$fld->binary = (strpos($fld->type,'BLOB') !== false);
 			$fld->default_value = $rs->fields[6];
 
-			if ($ADODB_FETCH_MODE == ADODB_FETCH_NUM) $retarr[] = $fld;
-			else $retarr[strtoupper($fld->name)] = $fld;
+			if ($ADODB_FETCH_MODE == ADODB_FETCH_NUM) {
+				$retarr[] = $fld;
+			}
+			else {
+				$retarr[strtoupper($fld->name)] = $fld;
+			}
 			$rs->MoveNext();
 		}
 		$rs->Close();
-		if (empty($retarr))
-			return  $false;
-		else
-			return $retarr;
+		if (empty($retarr)) {
+			return false;
+		}
+		return $retarr;
 	}
 
 	function Time()
 	{
 		$rs = $this->Execute("select TO_CHAR($this->sysTimeStamp,'YYYY-MM-DD HH24:MI:SS') from dual");
-		if ($rs && !$rs->EOF) return $this->UnixTimeStamp(reset($rs->fields));
+		if ($rs && !$rs->EOF) {
+			return $this->UnixTimeStamp(reset($rs->fields));
+		}
 
 		return false;
 	}
@@ -193,14 +220,18 @@ END;
 	 */
 	function _connect($argHostname, $argUsername, $argPassword, $argDatabasename=null, $mode=0)
 	{
-		if (!function_exists('oci_pconnect')) return null;
+		if (!function_exists('oci_pconnect')) {
+			return null;
+		}
 		#adodb_backtrace();
 
 		$this->_errorMsg = false;
 		$this->_errorCode = false;
 
 		if($argHostname) { // added by Jorma Tuomainen <jorma.tuomainen@ppoy.fi>
-			if (empty($argDatabasename)) $argDatabasename = $argHostname;
+			if (empty($argDatabasename)) {
+				$argDatabasename = $argHostname;
+			}
 			else {
 				if(strpos($argHostname,":")) {
 					$argHostinfo=explode(":",$argHostname);
@@ -229,7 +260,9 @@ END;
 			$this->_connectionID = ($this->charSet)
 				? oci_pconnect($argUsername,$argPassword, $argDatabasename,$this->charSet)
 				: oci_pconnect($argUsername,$argPassword, $argDatabasename);
-			if ($this->_connectionID && $this->autoRollback)  oci_rollback($this->_connectionID);
+			if ($this->_connectionID && $this->autoRollback)  {
+				oci_rollback($this->_connectionID);
+			}
 		} else if ($mode==2) {
 			$this->_connectionID = ($this->charSet)
 				? oci_new_connect($argUsername,$argPassword, $argDatabasename,$this->charSet)
@@ -275,7 +308,9 @@ END;
 
 	function _affectedrows()
 	{
-		if (is_resource($this->_stmt)) return @oci_num_rows($this->_stmt);
+		if (is_resource($this->_stmt)) {
+			return @oci_num_rows($this->_stmt);
+		}
 		return 0;
 	}
 
@@ -284,20 +319,64 @@ END;
 		return " NVL($field, $ifNull) "; // if Oracle
 	}
 
+	protected function _insertID($table = '', $column = '')
+	{
+
+		if (!$this->seqField)
+			return false;
+
+		if ($this->schema)
+		{
+			$t = strpos($table,'.');
+			if ($t !== false)
+				$tab = substr($table,$t+1);
+			else
+				$tab = $table;
+
+			if ($this->useCompactAutoIncrements)
+				$tab = sprintf('%u',crc32(strtolower($tab)));
+
+			$seqname = $this->schema.'.'.$this->seqPrefix.$tab;
+		}
+		else
+		{
+			if ($this->useCompactAutoIncrements)
+				$table = sprintf('%u',crc32(strtolower($table)));
+
+			$seqname = $this->seqPrefix.$table;
+		}
+
+		if (strlen($seqname) > 30)
+			/*
+			* We cannot successfully identify the sequence
+			*/
+			return false;
+
+		return $this->getOne("SELECT $seqname.currval FROM dual");
+	}
+
 	// format and return date string in database date format
 	function DBDate($d,$isfld=false)
 	{
-		if (empty($d) && $d !== 0) return 'null';
+		if (empty($d) && $d !== 0) {
+			return 'null';
+		}
 
 		if ($isfld) {
 			$d = _adodb_safedate($d);
 			return 'TO_DATE('.$d.",'".$this->dateformat."')";
 		}
 
-		if (is_string($d)) $d = ADORecordSet::UnixDate($d);
+		if (is_string($d)) {
+			$d = ADORecordSet::UnixDate($d);
+		}
 
-		if (is_object($d)) $ds = $d->format($this->fmtDate);
-		else $ds = adodb_date($this->fmtDate,$d);
+		if (is_object($d)) {
+			$ds = $d->format($this->fmtDate);
+		}
+		else {
+			$ds = adodb_date($this->fmtDate,$d);
+		}
 
 		return "TO_DATE(".$ds.",'".$this->dateformat."')";
 	}
@@ -305,18 +384,28 @@ END;
 	function BindDate($d)
 	{
 		$d = ADOConnection::DBDate($d);
-		if (strncmp($d,"'",1)) return $d;
+		if (strncmp($d, "'", 1)) {
+			return $d;
+		}
 
-		return substr($d,1,strlen($d)-2);
+		return substr($d, 1, strlen($d)-2);
 	}
 
 	function BindTimeStamp($ts)
 	{
-		if (empty($ts) && $ts !== 0) return 'null';
-		if (is_string($ts)) $ts = ADORecordSet::UnixTimeStamp($ts);
+		if (empty($ts) && $ts !== 0) {
+			return 'null';
+		}
+		if (is_string($ts)) {
+			$ts = ADORecordSet::UnixTimeStamp($ts);
+		}
 
-		if (is_object($ts)) $tss = $ts->format("'Y-m-d H:i:s'");
-		else $tss = adodb_date("'Y-m-d H:i:s'",$ts);
+		if (is_object($ts)) {
+			$tss = $ts->format("'Y-m-d H:i:s'");
+		}
+		else {
+			$tss = adodb_date("'Y-m-d H:i:s'",$ts);
+		}
 
 		return $tss;
 	}
@@ -324,19 +413,31 @@ END;
 	// format and return date string in database timestamp format
 	function DBTimeStamp($ts,$isfld=false)
 	{
-		if (empty($ts) && $ts !== 0) return 'null';
-		if ($isfld) return 'TO_DATE(substr('.$ts.",1,19),'RRRR-MM-DD, HH24:MI:SS')";
-		if (is_string($ts)) $ts = ADORecordSet::UnixTimeStamp($ts);
+		if (empty($ts) && $ts !== 0) {
+			return 'null';
+		}
+		if ($isfld) {
+			return 'TO_DATE(substr('.$ts.",1,19),'RRRR-MM-DD, HH24:MI:SS')";
+		}
+		if (is_string($ts)) {
+			$ts = ADORecordSet::UnixTimeStamp($ts);
+		}
 
-		if (is_object($ts)) $tss = $ts->format("'Y-m-d H:i:s'");
-		else $tss = date("'Y-m-d H:i:s'",$ts);
+		if (is_object($ts)) {
+			$tss = $ts->format("'Y-m-d H:i:s'");
+		}
+		else {
+			$tss = date("'Y-m-d H:i:s'",$ts);
+		}
 
 		return 'TO_DATE('.$tss.",'RRRR-MM-DD, HH24:MI:SS')";
 	}
 
 	function RowLock($tables,$where,$col='1 as adodbignore')
 	{
-		if ($this->autoCommit) $this->BeginTrans();
+		if ($this->autoCommit) {
+			$this->BeginTrans();
+		}
 		return $this->GetOne("select $col from $tables where $where for update");
 	}
 
@@ -374,40 +475,45 @@ END;
 		// get Primary index
 		$primary_key = '';
 
-		$false = false;
 		$rs = $this->Execute(sprintf("SELECT * FROM ALL_CONSTRAINTS WHERE UPPER(TABLE_NAME)='%s' AND CONSTRAINT_TYPE='P'",$table));
 		if (!is_object($rs)) {
-			if (isset($savem))
+			if (isset($savem)) {
 				$this->SetFetchMode($savem);
+			}
 			$ADODB_FETCH_MODE = $save;
-			return $false;
+			return false;
 		}
 
-		if ($row = $rs->FetchRow())
+		if ($row = $rs->FetchRow()) {
 			$primary_key = $row[1]; //constraint_name
+		}
 
 		if ($primary==TRUE && $primary_key=='') {
-			if (isset($savem))
+			if (isset($savem)) {
 				$this->SetFetchMode($savem);
+			}
 			$ADODB_FETCH_MODE = $save;
-			return $false; //There is no primary key
+			return false; //There is no primary key
 		}
 
 		$rs = $this->Execute(sprintf("SELECT ALL_INDEXES.INDEX_NAME, ALL_INDEXES.UNIQUENESS, ALL_IND_COLUMNS.COLUMN_POSITION, ALL_IND_COLUMNS.COLUMN_NAME FROM ALL_INDEXES,ALL_IND_COLUMNS WHERE UPPER(ALL_INDEXES.TABLE_NAME)='%s' AND ALL_IND_COLUMNS.INDEX_NAME=ALL_INDEXES.INDEX_NAME",$table));
 
 
 		if (!is_object($rs)) {
-			if (isset($savem))
+			if (isset($savem)) {
 				$this->SetFetchMode($savem);
+			}
 			$ADODB_FETCH_MODE = $save;
-			return $false;
+			return false;
 		}
 
 		$indexes = array ();
 		// parse index data into array
 
 		while ($row = $rs->FetchRow()) {
-			if ($primary && $row[0] != $primary_key) continue;
+			if ($primary && $row[0] != $primary_key) {
+				continue;
+			}
 			if (!isset($indexes[$row[0]])) {
 				$indexes[$row[0]] = array(
 					'unique' => ($row[1] == 'UNIQUE'),
@@ -431,23 +537,35 @@ END;
 
 	function BeginTrans()
 	{
-		if ($this->transOff) return true;
+		if ($this->transOff) {
+			return true;
+		}
 		$this->transCnt += 1;
 		$this->autoCommit = false;
 		$this->_commit = OCI_DEFAULT;
 
-		if ($this->_transmode) $ok = $this->Execute("SET TRANSACTION ".$this->_transmode);
-		else $ok = true;
+		if ($this->_transmode) {
+			$ok = $this->Execute("SET TRANSACTION ".$this->_transmode);
+		}
+		else {
+			$ok = true;
+		}
 
 		return $ok ? true : false;
 	}
 
 	function CommitTrans($ok=true)
 	{
-		if ($this->transOff) return true;
-		if (!$ok) return $this->RollbackTrans();
+		if ($this->transOff) {
+			return true;
+		}
+		if (!$ok) {
+			return $this->RollbackTrans();
+		}
 
-		if ($this->transCnt) $this->transCnt -= 1;
+		if ($this->transCnt) {
+			$this->transCnt -= 1;
+		}
 		$ret = oci_commit($this->_connectionID);
 		$this->_commit = OCI_COMMIT_ON_SUCCESS;
 		$this->autoCommit = true;
@@ -456,8 +574,12 @@ END;
 
 	function RollbackTrans()
 	{
-		if ($this->transOff) return true;
-		if ($this->transCnt) $this->transCnt -= 1;
+		if ($this->transOff) {
+			return true;
+		}
+		if ($this->transCnt) {
+			$this->transCnt -= 1;
+		}
 		$ret = oci_rollback($this->_connectionID);
 		$this->_commit = OCI_COMMIT_ON_SUCCESS;
 		$this->autoCommit = true;
@@ -472,13 +594,23 @@ END;
 
 	function ErrorMsg()
 	{
-		if ($this->_errorMsg !== false) return $this->_errorMsg;
+		if ($this->_errorMsg !== false) {
+			return $this->_errorMsg;
+		}
 
-		if (is_resource($this->_stmt)) $arr = @oci_error($this->_stmt);
+		if (is_resource($this->_stmt)) {
+			$arr = @oci_error($this->_stmt);
+		}
 		if (empty($arr)) {
-			if (is_resource($this->_connectionID)) $arr = @oci_error($this->_connectionID);
-			else $arr = @oci_error();
-			if ($arr === false) return '';
+			if (is_resource($this->_connectionID)) {
+				$arr = @oci_error($this->_connectionID);
+			}
+			else {
+				$arr = @oci_error();
+			}
+			if ($arr === false) {
+				return '';
+			}
 		}
 		$this->_errorMsg = $arr['message'];
 		$this->_errorCode = $arr['code'];
@@ -487,13 +619,21 @@ END;
 
 	function ErrorNo()
 	{
-		if ($this->_errorCode !== false) return $this->_errorCode;
+		if ($this->_errorCode !== false) {
+			return $this->_errorCode;
+		}
 
-		if (is_resource($this->_stmt)) $arr = @oci_error($this->_stmt);
+		if (is_resource($this->_stmt)) {
+			$arr = @oci_error($this->_stmt);
+		}
 		if (empty($arr)) {
 			$arr = @oci_error($this->_connectionID);
-			if ($arr == false) $arr = @oci_error();
-			if ($arr == false) return '';
+			if ($arr == false) {
+				$arr = @oci_error();
+			}
+			if ($arr == false) {
+				return '';
+			}
 		}
 
 		$this->_errorMsg = $arr['message'];
@@ -507,7 +647,9 @@ END;
 	 */
 	function SQLDate($fmt, $col=false)
 	{
-		if (!$col) $col = $this->sysTimeStamp;
+		if (!$col) {
+			$col = $this->sysTimeStamp;
+		}
 		$s = 'TO_CHAR('.$col.",'";
 
 		$len = strlen($fmt);
@@ -569,13 +711,17 @@ END;
 				break;
 
 			default:
-			// handle escape characters...
+				// handle escape characters...
 				if ($ch == '\\') {
 					$i++;
 					$ch = substr($fmt,$i,1);
 				}
-				if (strpos('-/.:;, ',$ch) !== false) $s .= $ch;
-				else $s .= '"'.$ch.'"';
+				if (strpos('-/.:;, ',$ch) !== false) {
+					$s .= $ch;
+				}
+				else {
+					$s .= '"'.$ch.'"';
+				}
 
 			}
 		}
@@ -604,65 +750,94 @@ END;
 	 * This implementation does not appear to work with oracle 8.0.5 or earlier.
 	 * Comment out this function then, and the slower SelectLimit() in the base
 	 * class will be used.
+	 *
+	 * Note: FIRST_ROWS hinting is only used if $sql is a string; when
+	 * processing a prepared statement's handle, no hinting is performed.
 	 */
 	function SelectLimit($sql,$nrows=-1,$offset=-1, $inputarr=false,$secs2cache=0)
 	{
+		$nrows = (int) $nrows;
+		$offset = (int) $offset;
+		// Since the methods used to limit the number of returned rows rely
+		// on modifying the provided SQL query, we can't work with prepared
+		// statements so we just extract the SQL string.
+		if(is_array($sql)) {
+			$sql = $sql[0];
+		}
+
 		// seems that oracle only supports 1 hint comment in 8i
 		if ($this->firstrows) {
-			if ($nrows > 500 && $nrows < 1000) $hint = "FIRST_ROWS($nrows)";
-			else $hint = 'FIRST_ROWS';
+			if ($nrows > 500 && $nrows < 1000) {
+				$hint = "FIRST_ROWS($nrows)";
+			}
+			else {
+				$hint = 'FIRST_ROWS';
+			}
 
-			if (strpos($sql,'/*+') !== false)
+			if (strpos($sql,'/*+') !== false) {
 				$sql = str_replace('/*+ ',"/*+$hint ",$sql);
-			else
+			}
+			else {
 				$sql = preg_replace('/^[ \t\n]*select/i',"SELECT /*+$hint*/",$sql);
+			}
 			$hint = "/*+ $hint */";
-		} else
+		} else {
 			$hint = '';
+		}
 
 		if ($offset == -1 || ($offset < $this->selectOffsetAlg1 && 0 < $nrows && $nrows < 1000)) {
 			if ($nrows > 0) {
-				if ($offset > 0) $nrows += $offset;
-				//$inputarr['adodb_rownum'] = $nrows;
-				if ($this->databaseType == 'oci8po') {
-					$sql = "select * from (".$sql.") where rownum <= ?";
-				} else {
-					$sql = "select * from (".$sql.") where rownum <= :adodb_offset";
+				if ($offset > 0) {
+					$nrows += $offset;
+				}
+				$sql = "select * from (".$sql.") where rownum <= :adodb_offset";
+
+				// If non-bound statement, $inputarr is false
+				if (!$inputarr) {
+					$inputarr = array();
 				}
 				$inputarr['adodb_offset'] = $nrows;
 				$nrows = -1;
 			}
 			// note that $nrows = 0 still has to work ==> no rows returned
 
-			$rs = ADOConnection::SelectLimit($sql,$nrows,$offset,$inputarr,$secs2cache);
-			return $rs;
-
+			return ADOConnection::SelectLimit($sql, $nrows, $offset, $inputarr, $secs2cache);
 		} else {
 			// Algorithm by Tomas V V Cox, from PEAR DB oci8.php
 
 			// Let Oracle return the name of the columns
 			$q_fields = "SELECT * FROM (".$sql.") WHERE NULL = NULL";
 
-			$false = false;
 			if (! $stmt_arr = $this->Prepare($q_fields)) {
-				return $false;
+				return false;
 			}
 			$stmt = $stmt_arr[1];
 
 			if (is_array($inputarr)) {
 				foreach($inputarr as $k => $v) {
+					$i=0;
+					if ($this->databaseType == 'oci8po') {
+						$bv_name = ":".$i++;
+					} else {
+						$bv_name = ":".$k;
+					}
 					if (is_array($v)) {
-						if (sizeof($v) == 2) // suggested by g.giunta@libero.
-							oci_bind_by_name($stmt,":$k",$inputarr[$k][0],$v[1]);
-						else
-							oci_bind_by_name($stmt,":$k",$inputarr[$k][0],$v[1],$v[2]);
+						// suggested by g.giunta@libero.
+						if (sizeof($v) == 2) {
+							oci_bind_by_name($stmt,$bv_name,$inputarr[$k][0],$v[1]);
+						}
+						else {
+							oci_bind_by_name($stmt,$bv_name,$inputarr[$k][0],$v[1],$v[2]);
+						}
 					} else {
 						$len = -1;
-						if ($v === ' ') $len = 1;
+						if ($v === ' ') {
+							$len = 1;
+						}
 						if (isset($bindarr)) {	// is prepared sql, so no need to oci_bind_by_name again
 							$bindarr[$k] = $v;
 						} else { 				// dynamic sql, so rebind every time
-							oci_bind_by_name($stmt,":$k",$inputarr[$k],$len);
+							oci_bind_by_name($stmt,$bv_name,$inputarr[$k],$len);
 						}
 					}
 				}
@@ -670,7 +845,7 @@ END;
 
 			if (!oci_execute($stmt, OCI_DEFAULT)) {
 				oci_free_statement($stmt);
-				return $false;
+				return false;
 			}
 
 			$ncols = oci_num_fields($stmt);
@@ -681,26 +856,27 @@ END;
 
 			oci_free_statement($stmt);
 			$fields = implode(',', $cols);
-			if ($nrows <= 0) $nrows = 999999999999;
-			else $nrows += $offset;
+			if ($nrows <= 0) {
+				$nrows = 999999999999;
+			}
+			else {
+				$nrows += $offset;
+			}
 			$offset += 1; // in Oracle rownum starts at 1
 
-			if ($this->databaseType == 'oci8po') {
-					$sql = "SELECT $hint $fields FROM".
-						"(SELECT rownum as adodb_rownum, $fields FROM".
-						" ($sql) WHERE rownum <= ?".
-						") WHERE adodb_rownum >= ?";
-				} else {
-					$sql = "SELECT $hint $fields FROM".
-						"(SELECT rownum as adodb_rownum, $fields FROM".
-						" ($sql) WHERE rownum <= :adodb_nrows".
-						") WHERE adodb_rownum >= :adodb_offset";
-				}
-				$inputarr['adodb_nrows'] = $nrows;
-				$inputarr['adodb_offset'] = $offset;
+			$sql = "SELECT $hint $fields FROM".
+				"(SELECT rownum as adodb_rownum, $fields FROM".
+				" ($sql) WHERE rownum <= :adodb_nrows".
+				") WHERE adodb_rownum >= :adodb_offset";
+			$inputarr['adodb_nrows'] = $nrows;
+			$inputarr['adodb_offset'] = $offset;
 
-			if ($secs2cache>0) $rs = $this->CacheExecute($secs2cache, $sql,$inputarr);
-			else $rs = $this->Execute($sql,$inputarr);
+			if ($secs2cache > 0) {
+				$rs = $this->CacheExecute($secs2cache, $sql,$inputarr);
+			}
+			else {
+				$rs = $this->Execute($sql, $inputarr);
+			}
 			return $rs;
 		}
 	}
@@ -741,16 +917,28 @@ END;
 
 		$desc = oci_new_descriptor($this->_connectionID, OCI_D_LOB);
 		$arr['blob'] = array($desc,-1,$type);
-		if ($this->session_sharing_force_blob) $this->Execute('ALTER SESSION SET CURSOR_SHARING=EXACT');
+		if ($this->session_sharing_force_blob) {
+			$this->Execute('ALTER SESSION SET CURSOR_SHARING=EXACT');
+		}
 		$commit = $this->autoCommit;
-		if ($commit) $this->BeginTrans();
+		if ($commit) {
+			$this->BeginTrans();
+		}
 		$rs = $this->_Execute($sql,$arr);
-		if ($rez = !empty($rs)) $desc->save($val);
+		if ($rez = !empty($rs)) {
+			$desc->save($val);
+		}
 		$desc->free();
-		if ($commit) $this->CommitTrans();
-		if ($this->session_sharing_force_blob) $this->Execute('ALTER SESSION SET CURSOR_SHARING=FORCE');
+		if ($commit) {
+			$this->CommitTrans();
+		}
+		if ($this->session_sharing_force_blob) {
+			$this->Execute('ALTER SESSION SET CURSOR_SHARING=FORCE');
+		}
 
-		if ($rez) $rs->Close();
+		if ($rez) {
+			$rs->Close();
+		}
 		return $rez;
 	}
 
@@ -775,62 +963,80 @@ END;
 
 		$this->BeginTrans();
 		$rs = ADODB_oci8::Execute($sql,$arr);
-		if ($rez = !empty($rs)) $desc->savefile($val);
+		if ($rez = !empty($rs)) {
+			$desc->savefile($val);
+		}
 		$desc->free();
 		$this->CommitTrans();
 
-		if ($rez) $rs->Close();
+		if ($rez) {
+			$rs->Close();
+		}
 		return $rez;
 	}
 
 	/**
 	 * Execute SQL
 	 *
-	 * @param sql		SQL statement to execute, or possibly an array holding prepared statement ($sql[0] will hold sql text)
-	 * @param [inputarr]	holds the input data to bind to. Null elements will be set to null.
-	 * @return 		RecordSet or false
+	 * @param string|array $sql     SQL statement to execute, or possibly an array holding
+	 *                              prepared statement ($sql[0] will hold sql text).
+	 * @param array|false $inputarr holds the input data to bind to.
+	 *                              Null elements will be set to null.
+	 *
+	 * @return ADORecordSet|false
 	 */
 	function Execute($sql,$inputarr=false)
 	{
 		if ($this->fnExecute) {
 			$fn = $this->fnExecute;
 			$ret = $fn($this,$sql,$inputarr);
-			if (isset($ret)) return $ret;
+			if (isset($ret)) {
+				return $ret;
+			}
 		}
 		if ($inputarr !== false) {
-			if (!is_array($inputarr)) $inputarr = array($inputarr);
+			if (!is_array($inputarr)) {
+				$inputarr = array($inputarr);
+			}
 
 			$element0 = reset($inputarr);
 			$array2d =  $this->bulkBind && is_array($element0) && !is_object(reset($element0));
 
-			# see http://phplens.com/lens/lensforum/msgs.php?id=18786
+			# see PHPLens Issue No: 18786
 			if ($array2d || !$this->_bindInputArray) {
 
-			# is_object check because oci8 descriptors can be passed in
-			if ($array2d && $this->_bindInputArray) {
-				if (is_string($sql))
-					$stmt = $this->Prepare($sql);
-				else
-					$stmt = $sql;
+				# is_object check because oci8 descriptors can be passed in
+				if ($array2d && $this->_bindInputArray) {
+					if (is_string($sql)) {
+						$stmt = $this->Prepare($sql);
+					} else {
+						$stmt = $sql;
+					}
 
-				foreach($inputarr as $arr) {
-					$ret = $this->_Execute($stmt,$arr);
-					if (!$ret) return $ret;
-				}
-				return $ret;
-			} else {
-				$sqlarr = explode(':',$sql);
-				$sql = '';
-				$lastnomatch = -2;
-				#var_dump($sqlarr);echo "<hr>";var_dump($inputarr);echo"<hr>";
-				foreach($sqlarr as $k => $str) {
-						if ($k == 0) { $sql = $str; continue; }
+					foreach($inputarr as $arr) {
+						$ret = $this->_Execute($stmt,$arr);
+						if (!$ret) {
+							return $ret;
+						}
+					}
+					return $ret;
+				} else {
+					$sqlarr = explode(':', $sql);
+					$sql = '';
+					$lastnomatch = -2;
+					#var_dump($sqlarr);echo "<hr>";var_dump($inputarr);echo"<hr>";
+					foreach($sqlarr as $k => $str) {
+						if ($k == 0) {
+							$sql = $str;
+							continue;
+						}
 						// we need $lastnomatch because of the following datetime,
 						// eg. '10:10:01', which causes code to think that there is bind param :10 and :1
 						$ok = preg_match('/^([0-9]*)/', $str, $arr);
 
-						if (!$ok) $sql .= $str;
-						else {
+						if (!$ok) {
+							$sql .= $str;
+						} else {
 							$at = $arr[1];
 							if (isset($inputarr[$at]) || is_null($inputarr[$at])) {
 								if ((strlen($at) == strlen($str) && $k < sizeof($arr)-1)) {
@@ -839,21 +1045,23 @@ END;
 								} else if ($lastnomatch == $k-1) {
 									$sql .= ':'.$str;
 								} else {
-									if (is_null($inputarr[$at])) $sql .= 'null';
-									else $sql .= $this->qstr($inputarr[$at]);
+									if (is_null($inputarr[$at])) {
+										$sql .= 'null';
+									}
+									else {
+										$sql .= $this->qstr($inputarr[$at]);
+									}
 									$sql .= substr($str, strlen($at));
 								}
 							} else {
 								$sql .= ':'.$str;
 							}
-
 						}
 					}
 					$inputarr = false;
 				}
 			}
 			$ret = $this->_Execute($sql,$inputarr);
-
 
 		} else {
 			$ret = $this->_Execute($sql,false);
@@ -876,7 +1084,9 @@ END;
 			$this->_errorMsg = false;
 			$this->_errorCode = false;
 			$arr = @oci_error($this->_connectionID);
-			if ($arr === false) return false;
+			if ($arr === false) {
+				return false;
+			}
 
 			$this->_errorMsg = $arr['message'];
 			$this->_errorCode = $arr['code'];
@@ -890,6 +1100,22 @@ END;
 			return array($sql,$stmt,0,$BINDNUM, ($cursor) ? oci_new_cursor($this->_connectionID) : false);
 		}
 		return array($sql,$stmt,0,$BINDNUM);
+	}
+
+	function releaseStatement(&$stmt)
+	{
+		if (is_array($stmt)
+			&& isset($stmt[1])
+			&& is_resource($stmt[1])
+			&& oci_free_statement($stmt[1])
+		) {
+			// Clearing the resource to avoid it being of type Unknown
+			$stmt[1] = null;
+			return true;
+		}
+
+		// Not a valid prepared statement
+		return false;
 	}
 
 	/*
@@ -908,7 +1134,9 @@ END;
 	*/
 	function ExecuteCursor($sql,$cursorName='rs',$params=false)
 	{
-		if (is_array($sql)) $stmt = $sql;
+		if (is_array($sql)) {
+			$stmt = $sql;
+		}
 		else $stmt = ADODB_oci8::Prepare($sql,true); # true to allocate oci_new_cursor
 
 		if (is_array($stmt) && sizeof($stmt) >= 5) {
@@ -925,8 +1153,12 @@ END;
 
 		$rs = $this->Execute($stmt);
 		if ($rs) {
-			if ($rs->databaseType == 'array') oci_free_cursor($stmt[4]);
-			else if ($hasref) $rs->_refcursor = $stmt[4];
+			if ($rs->databaseType == 'array') {
+				oci_free_cursor($stmt[4]);
+			}
+			elseif ($hasref) {
+				$rs->_refcursor = $stmt[4];
+			}
 		}
 		return $rs;
 	}
@@ -963,15 +1195,21 @@ END;
 	function Bind(&$stmt,&$var,$size=4000,$type=false,$name=false,$isOutput=false)
 	{
 
-		if (!is_array($stmt)) return false;
+		if (!is_array($stmt)) {
+			return false;
+		}
 
 		if (($type == OCI_B_CURSOR) && sizeof($stmt) >= 5) {
 			return oci_bind_by_name($stmt[1],":".$name,$stmt[4],$size,$type);
 		}
 
 		if ($name == false) {
-			if ($type !== false) $rez = oci_bind_by_name($stmt[1],":".$stmt[2],$var,$size,$type);
-			else $rez = oci_bind_by_name($stmt[1],":".$stmt[2],$var,$size); // +1 byte for null terminator
+			if ($type !== false) {
+				$rez = oci_bind_by_name($stmt[1],":".$stmt[2],$var,$size,$type);
+			}
+			else {
+				$rez = oci_bind_by_name($stmt[1],":".$stmt[2],$var,$size); // +1 byte for null terminator
+			}
 			$stmt[2] += 1;
 		} else if (oci_lob_desc($type)) {
 			if ($this->debug) {
@@ -1004,8 +1242,12 @@ END;
 			if ($this->debug)
 				ADOConnection::outp("<b>Bind</b>: name = $name");
 
-			if ($type !== false) $rez = oci_bind_by_name($stmt[1],":".$name,$var,$size,$type);
-			else $rez = oci_bind_by_name($stmt[1],":".$name,$var,$size); // +1 byte for null terminator
+			if ($type !== false) {
+				$rez = oci_bind_by_name($stmt[1],":".$name,$var,$size,$type);
+			}
+			else {
+				$rez = oci_bind_by_name($stmt[1],":".$name,$var,$size); // +1 byte for null terminator
+			}
 		}
 
 		return $rez;
@@ -1023,12 +1265,12 @@ END;
 	 *    $db->Parameter($stmt,$group,'group');
 	 *    $db->Execute($stmt);
 	 *
-	 * @param $stmt Statement returned by Prepare() or PrepareSP().
+	 * @param $stmt Statement returned by {@see Prepare()} or {@see PrepareSP()}.
 	 * @param $var PHP variable to bind to
 	 * @param $name Name of stored procedure variable name to bind to.
-	 * @param [$isOutput] Indicates direction of parameter 0/false=IN  1=OUT  2= IN/OUT. This is ignored in oci8.
-	 * @param [$maxLen] Holds an maximum length of the variable.
-	 * @param [$type] The data type of $var. Legal values depend on driver.
+	 * @param bool $isOutput Indicates direction of parameter 0/false=IN  1=OUT  2= IN/OUT. This is ignored in oci8.
+	 * @param int $maxLen Holds an maximum length of the variable.
+	 * @param mixed $type The data type of $var. Legal values depend on driver.
 	 *
 	 * @link http://php.net/oci_bind_by_name
 	*/
@@ -1084,28 +1326,39 @@ END;
 		}
 
 		$this->_stmt = $stmt;
-		if (!$stmt) return false;
+		if (!$stmt) {
+			return false;
+		}
 
-		if (defined('ADODB_PREFETCH_ROWS')) @oci_set_prefetch($stmt,ADODB_PREFETCH_ROWS);
+		if (defined('ADODB_PREFETCH_ROWS')) {
+			@oci_set_prefetch($stmt,ADODB_PREFETCH_ROWS);
+		}
 
 		if (is_array($inputarr)) {
 			foreach($inputarr as $k => $v) {
 				if (is_array($v)) {
-					if (sizeof($v) == 2) // suggested by g.giunta@libero.
+					// suggested by g.giunta@libero.
+					if (sizeof($v) == 2) {
 						oci_bind_by_name($stmt,":$k",$inputarr[$k][0],$v[1]);
-					else
+					}
+					else {
 						oci_bind_by_name($stmt,":$k",$inputarr[$k][0],$v[1],$v[2]);
+					}
 
 					if ($this->debug==99) {
-						if (is_object($v[0]))
+						if (is_object($v[0])) {
 							echo "name=:$k",' len='.$v[1],' type='.$v[2],'<br>';
-						else
+						}
+						else {
 							echo "name=:$k",' var='.$inputarr[$k][0],' len='.$v[1],' type='.$v[2],'<br>';
+						}
 
 					}
 				} else {
 					$len = -1;
-					if ($v === ' ') $len = 1;
+					if ($v === ' ') {
+						$len = 1;
+					}
 					if (isset($bindarr)) {	// is prepared sql, so no need to oci_bind_by_name again
 						$bindarr[$k] = $v;
 					} else { 				// dynamic sql, so rebind every time
@@ -1198,9 +1451,14 @@ END;
 	// returns true or false
 	function _close()
 	{
-		if (!$this->_connectionID) return;
+		if (!$this->_connectionID) {
+			return;
+		}
 
-		if (!$this->autoCommit) oci_rollback($this->_connectionID);
+
+		if (!$this->autoCommit) {
+			oci_rollback($this->_connectionID);
+		}
 		if (count($this->_refLOBs) > 0) {
 			foreach ($this ->_refLOBs as $key => $value) {
 				$this->_refLOBs[$key]['LOB']->free();
@@ -1215,7 +1473,9 @@ END;
 
 	function MetaPrimaryKeys($table, $owner=false,$internalKey=false)
 	{
-		if ($internalKey) return array('ROWID');
+		if ($internalKey) {
+			return array('ROWID');
+		}
 
 		// tested with oracle 8.1.7
 		$table = strtoupper($table);
@@ -1248,16 +1508,17 @@ SELECT /*+ RULE */ distinct b.column_name
 	}
 
 	/**
-	 * returns assoc array where keys are tables, and values are foreign keys
+	 * Returns a list of Foreign Keys associated with a specific table.
 	 *
-	 * @param	str		$table
-	 * @param	str		$owner	[optional][default=NULL]
-	 * @param	bool	$upper	[optional][discarded]
-	 * @return	mixed[]			Array of foreign key information
+	 * @param string $table
+	 * @param string $owner
+	 * @param bool   $upper       discarded
+	 * @param bool   $associative discarded
 	 *
-	 * @link http://gis.mit.edu/classes/11.521/sqlnotes/referential_integrity.html
+	 * @return string[]|false An array where keys are tables, and values are foreign keys;
+	 *                        false if no foreign keys could be found.
 	 */
-	function MetaForeignKeys($table, $owner=false, $upper=false)
+	public function metaForeignKeys($table, $owner = '', $upper = false, $associative = false)
 	{
 		global $ADODB_FETCH_MODE;
 
@@ -1308,35 +1569,27 @@ SELECT /*+ RULE */ distinct b.column_name
 	}
 
 	/**
-	 * Quotes a string.
-	 * An example is  $db->qstr("Don't bother",magic_quotes_runtime());
+	 * Correctly quotes a string so that all strings are escaped.
+	 * We prefix and append to the string single-quotes.
+	 * An example is  $db->qstr("Don't bother");
 	 *
-	 * @param string $s the string to quote
-	 * @param bool $magic_quotes if $s is GET/POST var, set to get_magic_quotes_gpc().
-	 *             This undoes the stupidity of magic quotes for GPC.
+	 * @param string $s            The string to quote
+	 * @param bool   $magic_quotes This param is not used since 5.21.0.
+	 *                             It remains for backwards compatibility.
 	 *
-	 * @return string quoted string to be sent back to database
+	 * @return string Quoted string to be sent back to database
+	 *
+	 * @noinspection PhpUnusedParameterInspection
 	 */
-	function qstr($s,$magic_quotes=false)
+	function qStr($s, $magic_quotes=false)
 	{
-		//$nofixquotes=false;
-
-		if ($this->noNullStrings && strlen($s)==0)$s = ' ';
-		if (!$magic_quotes) {
-			if ($this->replaceQuote[0] == '\\'){
-				$s = str_replace('\\','\\\\',$s);
-			}
-			return  "'".str_replace("'",$this->replaceQuote,$s)."'";
+		if ($this->noNullStrings && strlen($s) == 0) {
+			$s = ' ';
 		}
-
-		// undo magic quotes for " unless sybase is on
-		if (!ini_get('magic_quotes_sybase')) {
-			$s = str_replace('\\"','"',$s);
-			$s = str_replace('\\\\','\\',$s);
-			return "'".str_replace("\\'",$this->replaceQuote,$s)."'";
-		} else {
-			return "'".$s."'";
+		if ($this->replaceQuote[0] == '\\'){
+			$s = str_replace('\\','\\\\',$s);
 		}
+		return  "'" . str_replace("'", $this->replaceQuote, $s) . "'";
 	}
 
 }
@@ -1351,46 +1604,60 @@ class ADORecordset_oci8 extends ADORecordSet {
 	var $bind=false;
 	var $_fieldobjs;
 
-	//var $_arr = false;
-
-	function ADORecordset_oci8($queryID,$mode=false)
+	function __construct($queryID,$mode=false)
 	{
 		if ($mode === false) {
 			global $ADODB_FETCH_MODE;
 			$mode = $ADODB_FETCH_MODE;
 		}
-		switch ($mode)
-		{
-		case ADODB_FETCH_ASSOC:$this->fetchMode = OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS; break;
-		case ADODB_FETCH_DEFAULT:
-		case ADODB_FETCH_BOTH:$this->fetchMode = OCI_NUM+OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS; break;
-		case ADODB_FETCH_NUM:
-		default:
-		$this->fetchMode = OCI_NUM+OCI_RETURN_NULLS+OCI_RETURN_LOBS; break;
+		switch ($mode) {
+			case ADODB_FETCH_ASSOC:
+				$this->fetchMode = OCI_ASSOC;
+				break;
+			case ADODB_FETCH_DEFAULT:
+			case ADODB_FETCH_BOTH:
+				$this->fetchMode = OCI_NUM + OCI_ASSOC;
+				break;
+			case ADODB_FETCH_NUM:
+			default:
+				$this->fetchMode = OCI_NUM;
+				break;
 		}
-
+		$this->fetchMode += OCI_RETURN_NULLS + OCI_RETURN_LOBS;
 		$this->adodbFetchMode = $mode;
 		$this->_queryID = $queryID;
 	}
 
+	/**
+	* Overrides the core destructor method as that causes problems here
+	*
+	* @return void
+	*/
+	function __destruct() {}
 
 	function Init()
 	{
-		if ($this->_inited) return;
+		if ($this->_inited) {
+			return;
+		}
 
 		$this->_inited = true;
 		if ($this->_queryID) {
 
 			$this->_currentRow = 0;
 			@$this->_initrs();
-			if ($this->_numOfFields) $this->EOF = !$this->_fetch();
+			if ($this->_numOfFields) {
+				$this->EOF = !$this->_fetch();
+			}
 			else $this->EOF = true;
 
 			/*
 			// based on idea by Gaetano Giunta to detect unusual oracle errors
-			// see http://phplens.com/lens/lensforum/msgs.php?id=6771
+			// see PHPLens Issue No: 6771
 			$err = oci_error($this->_queryID);
-			if ($err && $this->connection->debug) ADOConnection::outp($err);
+			if ($err && $this->connection->debug) {
+				ADOConnection::outp($err);
+			}
 			*/
 
 			if (!is_array($this->fields)) {
@@ -1429,6 +1696,9 @@ class ADORecordset_oci8 extends ADORecordSet {
 		$fld = new ADOFieldObject;
 		$fieldOffset += 1;
 		$fld->name =oci_field_name($this->_queryID, $fieldOffset);
+		if (ADODB_ASSOC_CASE == ADODB_ASSOC_CASE_LOWER) {
+			$fld->name = strtolower($fld->name);
+		}
 		$fld->type = oci_field_type($this->_queryID, $fieldOffset);
 		$fld->max_length = oci_field_size($this->_queryID, $fieldOffset);
 
@@ -1436,7 +1706,9 @@ class ADORecordset_oci8 extends ADORecordSet {
 			case 'NUMBER':
 				$p = oci_field_precision($this->_queryID, $fieldOffset);
 				$sc = oci_field_scale($this->_queryID, $fieldOffset);
-				if ($p != 0 && $sc == 0) $fld->type = 'INT';
+				if ($p != 0 && $sc == 0) {
+					$fld->type = 'INT';
+				}
 				$fld->scale = $p;
 				break;
 
@@ -1456,28 +1728,11 @@ class ADORecordset_oci8 extends ADORecordSet {
 	}
 
 
-/*
-	// 10% speedup to move MoveNext to child class
-	function _MoveNext()
-	{
-	//global $ADODB_EXTENSION;if ($ADODB_EXTENSION) return @adodb_movenext($this);
-
-		if ($this->EOF) return false;
-
-		$this->_currentRow++;
-		if($this->fields = @oci_fetch_array($this->_queryID,$this->fetchMode))
-			return true;
-		$this->EOF = true;
-
-		return false;
-	}
-*/
-
-
 	function MoveNext()
 	{
 		if ($this->fields = @oci_fetch_array($this->_queryID,$this->fetchMode)) {
 			$this->_currentRow += 1;
+			$this->_updatefields();
 			return true;
 		}
 		if (!$this->EOF) {
@@ -1487,41 +1742,6 @@ class ADORecordset_oci8 extends ADORecordSet {
 		return false;
 	}
 
-/*
-	# does not work as first record is retrieved in _initrs(), so is not included in GetArray()
-	function GetArray($nRows = -1)
-	{
-	global $ADODB_OCI8_GETARRAY;
-
-		if (true ||  !empty($ADODB_OCI8_GETARRAY)) {
-			# does not support $ADODB_ANSI_PADDING_OFF
-
-			//OCI_RETURN_NULLS and OCI_RETURN_LOBS is set by oci_fetch_all
-			switch($this->adodbFetchMode) {
-			case ADODB_FETCH_NUM:
-
-				$ncols = @oci_fetch_all($this->_queryID, $results, 0, $nRows, oci_fetch_all_BY_ROW+OCI_NUM);
-				$results = array_merge(array($this->fields),$results);
-				return $results;
-
-			case ADODB_FETCH_ASSOC:
-				if (ADODB_ASSOC_CASE != 2 || $this->databaseType != 'oci8') break;
-
-				$ncols = @oci_fetch_all($this->_queryID, $assoc, 0, $nRows, oci_fetch_all_BY_ROW);
-				$results = array_merge(array($this->fields),$assoc);
-				return $results;
-
-			default:
-				break;
-			}
-		}
-
-		$results = ADORecordSet::GetArray($nRows);
-		return $results;
-
-	}
-*/
-
 	// Optimize SelectLimit() by using oci_fetch()
 	function GetArrayLimit($nrows,$offset=-1)
 	{
@@ -1530,10 +1750,16 @@ class ADORecordset_oci8 extends ADORecordSet {
 			return $arr;
 		}
 		$arr = array();
-		for ($i=1; $i < $offset; $i++)
-			if (!@oci_fetch($this->_queryID)) return $arr;
+		for ($i=1; $i < $offset; $i++) {
+			if (!@oci_fetch($this->_queryID)) {
+				return $arr;
+			}
+		}
 
-		if (!$this->fields = @oci_fetch_array($this->_queryID,$this->fetchMode)) return $arr;;
+		if (!$this->fields = @oci_fetch_array($this->_queryID,$this->fetchMode)) {
+			return $arr;
+		}
+		$this->_updatefields();
 		$results = array();
 		$cnt = 0;
 		while (!$this->EOF && $nrows != $cnt) {
@@ -1560,7 +1786,6 @@ class ADORecordset_oci8 extends ADORecordSet {
 	}
 
 
-
 	function _seek($row)
 	{
 		return false;
@@ -1568,7 +1793,10 @@ class ADORecordset_oci8 extends ADORecordSet {
 
 	function _fetch()
 	{
-		return $this->fields = @oci_fetch_array($this->_queryID,$this->fetchMode);
+		$this->fields = @oci_fetch_array($this->_queryID,$this->fetchMode);
+		$this->_updatefields();
+
+		return $this->fields;
 	}
 
 	/**
@@ -1578,12 +1806,15 @@ class ADORecordset_oci8 extends ADORecordSet {
 	 */
 	function _close()
 	{
-		if ($this->connection->_stmt === $this->_queryID) $this->connection->_stmt = false;
+		if ($this->connection->_stmt === $this->_queryID) {
+			$this->connection->_stmt = false;
+		}
 		if (!empty($this->_refcursor)) {
 			oci_free_cursor($this->_refcursor);
 			$this->_refcursor = false;
 		}
-		@oci_free_statement($this->_queryID);
+		if (is_resource($this->_queryID))
+		   @oci_free_statement($this->_queryID);
 		$this->_queryID = false;
 	}
 
@@ -1604,7 +1835,12 @@ class ADORecordset_oci8 extends ADORecordSet {
 			$len = $fieldobj->max_length;
 		}
 
-		switch (strtoupper($t)) {
+		$t = strtoupper($t);
+
+		if (array_key_exists($t,$this->connection->customActualTypes))
+			return  $this->connection->customActualTypes[$t];
+
+		switch ($t) {
 		case 'VARCHAR':
 		case 'VARCHAR2':
 		case 'CHAR':
@@ -1613,7 +1849,9 @@ class ADORecordset_oci8 extends ADORecordSet {
 		case 'NCHAR':
 		case 'NVARCHAR':
 		case 'NVARCHAR2':
-			if ($len <= $this->blobSize) return 'C';
+			if ($len <= $this->blobSize) {
+				return 'C';
+			}
 
 		case 'NCLOB':
 		case 'LONG':
@@ -1638,29 +1876,12 @@ class ADORecordset_oci8 extends ADORecordSet {
 			return 'I';
 
 		default:
-			return 'N';
+			return ADODB_DEFAULT_METATYPE;
 		}
 	}
 }
 
 class ADORecordSet_ext_oci8 extends ADORecordSet_oci8 {
-	function ADORecordSet_ext_oci8($queryID,$mode=false)
-	{
-		if ($mode === false) {
-			global $ADODB_FETCH_MODE;
-			$mode = $ADODB_FETCH_MODE;
-		}
-		switch ($mode)
-		{
-		case ADODB_FETCH_ASSOC:$this->fetchMode = OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS; break;
-		case ADODB_FETCH_DEFAULT:
-		case ADODB_FETCH_BOTH:$this->fetchMode = OCI_NUM+OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS; break;
-		case ADODB_FETCH_NUM:
-		default: $this->fetchMode = OCI_NUM+OCI_RETURN_NULLS+OCI_RETURN_LOBS; break;
-		}
-		$this->adodbFetchMode = $mode;
-		$this->_queryID = $queryID;
-	}
 
 	function MoveNext()
 	{

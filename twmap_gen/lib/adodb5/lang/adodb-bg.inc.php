@@ -1,36 +1,52 @@
 <?php
-/*
-	Bulgarian language, v1.0, 25.03.2004, encoding by Windows-1251 charset
-	contributed by Valentin Sheiretsky <valio#valio.eu.org>
-*/
+/**
+ * Bulgarian language strings.
+ *
+ * This file is part of ADOdb, a Database Abstraction Layer library for PHP.
+ *
+ * @package ADOdb
+ * @link https://adodb.org Project's web site and documentation
+ * @link https://github.com/ADOdb/ADOdb Source code and issue tracker
+ *
+ * The ADOdb Library is dual-licensed, released under both the BSD 3-Clause
+ * and the GNU Lesser General Public Licence (LGPL) v2.1 or, at your option,
+ * any later version. This means you can use it in proprietary products.
+ * See the LICENSE.md file distributed with this source code for details.
+ * @license BSD-3-Clause
+ * @license LGPL-2.1-or-later
+ *
+ * @copyright 2000-2013 John Lim
+ * @copyright 2014 Damien Regad, Mark Newnham and the ADOdb community
+ * @author Valentin Sheiretsky <valio@valio.eu.org>
+ */
 
 $ADODB_LANG_ARRAY = array (
-			'LANG'                      => 'bg',
-            DB_ERROR                    => 'ÌÂËÁ‚ÂÒÚÌ‡ „Â¯Í‡',
-            DB_ERROR_ALREADY_EXISTS     => '‚Â˜Â Ò˙˘ÂÒÚ‚Û‚‡',
-            DB_ERROR_CANNOT_CREATE      => 'ÌÂ ÏÓÊÂ ‰‡ ·˙‰Â Ò˙Á‰‡‰ÂÌ‡',
-            DB_ERROR_CANNOT_DELETE      => 'ÌÂ ÏÓÊÂ ‰‡ ·˙‰Â ËÁÚËÚ‡',
-            DB_ERROR_CANNOT_DROP        => 'ÌÂ ÏÓÊÂ ‰‡ ·˙‰Â ÛÌË˘ÓÊÂÌ‡',
-            DB_ERROR_CONSTRAINT         => 'Ì‡Û¯ÂÌÓ ÛÒÎÓ‚ËÂ',
-            DB_ERROR_DIVZERO            => '‰ÂÎÂÌËÂ Ì‡ ÌÛÎ‡',
-            DB_ERROR_INVALID            => 'ÌÂÔ‡‚ËÎÌÓ',
-            DB_ERROR_INVALID_DATE       => 'ÌÂÍÓÂÍÚÌ‡ ‰‡Ú‡ ËÎË ˜‡Ò',
-            DB_ERROR_INVALID_NUMBER     => 'ÌÂ‚‡ÎË‰ÂÌ ÌÓÏÂ',
-            DB_ERROR_MISMATCH           => 'ÔÓ„Â¯Ì‡ ÛÔÓÚÂ·‡',
-            DB_ERROR_NODBSELECTED       => 'ÌÂ Â ËÁ·‡Ì‡ ·‡Á‡ ‰‡ÌÌË',
-            DB_ERROR_NOSUCHFIELD        => 'ÌÂÒ˙˘ÂÒÚ‚Û‚‡˘Ó ÔÓÎÂ',
-            DB_ERROR_NOSUCHTABLE        => 'ÌÂÒ˙˘ÂÒÚ‚Û‚‡˘‡ Ú‡·ÎËˆ‡',
+            'LANG'                      => 'bg',
+            DB_ERROR                    => '–Ω–µ–∏–∑–≤–µ—Å—Ç–Ω–∞ –≥—Ä–µ—à–∫–∞',
+            DB_ERROR_ALREADY_EXISTS     => '–≤–µ—á–µ —Å—ä—â–µ—Å—Ç–≤—É–≤–∞',
+            DB_ERROR_CANNOT_CREATE      => '–Ω–µ –º–æ–∂–µ –¥–∞ –±—ä–¥–µ —Å—ä–∑–¥–∞–¥–µ–Ω–∞',
+            DB_ERROR_CANNOT_DELETE      => '–Ω–µ –º–æ–∂–µ –¥–∞ –±—ä–¥–µ –∏–∑—Ç—Ä–∏—Ç–∞',
+            DB_ERROR_CANNOT_DROP        => '–Ω–µ –º–æ–∂–µ –¥–∞ –±—ä–¥–µ —É–Ω–∏—â–æ–∂–µ–Ω–∞',
+            DB_ERROR_CONSTRAINT         => '–Ω–∞—Ä—É—à–µ–Ω–æ —É—Å–ª–æ–≤–∏–µ',
+            DB_ERROR_DIVZERO            => '–¥–µ–ª–µ–Ω–∏–µ –Ω–∞ –Ω—É–ª–∞',
+            DB_ERROR_INVALID            => '–Ω–µ–ø—Ä–∞–≤–∏–ª–Ω–æ',
+            DB_ERROR_INVALID_DATE       => '–Ω–µ–∫–æ—Ä–µ–∫—Ç–Ω–∞ –¥–∞—Ç–∞ –∏–ª–∏ —á–∞—Å',
+            DB_ERROR_INVALID_NUMBER     => '–Ω–µ–≤–∞–ª–∏–¥–µ–Ω –Ω–æ–º–µ—Ä',
+            DB_ERROR_MISMATCH           => '–ø–æ–≥—Ä–µ—à–Ω–∞ —É–ø–æ—Ç—Ä–µ–±–∞',
+            DB_ERROR_NODBSELECTED       => '–Ω–µ –µ –∏–∑–±—Ä–∞–Ω–∞ –±–∞–∑–∞ –¥–∞–Ω–Ω–∏',
+            DB_ERROR_NOSUCHFIELD        => '–Ω–µ—Å—ä—â–µ—Å—Ç–≤—É–≤–∞—â–æ –ø–æ–ª–µ',
+            DB_ERROR_NOSUCHTABLE        => '–Ω–µ—Å—ä—â–µ—Å—Ç–≤—É–≤–∞—â–∞ —Ç–∞–±–ª–∏—Ü–∞',
             DB_ERROR_NOT_CAPABLE        => 'DB backend not capable',
-            DB_ERROR_NOT_FOUND          => 'ÌÂ Â Ì‡ÏÂÂÌ‡',
-            DB_ERROR_NOT_LOCKED         => 'ÌÂ Â Á‡ÍÎ˛˜ÂÌ‡',
-            DB_ERROR_SYNTAX             => '„Â¯ÂÌ ÒËÌÚ‡ÍÒËÒ',
-            DB_ERROR_UNSUPPORTED        => 'ÌÂ ÒÂ ÔÓ‰‰˙Ê‡',
-            DB_ERROR_VALUE_COUNT_ON_ROW => 'ÌÂÍÓÂÍÚÂÌ ·ÓÈ ÍÓÎÓÌË ‚ Â‰‡',
-            DB_ERROR_INVALID_DSN        => 'ÌÂ‚‡ÎË‰ÂÌ DSN',
-            DB_ERROR_CONNECT_FAILED     => '‚˙ÁÍ‡Ú‡ ÌÂ ÏÓÊÂ ‰‡ ·˙‰Â ÓÒ˙˘ÂÒÚ‚ÂÌ‡',
-            0	                        => 'ÌˇÏ‡ „Â¯ÍË', // DB_OK
-            DB_ERROR_NEED_MORE_DATA     => 'ÔÂ‰ÓÒÚ‡‚ÂÌËÚÂ ‰‡ÌÌË Ò‡ ÌÂ‰ÓÒÚ‡Ú˙˜ÌË',
-            DB_ERROR_EXTENSION_NOT_FOUND=> '‡Á¯ËÂÌËÂÚÓ ÌÂ Â Ì‡ÏÂÂÌÓ',
-            DB_ERROR_NOSUCHDB           => 'ÌÂÒ˙˘ÂÒÚ‚Û‚‡˘‡ ·‡Á‡ ‰‡ÌÌË',
-            DB_ERROR_ACCESS_VIOLATION   => 'ÌˇÏ‡ÚÂ ‰ÓÒÚ‡Ú˙˜ÌÓ Ô‡‚‡'
+            DB_ERROR_NOT_FOUND          => '–Ω–µ –µ –Ω–∞–º–µ—Ä–µ–Ω–∞',
+            DB_ERROR_NOT_LOCKED         => '–Ω–µ –µ –∑–∞–∫–ª—é—á–µ–Ω–∞',
+            DB_ERROR_SYNTAX             => '–≥—Ä–µ—à–µ–Ω —Å–∏–Ω—Ç–∞–∫—Å–∏—Å',
+            DB_ERROR_UNSUPPORTED        => '–Ω–µ —Å–µ –ø–æ–¥–¥—ä—Ä–∂–∞',
+            DB_ERROR_VALUE_COUNT_ON_ROW => '–Ω–µ–∫–æ—Ä–µ–∫—Ç–µ–Ω –±—Ä–æ–π –∫–æ–ª–æ–Ω–∏ –≤ —Ä–µ–¥–∞',
+            DB_ERROR_INVALID_DSN        => '–Ω–µ–≤–∞–ª–∏–¥–µ–Ω DSN',
+            DB_ERROR_CONNECT_FAILED     => '–≤—Ä—ä–∑–∫–∞—Ç–∞ –Ω–µ –º–æ–∂–µ –¥–∞ –±—ä–¥–µ –æ—Å—ä—â–µ—Å—Ç–≤–µ–Ω–∞',
+            0	                        => '–Ω—è–º–∞ –≥—Ä–µ—à–∫–∏', // DB_OK
+            DB_ERROR_NEED_MORE_DATA     => '–ø—Ä–µ–¥–æ—Å—Ç–∞–≤–µ–Ω–∏—Ç–µ –¥–∞–Ω–Ω–∏ —Å–∞ –Ω–µ–¥–æ—Å—Ç–∞—Ç—ä—á–Ω–∏',
+            DB_ERROR_EXTENSION_NOT_FOUND=> '—Ä–∞–∑—à–∏—Ä–µ–Ω–∏–µ—Ç–æ –Ω–µ –µ –Ω–∞–º–µ—Ä–µ–Ω–æ',
+            DB_ERROR_NOSUCHDB           => '–Ω–µ—Å—ä—â–µ—Å—Ç–≤—É–≤–∞—â–∞ –±–∞–∑–∞ –¥–∞–Ω–Ω–∏',
+            DB_ERROR_ACCESS_VIOLATION   => '–Ω—è–º–∞—Ç–µ –¥–æ—Å—Ç–∞—Ç—ä—á–Ω–æ –ø—Ä–∞–≤–∞'
 );

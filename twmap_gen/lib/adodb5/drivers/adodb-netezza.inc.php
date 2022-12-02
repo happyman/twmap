@@ -1,19 +1,35 @@
 <?php
-/*
-  V5.19  23-Apr-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
+/**
+ * Netezza Driver
+ *
+ * @link https://www.ibm.com/products/netezza
+ * Based on the previous postgres drivers. Major Additions/Changes:
+ * - MetaDatabasesSQL, MetaTablesSQL, MetaColumnsSQL
+ *   Note: You have to have admin privileges to access the system tables
+ * - Removed non-working keys code (Netezza has no concept of keys)
+ * - Fixed the way data types and lengths are returned in MetaColumns()
+ *   as well as added the default lengths for certain types
+ * - Updated public variables for Netezza
+ * TODO: Still need to remove blob functions, as Netezza doesn't support blob
+ *
+ * This file is part of ADOdb, a Database Abstraction Layer library for PHP.
+ *
+ * @package ADOdb
+ * @link https://adodb.org Project's web site and documentation
+ * @link https://github.com/ADOdb/ADOdb Source code and issue tracker
+ *
+ * The ADOdb Library is dual-licensed, released under both the BSD 3-Clause
+ * and the GNU Lesser General Public Licence (LGPL) v2.1 or, at your option,
+ * any later version. This means you can use it in proprietary products.
+ * See the LICENSE.md file distributed with this source code for details.
+ * @license BSD-3-Clause
+ * @license LGPL-2.1-or-later
+ *
+ * @copyright 2000-2013 John Lim
+ * @copyright 2014 Damien Regad, Mark Newnham and the ADOdb community
+ * @author Josh Eldridge <joshuae74@hotmail.com>
+ */
 
-  First cut at the Netezza Driver by Josh Eldridge joshuae74#hotmail.com
- Based on the previous postgres drivers.
- http://www.netezza.com/
- Major Additions/Changes:
-    MetaDatabasesSQL, MetaTablesSQL, MetaColumnsSQL
-    Note: You have to have admin privileges to access the system tables
-    Removed non-working keys code (Netezza has no concept of keys)
-    Fixed the way data types and lengths are returned in MetaColumns()
-    as well as added the default lengths for certain types
-    Updated public variables for Netezza
-    Still need to remove blob functions, as Netezza doesn't suppport blob
-*/
 // security - hide paths
 if (!defined('ADODB_DIR')) die();
 
@@ -47,11 +63,6 @@ class ADODB_netezza extends ADODB_postgres64 {
 	var $autoRollback = true; // apparently pgsql does not autorollback properly before 4.3.4
 							// http://bugs.php.net/bug.php?id=25404
 
-
-	function ADODB_netezza()
-	{
-
-	}
 
 	function MetaColumns($table,$upper=true)
 	{
@@ -139,31 +150,12 @@ class ADORecordSet_netezza extends ADORecordSet_postgres64
 	var $databaseType = "netezza";
 	var $canSeek = true;
 
-	function ADORecordSet_netezza($queryID,$mode=false)
-	{
-		if ($mode === false) {
-			global $ADODB_FETCH_MODE;
-			$mode = $ADODB_FETCH_MODE;
-		}
-		switch ($mode)
-		{
-		case ADODB_FETCH_NUM: $this->fetchMode = PGSQL_NUM; break;
-		case ADODB_FETCH_ASSOC:$this->fetchMode = PGSQL_ASSOC; break;
-
-		case ADODB_FETCH_DEFAULT:
-		case ADODB_FETCH_BOTH:
-		default: $this->fetchMode = PGSQL_BOTH; break;
-		}
-		$this->adodbFetchMode = $mode;
-		$this->ADORecordSet($queryID);
-	}
-
 	// _initrs modified to disable blob handling
 	function _initrs()
 	{
 	global $ADODB_COUNTRECS;
-		$this->_numOfRows = ($ADODB_COUNTRECS)? @pg_numrows($this->_queryID):-1;
-		$this->_numOfFields = @pg_numfields($this->_queryID);
+		$this->_numOfRows = ($ADODB_COUNTRECS)? @pg_num_rows($this->_queryID):-1;
+		$this->_numOfFields = @pg_num_fields($this->_queryID);
 	}
 
 }

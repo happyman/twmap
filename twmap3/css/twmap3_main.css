@@ -203,8 +203,7 @@ textarea:hover {
 	cursor: pointer;
 }
 body {
-	border:1px;
-	solid gray;
+	border:1px solid gray;
 	padding:8px;
 	/*background:#e1efbb;
 	font-weight: bold;  */

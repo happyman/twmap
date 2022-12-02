@@ -1,21 +1,23 @@
 <?php
-/*
-V5.19  23-Apr-2014  (c) 2000-2014 John Lim. All rights reserved.
-  Released under both BSD license and Lesser GPL library license.
-  Whenever there is any discrepancy between the two licenses,
-  the BSD license will take precedence.
-
-  Latest version is available at http://adodb.sourceforge.net
-
-  Portable version of oci8 driver, to make it more similar to other database drivers.
-  The main differences are
-
-   1. that the OCI_ASSOC names are in lowercase instead of uppercase.
-   2. bind variables are mapped using ? instead of :<bindvar>
-
-   Should some emulation of RecordCount() be implemented?
-
-*/
+/**
+ * Oracle "quercus" driver.
+ *
+ * This file is part of ADOdb, a Database Abstraction Layer library for PHP.
+ *
+ * @package ADOdb
+ * @link https://adodb.org Project's web site and documentation
+ * @link https://github.com/ADOdb/ADOdb Source code and issue tracker
+ *
+ * The ADOdb Library is dual-licensed, released under both the BSD 3-Clause
+ * and the GNU Lesser General Public Licence (LGPL) v2.1 or, at your option,
+ * any later version. This means you can use it in proprietary products.
+ * See the LICENSE.md file distributed with this source code for details.
+ * @license BSD-3-Clause
+ * @license LGPL-2.1-or-later
+ *
+ * @copyright 2000-2013 John Lim
+ * @copyright 2014 Damien Regad, Mark Newnham and the ADOdb community
+ */
 
 // security - hide paths
 if (!defined('ADODB_DIR')) die();
@@ -26,10 +28,6 @@ class ADODB_oci8quercus extends ADODB_oci8 {
 	var $databaseType = 'oci8quercus';
 	var $dataProvider = 'oci8';
 
-	function ADODB_oci8quercus()
-	{
-	}
-
 }
 
 /*--------------------------------------------------------------------------------------
@@ -39,11 +37,6 @@ class ADODB_oci8quercus extends ADODB_oci8 {
 class ADORecordset_oci8quercus extends ADORecordset_oci8 {
 
 	var $databaseType = 'oci8quercus';
-
-	function ADORecordset_oci8quercus($queryID,$mode=false)
-	{
-		$this->ADORecordset_oci8($queryID,$mode);
-	}
 
 	function _FetchField($fieldOffset = -1)
 	{

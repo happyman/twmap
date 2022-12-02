@@ -22,7 +22,7 @@ $hybridauth = new Hybridauth($config);
 $storage = new Session();
 
 $mylogin = array();
-$provider = isset($_SESSION['mylogin']['type']) ? $_SESSION['mylogin']['type'] : isset($_REQUEST['provider']) ? $_REQUEST['provider'] : "";
+$provider = isset($_SESSION['mylogin']['type']) ? $_SESSION['mylogin']['type'] : (isset($_REQUEST['provider']) ? $_REQUEST['provider'] : "");
 if (!empty($provider)){
 	$storage->set('provider', $provider);
 }

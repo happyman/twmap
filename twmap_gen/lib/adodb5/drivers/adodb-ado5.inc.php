@@ -1,15 +1,25 @@
 <?php
-/*
-V5.19  23-Apr-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
-  Released under both BSD license and Lesser GPL library license.
-  Whenever there is any discrepancy between the two licenses,
-  the BSD license will take precedence.
-Set tabs to 4 for best viewing.
-
-  Latest version is available at http://adodb.sourceforge.net
-
-	Microsoft ADO data driver. Requires ADO. Works only on MS Windows. PHP5 compat version.
-*/
+/**
+ * Microsoft ADO driver (PHP5 compat version).
+ *
+ * Requires ADO. Works only on MS Windows.
+ *
+ * This file is part of ADOdb, a Database Abstraction Layer library for PHP.
+ *
+ * @package ADOdb
+ * @link https://adodb.org Project's web site and documentation
+ * @link https://github.com/ADOdb/ADOdb Source code and issue tracker
+ *
+ * The ADOdb Library is dual-licensed, released under both the BSD 3-Clause
+ * and the GNU Lesser General Public Licence (LGPL) v2.1 or, at your option,
+ * any later version. This means you can use it in proprietary products.
+ * See the LICENSE.md file distributed with this source code for details.
+ * @license BSD-3-Clause
+ * @license LGPL-2.1-or-later
+ *
+ * @copyright 2000-2013 John Lim
+ * @copyright 2014 Damien Regad, Mark Newnham and the ADOdb community
+ */
 
 // security - hide paths
 if (!defined('ADODB_DIR')) die();
@@ -37,7 +47,7 @@ class ADODB_ado extends ADOConnection {
 	var $poorAffectedRows = true;
 	var $charPage;
 
-	function ADODB_ado()
+	function __construct()
 	{
 		$this->_affectedRows = new VARIANT;
 	}
@@ -50,9 +60,7 @@ class ADODB_ado extends ADOConnection {
 
 	function _affectedrows()
 	{
-		if (PHP_VERSION >= 5) return $this->_affectedRows;
-
-		return $this->_affectedRows->value;
+		return $this->_affectedRows;
 	}
 
 	// you can also pass a connection string like this:
@@ -95,7 +103,7 @@ class ADODB_ado extends ADOConnection {
 			// not yet
 			//if ($argDatabasename) $argHostname .= ";Initial Catalog=$argDatabasename";
 
-			//use trusted conection for SQL if username not specified
+			//use trusted connection for SQL if username not specified
 			if (!$argUsername) $argHostname .= ";Trusted_Connection=Yes";
 		} else if ($argProvider=='access')
 			$argProvider = "Microsoft.Jet.OLEDB.4.0"; // Microsoft Jet Provider
@@ -172,7 +180,7 @@ class ADODB_ado extends ADOConnection {
 
 */
 
-	function MetaTables()
+	function MetaTables($ttype = false, $showSchema = false, $mask = false)
 	{
 		$arr= array();
 		$dbc = $this->_connectionID;
@@ -246,7 +254,7 @@ class ADODB_ado extends ADOConnection {
 			$oCmd->CommandText = $sql;
 			$oCmd->CommandType = 1;
 
-			while(list(, $val) = each($inputarr)) {
+			foreach ($inputarr as $val) {
 				$type = gettype($val);
 				$len=strlen($val);
 				if ($type == 'boolean')
@@ -375,14 +383,14 @@ class ADORecordSet_ado extends ADORecordSet {
 	var $canSeek = true;
   	var $hideErrors = true;
 
-	function ADORecordSet_ado($id,$mode=false)
+	function __construct($id,$mode=false)
 	{
 		if ($mode === false) {
 			global $ADODB_FETCH_MODE;
 			$mode = $ADODB_FETCH_MODE;
 		}
 		$this->fetchMode = $mode;
-		return $this->ADORecordSet($id,$mode);
+		parent::__construct($id);
 	}
 
 
@@ -537,8 +545,14 @@ class ADORecordSet_ado extends ADORecordSet {
 			$t = $fieldobj->type;
 			$len = $fieldobj->max_length;
 		}
+		
+		$t = strtoupper($t);
+		
+		if (array_key_exists($t,$this->connection->customActualTypes))
+			return  $this->connection->customActualTypes[$t];
 
-		if (!is_numeric($t)) return $t;
+		if (!is_numeric($t)) 
+			return $t;
 
 		switch ($t) {
 		case 0:
@@ -577,7 +591,7 @@ class ADORecordSet_ado extends ADORecordSet {
 		case 19://adUnsignedInt	= 19,
 		case 20://adUnsignedBigInt	= 21,
 			return 'I';
-		default: return 'N';
+		default: return ADODB_DEFAULT_METATYPE;
 		}
 	}
 
@@ -670,7 +684,7 @@ class ADORecordSet_ado extends ADORecordSet {
 		@$rs->MoveNext(); // @ needed for some versions of PHP!
 
 		if ($this->fetchMode & ADODB_FETCH_ASSOC) {
-			$this->fields = $this->GetRowAssoc(ADODB_ASSOC_CASE);
+			$this->fields = $this->GetRowAssoc();
 		}
 		return true;
 	}

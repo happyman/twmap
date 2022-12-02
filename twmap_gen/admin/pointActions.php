@@ -8,6 +8,8 @@ function pointcrud($inp, $owner_uid, $admin) {
 					$mem = new Memcached;
 					$mem->addServer('localhost',11211);
 
+					$errmsg = [];
+
 	switch($inp['action']) {
 
 		case 'list':

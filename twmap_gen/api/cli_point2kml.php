@@ -77,7 +77,7 @@ if (count($res)>0) {
 		// //map.happyman.idv.tw/icon/%s.png 
 		$sid = sprintf("s%0d",$i++);
 		$data[$sid]['name'] = sprintf("%s (%d)",$key,count($val));
-		$data[$sid]['icon'] = sprintf("http://map.happyman.idv.tw/icon/%s.png", urlencode($key));
+		$data[$sid]['icon'] = sprintf("%s/%s/icon/%s.png", $site_url, $TWMAP3_html_root, urlencode($key));
 		//echo $key . "\n";
 		usort($val, "ele_sort");
 		$data[$sid]['markers'] = $val;

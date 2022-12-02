@@ -433,7 +433,8 @@ function downloadform() {
 
 list($lat,$lon)=explode(",",$_REQUEST['loc']);
 // 取得高度
-$ele = get_elev(twDEM_path, $lat, $lon, 1);
+$ele = get_elev_moidemd($lat, $lon);
+//$ele = get_elev(twDEM_path, $lat, $lon, 1);
 $data['elevation'] = $ele;
 // 取得行政區
 $towns = get_administration($lon,$lat, "town");
@@ -447,9 +448,9 @@ if ($towns || count($towns) > 0 ) {
 		$town_name[] = sprintf("%s%s[%s]%s",$town['countyname'],$town['townname'],$town['villname'],$permit_remark);
 	}
 	$data["admin"] = implode(",",$town_name);
-	$data["weather_forcast_url"] = sprintf("https://www.cwb.gov.tw/V8/C/W/Town/Town.html?TID=%s",$town['Town_ID']);
+	//$data["weather_forcast_url"] = sprintf("https://www.cwb.gov.tw/V8/C/W/Town/Town.html?TID=%s",$town['Town_ID']);
 	//if (!empty($town['cwb_tribe_code'])) {
-	$data["tribe_weather"] = get_tribe_weather_url(sprintf("%s%s",$town['countyname'],$town['townname']));
+	//$data["tribe_weather"] = get_tribe_weather_url(sprintf("%s%s",$town['countyname'],$town['townname']));
 	//}
 }
 // 取得是否在國家公園內

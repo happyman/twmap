@@ -84,7 +84,7 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 	<body>
 	<div id="loading">
 	歡迎使用 地圖瀏覽器 v<?=$ver?><br>
-  		<img src="/twmap/icons/twmap3.jpg"><p>
+  		<img src="icon/twmap3.jpg"><p>
   		<img src="img/loading20x20.gif">   載入中...
 	</div>
 		<div id="locContainer">

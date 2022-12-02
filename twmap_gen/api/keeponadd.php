@@ -15,7 +15,7 @@ if (empty($id) || empty($tm) || empty($url) || empty($cp)  || empty($title)) {
 }
 
 // 這是地圖產生器跟 keepon 間的祕密, 這段就免看了
-$check = intval($tm{0}) * $keepon_magic_1 + intval($tm{1}) + intval($tm{2}) * $keepon_magic_2 + intval($tm{3}) + intval($tm{4}) * $keepon_magic_3 + intval($tm{5}) + $keepon_magic_4 - strlen(urldecode($url));
+$check = intval($tm[0]) * $keepon_magic_1 + intval($tm[1]) + intval($tm[2]) * $keepon_magic_2 + intval($tm[3]) + intval($tm[4]) * $keepon_magic_3 + intval($tm[5]) + $keepon_magic_4 - strlen(urldecode($url));
 
 if ($cp != $check) {
 	error_log("checksum error");
@@ -105,7 +105,7 @@ function formatreq($param) {
   global $keepon_magic_1, $keepon_magic_2, $keepon_magic_3, $keepon_magic_4;
 	$tm =  $param['tm'];
 	$url = $param['url'];
-	$check = intval($tm{0}) * $keepon_magic_1 + intval($tm{1}) + intval($tm{2}) *$keepon_magic_2 + intval($tm{3}) + intval($tm{4}) * $keepon_magic_3 + intval($tm{5}) + $keepon_magic_4 - strlen($url);
+	$check = intval($tm[0]) * $keepon_magic_1 + intval($tm[1]) + intval($tm[2]) *$keepon_magic_2 + intval($tm[3]) + intval($tm[4]) * $keepon_magic_3 + intval($tm[5]) + $keepon_magic_4 - strlen($url);
 
 	$param['cp'] = $check;
 

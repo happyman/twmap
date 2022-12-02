@@ -1,21 +1,28 @@
 <?php
-/*
-V5.19  23-Apr-2014  (c) 2000-2014 John Lim. All rights reserved.
-  Released under both BSD license and Lesser GPL library license.
-  Whenever there is any discrepancy between the two licenses,
-  the BSD license will take precedence.
-
-  Latest version is available at http://adodb.sourceforge.net
-
-  Portable version of oci8 driver, to make it more similar to other database drivers.
-  The main differences are
-
-   1. that the OCI_ASSOC names are in lowercase instead of uppercase.
-   2. bind variables are mapped using ? instead of :<bindvar>
-
-   Should some emulation of RecordCount() be implemented?
-
-*/
+/**
+ * Portable version of Oracle oci8 driver
+ *
+ * This file is part of ADOdb, a Database Abstraction Layer library for PHP.
+ *
+ * Portable version of oci8 driver, to make it more similar to other database
+ * drivers. The main differences are
+ * 1. that the OCI_ASSOC names are in lowercase instead of uppercase.
+ * 2. bind variables are mapped using ? instead of :<bindvar>
+ *
+ * @package ADOdb
+ * @link https://adodb.org Project's web site and documentation
+ * @link https://github.com/ADOdb/ADOdb Source code and issue tracker
+ *
+ * The ADOdb Library is dual-licensed, released under both the BSD 3-Clause
+ * and the GNU Lesser General Public Licence (LGPL) v2.1 or, at your option,
+ * any later version. This means you can use it in proprietary products.
+ * See the LICENSE.md file distributed with this source code for details.
+ * @license BSD-3-Clause
+ * @license LGPL-2.1-or-later
+ *
+ * @copyright 2000-2013 John Lim
+ * @copyright 2014 Damien Regad, Mark Newnham and the ADOdb community
+ */
 
 // security - hide paths
 if (!defined('ADODB_DIR')) die();
@@ -27,12 +34,6 @@ class ADODB_oci8po extends ADODB_oci8 {
 	var $dataProvider = 'oci8';
 	var $metaColumnsSQL = "select lower(cname),coltype,width, SCALE, PRECISION, NULLS, DEFAULTVAL from col where tname='%s' order by colno"; //changed by smondino@users.sourceforge. net
 	var $metaTablesSQL = "select lower(table_name),table_type from cat where table_type in ('TABLE','VIEW')";
-
-	function ADODB_oci8po()
-	{
-		$this->_hasOCIFetchStatement = ADODB_PHPVER >= 0x4200;
-		# oci8po does not support adodb extension: adodb_movenext()
-	}
 
 	function Param($name,$type='C')
 	{
@@ -54,6 +55,21 @@ class ADODB_oci8po extends ADODB_oci8 {
 		return ADOConnection::Execute($sql,$inputarr);
 	}
 
+	/**
+	 * The optimizations performed by ADODB_oci8::SelectLimit() are not
+	 * compatible with the oci8po driver, so we rely on the slower method
+	 * from the base class.
+	 * We can't properly handle prepared statements either due to preprocessing
+	 * of query parameters, so we treat them as regular SQL statements.
+	 */
+	function SelectLimit($sql, $nrows=-1, $offset=-1, $inputarr=false, $secs2cache=0)
+	{
+		if(is_array($sql)) {
+//			$sql = $sql[0];
+		}
+		return ADOConnection::SelectLimit($sql, $nrows, $offset, $inputarr, $secs2cache);
+	}
+
 	// emulate handling of parameters ? ?, replacing with :bind0 :bind1
 	function _query($sql,$inputarr=false)
 	{
@@ -64,14 +80,87 @@ class ADODB_oci8po extends ADODB_oci8 {
 					$arr['bind'.$i++] = $v;
 				}
 			} else {
-				$sqlarr = explode('?',$sql);
-				$sql = $sqlarr[0];
-				foreach($inputarr as $k => $v) {
-					$sql .=  ":$k" . $sqlarr[++$i];
-				}
+				$sql = $this->extractBinds($sql,$inputarr);
 			}
 		}
 		return ADODB_oci8::_query($sql,$inputarr);
+	}
+
+	/**
+	* Replaces compatibility bind markers with oracle ones and returns a
+	* valid sql statement
+	*
+	* This replaces a regexp based section of code that has been subject
+	* to numerous tweaks, as more extreme test cases have appeared. This
+	* is now done this like this to help maintainability and avoid the
+	* need to rely on regexp experienced maintainers
+	*
+	* @param	string		$sql		The sql statement
+	* @param	string[]	$inputarr	The bind array
+	*
+	* @return	string	The modified statement
+	*/
+	private function extractBinds($sql,$inputarr)
+	{
+		$inString  = false;
+		$escaped   = 0;
+		$sqlLength = strlen($sql) - 1;
+		$newSql    = '';
+		$bindCount = 0;
+
+		/*
+		* inputarr is the passed in bind list, which is associative, but
+		* we only want the keys here
+		*/
+		$inputKeys = array_keys($inputarr);
+
+		for ($i=0;$i<=$sqlLength;$i++)
+		{
+			/*
+			* find the next character of the string
+			*/
+			$c = $sql[$i];
+
+			if ($c == "'" && !$inString && $escaped==0)
+				/*
+				* Found the start of a string inside the statement
+				*/
+				$inString = true;
+			elseif ($c == "\\" && $escaped==0)
+				/*
+				* The next character will be escaped
+				*/
+				$escaped = 1;
+			elseif ($c == "'" && $inString && $escaped==0)
+				/*
+				* We found the end of the string
+				*/
+				$inString = false;
+
+			if ($escaped == 2)
+				$escaped = 0;
+
+			if ($escaped==0 && !$inString && $c == '?')
+				/*
+				* We found a bind symbol, replace it with the oracle equivalent
+				*/
+				$newSql .= ':' . $inputKeys[$bindCount++];
+			else
+				/*
+				* Add the current character the pile
+				*/
+				$newSql .= $c;
+
+			if ($escaped == 1)
+				/*
+				* We have just found an escape character, make sure we ignore the
+				* next one that comes along, it might be a ' character
+				*/
+				$escaped = 2;
+		}
+
+		return $newSql;
+
 	}
 }
 
@@ -82,11 +171,6 @@ class ADODB_oci8po extends ADODB_oci8 {
 class ADORecordset_oci8po extends ADORecordset_oci8 {
 
 	var $databaseType = 'oci8po';
-
-	function ADORecordset_oci8po($queryID,$mode=false)
-	{
-		$this->ADORecordset_oci8($queryID,$mode);
-	}
 
 	function Fields($colname)
 	{
@@ -105,41 +189,33 @@ class ADORecordset_oci8po extends ADORecordset_oci8 {
 	// lowercase field names...
 	function _FetchField($fieldOffset = -1)
 	{
-		 $fld = new ADOFieldObject;
- 		 $fieldOffset += 1;
-		 $fld->name = OCIcolumnname($this->_queryID, $fieldOffset);
-		 if (ADODB_ASSOC_CASE == 0) $fld->name = strtolower($fld->name);
-		 $fld->type = OCIcolumntype($this->_queryID, $fieldOffset);
-		 $fld->max_length = OCIcolumnsize($this->_queryID, $fieldOffset);
-		 if ($fld->type == 'NUMBER') {
-		 	//$p = OCIColumnPrecision($this->_queryID, $fieldOffset);
-			$sc = OCIColumnScale($this->_queryID, $fieldOffset);
-			if ($sc == 0) $fld->type = 'INT';
-		 }
-		 return $fld;
+		$fld = new ADOFieldObject;
+		$fieldOffset += 1;
+		$fld->name = oci_field_name($this->_queryID, $fieldOffset);
+		if (ADODB_ASSOC_CASE == ADODB_ASSOC_CASE_LOWER) {
+			$fld->name = strtolower($fld->name);
+		}
+		$fld->type = oci_field_type($this->_queryID, $fieldOffset);
+		$fld->max_length = oci_field_size($this->_queryID, $fieldOffset);
+		if ($fld->type == 'NUMBER') {
+			$sc = oci_field_scale($this->_queryID, $fieldOffset);
+			if ($sc == 0) {
+				$fld->type = 'INT';
+			}
+		}
+		return $fld;
 	}
-	/*
-	function MoveNext()
-	{
-		if (@OCIfetchinto($this->_queryID,$this->fields,$this->fetchMode)) {
-			$this->_currentRow += 1;
-			return true;
-		}
-		if (!$this->EOF) {
-			$this->_currentRow += 1;
-			$this->EOF = true;
-		}
-		return false;
-	}*/
 
 	// 10% speedup to move MoveNext to child class
 	function MoveNext()
 	{
-		if(@OCIfetchinto($this->_queryID,$this->fields,$this->fetchMode)) {
+		$ret = @oci_fetch_array($this->_queryID,$this->fetchMode);
+		if($ret !== false) {
 		global $ADODB_ANSI_PADDING_OFF;
+			$this->fields = $ret;
 			$this->_currentRow++;
+			$this->_updatefields();
 
-			if ($this->fetchMode & OCI_ASSOC) $this->_updatefields();
 			if (!empty($ADODB_ANSI_PADDING_OFF)) {
 				foreach($this->fields as $k => $v) {
 					if (is_string($v)) $this->fields[$k] = rtrim($v);
@@ -154,7 +230,6 @@ class ADORecordset_oci8po extends ADORecordset_oci8 {
 		return false;
 	}
 
-	/* Optimize SelectLimit() by using OCIFetch() instead of OCIFetchInto() */
 	function GetArrayLimit($nrows,$offset=-1)
 	{
 		if ($offset <= 0) {
@@ -162,15 +237,17 @@ class ADORecordset_oci8po extends ADORecordset_oci8 {
 			return $arr;
 		}
 		for ($i=1; $i < $offset; $i++)
-			if (!@OCIFetch($this->_queryID)) {
+			if (!@oci_fetch($this->_queryID)) {
 				$arr = array();
 				return $arr;
 			}
-		if (!@OCIfetchinto($this->_queryID,$this->fields,$this->fetchMode)) {
+		$ret = @oci_fetch_array($this->_queryID,$this->fetchMode);
+		if ($ret === false) {
 			$arr = array();
 			return $arr;
 		}
-		if ($this->fetchMode & OCI_ASSOC) $this->_updatefields();
+		$this->fields = $ret;
+		$this->_updatefields();
 		$results = array();
 		$cnt = 0;
 		while (!$this->EOF && $nrows != $cnt) {
@@ -181,40 +258,22 @@ class ADORecordset_oci8po extends ADORecordset_oci8 {
 		return $results;
 	}
 
-	// Create associative array
-	function _updatefields()
-	{
-		if (ADODB_ASSOC_CASE == 2) return; // native
-
-		$arr = array();
-		$lowercase = (ADODB_ASSOC_CASE == 0);
-
-		foreach($this->fields as $k => $v) {
-			if (is_integer($k)) $arr[$k] = $v;
-			else {
-				if ($lowercase)
-					$arr[strtolower($k)] = $v;
-				else
-					$arr[strtoupper($k)] = $v;
-			}
-		}
-		$this->fields = $arr;
-	}
-
 	function _fetch()
 	{
-		$ret = @OCIfetchinto($this->_queryID,$this->fields,$this->fetchMode);
-		if ($ret) {
 		global $ADODB_ANSI_PADDING_OFF;
 
-				if ($this->fetchMode & OCI_ASSOC) $this->_updatefields();
-				if (!empty($ADODB_ANSI_PADDING_OFF)) {
-					foreach($this->fields as $k => $v) {
-						if (is_string($v)) $this->fields[$k] = rtrim($v);
-					}
+		$ret = @oci_fetch_array($this->_queryID,$this->fetchMode);
+		if ($ret) {
+			$this->fields = $ret;
+			$this->_updatefields();
+
+			if (!empty($ADODB_ANSI_PADDING_OFF)) {
+				foreach($this->fields as $k => $v) {
+					if (is_string($v)) $this->fields[$k] = rtrim($v);
 				}
+			}
 		}
-		return $ret;
+		return $ret !== false;
 	}
 
 }
