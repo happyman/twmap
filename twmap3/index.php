@@ -51,9 +51,6 @@ list ($st, $info) = login_info();
 	<script  src="js/shapedraw.js"></script>
 	<script  src="js/loadgpx.js"></script>
 	<!-- endbuild -->
-<!--
-	<link rel="stylesheet" type="text/css" href="css/sunny/jquery-ui-1.8.17.custom.css" />
--->
 <!-- build:css css/twmap3.css -->
 	<link rel="stylesheet" type="text/css" href="css/twmap3_main.css" />
 <!-- endbuild -->
@@ -79,6 +76,15 @@ printf("var poisearch_url = '%s';\n", $CONFIG['poisearch_url']);
 printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php?tab=0&");
 printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 ?>
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q1DHK68EH5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q1DHK68EH5');
 </script>
 	</head>
 	<body>
@@ -271,9 +277,9 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 	
     		};
 	});
-	var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	//var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	//ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	//var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 
 });
 
