@@ -844,11 +844,11 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 		$br = proj_67toge(array($row['locX']+$row['shiftX']*1000, $row['locY']-$row['shiftY']*1000));
 		$title = $row['title'];
 		}
-	$cmd = sprintf("tilestache-clean -c ~www-data/etc/tilestache.cfg -l twmap_gpx -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1",$tl[1],$tl[0],$br[1],$br[0]);
 	// moi_osm_gpx 
 	$cmd2 = sprintf("ssh happyman@tile tilestache-clean -c /home/happyman/etc/tile_main_8089.cfg -l gpxtrack -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
-	system($cmd2);
-	error_log("tilestache_clean: ". $cmd);
+	exec($cmd2);
+	error_log("tilestache_clean: ". $cmd2);
+	return array(true, "gpxtrack cleaned");
 	/*
 	   利用 tilestache-clean 的 output 來砍另一層 cache 
 
@@ -865,6 +865,7 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 	   10174 of 10192... twmap_gpx/18/219573/112348.png
 	   10175 of 10192... twmap_gpx/18/219574/112348.png
 	 */
+	/* twmap_gpx 是經建3疊 gpxtrack, 已不需要
 	exec($cmd,$out,$ret);
 	if ($ret == 0){
 		foreach($out as $line){
@@ -883,6 +884,7 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 	}
 	else
 		return array(false,implode("\n",$out));
+	 */
 }
 
 function remove_gpx_from_gis($mid){

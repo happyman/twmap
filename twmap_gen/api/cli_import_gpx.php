@@ -85,9 +85,10 @@ if (count($rs) > 0 ) {
 		if ($row['keepon_id'] != 'NULL' && $row['keepon_id'] != '')
 			$url = keepon_Id_to_Url($row['keepon_id']);
 		else
-			$url = sprintf('https://map.happyman.idv.tw/twmap/show.php?mid=%s',$row['mid']);
+			$url = sprintf('%s%s/show.php?mid=%s',$site_url,$site_html_root,$row['mid']);
 		$imported = is_gpx_in_gis($row['mid']);
 		if (isset($opt['i'])) {
+			// list imported only
 			if ($imported === false) continue;
 			printf("%d %d %-30s %s",$i++,-1*$row['mid'],$row['title'],$url);
 		} else {

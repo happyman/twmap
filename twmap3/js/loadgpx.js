@@ -266,7 +266,8 @@ GPXParser.prototype.CenterAndZoom = function (trackSegment, maptype)
 
 	this.map.fitBounds(bounds);
 	this.map.setCenter(bounds.getCenter());
-
+	// happyman
+	$("#tags").val(this.map.getCenter().toUrlValue(5));
 	// maptype is maintained for backward compatibility, but it should not be relied upon.
 	// map.setMapTypeId can be called directly
 	if (maptype !== undefined)

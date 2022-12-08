@@ -23,7 +23,7 @@ if ($login === false) {
 <body>
 <hr>
 <p>
-<p align=right>beta 測試中,歡迎建議.	<a href="uploadpage.php">重載本頁</a>|<a href="exportkml.php">下載圖資</a>|<a href="<?php echo $TWMAP3_html_root; ?>/about.php">關於</a>
+<p align=right>歡迎使用	<a href="uploadpage.php">重載本頁</a>|<a href="exportkml.php">下載圖資</a>|<a href="<?php echo $TWMAP3_html_root; ?>/about.php">關於</a>
 </p>
 <form action="upload.php"
       class="dropzone"
@@ -97,7 +97,7 @@ Dropzone.options.myAwesomeDropzone = {
 												nuoc_ngoai = ' [國外]';
 											if (data.record.imported == '0')
 												imported = "(" + data.record.uid + ")";
-											return '<a href="/twmap/show.php?mid=-'+ data.record.tid+'" target=_download>'+data.record.name+'</a>' + nuoc_ngoai + imported;
+											return '<a href="<?php echo $site_html_root; ?>/show.php?mid=-'+ data.record.tid+'" target=_download>'+data.record.name+'</a>' + nuoc_ngoai + imported;
 										} 
 								
 									},

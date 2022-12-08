@@ -44,7 +44,7 @@ $(document).ready(function() {
                         <li>選擇範圍以便使用<a href="<?php echo $CONFIG['site_twmap_html_root']; ?>main.php" target="twmap">地圖產生器</a>產生方便列印的地圖, 或者下載登山相關興趣點圖資。
                         <li>按住 shift 可以框選縮放
                         <li>按右鍵可以顯示目前座標,高程(台澎金馬)
-                        <li>按左鍵可以框選欲出圖範圍: 待範圍出現後，按右鍵選擇可下載圖資(kml) 或得知 bbox
+                        <li>按左鍵可以框選欲出圖範圍: 待範圍出現後，在範圍內按<b>右鍵</b><a href="<?php echo $CONFIG['site_twmap_html_root']; ?>api/exportkml.php">可下載圖資(kml)</a> 或得知 bbox
                         <li>搜尋框可打入山名,地標,座標: 
 				<ul><li>lat,lng :緯度,緯度 (用小數點方式)
                                 <li>TWD67 TM2座標  : x,y
