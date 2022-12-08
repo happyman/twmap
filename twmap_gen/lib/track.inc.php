@@ -104,9 +104,9 @@ function gpsbabel_seg2trk($orig,$dest){
 	global $debug;
 	// 將 multiple segments 轉換成 tracks
 	// gpsbabel is a bit buggy
-        // requires 1.5.4, with 
-	//$cmd = sprintf("/usr/bin/gpsbabel-1.5.4 -t -i gpx -o gpx,gpxver=1.1,garminextensions -f %s  -x track,seg2trk  -F %s", $type, $dtype, $orig, $dest);
-	$cmd = sprintf("cd %s;/usr/bin/gpsbabel_seg2trk.sh %s %s",dirname($orig),basename($orig), basename($dest));
+        // requires 1.5.4 or higher
+	$cmd = sprintf("/usr/bin/gpsbabel -t -i gpx -o gpx,gpxver=1.1,garminextensions -f %s  -x track,seg2trk  -F %s", $orig, $dest);
+	//$cmd = sprintf("cd %s;/usr/bin/gpsbabel_seg2trk.sh %s %s",dirname($orig),basename($orig), basename($dest));
 	exec($cmd, $out, $ret);
 	if ($debug) {
 		echo "$cmd return $ret" . print_r($out,true) . "\n";

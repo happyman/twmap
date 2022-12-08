@@ -5,6 +5,6 @@
     "license": "MIT",
     "require" : {
         "hybridauth/hybridauth" : "~3.0",
-    	"smarty/smarty": "~3.1"
+    	"smarty/smarty": "4.3.0"
     }
 }

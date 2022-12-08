@@ -59,7 +59,7 @@ if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
 		printf("<li><b>Bound(tilestache-clean)</b>: %s\n",$bound_str);
 	}
 	?>
-	<li><a href="/~mountain/gpx_map/" target=_blank>下載所有行跡(離線圖資)</a>
+	<li><a href="https://tile.happyman.idv.tw/~happyman/gpx_map/" target=_blank>Happyman.map(離線圖資)</a>
 	</ul>
 	<hr>
 <?php

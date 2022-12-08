@@ -26,7 +26,7 @@ function addremove_polygon(event) {
     if ((maxiX - miniX < 0.0088) || (miniY - maxiY < 0.0088)) {
         miniX = 9999; miniY = 0; maxiX = 0; maxiY = 9999;
         if (polygon) polygon.setMap(null);
-		if (polygon2) polygon2.setMap(null);
+	if (polygon2) polygon2.setMap(null);
         $("#params").html("尚未選圖");
         callmake = null;
         return;
@@ -77,8 +77,11 @@ function addremove_polygon(event) {
         });
         google.maps.event.addListener(polygon, 'click', addremove_polygon);
 		google.maps.event.addListener(polygon2, 'click', addremove_polygon);
-        google.maps.event.addListener(polygon, 'rightclick', function () {
+        google.maps.event.addListener(polygon, 'contextmenu', function () {
 			export_points(miniX,miniY,maxiX,maxiY);
+		});
+        google.maps.event.addListener(polygon2, 'contextmenu', function () {
+			export_points(tl2.x,tl2.y,br2.x,br2.y);
 		});
     }
     polygon.setMap(map);

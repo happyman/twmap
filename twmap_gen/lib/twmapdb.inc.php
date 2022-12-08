@@ -717,7 +717,7 @@ function ogr2ogr_import_gpx($mid, $gpx_file, $type='waypoints'){
 	$db=get_conn();
 	$sql = sprintf("SELECT relname FROM pg_class WHERE relname = '%s'",$table);
 	$rs = $db->getAll($sql);
-	$db->close();
+	//$db->close();
 	if (isset($rs[0]['relname']) && $rs[0]['relname'] == $table) {
 		// 1. delete mid from table (prevent dup)
 		$sql = sprintf("DELETE FROM \"%s\" WHERE mid=%s",$table,$mid);
@@ -987,6 +987,7 @@ function get_lastest_point($num=5) {
 }
 function userid() {
 	global $CONFIG;
+	if (!isset($_SESSION) ) session_start();
 	//       $admin = $CONFIG['admin'];
 	if (!isset($_SESSION['mylogin'])|| !isset($_SESSION['uid']))
 		return array(false, "please login");
@@ -995,6 +996,7 @@ function userid() {
 
 function is_admin() {
 	global $CONFIG;
+	if (!isset($_SESSION) ) session_start();
 	if (!isset($_SESSION['mylogin'])|| !isset($_SESSION['uid']))
 		return false;
 	if(in_array($_SESSION['uid'], $CONFIG['admin']))
