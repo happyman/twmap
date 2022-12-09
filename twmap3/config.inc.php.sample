@@ -4,12 +4,12 @@ $protocol = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://"
 $site_url = $protocol . "map.happyman.idv.tw";
 
 // 地圖瀏覽器的 url prefix
-$site_html_root = "/~happyman/twmap3/";
+$site_html_root = "/map/";
 // 地圖產生器 url prefix
-$site_twmap_html_root = "/twmap/";
+$site_twmap_html_root = "/gen/";
 // 
 
-$CONFIG['site_twmap_html_root'] = "/twmap/";
+$CONFIG['site_twmap_html_root'] = "/gen/";
 $CONFIG['getkmlfrombounds_url'] = $site_twmap_html_root ."api/getkmlfrombounds.php";
 $CONFIG['geocodercache_url'] = $site_twmap_html_root ."api/geocoder.php";
 $CONFIG['getkml_url'] = $site_twmap_html_root ."api/getkml.php";
@@ -26,7 +26,7 @@ $CONFIG['poisearch_url'] = $site_twmap_html_root . "api/poi_search.php";
 $CONFIG['shorten_url'] = $site_twmap_html_root . "api/shorten.php";
 
 // 資料庫連線參數
-$CONFIG['db'] = array('host'=> 'localhost', 'db' => 'twmap', 'user'=> 'user', 'pass' => 'password');
+$CONFIG['db'] = array('host'=> '', 'db' => '', 'user'=> '', 'pass' => '');
 // admin user 的 uid 為 登入地圖產生器的帳號
-$CONFIG['admin'] = array("");
+$CONFIG['admin'] = array("3");
 $CONFIG['gmap_api_key'] = '';

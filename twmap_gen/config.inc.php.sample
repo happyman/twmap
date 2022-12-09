@@ -1,4 +1,6 @@
 <?php
+//ini_set("session.gc_maxlifetime", 86400);
+// set this in php ini
 // $Id$
 define('__ROOT__', dirname(__FILE__). "/");
 require_once(__ROOT__."vendor/autoload.php");
@@ -10,28 +12,28 @@ require_once(__ROOT__."lib/phpwee-php-minifier/phpwee.php");
 $protocol = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
 $out_root = "/srv/www/htdocs/map/out";
 // tmpdir for backend_make
-$out_root_tmp = "/home/nas/twmapcache/tmp/out";
-$out_html_root = "/map/out";
+$out_root_tmp = "/home/happyman/twmapcache/tmp/out";
+$out_html_root = "/out";
 $site_url = $protocol . "map.happyman.idv.tw";
-$site_html_root = "/twmap";
+$site_html_root = "/gen";
 // 30 for SuSE, 33 for Ububtu
-define('WWWRUN_UID', 33);
+define('WWWRUN_UID', 1001);
 
 // 放一版的圖資目錄
 $stbpath = 'http://make.happyman.idv.tw/~happyman/stb';
 // 放從 TMS 的圖磚
 // 放3版 1x1 的圖檔
-$tilecachepath = "/mnt/twmapcache/cache";
+$tilecachepath = "/home/happyman/twmapcache/cache";
 
 // 不重要
 //if (!file_exists($tilepath."/16")) {
 //	die("image dir not ready");
 //}
-$tmppath = "/home/nas/twmapcache/tmp"; 
-$diskfullchk = "/home/nas/";
+$tmppath = "/home/happyman/twmapcache/tmp"; 
+$diskfullchk = "/home/happyman/map/";
 $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
-$TWMAP3_html_root = "/~happyman/twmap3";
-$TWMAP3URL = "/~happyman/twmap3/index.php";
+$TWMAP3_html_root = "/map";
+$TWMAP3URL = "/map/index.php";
 $BETA = 0; // beta for debug output
 $ERROROUT = "ajax";
 
@@ -55,41 +57,21 @@ $pixels['A3R'] = array("x"=>2984, "y"=>2110);
 $fuzzy = 20;
 
 /* DB 設定寫在這裡 */
-$db_host = 'localhost';
-$db_user = "twmap";
-$db_pass = "password";
-$db_name = "twmap";
+$db_host = '';
+$db_user = "";
+$db_pass = "";
+$db_name = "";
 $db_port = '5432';
-$db_dsn = sprintf("postgres9://%s:%s@%s:%s/%s?persist",$db_user,$db_pass,$db_host,$db_port,$db_name);
+$db_dsn = sprintf("postgres9://%s:%s@%s:%s/%s",$db_user,$db_pass,$db_host,$db_port,$db_name);
 $gdal_dsn = sprintf("PG:dbname='%s' user='%s' password='%s' host='%s' port='%s'",$db_name,$db_user,$db_pass,$db_host,$db_port);
 
 
-// 需要申請一把 xuite / facebook 的 api key
-// api.xuite.net
 require_once(__ROOT__."lib/twmapdb.inc.php");
 /* login */
 if (php_sapi_name() != "cli") {
-
 	require_once(__ROOT__."lib/xuite.php");
-        require_once __ROOT__."lib/Hybrid/Hybrid/thirdparty/Facebook/base_facebook.php";
-        require_once __ROOT__."lib/Hybrid/Hybrid/thirdparty/Facebook/facebook.php";
-
-	//require_once(__ROOT__."lib/openid.php");
-	// move to config-hybridauth.php
 	$fb_appid = '';
-	$facebook = new Facebook(array(
-				'appId'  => $fb_appid,
-	// here
-				'secret' => '',
-	//			'cookie' => false,
-				));
-	// here
-	$xuite = new xuiteAuth(array(
-				'api_key' => '',
-				'secret' => ''));
-
 	/* template */
-	//require_once(__ROOT__."lib/twmapdb.inc.php");
 	$smarty = new Smarty();
 	// composer autoload require_once(__ROOT__."lib/smarty/Smarty.class.php");
 	require_once(__ROOT__."lib/smarty-out-jsmin.inc.php");
@@ -105,10 +87,6 @@ if (php_sapi_name() != "cli") {
 	$smarty->assign('twmap3_html_root',$TWMAP3_html_root);
 
 }
-else {
-	// special include for CLI
-	// 
-}
 require_once __ROOT__."lib/ape/ApeAbstractConnection.php";
 require_once __ROOT__."lib/ape/ApeClient.php";
 require_once __ROOT__."lib/ape/ApeCurlConnection.php";
@@ -120,16 +98,14 @@ require_once __ROOT__."lib/ape/ApeResponse.php";
 
 #
 
-ini_set("session.gc_maxlifetime", 86400);
-
 # Keppon API : queue
 define('GEARMAN_SERVER','127.0.0.1');
 
 
-define('APE_HOST','0.ape.happyman.idv.tw');
-$CONFIG['admin'] = array();
+define('APE_HOST','0.ape.tile.happyman.idv.tw');
+$CONFIG['admin'] = array( 3 );
 //  gdalwarp -t_srs EPSG:4326 dem_20m.tif dem_20m-latlong.tif
 //  source: http://data.gov.tw/node/35430
 define('twDEM_path', __ROOT__ ."db/DEM/dem_20m-latlong.tif");
-$CONFIG['poi_file'] = "/home/mountain/mapsforge/20171008/MOI_OSM_Taiwan_TOPO_Rudy.poi";
+$CONFIG['poi_file'] = "/home/happyman/poi/MOI_OSM_Taiwan_TOPO_Rudy.poi";
 

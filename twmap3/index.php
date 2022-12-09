@@ -101,6 +101,7 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 			<div id="mapIdControl" title="選擇地圖">
 				<select title="切換背景圖" name="changebmap" id="changebmap"  style="height: 32px; font-weight: 900;font-family: FontAwesome">
 					<option value="jm20k_1904">&#xf1da; &nbsp;堡圖1904</option>
+					<option value="jm20k_1904_tri">&#xf1da; &nbsp;三角點1904</option>
 					<option value="fandi">&#xf1da; &nbsp;蕃地1916</option>
 					<option value="jm20k_1921">&#xf1da; &nbsp;堡圖1921</option>
 					<option value="jm50k">&#xf1da; &nbsp;陸測1924</option>

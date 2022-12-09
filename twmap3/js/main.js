@@ -430,6 +430,16 @@ var JM20K1904_MapType = new google.maps.ImageMapType({
 		maxZoom: 18
 
 	});
+var JM20K1904_triangulation_MapType = new google.maps.ImageMapType({
+	 getTileUrl: function (a, b) {
+                        return "//gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904_triangulation-png-"+b+"-"+a.x+"-"+a.y;
+                },
+                tileSize: new google.maps.Size(256, 256),
+                name: "三角點",
+                alt: "日治初期台灣三角測量點及水準點配置圖",
+                maxZoom: 16
+
+});
 var Geo2016_Options = {
 		getTileUrl: function (a, b) {
 		// var y_tms = (1 << b) - a.y - 1;
@@ -507,6 +517,7 @@ var copyrights = {
 	'tm50k_1966': "<a target=\"_blank\" href=\"http://gis.rchss.sinica.edu.tw/mapdap/?p=6190\">台灣歷史百年地圖</a> - 水利圖 1966",
 	'jm20k_1921': "<a target=\"_blank\" href=\"http://ndaip.sinica.edu.tw/content.jsp?option_id=2621&index_info_id=6924\">台灣堡圖(大正版)</a>",
 	'jm20k_1904': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣堡圖(明治版)</a>",
+	'jm20k_1904_tri': "<a target=\"_blank\" href=\"https://gis.rchss.sinica.edu.tw/mapclub_20221208/\">台灣歷史百年地圖</a> - 《三角測量點及水準測量點明細表》之附圖</a>",
 	'tw5kariel': "台灣5000:1相片基本圖"
 };
 var logos = {
@@ -2245,6 +2256,7 @@ function initialize() {
 	map.mapTypes.set('debug',DebugTile_MapType);
 	map.mapTypes.set('geo2016',Geo2016_MapType);
 	map.mapTypes.set('jm20k_1904', JM20K1904_MapType);
+	map.mapTypes.set('jm20k_1904_tri', JM20K1904_triangulation_MapType);
 	map.mapTypes.set('jm20k_1921', JM20K1921_MapType);
 	map.mapTypes.set('tm50k_1966', TM50K1966_MapType);
 	map.mapTypes.set('jm50k', JM50K1924_MapType);
