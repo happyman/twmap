@@ -71,10 +71,13 @@ function track_size($tid){
 	}
 	return $total;
 }
-function track_update($uid,$tid,$newname,$contribute){
+function track_update($uid,$tid,$newname,$contribute, $is_admin=false){
 	$db=get_conn();
-	// $sql = sprintf("DELETE FROM \"track\" WHERE uid=%d AND tid=%d",$uid,$tid);
-	$sql = sprintf("UPDATE \"track\" set name='%s',contribute=%d where uid=%d and tid=%d",pg_escape_string($newname),$contribute,$uid,$tid);
+	if ($is_admin) {
+		$sql = sprintf("UPDATE \"track\" set name='%s',contribute=%d where tid=%d",pg_escape_string($newname),$contribute,$tid);
+	} else {
+		$sql = sprintf("UPDATE \"track\" set name='%s',contribute=%d where uid=%d and tid=%d",pg_escape_string($newname),$contribute,$uid,$tid);
+	}
 	$rs = $db->Execute($sql);
 	return $rs;
 	//echo $sql;

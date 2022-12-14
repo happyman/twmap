@@ -15,7 +15,7 @@ switch($action){
 			$rs = track_expire($uid, $_REQUEST['tid']);
 			break;
 	case 'update':
-			$rs = track_update($uid,$_REQUEST['tid'],$_REQUEST['name'],$_REQUEST['contribute']);
+			$rs = track_update($uid,$_REQUEST['tid'],$_REQUEST['name'],$_REQUEST['contribute'],is_admin());
 			break;
 	case 'list':
 	default:
