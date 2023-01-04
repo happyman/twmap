@@ -199,9 +199,9 @@ $MYUID = $MY_SESSION['uid'];
 // 呼叫 cmd_line make, 他也需要 gpx aware
 // -l 傳入 email:formid 作為識別 channel 與 msg owner -m 傳入 tmpdir
 showmem("before call cmd_make.php");
-$cmd = sprintf("php cmd_make2.php -r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s:%s %s %s %s %s", $startx, $starty, $shiftx, $shifty, 
+$cmd = sprintf("php cmd_make2.php -r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s %s %s %s %s", $startx, $starty, $shiftx, $shifty, 
 isset($inp['97datum'])? 'TWD97': 'TWD67',
-$outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $MY_SESSION['mylogin']['email'], $inp['formid'], isset($inp['grid_100M']) ? '-e' : '',
+$outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $inp['formid'], isset($inp['grid_100M']) ? '-e' : '',
  // 是否包含 100M grid
 isset($inp['inc_trace']) ? '-G' : '',
  //是否包含已知 gps trace
@@ -254,7 +254,8 @@ $okmsg = msglog("done");
 // sleep(1);
 // in case the http connection is broken. seealso js:twmap.js
 // add finished!final_mid (注意 :, 看 notify_web in STB.inc.php)
-$log_channel = sprintf("%s:%s",$MY_SESSION['mylogin']['email'], $inp['formid']);
+//$log_channel = sprintf("%s:%s",$MY_SESSION['mylogin']['email'], $inp['formid']);
+$log_channel = $inp['formid'];
 msglog("notify web $log_channel with $mid");
 notify_web($log_channel,array("finished!$mid"));
 ok_out(implode("", $okmsg), $mid);

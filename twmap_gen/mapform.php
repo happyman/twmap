@@ -21,7 +21,7 @@ if (isset($_GET['recreate']))  {
 
 if (disk_free_space($diskfullchk) < 500000000) {
 	printf("<h1>磁碟空間已滿</h1>");
-  exit;
+	exit;
 }
 
 //if (count($maps) >= $user['limit'] ) {
@@ -91,12 +91,12 @@ if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 ?>
 		$("#mapform input[name=title]").focus();
 		$("#dialog-message").dialog({
-			modal: true,
-				buttons: {
-					Ok: function() {
-						$( this ).dialog( "close" );
-					}
-				}
+		modal: true,
+			buttons: {
+			Ok: function() {
+				$( this ).dialog( "close" );
+			}
+		}
 		});
 
 <?php
@@ -193,13 +193,13 @@ $('#create').click(function() {
 	$("#mapform select[name=anyshiftx]").attr("disabled", false);
 	$("#mapform select[name=anyshifty]").attr("disabled", false);
 	$.blockUI({ css: {
-		border: 'none',
-			padding: '15px',
-			backgroundColor: '#000',
-			'-webkit-border-radius': '10px',
-			'-moz-border-radius': '10px',
-			opacity: .5,
-			color: '#fff'
+	border: 'none',
+		padding: '15px',
+		backgroundColor: '#000',
+		'-webkit-border-radius': '10px',
+		'-moz-border-radius': '10px',
+		opacity: .5,
+		color: '#fff'
 	}, message: '<h1>讓我來慢慢產生,您去喝杯茶做做體操再回來!</h1>' });
 
 
@@ -229,13 +229,13 @@ $('#create2').click(function() {
 		return false;
 	}
 	$.blockUI({ css: {
-		border: 'none',
-			padding: '15px',
-			backgroundColor: '#000',
-			'-webkit-border-radius': '10px',
-			'-moz-border-radius': '10px',
-			opacity: .5,
-			color: '#fff'
+	border: 'none',
+		padding: '15px',
+		backgroundColor: '#000',
+		'-webkit-border-radius': '10px',
+		'-moz-border-radius': '10px',
+		opacity: .5,
+		color: '#fff'
 	}, message: '<h1>讓我來慢慢產生,您去喝杯越南咖啡做做體操再回來!</h1>' });
 	if (! window.FormData)
 		document.mapform.submit();
@@ -243,7 +243,7 @@ $('#create2').click(function() {
 		var form = $('#mapform')[0]; // You need to use standart javascript object here
 		var formData = new FormData(form);
 		$.ajax({
-			url: 'backend_make.php',
+		url: 'backend_make.php',
 			data: formData,
 			type: 'POST',
 			dataType : 'json',
@@ -252,15 +252,15 @@ $('#create2').click(function() {
 			success : function(data){
 				$.unblockUI();
 				if (data.status == "ok") {
-				clearProgress();
-				var $tabs = $('#tabs').tabs();
-				$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php");
-				$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=1&mid="+data.id);
-				$tabs.tabs('option',"active",3);
+					clearProgress();
+					var $tabs = $('#tabs').tabs();
+					$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php");
+					$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=1&mid="+data.id);
+					$tabs.tabs('option',"active",3);
 				}
 				else
 					alert("error: "+data.error);
-            }
+			}
 		});
 	} // end of else
 });
@@ -271,13 +271,13 @@ $('#create3').click(function() {
 		return false;
 	}
 	$.blockUI({ css: {
-		border: 'none',
-			padding: '15px',
-			backgroundColor: '#000',
-			'-webkit-border-radius': '10px',
-			'-moz-border-radius': '10px',
-			opacity: .5,
-			color: '#fff'
+	border: 'none',
+		padding: '15px',
+		backgroundColor: '#000',
+		'-webkit-border-radius': '10px',
+		'-moz-border-radius': '10px',
+		opacity: .5,
+		color: '#fff'
 	}, message: '<h1>讓我來慢慢產生,您去喝杯好了啦做做瑜伽再回來!</h1>' });
 
 	globalxdr = $.post("backend_make.php", $("#mapform").serialize(),function(data){
@@ -360,6 +360,87 @@ $(document).ready(function(){
 		$("#create2").hide();
 		$("#create3").hide();
 	}
-});
+	function handle_message(evt) {
+		console.log('Retrieved data from server: ' + evt.data);
+		// 第 0 個 tab 才處理.
+		if ($("#tabs").tabs("option", "active") !== 0) {
+			makeprogress.progressbar("value", 0);
+			makeprogress.hide();
+			$("#log_message").text("").hide();
+		}
+		// 第一次收到 msg, 顯示
+		if ($("#log_message").css("display") == "none") {
+			$("#log_message").css("height", $("#makemaptable").height());
+			$("#log_message").show();
+			makeprogress.show();
+		}
+		var logmsg = evt.data;
+		if (logmsg.indexOf("ps%") === 0) {
+			var pst = logmsg.substr(logmsg.indexOf("%") + 1);
+			// 如果是新增的話 ps:+2
+			if (pst.substr(0, 1) == "+") {
+				var val = arguments.callee.startval;
+				var addval = Number(pst.substr(1));
+				pst = addval + Number(val);
+				pst = String(pst);
+				//console.log(val + "+" + String(addval) + " = " + pst);
+			} else {
+				// 如果沒有 + 才更新
+				arguments.callee.startval = Number(pst);
+				//console.log("update  collee" + arguments.callee.startval );
+			}
+			if (Number(pst) == 100) {
+				console.log("background command finished");
+				// clearProgress();
+				// 5 秒之後檢查跳頁: test
+				// setTimeout("checkFinished()", 3000);
+			}
+			// 更新 progress bar
+			$(".psLabel").text(pst + " %");
+			makeprogress.progressbar("value", Number(pst));
+		} else {
+			// log window
+			$("#log_message").prepend(logmsg);
+			if (logmsg.indexOf("err:") === 0) {
+				// 出錯了 要 keep 嘛?
+				clearProgress();
+			} else if (logmsg.indexOf("finished!") === 0) {
+				// 處理 finished message: 因為 proxy 會中斷連線
+				console.log("got finished msg:" + logmsg);
+				var final_mid = logmsg.substr(logmsg.indexOf("!")+1);
 
+				$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php");
+				$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=1&mid="+final_mid);
+				$('#tabs').tabs('option',"active",3);
+				clearProgress();
+				$.unblockUI();
+			}
+		}
+
+
+	}
+	var wsServer = 'wss://ws.happyman.idv.tw:443/twmap_' + $("#formid").val();
+	var first_open = 1;
+	var websocket = new ReconnectingWebSocket(wsServer);
+	websocket.onopen = function (evt) {
+		console.log(wsServer + " opened ");
+		if (first_open) {
+			websocket.send('ws connected');
+			first_open = 0;
+		}
+	};
+	//Monitor connection closed
+	websocket.onclose = function (evt) {
+		console.log("Disconnected");
+	};
+
+	//onmessage monitor server data push
+	websocket.onmessage = function (evt) {
+		handle_message(evt);
+	};
+	//Monitor connection error information
+	websocket.onerror = function (evt, e) {
+		console.log('Error occured: ' + evt.data);
+	};
+});
 </script>

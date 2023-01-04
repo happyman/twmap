@@ -87,14 +87,6 @@ if (php_sapi_name() != "cli") {
 	$smarty->assign('twmap3_html_root',$TWMAP3_html_root);
 
 }
-require_once __ROOT__."lib/ape/ApeAbstractConnection.php";
-require_once __ROOT__."lib/ape/ApeClient.php";
-require_once __ROOT__."lib/ape/ApeCurlConnection.php";
-require_once __ROOT__."lib/ape/ApeException.php";
-require_once __ROOT__."lib/ape/ApeRequest.php";
-require_once __ROOT__."lib/ape/ApeResponse.php";
-
-
 
 #
 

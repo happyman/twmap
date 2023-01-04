@@ -6,3 +6,4 @@ twmap_gen/config-hybridauth.php
 twmap_gen/vendor
 twmap3/config.inc.php
 docs/prominence/src
+package-lock.json

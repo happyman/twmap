@@ -24,7 +24,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
 	echo "       -G merge user track_logs\n";
 	echo "       -3 for A3 output\n";
-	echo "       -l channel:uniqid to notify web, email from web interface\n";
+	echo "       -l uniqid to notify web interface\n";
 	echo "       -m /tmp tmpdir\n";
 	exit(1);
 }

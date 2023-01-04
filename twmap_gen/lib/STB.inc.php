@@ -627,53 +627,10 @@ function MyErrorLog($ident, $data) {
 		error_log($data);
 	error_log("== $ident ==\n");
 }
-function notify_web($channel,$rawmsg,$debug=0) {
 
-	$connection = new ApeCurlConnection( APE_HOST ,80);
-	$client = new ApeClient($connection);
-	$request = new ApeRequest("xxx", array("abc"));
-	list($email,$msg_prefix) = explode(":",$channel);
-	foreach($rawmsg as $msg) {
-		// 加上 prefix
-		$msg = $msg_prefix . ":" . $msg;
-		$data = array (
-			array('cmd'=>'CONNECT',"chl"=>1,"params"=>array("name"=>substr(md5(time()),0,8)) ),
-			array('cmd'=>'JOIN',"chl"=>2,"params"=> array("channels"=> md5($email)))
-		);
-		//      $start_time = time();
-		$request->setRawData(json_encode($data));
-		$response = $client->sendRequest($request);
-		if (empty($response)) {
-			MyErrorLog("notify_agent","connect fail");
-			return false;
-		}
-
-		// MyErrorLog("notify_agent response", $response);
-		if ($response->isSuccess() == 1 ) {
-			$result = json_decode( $response->getRawresult(), true);
-			$pubid = $result[2]['data']['pipe']['pubid'];
-			$sessid = $result[0]['data']['sessid'];
-			$users = count( $result[2]['data']['users']);
-			if ($debug) {
-				MyErrorLog("notify_agent",array("users=>$users",$request,$response));
-			}
-			$data = array(
-				array( 'cmd' => 'SEND', 'chl' => 3,
-				//用編碼\u0027取代單引號
-				"params" => array("msg"=> str_replace("'", "\u0027",$msg), "pipe"=> $pubid),
-				"sessid" => $sessid ),
-				array('cmd'=>'LEFT',"chl"=>4, "params"=>array("channel"=> md5($email)))
-
-			);
-			$request->setRawData(json_encode($data));
-			$response = $client->sendRequest($request);
-			if ($debug) {
-				MyErrorLog("notify_agent",array($request,$response,strlen($msg)));
-			}
-		} else {
-			$fail++;
-		}
-	}
-	return true;
-
+// websocket client: https://github.com/vi/websocat
+function notify_web($channel,$msg_array,$debug=0){
+	$cmd = sprintf("echo '%s'  | /usr/bin/websocat -1 -t -  wss://ws.happyman.idv.tw/twmap_%s",escapeshellarg(str_replace("#","＃",$msg_array[0])),$channel);
+	MyErrorLog("notify_web", $cmd);
+	exec($cmd);
 }

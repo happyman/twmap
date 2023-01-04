@@ -1,5 +1,51 @@
 <?php
-if(!ob_start("ob_gzhandler")) ob_start();
+function sanitize_output($buffer) {
+        $search = [
+                '/\>[^\S ]+/s',
+                '/[^\S ]+\</s',
+                '/(\s)+/s',
+                '/<!--(.|\s)*?-->/'
+        ];
+
+        $replace = [
+                '>',
+                '<',
+                '\\1',
+                ''
+        ];
+
+        $buffer = preg_replace($search, $replace, $buffer);
+
+	return $buffer .  <<< EOL
+
+<!--
+ ⠀⠀⠀⠀       ⢀⠤⠒⠒⠢⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡯⠴⠶⠶⠒⠢⢇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⡤⠖⠂⡀⠒⡢⡌⢣⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣷⠯⢭⣵⠑⣯⡭⢹⡎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡆⠀⢠⣤⠄⠀⣸⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣷⢄⣈⣟⢁⢴⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣀⢴⠒⡝⠁⠬⠛⣚⡩⠔⠉⢻⠒⣦⢄⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⢎⠁⡌⢰⠁⠀⠀⠀⠀⠀⠀⠀⢸⠀⡛⠀⡷⡀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣀⣾⣷⣠⠃⢸⠀⠀⠀⠀⠀⠀⠀⠀⣸⠀⢹⢰⠁⢳⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢸⡿⠟⢿⢳⡏⠀⠀⠀⠀⠀⠀⠀⢠⡟⣶⣘⢞⡀⠘⡆⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⡼⢺⣯⢹⢰⡏⠒⠒⠒⠊⠀⠐⢒⣾⣹⣸⢹⣾⡇⠀⢣⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣏⣾⠃⠀⣼⡟⣢⣀⡠⠤⣀⡰⢋⡝⣱⣹⠇⣿⣧⣴⠸⡄⠀⠀⠀⠀
+⠀⠀⠀⠀⡏⡞⡆⢠⡇⣟⠭⡒⠭⠭⠤⠒⣡⠔⣽⡇⣂⣿⠟⠃⢀⡇⠀⠀⠀⠀
+⠀⠀⠀⠀⢧⡇⡧⢫⠃⣷⣽⣒⣍⣉⣈⡩⢴⠾⡳⢡⢸⣛⣪⡗⢴⠁⠀⠀⠀⠀
+⠀⠀⠀⠀⣼⢃⠷⣸⣤⣯⢞⡥⢍⣐⣂⠨⠅⠊⡠⢃⣟⢏⠹⣎⣆⡀⠀⠀⠀⠀
+⠀⡠⠶⠚⠛⠛⠽⢹⡟⡖⢓⠿⣝⠓⠒⠒⠒⠭⢤⠗⣯⣩⣽⣿⠷⣾⣿⢷⣆⠀
+⠜⣌⠢⢄⣀⡀⠀⡞⢡⠘⢄⠑⠨⢉⣀⠉⣀⠄⢊⠜⡸⠛⣿⡍⠉⠉⠈⢁⠁⠇
+⠈⢯⡓⠦⠤⠬⠭⣵⠀⠱⢄⠑⠲⠤⠤⠤⠤⠒⢁⡔⠁⢠⣏⣡⣤⣤⡶⠜⣻⠃
+⠀⠈⠙⠛⠒⠛⠻⠯⠕⠤⣀⣉⣓⣒⣂⣒⣒⣊⣁⣠⠔⠛⠂⠒⠛⠓⠛⠚⠉⠀
+
+        A-di-đà Phật
+-->
+EOL;
+}
+
+ob_start("sanitize_output");
+
 session_start([
     'read_and_close' => true,
 ]);
@@ -46,11 +92,10 @@ list ($st, $info) = login_info();
 	<script  src="js/functions.js"></script>
 	<script  src="js/javascript.util.min.js"></script>
 	<script  src="js/jsts.min.js"></script>
-	<script  src="js/triangle.js"></script>
 	<script  src="js/jquery.noty.js"></script>
 	<script  src="js/shapedraw.js"></script>
 	<script  src="js/loadgpx.js"></script>
-	<!-- endbuild -->
+<!-- endbuild -->
 <!-- build:css css/twmap3.css -->
 	<link rel="stylesheet" type="text/css" href="css/twmap3_main.css" />
 <!-- endbuild -->
@@ -59,22 +104,22 @@ list ($st, $info) = login_info();
 // 檢查是否登入
 if ($st === true) {
 	echo "var login_role = 1;\n";
-	printf("var login_uid = %d\n",$info['uid']);
+	printf("var login_uid = %d;\n",$info['uid']);
 } else {
 	echo "var login_role = 0;\n";
 }
-printf("var getkml_url = '%s';\n",$CONFIG['getkml_url']);
-printf("var geocodercache_url = '%s';\n",$CONFIG['geocodercache_url']);
-printf("var pointdata_url = '%s';\n",$CONFIG['pointdata_url']);
-printf("var pointdata_admin_url = '%s';\n",$CONFIG['pointdata_admin_url']);
-printf("var promlist_url = '%s';\n", $CONFIG['promlist_url']);
-printf("var get_waypoints_url = '%s';\n",$CONFIG['get_waypoints_url']);
-printf("var get_elev_url = '%s';\n",$CONFIG['get_elev_url']);
-printf("var viewshed_url = '%s';\n",$CONFIG['viewshed_url']);
-printf("var exportkml_url = '%s';\n", $CONFIG['exportkml_url']);
-printf("var poisearch_url = '%s';\n", $CONFIG['poisearch_url']);
-printf("var callmake_url = '%s';\n", $CONFIG['site_twmap_html_root'] . "main.php?tab=0&");
-printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
+printf("var getkml_url = '%s';",$CONFIG['getkml_url']);
+printf("var geocodercache_url = '%s';",$CONFIG['geocodercache_url']);
+printf("var pointdata_url = '%s';",$CONFIG['pointdata_url']);
+printf("var pointdata_admin_url = '%s';",$CONFIG['pointdata_admin_url']);
+printf("var promlist_url = '%s';", $CONFIG['promlist_url']);
+printf("var get_waypoints_url = '%s';",$CONFIG['get_waypoints_url']);
+printf("var get_elev_url = '%s';",$CONFIG['get_elev_url']);
+printf("var viewshed_url = '%s';",$CONFIG['viewshed_url']);
+printf("var exportkml_url = '%s';", $CONFIG['exportkml_url']);
+printf("var poisearch_url = '%s';", $CONFIG['poisearch_url']);
+printf("var callmake_url = '%s';", $CONFIG['site_twmap_html_root'] . "main.php?tab=0&");
+printf("var shorten_url = '%s';",$CONFIG['shorten_url']);
 ?>
 </script>
 <!-- Google tag (gtag.js) -->
@@ -258,9 +303,7 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 	var _gaq = _gaq || [];
 	_gaq.push(['_setAccount', 'UA-19949015-1']);
 	_gaq.push(['_trackPageview']);
-	// wait for google maps initialized
 	$(function() {
-	// 初始
 	$.getScript( "js/main.js?ts=<?php echo time();?>" ).done(function() {
 		initialize();
 		$(window).resize(function() {
@@ -270,7 +313,7 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 			comfortZone: 20,
 			maxWidth: 2000
 		});
-		// accept message from iframe (point3 admin)
+		/* accept message from iframe (point3 admin) */
 		window.onmessage = function(e){
     			if (e.data.function == 'markerReloadSingle') {
 				markerReloadSingle(e.data);
@@ -278,12 +321,9 @@ printf("var shorten_url = '%s';\n",$CONFIG['shorten_url']);
 	
     		};
 	});
-	//var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	//ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	//var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 
 });
 
 </script>
-	</body>
+</body>
 </html>
