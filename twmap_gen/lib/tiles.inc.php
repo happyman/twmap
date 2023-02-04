@@ -385,7 +385,7 @@ function img_from_tiles2($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpd
 			if (!file_exists("$dir/$imgname")) {
 				// create tile cache from Internet
 				// exec(sprintf("wget -q -O %s 'http://rs.happyman.idv.tw/map/tw25k2001/zxy/${zoom}_${i}_${j}.png'","$dir/$imgname"));
-				$download[] = sprintf("wget -c --tries=0 --read-timeout=20 -q -O %s $tileurl","$dir/$imgname",$zoom,$i,$j);
+				$download[] = sprintf("wget -c --tries=0 --read-timeout=2 -q -O %s $tileurl","$dir/$imgname",$zoom,$i,$j);
 				//exec(sprintf("wget -q -O %s $tileurl","$dir/$imgname",$zoom,$i,$j));
 			}
 		}
@@ -393,11 +393,11 @@ function img_from_tiles2($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $tmpd
 	// run in parallel
 	file_put_contents("$dir/dl.txt",implode("\n",$download));
 	if ($debug) {
-		error_log("run parallel -j 10 -- < $dir/dl.txt");
+		error_log("run parallel -j 4 -- < $dir/dl.txt");
 	}
 	putenv("SHELL=/bin/sh");
 	putenv("HOME=/tmp");
-	exec("parallel -j 10 -- < $dir/dl.txt");
+	exec("parallel -j 4 -- < $dir/dl.txt");
 	$img = array();
 	for($j=$a[1];$j<=$b[1];$j++) {
 		for ($i=$a[0]; $i<=$b[0]; $i++) {
