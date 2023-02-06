@@ -43,7 +43,7 @@ class mdasort {
 	}
 
 	function sort() {
-		if(count($this->aSortkeys)) {
+		if(count((array)$this->aSortkeys)) {
 			usort($this->aData,array($this,"_sortcmp"));
 		}
 	}
@@ -55,7 +55,7 @@ function stb_loaddata($stbindex, &$x, &$y, &$f , $arrayfile) {
 	if (arrayfile($arrayfile,$array,"GET") === FALSE ) {
 		// actually load
 		if(!$fp=fopen($file,"r")) {
-			echo "cannot open $file!\n";
+			error_log("stb_loaddata cannot open $file!\n");
 			return FALSE;
 		}
 		while($line=fgets($fp,128)) {
@@ -71,7 +71,7 @@ function stb_loaddata($stbindex, &$x, &$y, &$f , $arrayfile) {
 		$B->sort();
 		echo "get it from $file\n";
 		if (arrayfile($arrayfile,$array,"DUMP") === FALSE ) {
-			echo "$arrayfile write failed\n";
+			error_log("$arrayfile write failed\n");
 		}
 	}
 	for ($j=0;$j<count($array);$j++) {
@@ -190,7 +190,7 @@ function im_tagimage($fpath, $inp_startx, $inp_starty) {
  * @param  integer $ver    [description]
  * @return [type]          [description]
  */
-function im_addgrid($fpath, $step_m = 100, $ver=3, $v3img) {
+function im_addgrid($fpath, $v3img, $step_m = 100, $ver=3) {
 	list ($w, $h) = getimagesize($fpath);
 	/*
 	if ($ver == 3)

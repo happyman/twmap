@@ -199,7 +199,7 @@ $MYUID = $MY_SESSION['uid'];
 // 呼叫 cmd_line make, 他也需要 gpx aware
 // -l 傳入 email:formid 作為識別 channel 與 msg owner -m 傳入 tmpdir
 showmem("before call cmd_make.php");
-$cmd = sprintf("php cmd_make2.php -r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s %s %s %s %s", $startx, $starty, $shiftx, $shifty, 
+$cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s %s %s %s %s", $startx, $starty, $shiftx, $shifty, 
 isset($inp['97datum'])? 'TWD97': 'TWD67',
 $outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $inp['formid'], isset($inp['grid_100M']) ? '-e' : '',
  // 是否包含 100M grid
@@ -209,14 +209,26 @@ isset($inp['keep_color']) ? '-c' : '',
  // 是否輸出彩圖
  isset($inp['a3_paper']) ? '-3' : ''
  );
-msglog($cmd);
-exec($cmd, $output, $ret);
-
-if ($ret != 0) {
-    foreach ($output as $line) {
-        if (strstr($line, "err:")) $errline.= substr($line, 4) . "\n";
-    }
-    error_out($errline);
+msglog($cmd_param);
+if (isset($CONFIG['use_gearman']) && $CONFIG['use_gearman'] == true){
+	$gmclient= new GearmanClient();
+	$gmclient->addServer("127.0.0.1");
+	$workload = $cmd_param;
+	$ret = $gmclient->doNormal("make_map", $workload, $MYUID);
+	if ($gmclient->returnCode() != GEARMAN_SUCCESS)
+	{
+		error_out("something wrong with gearman worker");
+	}
+	if ($ret != 0) 
+    	error_out("something wrong with gearman worker");
+} else {
+	exec("php cmd_make2.php ".$cmd_param, $output, $ret);
+	if ($ret != 0) {
+    		foreach ($output as $line) {
+        		if (strstr($line, "err:")) $errline.= substr($line, 4) . "\n";
+    		}
+    	error_out($errline);
+	}
 }
 
 // before register, check count again

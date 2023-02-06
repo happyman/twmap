@@ -142,7 +142,7 @@ function is_gpx_imported($mid) {
 	return $rs[0];
 }
 // 寫到 map table
-function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host="localhost",$file,$size=0,$version=1,$gpx=0,$keepon_id=NULL,$datum) {
+function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host,$file,$size,$version,$gpx,$keepon_id=NULL,$datum='TWD67') {
 
 	// 若不是 keepon 來的, 檢查是否已經有同樣參數的地圖,有的話表示是重新產生
 	// 不更新 mid, 只更新 size, version, title, cdate, flag 等參數

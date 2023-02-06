@@ -92,7 +92,7 @@ if (php_sapi_name() != "cli") {
 
 # Keppon API : queue
 define('GEARMAN_SERVER','127.0.0.1');
-
+$CONFIG['use_gearman'] = false;
 
 define('APE_HOST','0.ape.tile.happyman.idv.tw');
 $CONFIG['admin'] = array( 3 );

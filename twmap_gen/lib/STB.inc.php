@@ -1,25 +1,5 @@
 <?php
 // $Id: STB.inc.php 365 2013-11-21 05:41:28Z happyman $
-class xxmdasort {
-	var $aData;//the array we want to sort.
-	var $aSortkeys;//the order in which we want the array to be sorted.
-
-	function _sortcmp($a, $b, $i=0) {
-		$r = strnatcmp($a[$this->aSortkeys[$i][0]],$b[$this->aSortkeys[$i][0]]);
-		if ($this->aSortkeys[$i][1] == "DESC") $r = $r * -1;
-		if($r==0) {
-			$i++;
-			if ($this->aSortkeys[$i]) $r = $this->_sortcmp($a, $b, $i);
-		}
-		return $r;
-	}
-
-	function sort() {
-		if(count($this->aSortkeys)) {
-			usort($this->aData,array($this,"_sortcmp"));
-		}
-	}
-}
 
 function dumpvars($obj) {
 	$arr = get_object_vars($obj);
@@ -109,13 +89,15 @@ Class STB {
 		}
 	}
 	function load_index() {
-		// return FALSE when error
-		$i=0;
 		// try to get sorted array it from file
-		if (arrayfile($this->arrayfile,$array,"GET") === FALSE ) {
+		// $this->doLog("try to load ". $this->arrayfile . " from " . $this->stbindex);
+		if (arrayfile($this->arrayfile,$oarray,"GET") === FALSE ) {
 			// actually load
-			if(!$fp=fopen($this->stbindex,"r")) {
+			$i = 0;
+			$fp=fopen($this->stbindex,"r");
+			if ($fp === FALSE) {
 				$this->err[] = "cannot open stbindex!\n";
+				$this->doLog("cannot open ".$this->stbindex);
 				return FALSE;
 			}
 			while($line=fgets($fp,128)) {
@@ -131,6 +113,7 @@ Class STB {
 			// echo "get it from $file\n";
 			if (arrayfile($this->arrayfile,$array,"DUMP") === FALSE ) {
 				$this->err[] = "$arrayfile write failed\n";
+				$this->doLog("cannot write ".$this->arrayfile);
 				return FALSE;
 			}
 		}
@@ -335,7 +318,7 @@ Class STB {
 class ImageDesc {
 	var $desc;
 	function ImageDesc($file,$title,$startx,$starty,$shiftx,$shifty,
-		$imgs,$px,$py,$host="localhost",$version=3,$datum) {
+		$imgs,$px,$py,$host="localhost",$version=3,$datum="TWD67") {
 			$this->desc = array( "file"=> $file, "title" => $title,
 				"locX"=> $startx, "locY"=> $starty, "host" => $host,
 				"tileX"=>$shiftx, "tileY"=>$shifty,
@@ -419,7 +402,7 @@ Class STB2 extends STB {
 
 	private $zoom = 16;
 
-	function __construct($basedir, $startx, $starty, $sx, $sy, $ph=0, $datum, $tmpdir="") {
+	function __construct($basedir, $startx, $starty, $sx, $sy, $ph=0, $datum='TWD67', $tmpdir="") {
 		if ($sx > 35 || $sy > 35) {
 			$this->err[] = "Sorry We Cannot create too big map";
 			return FALSE;
@@ -443,8 +426,8 @@ Class STB2 extends STB {
 	// tag = 2 處理縮圖
 
 	function createpng($tag=0, $gray=0, $fuzzy=0, $x=1, $y=1, $debug_flag=0, $borders=array()) {
-		global $tmppath;
-		global $tilecachepath;
+		// global $tmppath;
+		// global $tilecachepath;
 		if ($this->version == 3) {
 			if ($this->datum=="TWD97")
 				$v3img = dirname(__FILE__) . "/../imgs/v3image97.png";
@@ -487,7 +470,7 @@ Class STB2 extends STB {
 			//print_r($fn);
 			// 合併
 			$this->doLog( "merge tiles...");
-			$outi = $outimage = tempnam($tmppath,"MTILES");
+			$outi = $outimage = tempnam($this->tmpdir,"MTILES");
 			$montage_bin = "montage";
 			$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
 				implode(" ",$fn), $this->shiftx ,$this->shifty, $this->v3img, $this->shiftx*315, $this->shifty*315, $outi);
@@ -630,7 +613,7 @@ function MyErrorLog($ident, $data) {
 
 // websocket client: https://github.com/vi/websocat
 function notify_web($channel,$msg_array,$debug=0){
-	$cmd = sprintf("echo '%s'  | /usr/bin/websocat -1 -t -  wss://ws.happyman.idv.tw/twmap_%s",escapeshellarg(str_replace("#","＃",$msg_array[0])),$channel);
-	MyErrorLog("notify_web", $cmd);
+	$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat -1 -t -  wss://ws.happyman.idv.tw/twmap_%s",base64_encode($msg_array[0]),$channel);
+	MyErrorLog("notify_web", array($msg_array[0], $cmd));
 	exec($cmd);
 }

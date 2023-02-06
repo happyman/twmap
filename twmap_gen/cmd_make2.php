@@ -194,12 +194,12 @@ if ($jump <= $stage ) {
 	// 加上 grid
 	if (isset($opt['e'])) {
 		cli_msglog("add 100M grid to image...");
-		im_addgrid($outimage, 100, $version, $g->v3img);
+		im_addgrid($outimage, $g->v3img,  100, $version);
 		cli_msglog("ps%+3");
 	}
 	// 若是 moi_osm 則加上 1000 or TWD97  and logo
 	if ($version == 2016 || $datum == 'TWD97' ){
-		im_addgrid($outimage, 1000, $version, $g->v3img);
+		im_addgrid($outimage, $g->v3img, 1000, $version);
 	}
 	// happyman
 	cli_msglog("ps%40");
