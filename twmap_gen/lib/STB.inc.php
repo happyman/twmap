@@ -91,7 +91,7 @@ Class STB {
 	function load_index() {
 		// try to get sorted array it from file
 		// $this->doLog("try to load ". $this->arrayfile . " from " . $this->stbindex);
-		if (arrayfile($this->arrayfile,$oarray,"GET") === FALSE ) {
+		if (arrayfile($this->arrayfile,$array,"GET") === FALSE ) {
 			// actually load
 			$i = 0;
 			$fp=fopen($this->stbindex,"r");
