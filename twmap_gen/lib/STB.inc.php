@@ -613,7 +613,7 @@ function MyErrorLog($ident, $data) {
 
 // websocket client: https://github.com/vi/websocat
 function notify_web($channel,$msg_array,$debug=0){
-	$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat -1 -t -  wss://ws.happyman.idv.tw/twmap_%s",base64_encode($msg_array[0]),$channel);
-	MyErrorLog("notify_web", array($msg_array[0], $cmd));
+	$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat --no-line -1 -t -  wss://ws.happyman.idv.tw/twmap_%s",base64_encode($msg_array[0]),$channel);
+	// MyErrorLog("notify_web", array($msg_array[0], $cmd));
 	exec($cmd);
 }
