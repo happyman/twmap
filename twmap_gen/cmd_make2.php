@@ -6,7 +6,7 @@ require_once("config.inc.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:");
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:");
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 [-g gpx:0:0] [-c] [-G] -O dir [-e] -v 1|3|2016 -t title [-i localhost] [-m /tmp]\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
@@ -25,6 +25,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -G merge user track_logs\n";
 	echo "       -3 for A3 output\n";
 	echo "       -l uniqid to notify web interface\n";
+	echo "       -a callback url for backend\n";
 	echo "       -m /tmp tmpdir\n";
 	exit(1);
 }
@@ -46,6 +47,7 @@ if ($version != 1 && $version != 3 && $version != 2016)
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
 $outpath=$opt['O'];
 $a3 = (isset($opt['3']))? 1 : 0;
+$callback=(isset($opt['a']))?$opt['a']:"";
 if (!file_exists($outpath)) {
 	$ret = mkdir($outpath, 0755, true);
 	if ($ret === FALSE) {
@@ -193,7 +195,7 @@ if ($jump <= $stage ) {
 
 	// 加上 grid
 	if (isset($opt['e'])) {
-		cli_msglog("add 100M grid to image...");
+		cli_msglog("add 100M grid to image...\n");
 		im_addgrid($outimage, $g->v3img,  100, $version);
 		cli_msglog("ps%+3");
 	}
@@ -204,10 +206,10 @@ if ($jump <= $stage ) {
 	// happyman
 	cli_msglog("ps%40");
 	if ($keep_color==1) {
-	cli_msglog("keep colorful image...");
+	cli_msglog("keep colorful image...\n");
 	copy($outimage,$outimage_gray);
 	} else {
-	cli_msglog("grayscale image...");
+	cli_msglog("grayscale image...\n");
 	// 產生灰階圖檔
 	im_file_gray($outimage, $outimage_gray, $version);
 	// im_tagimage($outimage_gray,$startx,$starty);
@@ -215,7 +217,7 @@ if ($jump <= $stage ) {
 	im_tagimage($outimage_gray,$startx,$starty);
 	cli_msglog("ps%45");
 	// 加上 tag
-	cli_msglog("add tag to image...");
+	cli_msglog("add tag to image...\n");
 	im_tagimage($outimage,$startx,$starty);
 	//cli_msglog("$outimage created");
 	unset($g);
@@ -228,7 +230,7 @@ if ($stage == $jumpstop) {
 	exit(0);
 }
 if ($stage >= $jump ) {
-	cli_msglog("split image...");
+	cli_msglog("split image...\n");
 	$im = imagecreatefrompng($outimage_gray);
 	splitimage($im, $tiles[$type]['x']*315 , $tiles[$type]['y']*315 , $outfile_prefix, $px, $py, $fuzzy);
 	unset($im);
@@ -250,19 +252,19 @@ if ($stage >= $jump ) {
 		 im_simage_resize($type, $simage[$i], $simage[$i], 'Center');
 		 break;
 		}
-	  cli_msglog(sprintf("%d / %d",$i+1,$total));
+	  cli_msglog(sprintf("%d / %d\n",$i+1,$total));
 		im_simage_resize($type, $simage[$i], $simage[$i]);
 	  cli_msglog("resize small image...");
 		$idxfile = sprintf("%s/index-%d.png",$outpath,$i);	
 		$idximg = imageindex($outx,$outy,$i, 80, 80);
 		imagepng($idximg,$idxfile);
-	  cli_msglog("create index image...");
+	  cli_msglog("create index image...\n");
 		$overlap=array('right'=>0,'buttom'=>0);
 		if (($i+1) % $outx != 0) $overlap['right'] = 1;
 		if ($i < $outx * ($outy -1)) $overlap['buttom'] = 1;
 		im_addborder($simage[$i], $simage[$i], $type,  $overlap, $idxfile);
 		unlink($idxfile);
-	  cli_msglog("small image border added ...");
+	  cli_msglog("small image border added ...\n");
 		cli_msglog("ps:+".sprintf("%d", 20 * $i+1/$total));
 	}
 }
@@ -321,6 +323,13 @@ if ($stage >= $jump && !isset($opt['s'])) {
 }
 // not register db yet
 cli_msglog("ps%100");
+if (!empty($callback)){
+	cli_msglog("call $callback");
+	//$r = request_curl($callback,"GET",["ch"=>$log_channel,"status"=>"ok"]);
+	$url=sprintf('%s?ch=%s&status=ok',$callback,$log_channel);
+	$output = file_get_contents($url);
+	error_log(print_r($output,true));
+}
 exit(0);
 
 function cli_msglog($str){

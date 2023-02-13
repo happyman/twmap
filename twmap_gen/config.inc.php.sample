@@ -94,6 +94,9 @@ if (php_sapi_name() != "cli") {
 define('GEARMAN_SERVER','127.0.0.1');
 $CONFIG['use_gearman'] = false;
 
+# check backend_make and lib/memqueue.php
+$CONFIG['use_queue'] = false;
+
 define('APE_HOST','0.ape.tile.happyman.idv.tw');
 $CONFIG['admin'] = array( 3 );
 //  gdalwarp -t_srs EPSG:4326 dem_20m.tif dem_20m-latlong.tif

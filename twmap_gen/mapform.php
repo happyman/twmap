@@ -404,6 +404,9 @@ $(document).ready(function(){
 			if (logmsg.indexOf("err:") === 0) {
 				// 出錯了 要 keep 嘛?
 				clearProgress();
+				 var msg = logmsg.substr(logmsg.indexOf(":")+1);
+				                                alert("出錯了!"+msg);
+				                                $.unblockUI();
 			} else if (logmsg.indexOf("finished!") === 0) {
 				// 處理 finished message: 因為 proxy 會中斷連線
 				console.log("got finished msg:" + logmsg);
