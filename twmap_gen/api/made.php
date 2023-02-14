@@ -47,7 +47,8 @@ function finish_task($param) {
 	}
 	// 最後搬移到正確目錄
 	map_migrate($out_root, $uid, $mid);
-
+	// 寫入資料庫
+	make_map_log($mid, $log_channel, $_REQUEST['agent'], $_REQUEST['params']);
 
 	$okmsg = msglog("done $mid");
 

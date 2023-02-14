@@ -400,7 +400,7 @@ $(document).ready(function(){
 			makeprogress.progressbar("value", Number(pst));
 		} else {
 			// log window
-			$("#log_message").prepend(logmsg);
+			$("#log_message").prepend(logmsg + "\r\n");
 			if (logmsg.indexOf("err:") === 0) {
 				// 出錯了 要 keep 嘛?
 				clearProgress();

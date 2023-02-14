@@ -6,7 +6,7 @@ require_once("config.inc.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:");
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:"));
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 [-g gpx:0:0] [-c] [-G] -O dir [-e] -v 1|3|2016 -t title [-i localhost] [-m /tmp]\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
@@ -25,7 +25,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -G merge user track_logs\n";
 	echo "       -3 for A3 output\n";
 	echo "       -l uniqid to notify web interface\n";
-	echo "       -a callback url for backend\n";
+	echo "       -a callback url for backend, --agent myhost\n";
 	echo "       -m /tmp tmpdir\n";
 	exit(1);
 }
@@ -324,9 +324,13 @@ if ($stage >= $jump && !isset($opt['s'])) {
 // not register db yet
 cli_msglog("ps%100");
 if (!empty($callback)){
-	cli_msglog("call $callback");
+	//cli_msglog("call $callback");
 	//$r = request_curl($callback,"GET",["ch"=>$log_channel,"status"=>"ok"]);
-	$url=sprintf('%s?ch=%s&status=ok',$callback,$log_channel);
+	$url=sprintf('%s?ch=%s&status=ok&params=%s',$callback,$log_channel,urlencode(implode(" ",$argv)));
+	// log
+	if (isset($opt['agent']))
+		$url.="&agent=".trim($opt['agent']);
+	cli_msglog("call $url");
 	$output = file_get_contents($url);
 	error_log(print_r($output,true));
 }

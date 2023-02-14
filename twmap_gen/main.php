@@ -57,5 +57,6 @@ $smarty->assign("browser_url", $TWMAP3URL );
 $smarty->assign("ape_host", APE_HOST);
 $smarty->assign("loggedin", $_SESSION['loggedin'] );
 $smarty->assign("title", "歡迎使用");
+$smarty->assign("description", "");
 
 echo $smarty->fetch("main.html");

@@ -59,7 +59,7 @@ done
 					</ul>
 				</div>
 				{/if}
-        {if $links.gpx}
+        {if !empty($links.gpx)}
 				<li><a href='{$links.gpx}' target=_blank class="showtip" title='下載至 gps 裝置'><img src='imgs/icon-gpx.png' border=0/>下載 GPS 檔 </a>
 				<ul>
 					<li><span class="copy">{$links.gpx}</span>

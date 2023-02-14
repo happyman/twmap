@@ -174,6 +174,15 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host,$file
 		return $mid;
 	}
 }
+// 寫入 log table
+function make_map_log($mid,$channel,$agent,$params) {
+        $db=get_conn();
+        $sql = sprintf("INSERT INTO \"make_map\" (mid, channel, agent, params) VALUES (%d, '%s', '%s','%s')",$mid ,$channel,$agent,pg_escape_string($params));
+        $rs=$db->GetAll($sql);
+        logsql($sql,$rs);
+        $db->close();
+        return $rs;
+}
 // 取出所有 uid 產生的地圖 id
 function map_get_ids($uid, $limit = 10) {
 	$db=get_conn();

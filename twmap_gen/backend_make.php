@@ -235,6 +235,7 @@ if (isset($CONFIG['use_queue']) && $CONFIG['use_queue'] == true){
 		sleep(2);
 		notify_web($log_channel,array("waiting for queue worker "));
 	}
+	notify_web($log_channel,array('worker is working...'));
 	$ret = $mq->getReply('make_map',$id);
 	// don't care got reply or not
 	/*

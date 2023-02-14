@@ -36,6 +36,7 @@ $smarty->assign("user_icon", "imgs/icon-map.png");
 $smarty->assign("lastest_mid", $lastest_mid );
 $smarty->assign("site_root_url", $site_url . $site_html_root);
 $smarty->assign("title", "登入");
+ $smarty->assign("description","");
 
 echo $smarty->fetch('header.html');
 $smarty->display("main.html");
