@@ -11,7 +11,7 @@ if (empty($_SESSION['loggedin'])) {
 }
 
 require_once ("config.inc.php");
-require_once('lib/memqueue.php');
+require_once('lib/memq.inc.php');
 ini_set("memory_limit", "512M");
 ini_set("max_execution_time", "3600");
 ignore_user_abort(true);
@@ -229,14 +229,16 @@ memcached_set($log_channel, $add_param_str);
 
 if (isset($CONFIG['use_queue']) && $CONFIG['use_queue'] == true){
 	$workload = $cmd_param;
-	$mq = new Memqueue("localhost",11211);
-	$id = $mq->push('make_map',$workload);
-	while(!$mq->is_processed('make_map',$id)) {
+	//$mq = new Memqueue("localhost",11211);
+	MEMQ::enqueue("mq_make_map",$workload);
+	
+	//$id = $mq->push('make_map',$workload);
+	while(!MEMQ::is_empty('mq_make_map')) {
 		sleep(2);
 		notify_web($log_channel,array("waiting for queue worker "));
 	}
 	notify_web($log_channel,array('worker is working...'));
-	$ret = $mq->getReply('make_map',$id);
+	//$ret = $mq->getReply('make_map',$id);
 	// don't care got reply or not
 	/*
 	if ($ret != 0) 

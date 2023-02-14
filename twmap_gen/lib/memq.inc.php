@@ -4,8 +4,8 @@
 // 
 require_once( dirname(__FILE__) . "/../config.inc.php");
 // move the following line to config
-//define('MEMQ_POOL', '127.0.0.1:11211');
-//define('MEMQ_TTL', 0);
+define('MEMQ_POOL', '127.0.0.1:11211');
+define('MEMQ_TTL', 0);
 
 class MEMQ {
 
@@ -66,7 +66,7 @@ class MEMQ {
 			$item_keys[] = $queue."_".$i;
 		$null = NULL;
 
-		return $mem->getMulti($item_keys, $null, Memcached::GET_PRESERVE_ORDER);
+		return $mem->getMulti($item_keys,  Memcached::GET_PRESERVE_ORDER);
 	}
 
 	public static function listqueue($queue) {
@@ -79,7 +79,7 @@ class MEMQ {
 			$item_keys[] = $queue."_".$i;
 		$null = NULL;
 
-		return $mem->getMulti($item_keys, $null, Memcached::GET_PRESERVE_ORDER);
+		return $mem->getMulti($item_keys, Memcached::GET_PRESERVE_ORDER);
 
 	}
 	public static function enqueue($queue, $item) {
