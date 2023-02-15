@@ -63,6 +63,10 @@ function memcached_delete($key) {
 }
 
 function fetch_user($mylogin) {
+	if (!isset($mylogin['email']) || !isset($mylogin['type']))
+		return false;
+	if (empty($mylogin['email']) || empty($mylogin['type']))
+		return false;
 	$sql = sprintf("select * from \"user\" where email='%s' and type='%s'", $mylogin['email'],$mylogin['type']);
 	$db = get_conn();
 

@@ -72,6 +72,9 @@ if (isset($user_profile->email) && !empty($user_profile->email) && isset($user_p
 $_SESSION['loggedin'] = 1;
 $_SESSION['mylogin'] = $mylogin;
 $row = login_user($mylogin);
+if ($row === false){
+	out_err('登入資訊有誤 ' . print_r($mylogin, true));
+}
 $_SESSION['uid'] = $row['uid'];
 //
 //// after login hook

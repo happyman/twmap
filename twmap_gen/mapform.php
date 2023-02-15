@@ -7,6 +7,11 @@ if (empty($_SESSION['loggedin'])) {
 }
 require_once("config.inc.php");
 $user = fetch_user($_SESSION['mylogin']);
+if ($user === false){
+	header("Location: login.php");
+	printf("<h1>無登入資訊, 請重新登入</h1>");
+	exit;
+}
 if (isset($_GET['recreate']))  {
 	// 填入參數, from list.php 重新產生
 	$_SESSION['makeparam'] = $_GET;

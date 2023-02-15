@@ -11,6 +11,10 @@ require_once("config.inc.php");
 if (!isset($_REQUEST['iDisplayStart']))  {
 	$count = map_list_count($_SESSION['uid']);
 	$user = fetch_user($_SESSION['mylogin']);
+	if ($user === false){
+		header("Location: login.php");
+		exit(0);
+	}
 	$ps = ($count /  $user['limit'] )*100;
 	$psinfo = sprintf("已產生地圖 %d / %d", $count, $user['limit']);
 
