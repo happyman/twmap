@@ -26,7 +26,7 @@ function my_error_out($msg){
 }
 function finish_task($param) {
 	global $out_root;
-	list ($uid, $limit, $recreate_flag,  $xx, $yy, $shiftx, $shifty, $datum,$version, $outx, $outy, $title,$outimage, $remote_ip,$log_channel) = explode(":",$param);
+	list ($uid, $limit, $recreate_flag,  $xx, $yy, $shiftx, $shifty, $datum,$version, $outx, $outy, $title,$outimage, $remote_ip,$log_channel) = json_decode($param, true);
 
 	if (map_full($uid, $limit, $recreate_flag)) {
 		$files = map_files($outimage);

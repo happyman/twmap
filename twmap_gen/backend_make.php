@@ -223,7 +223,8 @@ msglog($cmd_param);
 
 // uid limit r_flag xx yy shiftx shifty datum version outx outy title outimage ip channel
 $add_param_array=[ $MYUID, $user['limit'], $recreate_flag, $xx, $yy, $shiftx, $shifty,  isset($inp['97datum'])? "97":"67",$version, $outx, $outy, $title,$outimage, $_SERVER['REMOTE_ADDR'],$log_channel ];
-$add_param_str=implode(":",$add_param_array);
+// ouch forget to consider ipv6 addr
+$add_param_str=json_encode($add_param_array);
 
 memcached_set($log_channel, $add_param_str);
 
