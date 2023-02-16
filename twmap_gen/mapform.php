@@ -118,7 +118,7 @@ if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 	unset($_SESSION['makeparam2']);
 } // makeparam2
 ?>
-$('#bt').click(function() {
+$('#bt').unbind('click').click(function() {
 	if (called == 1) return;
 	if ($("#mapform button[name=bt]").html() == 'A 4') {
 		//$("#mapform button[name=bt]").val('A 4');
@@ -143,7 +143,7 @@ $('#bt').click(function() {
 
 	}
 });
-$('#bt1').click(function() {
+$('#bt1').unbind('click').click(function() {
 	if ($("#mapform button[name=bt1]").html() == '輸入座標產生') {
 		$("#mapform button[name=bt1]").html('上傳航跡檔產生');
 		$(".gpx_mode").show();
@@ -179,10 +179,11 @@ $('#bt1').click(function() {
 		$('#step_go').text("7");
 	}
 });
-$('#create').click(function() {
+$('#create').unbind('click').click(function() {
 	//if (!$("#mapform").valid()) return false;
 	// 不用 validate plugin 了
 	// 先 block 再 ajax
+	console.log($('#formid').val());
 	if ($("#mapform input[name=title]").val().length < 2) {
 		alert("請輸入標題喔(多一點字)");
 		return false;
@@ -223,7 +224,7 @@ $('#create').click(function() {
 
 
 });
-$('#create2').click(function() {
+$('#create2').unbind('click').click(function() {
 	//$("#mapform").attr('action', "backend_make.php");
 	if (!$('input:file').val()) {
 		alert("請選擇檔案");
@@ -269,7 +270,7 @@ $('#create2').click(function() {
 		});
 	} // end of else
 });
-$('#create3').click(function() {
+$('#create3').unbind('click').click(function() {
 	$("#mapform input[name=gps]").val(2);
 	if ($("#mapform input[name=title]").val().length < 2) {
 		alert("請輸入標題喔(多一點字)");
@@ -365,69 +366,10 @@ $(document).ready(function(){
 		$("#create2").hide();
 		$("#create3").hide();
 	}
-	function handle_message(evt) {
-		console.log('Retrieved data from server: ' + evt.data);
-		// 第 0 個 tab 才處理.
-		if ($("#tabs").tabs("option", "active") !== 0) {
-			makeprogress.progressbar("value", 0);
-			makeprogress.hide();
-			$("#log_message").text("").hide();
-		}
-		// 第一次收到 msg, 顯示
-		if ($("#log_message").css("display") == "none") {
-			$("#log_message").css("height", $("#makemaptable").height());
-			$("#log_message").show();
-			makeprogress.show();
-		}
-		var logmsg = evt.data;
-		if (logmsg.indexOf("ps%") === 0) {
-			var pst = logmsg.substr(logmsg.indexOf("%") + 1);
-			// 如果是新增的話 ps:+2
-			if (pst.substr(0, 1) == "+") {
-				var val = arguments.callee.startval;
-				var addval = Number(pst.substr(1));
-				pst = addval + Number(val);
-				pst = String(pst);
-				//console.log(val + "+" + String(addval) + " = " + pst);
-			} else {
-				// 如果沒有 + 才更新
-				arguments.callee.startval = Number(pst);
-				//console.log("update  collee" + arguments.callee.startval );
-			}
-			if (Number(pst) == 100) {
-				console.log("background command finished");
-				// clearProgress();
-				// 5 秒之後檢查跳頁: test
-				// setTimeout("checkFinished()", 3000);
-			}
-			// 更新 progress bar
-			$(".psLabel").text(pst + " %");
-			makeprogress.progressbar("value", Number(pst));
-		} else {
-			// log window
-			$("#log_message").prepend(logmsg + "\r\n");
-			if (logmsg.indexOf("err:") === 0) {
-				// 出錯了 要 keep 嘛?
-				clearProgress();
-				 var msg = logmsg.substr(logmsg.indexOf(":")+1);
-				                                alert("出錯了!"+msg);
-				                                $.unblockUI();
-			} else if (logmsg.indexOf("finished!") === 0) {
-				// 處理 finished message: 因為 proxy 會中斷連線
-				console.log("got finished msg:" + logmsg);
-				var final_mid = logmsg.substr(logmsg.indexOf("!")+1);
-
-				$("#tabs li").eq(0).data("loaded", false).find('a').attr("href","mapform.php");
-				$("#tabs li").eq(3).data("loaded", false).find('a').attr("href","show.php?tab=1&mid="+final_mid);
-				$('#tabs').tabs('option',"active",3);
-				clearProgress();
-				$.unblockUI();
-			}
-		}
-
-
-	}
-	var wsServer = 'wss://ws.happyman.idv.tw:443/twmap_' + $("#formid").val();
+	
+	wsServer = 'wss://ws.happyman.idv.tw:443/twmap_' + $("#formid").val();
+	connect_ws();
+/*	
 	var first_open = 1;
 	var websocket = new ReconnectingWebSocket(wsServer);
 	websocket.onopen = function (evt) {
@@ -450,5 +392,6 @@ $(document).ready(function(){
 	websocket.onerror = function (evt, e) {
 		console.log('Error occured: ' + evt.data);
 	};
+ */
 });
 </script>
