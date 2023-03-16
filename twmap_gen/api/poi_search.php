@@ -92,7 +92,7 @@ class poi_search {
 		// for better search performance, create new table instead of sub-query
 		$sql_table = sprintf("create table if not exists poi_data1 AS select id,data,category from poi_data inner join poi_category_map using (id)");
 		$this->db->query($sql_table);
-		$sql = sprintf("select A.id as id, A.data as data, A.category as category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from poi_data1 A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 300", pg_escape_string($name));
+		$sql = sprintf("select A.id as id, A.data as data, A.category as category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from poi_data1 A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 50", pg_escape_string($name));
 		$stmt = $this->db->query($sql);
 		$result= $stmt->fetchAll(PDO::FETCH_ASSOC);
 		return $result;

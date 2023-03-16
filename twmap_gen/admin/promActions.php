@@ -16,6 +16,7 @@ $inp['type'] = (isset($inp['type']))? $inp['type'] : "";
 $inp['jtPageSize'] = (isset($inp['limit'])&& $inp['jtPageSize']==100)? $inp['limit'] :  $inp['jtPageSize'];
 if ($inp['jtStartIndex'] == 0 && isset($inp['start']))
 	$inp['jtStartIndex'] = $inp['start'];
+$errmsg=[];
 switch($inp['action']) {
 /*
 action=list&type=h3000|h2000|h1000 limit 100 or no limit

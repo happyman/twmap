@@ -317,7 +317,7 @@ Class STB {
 } //eo class
 class ImageDesc {
 	var $desc;
-	function ImageDesc($file,$title,$startx,$starty,$shiftx,$shifty,
+	function __construct($file,$title,$startx,$starty,$shiftx,$shifty,
 		$imgs,$px,$py,$host="localhost",$version=3,$datum="TWD67") {
 			$this->desc = array( "file"=> $file, "title" => $title,
 				"locX"=> $startx, "locY"=> $starty, "host" => $host,

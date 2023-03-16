@@ -113,7 +113,7 @@ if (!empty($log_channel)) {
 	cli_msglog("ps%0");
 }
 if (!empty($g->err)) 
-	cli_error_out(implode($g->err,":"));
+	cli_error_out(implode(":",$g->err));
 
 
 $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
