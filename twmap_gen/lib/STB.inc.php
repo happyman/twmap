@@ -19,6 +19,7 @@ Class STB {
 	var $log_channel = "";
 	var $datum;
 	var $tmpdir = "/dev/shm";
+	var $debug=0;
 
 	function __construct($stbdir, $startx, $starty, $sx, $sy, $datum='TWD67',$tmpdir="") {
 		if ($sx > 35 || $sy > 35) {
@@ -72,6 +73,9 @@ Class STB {
 	 * @access public
 	 * @return void
 	 */
+	function setDebug($flag){
+		$this->debig = $flag;
+	}
 	function setLog($channel) {
 		$this->log_channel = $channel;
 	}
@@ -615,5 +619,7 @@ function MyErrorLog($ident, $data) {
 function notify_web($channel,$msg_array,$debug=0){
 	$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat --no-line -1 -t -  wss://ws.happyman.idv.tw/twmap_%s",base64_encode($msg_array[0]),$channel);
 	// MyErrorLog("notify_web", array($msg_array[0], $cmd));
+	if ($debug == 1)
+		echo "$cmd\n";
 	exec($cmd);
 }

@@ -106,6 +106,9 @@ switch($version){
 if (isset($opt['G'])) {
 	$g->include_gpx = 1;
 } 
+if (isset($BETA)){
+	$g->setDebug(1);
+}
 if (!empty($log_channel)) {
 	$g->setLog($log_channel);
 	// cli_msglog("setup log channel ".md5($log_channel));
@@ -302,8 +305,8 @@ if ($stage >= $jump) {
 	require_once("lib/print_pdf.inc.php");
 	$pdf = new print_pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix), 'outfile' => $outpdf, 'infiles' => $simage, 'a3' => $a3 ));
 	$pdf->print_cmd = 0;
+	cli_msglog("save to pdf format");
 	$pdf->doit();
-	cli_msglog("save pdf for print...");
 	echo "$outimage done";
 }
 showmem("after stage 5");
@@ -322,8 +325,8 @@ if ($stage >= $jump && !isset($opt['s'])) {
 	unlink($outimage_gray);
 }
 // not register db yet
-cli_msglog("ps%100");
 if (!empty($callback)){
+	cli_msglog("register this map");
 	//cli_msglog("call $callback");
 	//$r = request_curl($callback,"GET",["ch"=>$log_channel,"status"=>"ok"]);
 	$url=sprintf('%s?ch=%s&status=ok&params=%s',$callback,$log_channel,urlencode(implode(" ",$argv)));
@@ -334,6 +337,7 @@ if (!empty($callback)){
 	$output = file_get_contents($url);
 	error_log(print_r($output,true));
 }
+cli_msglog("ps%100");
 exit(0);
 
 function cli_msglog($str){
