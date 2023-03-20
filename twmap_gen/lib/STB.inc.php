@@ -17,6 +17,7 @@ Class STB {
 	var $tileX, $tileY; // 幾 乘 幾 merge 用
 	var $err = array();
 	var $log_channel = "";
+	var $logurl_prefix="";
 	var $datum;
 	var $tmpdir = "/dev/shm";
 	var $debug=0;
@@ -74,10 +75,12 @@ Class STB {
 	 * @return void
 	 */
 	function setDebug($flag){
-		$this->debig = $flag;
+		$this->debug = $flag;
 	}
-	function setLog($channel) {
+	function setLog($channel,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_") {
 		$this->log_channel = $channel;
+		$this->logurl_prefix = $logurl_prefix;
+
 	}
 	function doLog($msg) {
 		if (empty($this->log_channel))
@@ -89,7 +92,7 @@ Class STB {
 				$msg.= "<br>";	
 			}
 
-			notify_web($this->log_channel, array($msg));
+			notify_web($this->log_channel, array($msg),$this->logurl_prefix,$this->debug);
 		}
 	}
 	function load_index() {
@@ -616,9 +619,8 @@ function MyErrorLog($ident, $data) {
 }
 
 // websocket client: https://github.com/vi/websocat
-function notify_web($channel,$msg_array,$debug=0){
-	$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat --no-line -1 -t -  wss://ws.happyman.idv.tw/twmap_%s",base64_encode($msg_array[0]),$channel);
-	// MyErrorLog("notify_web", array($msg_array[0], $cmd));
+function notify_web($channel,$msg_array,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$debug=0){
+	$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat --no-line -1 -t -  %s%s",base64_encode($msg_array[0]),$logurl_prefix,$channel);
 	if ($debug == 1)
 		echo "$cmd\n";
 	exec($cmd);

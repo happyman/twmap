@@ -6,7 +6,7 @@ require_once("config.inc.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:"));
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:","logurl_prefix:"));
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 [-g gpx:0:0] [-c] [-G] -O dir [-e] -v 1|3|2016 -t title [-i localhost] [-m /tmp]\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
@@ -24,7 +24,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
 	echo "       -G merge user track_logs\n";
 	echo "       -3 for A3 output\n";
-	echo "       -l uniqid to notify web interface\n";
+	echo "       -l log_channel, --logurl_prefix for custom url, ex: ws://myhost:9002/twmap_\n";
 	echo "       -a callback url for backend, --agent myhost\n";
 	echo "       -m /tmp tmpdir\n";
 	exit(1);
@@ -45,6 +45,10 @@ if (isset($opt['d'])) $BETA = 1; else $BETA = 0;
 if ($version != 1 && $version != 3 && $version != 2016) 
 	$version = 3;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
+if (isset($opt['logurl_prefix'])) 
+	$logurl_prefix=$opt['logurl_prefix'];
+else 
+	$logurl_prefix="wss://ws.happyman.idv.tw/twmap_";
 $outpath=$opt['O'];
 $a3 = (isset($opt['3']))? 1 : 0;
 $callback=(isset($opt['a']))?$opt['a']:"";
@@ -110,7 +114,7 @@ if (isset($BETA)){
 	$g->setDebug(1);
 }
 if (!empty($log_channel)) {
-	$g->setLog($log_channel);
+	$g->setLog($log_channel,$logurl_prefix);
 	// cli_msglog("setup log channel ".md5($log_channel));
 	cli_msglog("start log here ^_^ (" . $datum . ")\n");
 	cli_msglog("ps%0");
@@ -341,9 +345,9 @@ cli_msglog("ps%100");
 exit(0);
 
 function cli_msglog($str){
-	global $log_channel, $BETA;
+	global $log_channel,$logurl_prefix, $BETA;
 	if (!empty($log_channel))
-		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$BETA);
+		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$logurl_prefix,$BETA);
 	printf("%s\n",$str);
 	//error_log($str);
 }
