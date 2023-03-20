@@ -398,7 +398,7 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 				// create tile cache from Internet
 				// exec(sprintf("wget -q -O %s 'http://rs.happyman.idv.tw/map/tw25k2001/zxy/${zoom}_${i}_${j}.png'","$dir/$imgname"));
 				//$download[] = sprintf("wget -c --tries=0 --read-timeout=2 %s -O %s $tileurl",($debug==0)? "-q" : "", "$dir/$imgname",$zoom,$i,$j);
-				$download[] = sprintf("curl -C - --connect-timeout 2 --max-time 30 --retry 99 --silent --retry-max-time 0 %s -o %s $tileurl",($debug==0)? "--trace" : "", "$dir/$imgname",$zoom,$i,$j);
+				$download[] = sprintf("curl -C - --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 %s -o %s $tileurl",($debug==0)? "--silent" : "", "$dir/$imgname",$zoom,$i,$j);
 				//exec(sprintf("wget -q -O %s $tileurl","$dir/$imgname",$zoom,$i,$j));
 			}
 		}

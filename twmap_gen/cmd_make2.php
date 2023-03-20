@@ -116,7 +116,11 @@ if (isset($BETA)){
 if (!empty($log_channel)) {
 	$g->setLog($log_channel,$logurl_prefix);
 	// cli_msglog("setup log channel ".md5($log_channel));
-	cli_msglog("start log here ^_^ (" . $datum . ")\n");
+	if (isset($opt['agent']))
+		$agent=$opt['agent'];
+	else
+		$agent="";
+	cli_msglog("%s here start working ^_^ (" . $datum . ")\n",$agent);
 	cli_msglog("ps%0");
 }
 if (!empty($g->err)) 
