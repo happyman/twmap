@@ -8,25 +8,27 @@ set_time_limit(0);
 
 $opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:","logurl_prefix:"));
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
-	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 [-g gpx:0:0] [-c] [-G] -O dir [-e] -v 1|3|2016 -t title [-i localhost] [-m /tmp]\n";
+	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 -O outdir -v 2016 -t title [-p][-m /tmp][-g gpxfile:0:0][-c][-G][-e][-3][-d]\n";
+	echo "必須參數:\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
-	echo "       -O outdir: /home/map/out/000003\n";
-	echo "       -v 1|3|2016: version of map,default 3\n";
+	echo "       -O outdir: /home/map/out/000003 輸出目錄\n";
+	echo "       -v 1|3|2016: 經建1|3|魯地圖\n";
 	echo "       -t title: title of image\n";
-	echo "       -i ip: log remote address\n";
-	echo "       -p 1|0: 1 if is pong-hu\n";
-	echo "       -g gpx_fpath:trk_label:wpt_label \n";
-	echo "       -c keep color\n";
-	echo "       -d debug\n";
-	echo "       -e draw 100M grid\n";
-	echo "       -s 1-5: stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf. debug purpose\n";
-	echo "          1 is done then go to 2, 3 ..\n";
+	echo "選用參數:\n";
+	echo "       -p 1|0: 1 是澎湖 pong-hu\n";
+	echo "       -g gpx_file:trk_label:wpt_label 利用GPX檔案產生\n";
+	echo "       -c keep color 彩圖\n";
+	echo "       -e draw 100M 格線\n";
+	echo "       -G merge user track_logs 包含使用者行跡\n";
+	echo "       -3 for A3 output 輸出A3\n";
+	echo "       -m /tmp tmpdir 暫存檔存放目錄\n";
+	echo "除錯用 -d debug \n";
+	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf.\n";
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
-	echo "       -G merge user track_logs\n";
-	echo "       -3 for A3 output\n";
-	echo "       -l log_channel, --logurl_prefix for custom url, ex: ws://myhost:9002/twmap_\n";
-	echo "       -a callback url for backend, --agent myhost\n";
-	echo "       -m /tmp tmpdir\n";
+	echo "以下地圖產生器使用:\n";
+	echo "       -i ip: log remote ip address --agent myhost\n";
+	echo "       -l log_channel --logurl_prefix for custom url, ex: ws://myhost:9002/twmap_\n";
+	echo "       -a callback url when done\n";
 	exit(1);
 }
 // parse param
@@ -41,7 +43,7 @@ $ph = isset($opt['p'])? $opt['p'] : 0;
 $jump = isset($opt['s'])? $opt['s'] : 1;
 if (isset($opt['S'])) $jumpstop = $jump+1; else $jumpstop = 0;
 $remote_ip = isset($opt['i'])? $opt['i'] : "localhost";
-if (isset($opt['d'])) $BETA = 1; else $BETA = 0;
+if (isset($opt['d'])) $debug_flag= 1; else $debug_flag = 0;
 if ($version != 1 && $version != 3 && $version != 2016) 
 	$version = 3;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
@@ -110,7 +112,7 @@ switch($version){
 if (isset($opt['G'])) {
 	$g->include_gpx = 1;
 } 
-if (isset($BETA)){
+if (isset($debug_flag)){
 	$g->setDebug(1);
 }
 if (!empty($log_channel)) {
@@ -120,7 +122,7 @@ if (!empty($log_channel)) {
 		$agent=$opt['agent'];
 	else
 		$agent="";
-	cli_msglog("%s here start working ^_^ (" . $datum . ")\n",$agent);
+	cli_msglog(sprintf("Agent %s Roger that ^_^\n",$agent));
 	cli_msglog("ps%0");
 }
 if (!empty($g->err)) 
@@ -158,7 +160,7 @@ if ($jump <= $stage ) {
 	  }
 	}
 
-	$im = $g->createpng(0,0,0,1,1,$BETA); // 產生
+	$im = $g->createpng(0,0,0,1,1,$debug_flag); // 產生
 	if ($im === FALSE) cli_error_out(implode(":",$g->err));
 	showmem("after image created");
 	cli_msglog("ps%30");
@@ -201,7 +203,7 @@ if ($jump <= $stage ) {
 		// 這不要了
 		@unlink($outimage_orig);
 	} else {
-		write_and_forget($im,$outimage,$BETA);
+		write_and_forget($im,$outimage,$debug_flag);
 	}
 
 	// 加上 grid
@@ -293,7 +295,7 @@ if ($stage >= $jump ) {
 	cli_msglog("make kmz file...");
 	require_once("lib/garmin.inc.php");
 	$kmz = new garminKMZ(3,3,$outimage,$ph,$datum);
-	if ($BETA == 1 )
+	if ($debug_flag == 1 )
 		$kmz->setDebug(1);
 	// 加上行跡資料
 	if (isset($opt['g'])) {
@@ -349,13 +351,15 @@ cli_msglog("ps%100");
 exit(0);
 
 function cli_msglog($str){
-	global $log_channel,$logurl_prefix, $BETA;
+	global $log_channel,$logurl_prefix, $debug_flag;
 	if (!empty($log_channel))
-		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$logurl_prefix,$BETA);
+		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$logurl_prefix,$debug_flag);
 	printf("%s\n",$str);
 	//error_log($str);
 }
 function cli_error_out($str) {
+	global $argv;
 	cli_msglog("err:$str");
+	printf("params: %s\n",implode(" ",$argv));
 	exit(-1);
 }

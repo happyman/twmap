@@ -62,7 +62,7 @@ list ($st, $info) = login_info();
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
 	<!--<script src="//maps.google.com/maps/api/js?sensor=true&v=3"></script> -->
-	<script src="//maps.googleapis.com/maps/api/js?v=3&key=<?php echo $CONFIG['gmap_api_key']; ?>&libraries=geometry,drawing"></script>
+	<script src="//maps.googleapis.com/maps/api/js?v=3&key=<?php echo $CONFIG['gmap_api_key']; ?>&libraries=geometry,drawing&callback=Function.prototype"></script>
        <!--<script  src="js/jquery-1.7.1.min.js"></script>
        <script  src="js/jquery-ui-1.8.17.custom.min.js"></script>
 -->
