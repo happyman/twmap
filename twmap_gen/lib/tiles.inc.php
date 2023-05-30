@@ -398,7 +398,7 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 				// create tile cache from Internet
 				// exec(sprintf("wget -q -O %s 'http://rs.happyman.idv.tw/map/tw25k2001/zxy/${zoom}_${i}_${j}.png'","$dir/$imgname"));
 				//$download[] = sprintf("wget -c --tries=0 --read-timeout=2 %s -O %s $tileurl",($debug==0)? "-q" : "", "$dir/$imgname",$zoom,$i,$j);
-				$download[] = sprintf("curl -C - --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 %s -o %s $tileurl",($debug==0)? "--silent" : "", "$dir/$imgname",$zoom,$i,$j);
+				$download[] = sprintf("curl -L -C - --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 %s -o %s $tileurl",($debug==0)? "--silent" : "", "$dir/$imgname",$zoom,$i,$j);
 				//exec(sprintf("wget -q -O %s $tileurl","$dir/$imgname",$zoom,$i,$j));
 			}
 		}
@@ -410,12 +410,16 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	}
 	putenv("SHELL=/bin/sh");
 	putenv("HOME=/tmp");
+	while(1) {
 	exec("parallel -j 4 -- < $dir/dl.txt");
 	$img = array();
 	for($j=$a[1];$j<=$b[1];$j++) {
 		for ($i=$a[0]; $i<=$b[0]; $i++) {
 			$imgname = sprintf("%d_%d.png",$i,$j);
 			if (file_exists("$dir/$imgname") && !is_link("$dir/$imgname")) {
+				// 有錯
+				if (filesize("$dir/$imgname") == 0 )
+					continue;
 				if ($debug) {
 					error_log("$dir/$imgname ok ". filesize("$dir/$imgname"));
 				}
@@ -429,6 +433,8 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 				return array(FALSE, "超出圖資範圍", false);
 			}
 		}
+	}
+	break;
 	}
 	if ($debug) {
 		//	error_log(print_r($img, true));
