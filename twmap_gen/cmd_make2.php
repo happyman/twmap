@@ -12,7 +12,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "必須參數:\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
 	echo "       -O outdir: /home/map/out/000003 輸出目錄\n";
-	echo "       -v 1|3|2016: 經建1|3|魯地圖\n";
+	echo "       -v 3|2016: 經建3|魯地圖\n";
 	echo "       -t title: title of image\n";
 	echo "選用參數:\n";
 	echo "       -p 1|0: 1 是澎湖 pong-hu\n";
@@ -94,11 +94,13 @@ else
 // add version 3
 switch($version){
 	case 1:
+	/*
 	if ($ph == 1 ) {
 		cli_error_out("無澎湖圖資");
 	}
 	$g = new STB($stbpath, $startx, $starty, $shiftx, $shifty, $datum, $tmpdir);
 	break;
+	 */
 	case 3:
 	$g = new STB2($stbpath, $startx, $starty, $shiftx, $shifty, $ph, $datum, $tmpdir);
 	$g->version = 3;
