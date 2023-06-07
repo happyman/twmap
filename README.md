@@ -8,8 +8,8 @@
  
 
 ## 線上系統:
- * http://map.happyman.idv.tw/twmap/
- * http://map.happyman.idv.tw/~happyman/twmap3/
+ * http://twmap.happyman.idv.tw/gen/
+ * http://twmap.happyman.idv.tw/map/
 
 ## 問題與討論: 
  - 一般性問題 [臉書專頁](https://www.facebook.com/twmapgen/)
