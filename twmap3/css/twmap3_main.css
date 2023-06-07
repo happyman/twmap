@@ -32,7 +32,6 @@ html {
 #opContainer {
 	position:relative; 
 	margin-top:10px; 
-	margin-left:-200px;
 	right: -500px;
 }
 #less {
