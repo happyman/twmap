@@ -53,6 +53,7 @@ $data = array();
 // 產生 unique form id
 $smarty->assign("formid", md5($_SESSION['mylogin']['email'] . uniqid(rand(), true)));
 
+$smarty->assign("title", "產生地圖");
 echo $smarty->fetch('mapform.html');
 
 ?>

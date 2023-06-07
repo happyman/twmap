@@ -33,10 +33,11 @@ $smarty->assign("fb_appid",$config['providers']['Facebook']['keys']['id']);
 $smarty->assign("login_fb","lib/Hybrid/auth.php?provider=facebook");
 $smarty->assign("loggedin", 0 );
 $smarty->assign("user_icon", "imgs/icon-map.png");
+$smarty->assign("user_email", "");
 $smarty->assign("lastest_mid", $lastest_mid );
 $smarty->assign("site_root_url", $site_url . $site_html_root);
 $smarty->assign("title", "登入");
- $smarty->assign("description","");
+$smarty->assign("description","");
 
 echo $smarty->fetch('header.html');
 $smarty->display("main.html");

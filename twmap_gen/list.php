@@ -21,6 +21,7 @@ if (!isset($_REQUEST['iDisplayStart']))  {
 	$smarty->assign("ps",$ps);
 	$smarty->assign("psinfo",$psinfo);
 
+	$smarty->assign("title", "地圖列表");
 	echo $smarty->fetch("list.html");
 } 
 // 輸出 ajax
