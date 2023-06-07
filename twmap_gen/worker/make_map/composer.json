@@ -1,0 +1,5 @@
+{
+    "require": {
+        "xobotyi/beansclient": "dev-master"
+    }
+}

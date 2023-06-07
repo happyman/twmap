@@ -1,12 +1,12 @@
 <div id=mainform>
-			  <div class="normal_note">
+			  <div id="mapform_note" class="normal_note">
 					<ol>
 							<li> 點 <img src="icons/up_arrow.gif" > 「瀏覽」的方式: 滑鼠左鍵選取範圍,再點選<button class="ui-state-default ui-corner-all">產生</button>傳送參數. 
-							<li> 我已經知道範圍: 輸入 TWD67 座標邊界產生 
+							<li> 我已經知道範圍: 輸入 TWD67 或 TWD97 座標邊界產生 
 							<li> 我有行跡檔: 選擇輸入方式 (gdb 或 gpx 格式), 上傳產生. 
-					 </ol>
+							</ol>
 				</div>
-
+				<textarea id="log_message" class="normal_note" style="resize: none;font-size:smaller; float: right; width: 200px; height: 360px">Have a lot of fun!</textarea>
 	<FORM name=mapform id=mapform method=post enctype="multipart/form-data"  action="backend_make.php">
 		<table id="makemaptable">
 			<tr class='method'>
@@ -161,7 +161,8 @@
 	<a href='https://www.facebook.com/twmapgen/' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a> 
 	<img src='imgs/discuss_icon.png'/>
 		<br>
-		<a href='#' onclick='testnotify()'>打開 log dialog(debug 用)</a>
+		<a href='#' onclick='testnotify()'>顯示debug訊息</a>
+		
 		</tr>
 
 		</table>
@@ -169,4 +170,6 @@
 </div>
 <div id="dialog-message" title="傳送參數完成"> 
 	請將此圖加上敘述
+</div>
+<div id="makeprogress" style="width: 100%"><span class="psLabel" style="color: black;font-weight: bold; text-shadow: 1px 1px 0 #fff; position: absolute; left: 50%;"></span>
 </div>

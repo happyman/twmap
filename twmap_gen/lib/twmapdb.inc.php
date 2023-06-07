@@ -114,6 +114,7 @@ function get_user($uid){
 	else
 		return array();
 }
+// 應再看是否已經 expire 了。TODO
 function map_exists($uid,$startx,$starty,$shiftx,$shifty,$version,$gpx=0) {
 	$db = get_conn();
 	$sql = sprintf("SELECT \"mid\" from \"map\" WHERE \"uid\"='%s' AND \"locX\"=%d AND \"locY\"=%d AND \"shiftX\"=%d and \"shiftY\"=%d and \"version\"=%d and \"gpx\"=%d",$uid,$startx,$starty,$shiftx,$shifty,$version,$gpx);

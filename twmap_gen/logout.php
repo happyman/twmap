@@ -4,7 +4,6 @@ session_start();
 
 require_once("config.inc.php");
 // logout facebook
-//
 // print("[".$_SESSION['mylogin']['type']."]");
 if ($_SESSION['mylogin']['type'] == 'facebook') {
 	unset($_SESSION['mylogin']['type']);
@@ -14,11 +13,7 @@ if ($_SESSION['mylogin']['type'] == 'facebook') {
 	//		header("Location: ".$facebook->getLogOutUrl( array('next'=> $site_url . $site_html_root . "/login.php")));
 	//	} 
 
-} else if ($_SESSION['mylogin']['type'] == 'xuite') {
-//	$session = $_SESSION['mylogin']['session'];
-//	$xuite->setData($session);
-//	header("Location: ". $xuite->getRefreshURL());
-}
+} 
 
 $_SESSION = array();
 $_SESSION['loggedin']=false;

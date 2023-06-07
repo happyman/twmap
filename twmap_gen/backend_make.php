@@ -11,7 +11,6 @@ if (empty($_SESSION['loggedin'])) {
 }
 
 require_once ("config.inc.php");
-require_once('lib/memqueue.php');
 ini_set("memory_limit", "512M");
 ini_set("max_execution_time", "3600");
 ignore_user_abort(true);
@@ -221,6 +220,7 @@ $cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /d
 );
 msglog($cmd_param);
 
+// check api/made.php
 // uid limit r_flag xx yy shiftx shifty datum version outx outy title outimage ip channel
 $add_param_array=[ $MYUID, $user['limit'], $recreate_flag, $xx, $yy, $shiftx, $shifty,  isset($inp['97datum'])? "97":"67",$version, $outx, $outy, $title,$outimage, $_SERVER['REMOTE_ADDR'],$log_channel ];
 // ouch forget to consider ipv6 addr
@@ -228,18 +228,28 @@ $add_param_str=json_encode($add_param_array);
 
 memcached_set($log_channel, $add_param_str);
 
-if (isset($CONFIG['use_queue']) && $CONFIG['use_queue'] == true){
-	$workload = $cmd_param;
-	$mq = new Memqueue("localhost",11211);
-	$id = $mq->push("mqq_make_map",$workload);
-	
-	while(!$mq->is_processed('mqq_make_map',$id)) {
-		sleep(2);
-		notify_web($log_channel,array("waiting for queue worker "));
-	}
-	notify_web($log_channel,array('worker is working...'));
 
+use xobotyi\beansclient\Client as beansclient;
+use xobotyi\beansclient\Socket\SocketsSocket as beansconnect;
+
+if (isset($CONFIG['use_queue']) && $CONFIG['use_queue'] == true){
+	// 使用 beanstalkd 請 config.inc.php 中加上相關參數
+	$sock   = new beansconnect(host: $CONFIG['beanstalk_server'], port: $CONFIG['beanstalk_port'], connectionTimeout: 2);
+	$client = new beansclient(socket: $sock, defaultTube: $CONFIG['beanstalk_tube'], defaultTTR: 3600);
+	$job = $client->put($cmd_param);
+	while(1){
+		$st = $client->statsJob($job['id']);
+		if (is_null($st) || $st['state'] == 'reserved') {
+			notify_web($log_channel,array('worker is working...'));
+			$sock->disconnect();
+			exit(0);
+		}
+		notify_web($log_channel,array("waiting for a worker "));
+		sleep(2);
+	}
+	
 } else {
+	// 前端可能無法等太久
 	exec("php cmd_make2.php ".$cmd_param, $output, $ret);
 	if ($ret != 0) {
 		foreach ($output as $line) {

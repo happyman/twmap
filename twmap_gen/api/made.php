@@ -46,7 +46,11 @@ function finish_task($param) {
 		my_error_out("寫入資料庫失敗,請回報 $outimage");
 	}
 	// 最後搬移到正確目錄
-	map_migrate($out_root, $uid, $mid);
+	sleep(1);
+	$ret = map_migrate($out_root, $uid, $mid);
+	if ($ret == false) {
+		msglog('error migrate directory');
+	}
 	// 寫入資料庫
 	make_map_log($mid, $log_channel, $_REQUEST['agent'], $_REQUEST['params']);
 

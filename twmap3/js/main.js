@@ -453,9 +453,8 @@ var Geo2016_Options = {
 };
 
 var DebugTile_Options = {
-	getTileUrl: function (a, b) {
-		 return "//tile.happyman.idv.tw/map/debug/" + a.x + "/" + a.y + "/" + b + ".png";
-		//eturn "https://chart.apis.google.com/chart?chst=d_text_outline&chs=256x256&chf=bg,s,00000044&chld=FFFFFF|32|h|000000|b|||x="+a.x+"|y="+a.y+"|z="+b+"||||__";
+	getTileUrl: function (a, z) {
+		 return "//tile.happyman.idv.tw/map/debug/" + z + "/" + a.x + "/" + a.y + ".png";
 	},
 	tileSize: new google.maps.Size(256, 256),
 	//maxZoom: 19,

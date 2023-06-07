@@ -30,25 +30,7 @@ if ($provider = $storage->get('provider')) {
 	$hybridauth->authenticate($provider);
 	$storage->set('provider', null);
 }
-/*
-switch($provider) {
-case 'google':
-	$adapter = $hybridauth->authenticate( "Google" );
-	break;
-case 'yahoo':
-	$adapter = $hybridauth->authenticate( "Yahoo");
-	break;
-case 'facebook':
-	$adapter = $hybridauth->authenticate( "Facebook" );
-	break;
-case 'xuite':
-	$adapter = $hybridauth->authenticate( "Xuite" );
-	break;
-default:
-	out_err("不正確的登入種類");	
-	break;
-}
-*/
+
 $adapter = $hybridauth->getAdapter($provider);
 
 if ( isset($_REQUEST['action']) && $_REQUEST['action'] == 'logout' ) {

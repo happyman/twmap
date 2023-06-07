@@ -61,14 +61,8 @@ $(function() {
 		'overflow': 'auto'
 	});
 	$(".showtip").tipTip();
-	$("#log_message").hide();
+	// $("#log_message").hide();
 
-	// progressbar stuff
-	makeprogress = $("#makeprogress").progressbar({
-		"value": 0
-	}).hide();
-	makeprogress.children().css("background", "lightgreen");
-	$(".psLabel").css("background", "");
 
 	$("#mapbrowse").iFrameResize(
 		{ log: false,
@@ -119,8 +113,8 @@ $(function() {
 }); // ready
 function clearProgress() {
 	makeprogress.progressbar("value", 0);
-	makeprogress.hide();
-	$("#log_message").text("").hide();
+	// makeprogress.hide();
+	// $("#log_message").text("").hide();
 }
 // 開啟 log 視窗 
 function testnotify() {
@@ -130,17 +124,17 @@ function testnotify() {
 function handle_message(evt) {
 	console.log('Retrieved data from server: ' + evt.data);
 	// 第 0 個 tab 才處理.
-	if ($("#tabs").tabs("option", "active") !== 0) {
-		makeprogress.progressbar("value", 0);
-		makeprogress.hide();
-		$("#log_message").text("").hide();
-	}
+	//if ($("#tabs").tabs("option", "active") !== 0) {
+		//makeprogress.progressbar("value", 0);
+		//makeprogress.hide();
+		//$("#log_message").text("").hide();
+	//}
 	// 第一次收到 msg, 顯示
-	if ($("#log_message").css("display") == "none") {
-		$("#log_message").css("height", $("#makemaptable").height());
-		$("#log_message").show();
-		makeprogress.show();
-	}
+	//if ($("#log_message").css("display") == "none") {
+	//	$("#log_message").css("height", $("#makemaptable").height());
+	//	$("#log_message").show();
+    //		makeprogress.show();
+	//}
 	var logmsg = evt.data;
 	if (logmsg.indexOf("ps%") === 0) {
 		var pst = logmsg.substr(logmsg.indexOf("%") + 1);

@@ -1,4 +1,4 @@
-{ font-family: Verdana; font-size: 1em; }
+body { font-family: Verdana; font-size: 1em; min-width: 1000px;}
 label { width: 10em; float: left; }
 label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }
 p { clear: both; }
@@ -8,6 +8,7 @@ img { image-rendering: -moz-crisp-edges; -ms-interpolation-mode:bicubic; }
 .fbshare {
 cursor:pointer;
 }
+
 #mapbrowse { width: 100%; }
 #browse { height: 600px; }
 #greeting {
@@ -75,7 +76,7 @@ background: #f5f3e5 url(http://code.jquery.com/ui/1.8.23/themes/south-street/ima
     border-radius: 10px;
     border: 2px solid #8AC007;
     padding: 10px;
-    height: 130px;
+    height: 110px;
 }
 /* drawer.css */
 .drawer {

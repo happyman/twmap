@@ -1,6 +1,6 @@
 <body>
 	{if $loggedin == 1 }
-	<div id="greeting" align=right><img src="{$user_icon}" width=32px /><span class="showtip" title="{$user_email}" >{$user_nickname}</span> 你好! 
+	<div id="greeting" style="text-align: right;"><img src="{$user_icon}" width=32px /><span class="showtip" title="{$user_email}" >{$user_nickname}</span> 你好! 
 		&nbsp; <a href="{$logout_url}" id="logout">登出</a>
 	</div>
 	<div id="tabs">
@@ -17,22 +17,17 @@
 			</iframe>
 		</div> <!-- browse -->
 	</div>
-	<textarea id="log_message" style="position: absolute; height: 460px; width: 200px; top: 60px; right: 100px; display: block;">
-	</textarea>
-	<div id="makeprogress" style="width: 100%"><span class="psLabel" style="color: black;font-weight: bold; text-shadow: 1px 1px 0 #fff; position: absolute; left: 50%;"></span></div>
 
 	{else}
 	{include "login.html" }
 	{/if}
-
-	{include "footer.html"}
 	<script>
 	var iframe_loaded = 0;
 	var mapbrowse_url = "{$browser_url}";
 	var initial_tab = {$initial_tab|default:0};
-	var makeprogress;
 	var globalxdr; // mapform.php
 	var user_email = '{$user_email}';
+	var makeprogress; 
 	var loggedin = {$loggedin|default:0};
 	var wsServer;
 	</script>

@@ -32,7 +32,7 @@ html {
 #opContainer {
 	position:relative; 
 	margin-top:10px; 
-	margin-left:-200px
+	margin-left:-200px;
 	right: -500px;
 }
 #less {
@@ -155,7 +155,7 @@ textarea:hover {
 #marker_reload {
 	cursor: pointer;
 }
-// google dropdown menu of mapstyle select
+/* google dropdown menu of mapstyle select */
 .gm-style-mtc > div:first-child {
 	font-size:11px;
 	padding: 0px;

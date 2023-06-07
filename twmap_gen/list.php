@@ -16,7 +16,7 @@ if (!isset($_REQUEST['iDisplayStart']))  {
 		exit(0);
 	}
 	$ps = ($count /  $user['limit'] )*100;
-	$psinfo = sprintf("已產生地圖 %d / %d", $count, $user['limit']);
+	$psinfo = sprintf(" %d / %d", $count, $user['limit']);
 
 	$smarty->assign("ps",$ps);
 	$smarty->assign("psinfo",$psinfo);

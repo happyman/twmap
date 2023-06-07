@@ -1,7 +1,6 @@
 <style>
-	.progressLabel {
-	 position: absolute;
-	 right: 90px;
+.progressLabel {
+	 position: relative;
 	 top: 10px;
 	 font-weight: bold;
  }
@@ -9,6 +8,7 @@
 	 float: right;
 	 width: 300px;
 	 line-height: 22px;
+	 text-align: center;
  }
 </style>
 <div id="progressbar" ><span class="progressLabel">1234</span></div>
@@ -27,7 +27,7 @@ $(document).ready(function(){
 			"bServerSide":  true,
 		 "bStateSave": true, // 記住狀態
 			"sAjaxSource": "list.php",
-			"sPaginationType": "full_numbers",
+			"sPaginationType": "full",
 			"aLengthMenu": [[10,20,30,-1],[10,20,30,"all"]],
 			"sDom": '<"top"pl>rt<"bottom"p>',
 			"bScrollCollapse": true,
@@ -35,7 +35,7 @@ $(document).ready(function(){
 			"aoColumns": [
 			{ "sTitle": "序號" , "bSortable": false , "sWidth": "40px"},
 			{ "sTitle": "日期", "sWidth": "100px" },
-			{ "sTitle": "標題" ,"sWidth": "40%"},
+			{ "sTitle": "標題" ,"sWidth": "200px"},
 			{ "sTitle": "X" },
 			{ "sTitle": "Y" },
 			{ "sTitle": "格", "sWidth": "20px" },
@@ -54,10 +54,13 @@ $(document).ready(function(){
 	});
 	var progressbar = $( "#progressbar" );
 	progressbar.progressbar({ value: ps });
-	$( ".progressLabel" ).text(info);
 	progressbar.appendTo(".top");
+	// label
 	progressbar.children().css("background","lightgreen");
-
+	// progress bar
+	progressbar.children().eq(1).css('position','relative').css('top','-20px');
+	$( ".progressLabel" ).text(info).css("background","").css("background-color", "transparent").css('z-index',"100");
+	// $.fn.DataTable.ext.pager.numbers_length = 5;
 });
 function map_action(action, params) {
 	if (action == 'del') {

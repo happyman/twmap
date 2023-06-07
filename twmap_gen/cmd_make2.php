@@ -44,8 +44,8 @@ $jump = isset($opt['s'])? $opt['s'] : 1;
 if (isset($opt['S'])) $jumpstop = $jump+1; else $jumpstop = 0;
 $remote_ip = isset($opt['i'])? $opt['i'] : "localhost";
 if (isset($opt['d'])) $debug_flag= 1; else $debug_flag = 0;
-if ($version != 1 && $version != 3 && $version != 2016) 
-	$version = 3;
+// default 2016, remove version 1
+if (!in_array($version, array(3,2016))) $version=2016;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
 if (isset($opt['logurl_prefix'])) 
 	$logurl_prefix=$opt['logurl_prefix'];
@@ -91,25 +91,8 @@ if (isset($opt['3']))
 else
 	$type = determine_type($shiftx, $shifty);
 
-// add version 3
-switch($version){
-	case 1:
-	/*
-	if ($ph == 1 ) {
-		cli_error_out("無澎湖圖資");
-	}
-	$g = new STB($stbpath, $startx, $starty, $shiftx, $shifty, $datum, $tmpdir);
-	break;
-	 */
-	case 3:
-	$g = new STB2($stbpath, $startx, $starty, $shiftx, $shifty, $ph, $datum, $tmpdir);
-	$g->version = 3;
-	break;
-	case 2016:
-	$g = new STB2($stbpath, $startx, $starty, $shiftx, $shifty, $ph, $datum, $tmpdir);
-	$g->version = 2016;
-	break;
-}
+$g = new STB2("", $startx, $starty, $shiftx, $shifty, $ph, $datum, $tmpdir);
+$g->version=$version;
 
 if (isset($opt['G'])) {
 	$g->include_gpx = 1;
@@ -345,8 +328,14 @@ if (!empty($callback)){
 	// log
 	if (isset($opt['agent']))
 		$url.="&agent=".trim($opt['agent']);
-	cli_msglog("call $url");
-	$output = file_get_contents($url);
+	cli_msglog("call callback api");
+	// $output = file_get_contents($url);
+	try {
+		$output = request_curl($url);
+	} catch (Exception $e) {
+		// 連不上 or 有意外
+		cli_error_out('callback failed '.$url);
+	}
 	error_log(print_r($output,true));
 }
 cli_msglog("ps%100");

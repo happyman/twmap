@@ -65,7 +65,7 @@ var called = 0;
 //           2. from list.php SESSION
 if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 	// 選取範圍 TWD97 的 X 剛好多1km
-	if ( $_SESSION['makeparam']['datum'] == 'TWD97') 
+	if ( $_SESSION['makeparam']['datum'] == 'TWD97' && !isset($_SESSION['makeparam']['recreate'])  ) 
 		$_SESSION['makeparam']['x']++;
 ?>
 	called = 1;
@@ -315,6 +315,7 @@ function refresh_session() {
 }
 setInterval(refresh_session,300000);
 
+
 $(document).ready(function(){
 	//alert("here");
 	//if (called != 1 )
@@ -331,7 +332,7 @@ $(document).ready(function(){
 	// blinking('bt1',1);
 	if (called == 1 ) {
 		$(".method").hide();
-		$(".normal_note").hide();
+		$("#mapform_note").hide();
 		$('#step_go').text("這裡");
 		//blinking('create',1);
 		//blinking('create2',0);
@@ -345,7 +346,7 @@ $(document).ready(function(){
 		$(".gpx_mode").hide();
 		$(".gpx_recreate_mode").show();
 		$(".method").hide();
-		$(".normal_note").hide();
+		$("#mapform_note").hide();
 		$("#create3").show();
 		//blinking('create3',1);
 		//blinking('create2',0);
@@ -369,29 +370,16 @@ $(document).ready(function(){
 	
 	wsServer = 'wss://ws.happyman.idv.tw:443/twmap_' + $("#formid").val();
 	connect_ws();
-/*	
-	var first_open = 1;
-	var websocket = new ReconnectingWebSocket(wsServer);
-	websocket.onopen = function (evt) {
-		console.log(wsServer + " opened ");
-		if (first_open) {
-			websocket.send('ws connected');
-			first_open = 0;
-		}
-	};
-	//Monitor connection closed
-	websocket.onclose = function (evt) {
-		console.log("Disconnected");
-	};
 
-	//onmessage monitor server data push
-	websocket.onmessage = function (evt) {
-		handle_message(evt);
-	};
-	//Monitor connection error information
-	websocket.onerror = function (evt, e) {
-		console.log('Error occured: ' + evt.data);
-	};
- */
+	// progressbar stuff
+	makeprogress = $("#makeprogress");
+	makeprogress.progressbar({
+		"value": 0
+	}).show();
+	makeprogress.children().css("background", "lightgreen");
+	$( ".psLabel" ).css("background","");
+	
+
+
 });
 </script>
