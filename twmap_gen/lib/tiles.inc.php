@@ -436,7 +436,7 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 					error_log("$dir/$imgname not exist");
 				}
 				// clean tmpdir
-				//exec("rm -r $dir");
+				exec("rm -r $dir");
 				return array(FALSE, "超出圖資範圍", false);
 			}
 		}

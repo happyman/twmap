@@ -34,7 +34,7 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 // parse param
 list($startx,$starty,$shiftx,$shifty,$datum)=explode(":",$opt['r']);
 if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) || empty($datum))
-	cli_error_out("參數錯誤");
+	cli_error_out("參數錯誤",0);
 
 $version=isset($opt['v'])?$opt['v']:2016;
 $title=$opt['t'];
@@ -92,6 +92,9 @@ else
 	$type = determine_type($shiftx, $shifty);
 
 $g = new STB2("", $startx, $starty, $shiftx, $shifty, $ph, $datum, $tmpdir);
+if ($g == false){
+	cli_error_out(implode(":",$g->err),0);
+}
 $g->version=$version;
 
 if (isset($opt['G'])) {
@@ -110,9 +113,6 @@ if (!empty($log_channel)) {
 	cli_msglog(sprintf("Agent %s Roger that ^_^\n",$agent));
 	cli_msglog("ps%0");
 }
-if (!empty($g->err)) 
-	cli_error_out(implode(":",$g->err));
-
 
 $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
 $out=$g->getsimages();
@@ -139,23 +139,30 @@ if ($jump <= $stage ) {
 		}
 	  } else {
 	  	cli_msglog("$outimage exists");
-		cli_error_out("若發生此問題, 通常表示上一個出圖過程 crash 殘留檔案, 請回報此路徑 $outimage");
-		echo "$outimage there";
-		exit(0);
+		cli_error_out("若發生此問題, 通常表示上一個出圖過程 crash 殘留檔案, 請回報此路徑 $outimage",0);
 	  }
 	}
-
+	// 先檢查是否有 gpx 存在與否
+	if (isset($opt['g'])) {
+		list($param['gpx'],$param['show_label_trk'],$param['show_label_wpt'])=explode(":",$opt['g']);
+		if (!file_exists($param['gpx'])) {
+			cli_error_out("unable to read gpx file",0);
+		}
+	}
+	
 	$im = $g->createpng(0,0,0,1,1,$debug_flag); // 產生
-	if ($im === FALSE) cli_error_out(implode(":",$g->err));
+	// 產生不出來
+	if ($im === FALSE) 
+		cli_error_out(implode(":",$g->err));
 	showmem("after image created");
 	cli_msglog("ps%30");
 
 	// 如果有 gpx 相關參數
 	if (isset($opt['g'])) {
-		list($param['gpx'],$param['show_label_trk'],$param['show_label_wpt'])=explode(":",$opt['g']);
-		if (!file_exists($param['gpx'])) {
-			cli_error_out("unable to read gpx file");
-		}
+		//list($param['gpx'],$param['show_label_trk'],$param['show_label_wpt'])=explode(":",$opt['g']);
+		//if (!file_exists($param['gpx'])) {
+		//	cli_error_out("unable to read gpx file");
+		//}
 		$param['width'] = imagesx($im);
 		ImagePNG($im, $outimage_orig);
 		if (file_exists($outimage_orig)) {
@@ -168,6 +175,7 @@ if ($jump <= $stage ) {
 		// no more detection
 		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
 		$param['datum']=$datum;
+
 		cli_msglog("create SVG: $outsvg");
 		list($ret,$msg) = gpx2svg($param, $outsvg);
 		if ($ret === false ) {
@@ -348,9 +356,10 @@ function cli_msglog($str){
 	printf("%s\n",$str);
 	//error_log($str);
 }
-function cli_error_out($str) {
+function cli_error_out($str, $exitcode=-1) {
 	global $argv;
 	cli_msglog("err:$str");
 	printf("params: %s\n",implode(" ",$argv));
-	exit(-1);
+	// 給後端決定是否需要重跑 return 0 表示成功執行不重跑 -1 表示可能程式錯誤還有機會
+	exit($exitcode);
 }
