@@ -7,6 +7,7 @@ $sock   = new beansconnect(host: $CONFIG['beanstalk_server'], port: $CONFIG['bea
 $client = new beansclient(socket: $sock, defaultTube: $CONFIG['beanstalk_tube']);
 
 while(1){
+	printf("%s waiting for job\n, $CONFIG['agent'])";
 	$job = $client->reserve();
 	$params = $job['payload'];
 	// replace callback
@@ -15,5 +16,7 @@ while(1){
 	system($cmd, $ret);
 	if ($ret==0)
 		$client->delete($job['id']);
+	else
+		$client->release($job['id']);
 	error_log("return $ret");
 }

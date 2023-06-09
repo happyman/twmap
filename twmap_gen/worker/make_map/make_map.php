@@ -10,6 +10,7 @@ $client = new beansclient(socket: $sock, defaultTube: $CONFIG['beanstalk_tube'])
 
 // 使用 docker, 需要置換 -O 參數
 while(1){
+	printf("%s waiting for job\n, $CONFIG['agent'])";
 	$job = $client->reserve();
 	$workload = $job['payload'];
 
@@ -24,6 +25,8 @@ while(1){
         system($cmd, $ret);
 		if ($ret==0)
 			$client->delete($job['id']);
+		else
+			$client->release($job['id']);
         error_log("return $ret");
 	}
 }
