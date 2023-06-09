@@ -10,7 +10,7 @@ $client = new beansclient(socket: $sock, defaultTube: $CONFIG['beanstalk_tube'])
 
 // 使用 docker, 需要置換 -O 參數
 while(1){
-	printf("%s waiting for job\n, $CONFIG['agent'])";
+	printf("%s waiting for job\n", $CONFIG['agent']);
 	$job = $client->reserve();
 	$workload = $job['payload'];
 
