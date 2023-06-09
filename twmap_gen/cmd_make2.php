@@ -56,7 +56,7 @@ $a3 = (isset($opt['3']))? 1 : 0;
 $callback=(isset($opt['a']))?$opt['a']:"";
 if (!file_exists($outpath)) {
 	$ret = mkdir($outpath, 0755, true);
-	if ($ret === FALSE) {
+	if ($ret === false) {
 		cli_error_out("無法建立 $outpath");
 	}
 }
@@ -92,7 +92,7 @@ else
 	$type = determine_type($shiftx, $shifty);
 
 $g = new STB2("", $startx, $starty, $shiftx, $shifty, $ph, $datum, $tmpdir);
-if ($g == false){
+if (!empty($g->err)){
 	cli_error_out(implode(":",$g->err),0);
 }
 $g->version=$version;
@@ -152,7 +152,7 @@ if ($jump <= $stage ) {
 	
 	$im = $g->createpng(0,0,0,1,1,$debug_flag); // 產生
 	// 產生不出來
-	if ($im === FALSE) 
+	if ($im === false) 
 		cli_error_out(implode(":",$g->err));
 	showmem("after image created");
 	cli_msglog("ps%30");
@@ -358,7 +358,7 @@ function cli_msglog($str){
 }
 function cli_error_out($str, $exitcode=-1) {
 	global $argv;
-	cli_msglog("err:$str");
+	cli_msglog("err:$str returns $exitcode");
 	printf("params: %s\n",implode(" ",$argv));
 	// 給後端決定是否需要重跑 return 0 表示成功執行不重跑 -1 表示可能程式錯誤還有機會
 	exit($exitcode);

@@ -25,11 +25,11 @@ Class STB {
 	function __construct($stbdir, $startx, $starty, $sx, $sy, $datum='TWD67',$tmpdir="") {
 		if ($sx > 35 || $sy > 35) {
 			$this->err[] = "Sorry We Cannot create too big map";
-			return FALSE;
+			return false;
 		}
 		if ($this->is_taiwan($startx,$startx+$sx,$starty-$sy,$starty,0) === false){
 			$this->err[] = "不在台澎範圍內";
-			return FALSE;
+			return false;
 		}
 		$testfd = @fopen($stbdir . "/stb-index","r");
 		if ($testfd) {
@@ -53,7 +53,7 @@ Class STB {
 			// print_r($this);
 		} else {
 			$this->err[] =	"No Index file... bye";
-			return FALSE;
+			return false;
 		}
 	} 
 	// bound check
@@ -98,14 +98,14 @@ Class STB {
 	function load_index() {
 		// try to get sorted array it from file
 		// $this->doLog("try to load ". $this->arrayfile . " from " . $this->stbindex);
-		if (arrayfile($this->arrayfile,$array,"GET") === FALSE ) {
+		if (arrayfile($this->arrayfile,$array,"GET") === false ) {
 			// actually load
 			$i = 0;
 			$fp=fopen($this->stbindex,"r");
-			if ($fp === FALSE) {
+			if ($fp === false) {
 				$this->err[] = "cannot open stbindex!\n";
 				$this->doLog("cannot open ".$this->stbindex);
-				return FALSE;
+				return false;
 			}
 			while($line=fgets($fp,128)) {
 				list($array[$i]['x'],$array[$i]['y'],$array[$i]['f'])=preg_split("/\s+/",trim($line),3);
@@ -118,10 +118,10 @@ Class STB {
 			$B->aSortKeys = array( array('x','ASC'), array('y','DESC'));
 			$B->sort();
 			// echo "get it from $file\n";
-			if (arrayfile($this->arrayfile,$array,"DUMP") === FALSE ) {
+			if (arrayfile($this->arrayfile,$array,"DUMP") === false ) {
 				$this->err[] = "$arrayfile write failed\n";
 				$this->doLog("cannot write ".$this->arrayfile);
-				return FALSE;
+				return false;
 			}
 		}
 		for ($j=0;$j<count($array);$j++) {
@@ -148,14 +148,14 @@ Class STB {
 					return $i;
 				}
 		}
-		return FALSE;
+		return false;
 	}
 	// getimagefilenames will fill movX movY tileX tileY and 
 	// return filenames of images to merge
 	function getimagefilenames() {
-		if ($this->load_index() === FALSE ) {
+		if ($this->load_index() === false ) {
 			$this->err[] = "load_index() return false\n";
-			return FALSE;
+			return false;
 		}
 		$map=array();
 		$img=array();
@@ -174,7 +174,7 @@ Class STB {
 					continue;
 				// echo "really search $locX $locY\n";
 				if ($d=$this->whichimage($locX,$locY,$shortcut)) {
-					if (array_search($this->f[$d], $map) === FALSE) {
+					if (array_search($this->f[$d], $map) === false) {
 						if ($found==0) {
 							$this->movX=intval(($locX-$this->x[$d]) * 1024 / 3251.203125);
 							$this->movY=intval(($this->y[$d]-$locY) * 1024 / 3251.25);
@@ -185,7 +185,7 @@ Class STB {
 					}
 				} else {
 					$this->err[] = "out of range..$locX $locY";
-					return FALSE;
+					return false;
 				}
 			}
 		}
@@ -227,8 +227,8 @@ Class STB {
 			$this->doLog("ps%+10");
 			// dumpvars($this);
 			// now crop it
-			if ($images === FALSE) {
-				return FALSE;
+			if ($images === false) {
+				return false;
 			}
 			// if stbdir contains http, download from remote
 			$im=merge3($this->tileX, $this->tileY, $images);
@@ -243,7 +243,7 @@ Class STB {
 			$cim=tagimage($cim, $this->startx, $this->starty, $fuzzy);
 		} else if ($tag == 2 ) {
 			if ($this->outsizex==0 || $this->outsizey==0) { 
-				$this->err[]= "Please call setoutsize() first\n"; return FALSE;}
+				$this->err[]= "Please call setoutsize() first\n"; return false;}
 					if ($this->createfromim ==0 && ($this->shiftx < $this->outsizex || $this->shifty < $this->outsizey) ) {
 						// echo "resizing image...\n";
 						$dst=imageCreate($this->outsizex * 315 + $fuzzy , $this->outsizey * 315 + $fuzzy);
@@ -412,11 +412,11 @@ Class STB2 extends STB {
 	function __construct($basedir, $startx, $starty, $sx, $sy, $ph=0, $datum='TWD67', $tmpdir="") {
 		if ($sx > 35 || $sy > 35) {
 			$this->err[] = "Sorry We Cannot create too big map";
-			return FALSE;
+			return false;
 		}
 		if ($this->is_taiwan($startx,$startx+$sx,$starty-$sy,$starty,$ph) === false){
 			$this->err[] = "不在台澎範圍內";
-			return FALSE;
+			return false;
 		}
 		$this->stbdir = $basedir;
 		$this->startx = $startx;
@@ -466,10 +466,10 @@ Class STB2 extends STB {
 					$this->doLog( sprintf("nbr:%s/%s ",$pscount,$pstotal));
 					$this->doLog( sprintf("nbr:ps%%+%d", 20 * $pscount/$pstotal));
 					$pscount++;
-					if ($status === FALSE ) {
+					if ($status === false ) {
 						error_log("error $fname");
 						$this->err[] = $fname;
-						return FALSE;
+						return false;
 					}
 					$fn[] = $fname;
 				}
@@ -496,7 +496,7 @@ Class STB2 extends STB {
 			$cim=tagimage($cim, $this->startx, $this->starty, $fuzzy);
 		} else if ($tag == 2 ) {
 			if ($this->outsizex==0 || $this->outsizey==0) { 
-				$this->err[]= "Please call setoutsize() first\n"; return FALSE;}
+				$this->err[]= "Please call setoutsize() first\n"; return false;}
 					if ($this->createfromim ==0 && ($this->shiftx < $this->outsizex || $this->shifty < $this->outsizey) ) {
 						// echo "resizing image...\n";
 						$dst=imageCreate($this->outsizex * 315 + $fuzzy , $this->outsizey * 315 + $fuzzy);
