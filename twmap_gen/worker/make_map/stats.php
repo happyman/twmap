@@ -11,7 +11,7 @@ $client = new beansclient(socket: $sock, defaultTube: $CONFIG['beanstalk_tube'])
 //
 function stats($debug=0) {
 	global $CONFIG,$client;
-	 $r = $client->statsTube($CONFIG['beanstalk_tube']);
+	$r = $client->statsTube($CONFIG['beanstalk_tube']);
 	if ($debug)
 		print_r($r);
 	/*
@@ -35,18 +35,20 @@ function stats($debug=0) {
 	printf("已完成: %d\n",$r['cmd-delete']);
 	printf("工人數: %d\n",$r['current-using']);
 	$todo=$r['total-jobs']-$r['cmd-delete'];
-	$count=0;
-	$i=1;
-	while(1){
-		$j = $client->statsJob($i++);
-		if (!is_null($j)){
-			$jb = $client->peek($j['id']);
-			printf("未完成(%d): %s %s\n",$j['age'],$j['id'],$jb['payload']);
-			if ($debug)
-			print_r($j);
-			$count++;
-			if ($count == $todo)
-				break;
+	if ($todo > 0 ) {
+		$count=0;
+		$i=1;
+		while(1){
+			$j = $client->statsJob($i++);
+			if (!is_null($j)){
+				$jb = $client->peek($j['id']);
+				printf("未完成(%d): %s %s\n",$j['age'],$j['id'],$jb['payload']);
+				if ($debug)
+					print_r($j);
+				$count++;
+				if ($count == $todo)
+					break;
+			}
 		}
 	}
 }
