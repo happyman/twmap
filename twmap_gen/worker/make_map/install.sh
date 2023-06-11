@@ -10,6 +10,7 @@ rsync -av checkmakemap.sh *.php vendor $out
 echo cd $out
 echo "ln -s make_map_local.php make_map01.php"
 echo "ln -s make_map_local.php make_map02.php"
+echo "ln -s make_make_local_dev.php make_make03.php"
 echo "#"
 echo "ln -s make_map.php make_map01.php"
 echo "ln -s make_map.php make_map02.php"

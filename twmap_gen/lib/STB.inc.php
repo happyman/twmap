@@ -77,9 +77,10 @@ Class STB {
 	function setDebug($flag){
 		$this->debug = $flag;
 	}
-	function setLog($channel,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_") {
+	function setLog($channel,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$port=0) {
 		$this->log_channel = $channel;
 		$this->logurl_prefix = $logurl_prefix;
+		$this->websocat_port = $port;
 
 	}
 	function doLog($msg) {
@@ -92,7 +93,7 @@ Class STB {
 				$msg.= "<br>";	
 			}
 
-			notify_web($this->log_channel, array($msg),$this->logurl_prefix,$this->debug);
+			notify_web($this->log_channel, array($msg),$this->logurl_prefix,$this->websocat_port,$this->debug);
 		}
 	}
 	function load_index() {
@@ -619,8 +620,12 @@ function MyErrorLog($ident, $data) {
 }
 
 // websocket client: https://github.com/vi/websocat
-function notify_web($channel,$msg_array,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$debug=0){
-	$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat --no-line -1 -t -  %s%s",base64_encode($msg_array[0]),$logurl_prefix,$channel);
+// cmd_make will persist port 
+function notify_web($channel,$msg_array,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$reuse_port=0,$debug=0){
+	if ($reuse_port != 0)
+		$cmd = sprintf("/usr/bin/echo %s |nc 127.0.0.1 %d",escapeshellarg($msg_array[0]),$reuse_port);
+	else
+		$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat --no-line -1 -t -  %s%s",base64_encode($msg_array[0]),$logurl_prefix,$channel);
 	if ($debug == 1)
 		echo "$cmd\n";
 	exec($cmd);

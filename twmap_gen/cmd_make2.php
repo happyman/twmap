@@ -2,6 +2,7 @@
 //$Id: cmd_make.php 291 2012-06-20 06:10:01Z happyman $
 // 1. check login
 require_once("config.inc.php");
+require_once("lib/slog/load.php");
 
 ini_set("memory_limit","512M");
 set_time_limit(0);
@@ -29,8 +30,12 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -i ip: log remote ip address --agent myhost\n";
 	echo "       -l log_channel --logurl_prefix for custom url, ex: ws://myhost:9002/twmap_\n";
 	echo "       -a callback url when done\n";
-	exit(1);
+	exit(0);
 }
+use \stange\logging\Slog;
+// keep colorred stdout *and* file log
+$logger =  new Slog(['file'=>"/tmp/cmd_make.log"]);
+$logger->useDate(True);
 // parse param
 list($startx,$starty,$shiftx,$shifty,$datum)=explode(":",$opt['r']);
 if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) || empty($datum))
@@ -103,14 +108,25 @@ if (isset($opt['G'])) {
 if (isset($debug_flag)){
 	$g->setDebug(1);
 }
+// get port and pid
+$port = 0;
+$pid = 0;
 if (!empty($log_channel)) {
-	$g->setLog($log_channel,$logurl_prefix);
-	// cli_msglog("setup log channel ".md5($log_channel));
+	// persist websocket connection for slightly better performance 
+	$port=find_free_port();
+	$cmd = sprintf("websocat -t -1 -u tcp-l:127.0.0.1:%d reuse-raw:%s%s  >/dev/null 2>&1 & echo $!",$port,$logurl_prefix,$log_channel);
+	$pid = exec($cmd,$output);
+	$g->setLog($log_channel,$logurl_prefix,$port);
 	if (isset($opt['agent']))
 		$agent=$opt['agent'];
 	else
 		$agent="";
-	cli_msglog(sprintf("Agent %s Roger that ^_^\n",$agent));
+	// important to cleanup this websocket daemon
+	register_shutdown_function('shutdown');
+	pcntl_signal(SIGTERM, 'sigint');
+	pcntl_signal(SIGINT, "sigint");
+	// OK. let's start.
+	cli_msglog(sprintf("Agent %s Roger that ^_^",$agent));
 	cli_msglog("ps%0");
 }
 
@@ -258,19 +274,19 @@ if ($stage >= $jump ) {
 		 im_simage_resize($type, $simage[$i], $simage[$i], 'Center');
 		 break;
 		}
-	  cli_msglog(sprintf("%d / %d\n",$i+1,$total));
+	  cli_msglog(sprintf("%d / %d",$i+1,$total));
 		im_simage_resize($type, $simage[$i], $simage[$i]);
 	  cli_msglog("resize small image...");
 		$idxfile = sprintf("%s/index-%d.png",$outpath,$i);	
 		$idximg = imageindex($outx,$outy,$i, 80, 80);
 		imagepng($idximg,$idxfile);
-	  cli_msglog("create index image...\n");
+	  cli_msglog("create index image...");
 		$overlap=array('right'=>0,'buttom'=>0);
 		if (($i+1) % $outx != 0) $overlap['right'] = 1;
 		if ($i < $outx * ($outy -1)) $overlap['buttom'] = 1;
 		im_addborder($simage[$i], $simage[$i], $type,  $overlap, $idxfile);
 		unlink($idxfile);
-	  cli_msglog("small image border added ...\n");
+	  cli_msglog("small image border added ...");
 		cli_msglog("ps:+".sprintf("%d", 20 * $i+1/$total));
 	}
 }
@@ -310,7 +326,7 @@ if ($stage >= $jump) {
 	$pdf->print_cmd = 0;
 	cli_msglog("save to pdf format");
 	$pdf->doit();
-	echo "$outimage done";
+	$logger->info("$outimage done");
 }
 showmem("after stage 5");
 $stage = 6;
@@ -319,9 +335,9 @@ if ($stage == $jumpstop) {
 	exit(0);
 }
 cli_msglog("ps%95");
-cli_msglog("almost done,cleanup...");
 // 如果有給 -s, 就不刪圖檔
 if ($stage >= $jump && !isset($opt['s'])) {
+	cli_msglog("almost done,cleanup...");
 	foreach($simage as $simage_file) {
 		unlink($simage_file);
 	}
@@ -344,22 +360,48 @@ if (!empty($callback)){
 		// 連不上 or 有意外
 		cli_error_out('callback failed '.$url);
 	}
-	error_log(print_r($output,true));
+	// error_log(print_r($output,true));
 }
 cli_msglog("ps%100");
+$logger->success(sprintf("done params: %s",implode(" ",$argv)));
 exit(0);
 
 function cli_msglog($str){
-	global $log_channel,$logurl_prefix, $debug_flag;
+	global $log_channel,$logurl_prefix, $debug_flag, $port, $logger;
 	if (!empty($log_channel))
-		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$logurl_prefix,$debug_flag);
-	printf("%s\n",$str);
+		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$logurl_prefix,$port,$debug_flag);
+	//printf("%s\n",$str);
+	$logger->info($str);
 	//error_log($str);
 }
-function cli_error_out($str, $exitcode=-1) {
-	global $argv;
+function cli_error_out($str, $exitcode=60) {
+	global $argv, $logger;
 	cli_msglog("err:$str returns $exitcode");
-	printf("params: %s\n",implode(" ",$argv));
-	// 給後端決定是否需要重跑 return 0 表示成功執行不重跑 -1 表示可能程式錯誤還有機會
+	$logger->error("params: %s",implode(" ",$argv));
+	// 給後端決定是否需要重跑 return 0 表示成功執行不重跑, 其他表示可能程式錯誤還有機會
 	exit($exitcode);
+}
+
+function find_free_port() {
+    $sock = socket_create_listen(0);
+    socket_getsockname($sock, $addr, $port);
+    socket_close($sock);
+    return $port;
+}
+// 抓到 signal 
+function sigint(){
+	exit(80);
+}
+function shutdown() {
+	global $pid,$logger;
+	$msg="shutdown $pid";
+	if ($pid == 0 ) 
+		return;
+	$r = posix_kill($pid,9);
+	if ($r === true) {
+		$msg.=" successed!\n";
+	} else {
+		$msg.=" failed\n";
+	}
+	$logger->success($msg);
 }
