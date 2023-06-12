@@ -217,7 +217,7 @@ if ($jump <= $stage ) {
 
 	// 加上 grid
 	if (isset($opt['e'])) {
-		cli_msglog("add 100M grid to image...\n");
+		cli_msglog("add 100M grid to image...");
 		im_addgrid($outimage, $g->v3img,  100, $version);
 		cli_msglog("ps%+3");
 	}
@@ -228,10 +228,10 @@ if ($jump <= $stage ) {
 	// happyman
 	cli_msglog("ps%40");
 	if ($keep_color==1) {
-	cli_msglog("keep colorful image...\n");
+	cli_msglog("keep colorful image...");
 	copy($outimage,$outimage_gray);
 	} else {
-	cli_msglog("grayscale image...\n");
+	cli_msglog("grayscale image...");
 	// 產生灰階圖檔
 	im_file_gray($outimage, $outimage_gray, $version);
 	// im_tagimage($outimage_gray,$startx,$starty);
@@ -239,7 +239,7 @@ if ($jump <= $stage ) {
 	im_tagimage($outimage_gray,$startx,$starty);
 	cli_msglog("ps%45");
 	// 加上 tag
-	cli_msglog("add tag to image...\n");
+	cli_msglog("add tag to image...");
 	im_tagimage($outimage,$startx,$starty);
 	//cli_msglog("$outimage created");
 	unset($g);
@@ -252,7 +252,7 @@ if ($stage == $jumpstop) {
 	exit(0);
 }
 if ($stage >= $jump ) {
-	cli_msglog("split image...\n");
+	cli_msglog("split image...");
 	$im = imagecreatefrompng($outimage_gray);
 	splitimage($im, $tiles[$type]['x']*315 , $tiles[$type]['y']*315 , $outfile_prefix, $px, $py, $fuzzy);
 	unset($im);
@@ -366,18 +366,22 @@ cli_msglog("ps%100");
 $logger->success(sprintf("done params: %s",implode(" ",$argv)));
 exit(0);
 
-function cli_msglog($str){
-	global $log_channel,$logurl_prefix, $debug_flag, $port, $logger;
+function cli_notify_web($str){
+	global $log_channel,$logurl_prefix, $debug_flag, $port;
 	if (!empty($log_channel))
 		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$logurl_prefix,$port,$debug_flag);
-	//printf("%s\n",$str);
+}
+
+function cli_msglog($str){
+	global $logger;
+	cli_notify_web($str);
 	$logger->info($str);
-	//error_log($str);
 }
 function cli_error_out($str, $exitcode=60) {
 	global $argv, $logger;
-	cli_msglog("err:$str returns $exitcode");
-	$logger->error("params: %s",implode(" ",$argv));
+	$logger->error($str);
+	cli_notify_web("err:$str returns $exitcode");
+	$logger->error(sprintf("params: %s",implode(" ",$argv)));
 	// 給後端決定是否需要重跑 return 0 表示成功執行不重跑, 其他表示可能程式錯誤還有機會
 	exit($exitcode);
 }
@@ -399,9 +403,9 @@ function shutdown() {
 		return;
 	$r = posix_kill($pid,9);
 	if ($r === true) {
-		$msg.=" successed!\n";
+		$msg.=" successed!";
 	} else {
-		$msg.=" failed\n";
+		$msg.=" failed";
 	}
 	$logger->success($msg);
 }

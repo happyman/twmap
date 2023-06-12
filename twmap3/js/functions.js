@@ -1,6 +1,5 @@
 var polygon;
 var polygon2; // for twd97
-
 function addremove_polygon(event) {
     var point = event.latLng;
     var cc = is_taiwan(point.lat(), point.lng());
@@ -76,16 +75,22 @@ function addremove_polygon(event) {
             fillOpacity: 0.1
         });
         google.maps.event.addListener(polygon, 'click', addremove_polygon);
-		google.maps.event.addListener(polygon2, 'click', addremove_polygon);
-        google.maps.event.addListener(polygon, 'contextmenu', function () {
-			export_points(miniX,miniY,maxiX,maxiY);
-		});
-        google.maps.event.addListener(polygon2, 'contextmenu', function () {
-			export_points(tl2.x,tl2.y,br2.x,br2.y);
-		});
+		    google.maps.event.addListener(polygon2, 'click', addremove_polygon);
+
+    google.maps.event.addListener(polygon,'contextmenu',
+    function() {
+      points = polygon.getPath();
+      export_points(points.getAt(0).lng(),points.getAt(0).lat(),points.getAt(2).lng(),points.getAt(2).lat());
+    });
+    google.maps.event.addListener(polygon2,'contextmenu',
+    function() {
+      points = polygon2.getPath();
+      export_points(points.getAt(0).lng(),points.getAt(0).lat(),points.getAt(2).lng(),points.getAt(2).lat());
+    });
+    
     }
     polygon.setMap(map);
-	polygon2.setMap(map);
+	  polygon2.setMap(map);
     // hide marker
     centerMarker.setVisible(false);
     return true;

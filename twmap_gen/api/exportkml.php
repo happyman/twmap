@@ -14,6 +14,7 @@ if (isset($_REQUEST['bound'])){
 	// TOP=25.24917 BOTTOM=25.11332 LEFT=121.48012 RIGHT=121.63218 for Rudy's tool
 	// https://github.com/alpha-rudy/taiwan-topo/commit/02b13b14ac562b38eac7638183e6de8730f796a5
 	$bound_str2 = sprintf("TOP=%.06f BOTTOM=%.06f LEFT=%.06f RIGHT=%.06f",$y,$y1,$x,$x1);
+	$bound_cmd = sprintf("%.06f,%.06f,%.06f,%.06f",$x,$y,$x1,$y1);
 }else{
 	$bound = 0;
 }
@@ -26,7 +27,7 @@ else
 
 if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
 	// output kml format
-	$cmd = sprintf("php cli_point2kml.php %s -o %d",($bound)?" -b $bound_str" : "",$owner);
+	$cmd = sprintf("php cli_point2kml.php %s -o %d",($bound)?" -b $bound_cmd" : "",$owner);
 	if (!isset($_REQUEST['debug'])) {
 		header('Content-type: application/vnd.google-earth.kml+xml');
 		header('Cache-Control: ');  //leave blank to avoid IE errors

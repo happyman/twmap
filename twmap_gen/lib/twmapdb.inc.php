@@ -1381,11 +1381,12 @@ function ogr2ogr_export_points($fpath, $bound, $owner=0) {
 		}
 		if (isset($bound[0])){
 			//$spat = sprintf("-spat %.06f %.06f %.06f %.06f",$bound[0],$bound[1],$bound[2],$bound[3]);
-			$spat = sprintf('AND (coord &&  ST_MakeEnvelope(%.06f,%.06f,%.06f,%.06f))',$bound[0],$bound[1],$bound[2],$bound[3]);
-		} else $spat = "";
-		//$cmd = sprintf("ogr2ogr -f GeoJSON 	-dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s \"%s\" -where \"%s %s\"  point3 ", $fpath, $gdal_dsn, $owner_str, $spat);
-		$cmd = sprintf("ogr2ogr -f GeoJSON -lco FORCE_GPX_TRACK=YES  %s \"%s\" -where \"%s %s\"  point3 ", $fpath, $gdal_dsn, $owner_str, $spat);
-		echo $cmd;
+			$spat = sprintf('AND (coord && ST_MakeEnvelope(%.06f,%.06f,%.06f,%.06f))',$bound[0],$bound[1],$bound[2],$bound[3]);
+		} else 
+			$spat = "";
+		//$cmd = sprintf("ogr2ogr -f GeoJSON -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES  %s \"%s\" -where \"%s %s\"  point3 ", $fpath, $gdal_dsn, $owner_str, $spat);
+		$cmd = sprintf("ogr2ogr -f GeoJSON  %s \"%s\" -where \"%s %s\"  point3 ", $fpath, $gdal_dsn, $owner_str, $spat);
+		// echo $cmd;
 		exec($cmd, $out, $ret);
 		if ($ret == 0 ) return array(true, "ok");
 		else return array(false, implode( "", $out ));

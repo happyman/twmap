@@ -623,7 +623,7 @@ function MyErrorLog($ident, $data) {
 // cmd_make will persist port 
 function notify_web($channel,$msg_array,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$reuse_port=0,$debug=0){
 	if ($reuse_port != 0)
-		$cmd = sprintf("/usr/bin/echo %s |nc 127.0.0.1 %d",escapeshellarg($msg_array[0]),$reuse_port);
+		$cmd = sprintf("/usr/bin/echo -n %s |nc 127.0.0.1 %d",escapeshellarg($msg_array[0]),$reuse_port);
 	else
 		$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat --no-line -1 -t -  %s%s",base64_encode($msg_array[0]),$logurl_prefix,$channel);
 	if ($debug == 1)
