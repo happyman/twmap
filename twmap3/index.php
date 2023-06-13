@@ -61,15 +61,16 @@ list ($st, $info) = login_info();
 	<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=0">
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
-	<!--<script src="//maps.google.com/maps/api/js?sensor=true&v=3"></script> -->
 	<script src="//maps.googleapis.com/maps/api/js?v=3&key=<?php echo $CONFIG['gmap_api_key']; ?>&libraries=geometry,drawing&callback=Function.prototype"></script>
-       <!--<script  src="js/jquery-1.7.1.min.js"></script>
-       <script  src="js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/redmond/jquery-ui.css">
+	<!--
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+    <link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />  
 -->
-	        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-                <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
-	   <link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" rel="Stylesheet" />  
-		<link href="css/font-awesome.min.css" rel="stylesheet" />
+	<link href="css/font-awesome.min.css" rel="stylesheet" />
 	   
 <!-- build:js js/vender.js -->
 	<script  src="js/ui.dropdownchecklist.js" charset="utf-8"></script>
