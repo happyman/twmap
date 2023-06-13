@@ -71,7 +71,7 @@ th {
 	echo "<hr>以下 GPS 航跡皆為山友無私貢獻分享,請大家上山前做好準備,快樂出門,平安回家!";
 	echo "<br>距座標點". $_REQUEST['r'] ."M 的範圍的航點資訊";
 	echo "<table>";
-	echo "<tr><th width='150px'>名稱<th>顯示<th width='200px'>下載<th>備註<th>評價";
+	echo "<tr><th width='150px'>名稱<th>顯示<th width='200px'>下載<th>備註";
     $ans = array();
 	$to_show = array();
 	
@@ -96,12 +96,14 @@ th {
 			$show_url = sprintf("<a href='%s/show.php?mid=%s' target=_blank><img src='%s/icons/op_mapshow.png'>%s</a>",$site_html_root,$mid_to_show, $site_html_root,mid_show($mid_to_show));
 			$rs = $rank->stats($mid_to_show);
 			list ($login, $uid) = userid();
+			/*
 			if ($login === false){
 				$rank_str = sprintf("<a href='%s/main.php?return=twmap3' target=_top title='登入給予評價'><img src='%s/icons/%s' alt='%s' /></a>",$site_html_root,$site_html_root, $rs['icon'],$rs['text']);
 			} else {
 				$rank_str = sprintf("<a href='#' data-id='%d'  data-title='%s' data-link='%s' data-ratelink='%s/api/rate.php?mid=%d' data-backurl='%s' class='rating'><img src='%s/icons/%s' alt='%s' /></a>",
 				$mid_to_show, $row['title'], "", $site_html_root, $mid_to_show, $_SERVER['REQUEST_URI'], $site_html_root, $rs['icon'], $rs['text']);
 			}
+			*/
 			if ( !empty($row['keepon_id']) &&  $row['keepon_id'] != 'NULL' && !is_numeric($row['keepon_id']))
 				$record_str = sprintf("<a href='http://www.keepon.com.tw/redirectMap-%s.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>",$row['keepon_id']);
 			else
@@ -124,18 +126,18 @@ th {
 						$row['title'],$gpx_link, $path_parts['filename'], $mid_to_show, $path_parts['filename']);
 				}
 				printf("<tr><td>%s%s<td rowspan=$rowspan><a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a>
-				<td rowspan=$rowspan>%s<td rowspan=$rowspan>%s<td rowspan=$rowspan>%s",
+				<td rowspan=$rowspan>%s<td rowspan=$rowspan>%s",
 				$wpt_icon,$row['name'],
 				$mid_to_show,$row['title'],rawurlencode($show_url),mid_show($mid_to_show),
-				$gpx_url,(($row['flag'] == 0)? $show_url:"" ). $record_str, $rank_str);
+				$gpx_url,(($row['flag'] == 0)? $show_url:"" ). $record_str);
 			} else {
 				printf("<tr><td>%s%s<td rowspan=$rowspan>
 				<a href=# class='showkml' data-id='%d' data-title='%s' data-link='%s'>%s</a>
 				<td rowspan=$rowspan><a href='export_mid_gpx.php?mid=%d&kml=1' class=download_track target=_blank>%s (kml)</a>
-				<td rowspan=$rowspan><img src='%s/icons/op_delete.png' title='原始 gpx 已刪除'/><td rowspan=$rowspan>%s", 
+				<td rowspan=$rowspan><img src='%s/icons/op_delete.png' title='原始 gpx 已刪除'/>", 
 				$wpt_icon,$row['name'], 
 				$mid_to_show,$row['title'],rawurlencode($show_url),mid_show($mid_to_show), $mid_to_show, 
-				$row['title'],$site_html_root,$rank_str);
+				$row['title'],$site_html_root);
 			}
 		}
 	}	
@@ -216,50 +218,3 @@ $('document').ready(function(){
 </html>
 <?php
 }
-
-/*
-   $tlx = $_REQUEST['tlx'];
-   $tly = $_REQUEST['tly'];
-   $brx = $_REQUEST['brx'];
-   $bry = $_REQUEST['bry'];
-   $gpx = (isset($_REQUEST['gpx'])) ? intval($_REQUEST['gpx']) : 0 ;
-   $keys = (!empty($_REQUEST['keys'])) ? explode(",",$_REQUEST['keys']):array();
-// 最多查幾筆
-$maxkeys = ($_REQUEST['maxkeys']) ? intval($_REQUEST['maxkeys']) : 0;
-
-
-if (empty($tlx) || empty($tly) || empty($brx) || empty($bry)) {
-ajaxerr("insufficent parameters");
-}
-
-$bounds = array("tlx" => $tlx, "tly" => $tly, "brx" => $brx, "bry" => $bry );
-
-$data = map_overlap($bounds, $gpx, $maxkeys);
-/*
-$mids = array();
-$ret = array("add" => array(), "del" => array(), "all" => array(), "count"=> array("add" => 0 , "del" => 0 ));
-foreach($data as $map) {
-if ($map['hide'] == 1) continue;
-if (!in_array($map['mid'],$keys)) {
-
-$content =  sprintf("<a href='%s%s/show.php?mid=%s&info=%s&version=%d' target=_twmap>%s<img src='img/map.gif' title='地圖產生器' border=0/></a>",$site_url,$site_html_root, $map['mid'], urlencode(sprintf("%dx%s-%dx%d",$map['locX'],$map['locY'],$map['shiftX'],$map['shiftY'])), $map['version'], $map['title']);
-if ($map['keepon_id'])
-$content .= sprintf("<a href='http://www.keepon.com.tw/DocumentHandler.ashx?id=%s' target='_keepon'>%s</a>",$map['keepon_id'],"連結登山補給站");
-
-
-$ret['add'][$map['mid']] = array('url' => sprintf('%s%s/api/getkml.php?mid=%d',$site_url, $site_html_root, $map['mid']),
-'desc' =>  $content );
-} 
-$ret['all'][] = $map['mid'];
-$mids[] = $map['mid'];
-}
-foreach($keys as $key) {
-if (!in_array($key, $mids)) {
-$ret['del'][$key] = 1;
-}
-}
-
-$ret['count']['add'] = count($ret['add']);
-$ret['count']['del'] = count($ret['del']);
-ajaxok($ret);
- */
