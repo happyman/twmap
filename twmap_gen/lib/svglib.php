@@ -170,7 +170,8 @@ class gpxsvg {
 			$this->_err[] = "no gpx file input";
 			return false;
 		}
-		$xml = simplexml_load_file($this->gpx);
+		// LIBXML_NOCDATA parse CDATA correctly
+		$xml = simplexml_load_file($this->gpx, null, LIBXML_NOCDATA);
 		$arr = obj2array($xml);
 		// 1. 取得 bounds, 轉換成 twd67 最近的 bounds
 
@@ -318,6 +319,7 @@ class gpxsvg {
 					$waypoint['@attributes']['lat'] > $this->bound['tl'][1] ||
 					$waypoint['@attributes']['lat']  < $this->bound['br'][1] )
 					continue;
+				print_r($waypoint);
 				$this->waypoint[$j] = $waypoint;
 				$this->waypoint[$j]['rel'] = $this->rel_px($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']);
 				if ($this->taiwan == 1)
@@ -415,7 +417,7 @@ class gpxsvg {
 		//第二行超過就變成 … 
 		// $total_row = count($this->waypoint);
 		$line_len = 24;
-        $j=1;$index=1;
+        	$j=1;$index=1;
 		mb_internal_encoding('UTF-8');
 		$line[0] = array('index' => 'No.', 'data'=>"座標及說明");
 		foreach($this->waypoint as $wpt) {
