@@ -42,7 +42,7 @@ if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) || em
 	cli_error_out("參數錯誤",0);
 
 $version=isset($opt['v'])?$opt['v']:2016;
-$title=$opt['t'];
+$title=mb_decode_mimeheader($opt['t']);
 $keep_color = (isset($opt['c']))? 1 : 0;
 $ph = isset($opt['p'])? $opt['p'] : 0;
 $jump = isset($opt['s'])? $opt['s'] : 1;
@@ -116,7 +116,7 @@ if (!empty($log_channel)) {
 	$port=find_free_port();
 	$cmd = sprintf("websocat -t -1 -u tcp-l:127.0.0.1:%d reuse-raw:%s%s  >/dev/null 2>&1 & echo $!",$port,$logurl_prefix,$log_channel);
 	$pid = exec($cmd,$output);
-	$g->setLog($log_channel,$logurl_prefix,$port);
+	$g->setLog($log_channel,$logurl_prefix,$port,$logger);
 	if (isset($opt['agent']))
 		$agent=$opt['agent'];
 	else
@@ -304,8 +304,8 @@ if ($stage >= $jump ) {
 	cli_msglog("make kmz file...");
 	require_once("lib/garmin.inc.php");
 	$kmz = new garminKMZ(3,3,$outimage,$ph,$datum);
-	if ($debug_flag == 1 )
-		$kmz->setDebug(1);
+	//if ($debug_flag == 1 )
+	//	$kmz->setDebug(1);
 	// 加上行跡資料
 	if (isset($opt['g'])) {
 		$kmz->addgps("gpx", $param['gpx']);

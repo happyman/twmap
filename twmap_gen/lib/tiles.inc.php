@@ -349,6 +349,7 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	$image_ps_args = $options['image_ps_args'];
 	$tileurl = $options['tile_url'];
 	$datum = $options['datum'];
+	$logger = $options['logger'];
 	// 左上
 	// $dir = $base_dir . "/". $zoom;
 	$dir = tempdir($tmpdir, "MDIRXXXXX");
@@ -357,7 +358,8 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	$y1 = $y - $shifty * 1000;
 
 	if ($debug) {
-		error_log("img_from_tiles($x, $y, $shiftx, $shifty, $zoom, $ph, $debug); \n");
+		error_log("img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph, $debug); \n");
+		$logger->info("img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph, $debug)");
 	}
 	// 輸入的座標是 TWD97 or TWD67
 	if ($datum == 'TWD97'){
@@ -409,14 +411,11 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	if ($debug) {
 		//error_log("run parallel -j 4 -- < $dir/dl.txt");
 		error_log("run curl -Z --config $dir/dl.txt");
+		$logger->info("run curl -Z --config $dir/dl.txt");
 	}
-	/*
-	putenv("SHELL=/bin/sh");
-	putenv("HOME=/tmp");
-	*/
+
 	while(1) {
-	//exec("parallel -j 4 -- < $dir/dl.txt");
-	
+
 	$cmd = sprintf("curl -Z -L --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 --config %s","$dir/dl.txt");
 	exec($cmd);
 	$img = array();
@@ -429,11 +428,13 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 					continue;
 				if ($debug) {
 					error_log("$dir/$imgname ok ". filesize("$dir/$imgname"));
+					$logger->info("$dir/$imgname ok ". filesize("$dir/$imgname"));
 				}
 				$img[] =  $imgname;
 			} else {
 				if ($debug) {
 					error_log("$dir/$imgname not exist");
+					$logger->error("$dir/$imgname not exist");
 				}
 				// clean tmpdir
 				exec("rm -r $dir");
@@ -480,15 +481,14 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 		$montage_bin,
 		implode(" ",$img),
 		$xx, $yy, $outimage);
-	if ($debug) {
-		error_log("cmd=". $cmd );
-	}
 	exec($cmd, $out, $ret);
+	$logger->info("run $cmd");
 	if ($debug) {
-		error_log("ret=". implode("",$out) );
+		error_log("$cmd ret=". implode("",$out) );
 	}
 	if ($ret != 0 ) {
 		unlink($outimage);
+		$logger->error("ret=".implode("",$out));
 		return array(FALSE, "err:".$cmd."ret=".implode("",$out), false);
 	}
 
@@ -538,6 +538,7 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 		return array(TRUE,$cropimage, "made");
 	} else {
 		unlink($cropimage);
+		$logger->error("ret=".implode("",$out));
 		return array(FALSE, "err:".$cmd. "ret=".implode("",$out), false);
 	}
 }

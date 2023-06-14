@@ -26,7 +26,8 @@ class garminKMZ {
 	var $ph; // 澎湖
 	var $datum;
 	var $debug = 0;
-	function __construct($cutx,$cuty,$fname,$ph=0,$datum='TWD97') {
+	var $logger = null;
+	function __construct($cutx,$cuty,$fname,$ph=0,$datum='TWD97',$logger=null) {
 		if (preg_match("/(\d+)x(\d+)-(\d+)x(\d+)/",basename($fname),$r)){
 			if (file_exists($fname)) {
 				$this->cutx = $cutx;
@@ -38,6 +39,8 @@ class garminKMZ {
 				$this->fname = $fname;
 				$this->ph = $ph;
 				$this->datum = $datum;
+				if ($logger)
+					$this->logger=$logger;
 				//echo "ok";
 				return true;
 			}
@@ -109,21 +112,21 @@ class garminKMZ {
 		$this->kml .= $this->kml_foot();
 		// echo $this->kml;
 		if ($this->debug)
-			error_log($this->kml);
+			$this->myerrorlog($this->kml,"DEBUG");
 
 	}
+	function myerrorlog($str,$type='INFO'){
+		if ($this->logger){
+			if ($type=='DEBUG')
+				$this->logger->debug($str);
+			else
+				$this->logger->info($str);
+		}
+	}
 	function doit() {
-		if ($this->debug)
-			error_log("makekml\n");
 		$this->makekml();
-		if ($this->debug)
-			error_log("im_cropimage\n");
 		$this->im_cropimage();
-		if ($this->debug)
-			error_log("makekmz\n");
 		$this->makekmz();
-		if ($this->debug)
-			error_log("doit finished\n");
 	}
 	/**
 	 * transcoord 
@@ -166,9 +169,7 @@ class garminKMZ {
 		$newname = str_replace(".tag.png", ".tag_%02d.jpg", trim($fname));
 		$cmd = sprintf("cd %s; mkdir -p files; convert -crop %s +repage %s 'files/%s';",$dir,$crop,trim(basename($fname)),basename($newname));
 		exec($cmd,$output,$ret);
-		if ($this->debug) {
-			error_log("run $cmd\nret=".$ret);
-		}
+		$this->myerrorlog("im_cropimg $cmd return $ret");
 		return $ret;
 	}
 	function makekmz() {
@@ -187,8 +188,8 @@ class garminKMZ {
 		$cmd = sprintf("cd %s; zip %s doc.kml files/*.jpg; rm -r files doc.kml " ,$dir,basename($zipname));
 		exec($cmd, $output, $ret);
 		if ($this->debug)
-			error_log("run $cmd\n".print_r($output,true)."\nret=".$ret);
-		//error_log($cmd);
+			$this->myerrorlog("run $cmd\n".print_r($output,true)."\nret=".$ret);
+
 	}
 	function kml_head() {
 		$str = '<?xml version="1.0" encoding="utf-8"?>

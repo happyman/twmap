@@ -206,9 +206,10 @@ $outx = ceil($shiftx / $tiles[$type]['x']);
 $outy = ceil($shifty / $tiles[$type]['y']);
 showmem("before call cmd_make.php");
 $log_channel = $inp['formid'];
+mb_internal_encoding('UTF-8');
 $cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s %s %s %s %s -a %s", $startx, $starty, $shiftx, $shifty, 
 	isset($inp['97datum'])? 'TWD97': 'TWD67',
-	$outpath, $version, addslashes($title), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $log_channel, isset($inp['grid_100M']) ? '-e' : '',
+	$outpath, $version, _mb_mime_encode($title,"UTF-8"), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $log_channel, isset($inp['grid_100M']) ? '-e' : '',
 	// 是否包含 100M grid
 	isset($inp['inc_trace']) ? '-G' : '',
 	//是否包含已知 gps trace
@@ -310,3 +311,21 @@ function msglog($str) {
 	return $msg;
 }
 
+function _mb_mime_encode($string, $encoding)
+{
+    $pos = 0;
+    // after 36 single bytes characters if then comes MB, it is broken
+    // but I trimmed it down to 24, to stay 100% < 76 chars per line
+    $split = 24;
+    while ($pos < mb_strlen($string, $encoding))
+    {
+        $output = mb_strimwidth($string, $pos, $split, "", $encoding);
+        $pos += mb_strlen($output, $encoding);
+        $_string_encoded = "=?".$encoding."?B?".base64_encode($output)."?=";
+        if ($_string)
+            $_string .= "\r\n";
+        $_string .= $_string_encoded;
+    }
+    $string = $_string;
+    return $string;
+}

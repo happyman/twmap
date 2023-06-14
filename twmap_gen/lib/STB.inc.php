@@ -77,15 +77,18 @@ Class STB {
 	function setDebug($flag){
 		$this->debug = $flag;
 	}
-	function setLog($channel,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$port=0) {
+	function setLog($channel,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$port=0,$logger=null) {
 		$this->log_channel = $channel;
 		$this->logurl_prefix = $logurl_prefix;
 		$this->websocat_port = $port;
+		$this->logger=$logger;
 
 	}
 	function doLog($msg) {
-		if (empty($this->log_channel))
-			echo $msg;
+		//if (empty($this->log_channel)
+		echo $msg;
+		if ($this->logger)
+			$this->logger->info($msg);
 		else {
 			if (preg_match("/nbr:(.*)/",$msg,$mat)){
 				$msg = $mat[1];
@@ -460,7 +463,7 @@ Class STB2 extends STB {
 			for($j=$this->starty; $j>$this->starty-$this->shifty; $j--){
 				for($i=$this->startx; $i<$this->startx+$this->shiftx; $i++){
 					$tileurl = $this->gettileurl();
-					$options=array("tile_url"=> $tileurl, "image_ps_args"=> $image_ps_args, "tmpdir"=> $this->tmpdir, "datum"=> $this->datum);
+					$options=array("tile_url"=> $tileurl, "image_ps_args"=> $image_ps_args, "tmpdir"=> $this->tmpdir, "datum"=> $this->datum, "logger"=>$this->logger);
 					// tmppath => /dev/shm
 					list ($status, $fname) =img_from_tiles3($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph, $debug_flag , $options); // "/dev/shm", $tileurl, $image_ps_args);
 					// 產生 progress

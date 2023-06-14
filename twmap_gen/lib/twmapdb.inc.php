@@ -32,6 +32,7 @@ function get_conn() {
 
 }
 function logsql($sql,$rs){
+	// happyman 需要再開
 	$debug = 0;
 	if ($debug == 0 ) return;
 	$trace = getCallingFunctionName(true);
@@ -156,7 +157,7 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host,$file
 	if ($row === FALSE || $keepon_id != NULL ) {
 		// 新地圖
 		// 使用 postgresql 要改 default
-		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\",\"datum\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, '%s', %s) returning mid", $uid, $host, $title, $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==NULL)?'NULL':$keepon_id,$datum);
+		$sql = sprintf("INSERT INTO \"map\" (\"mid\",\"uid\",\"cdate\",\"host\",\"title\",\"locX\",\"locY\",\"shiftX\",\"shiftY\",\"pageX\",\"pageY\",\"filename\",\"size\",\"version\",\"gpx\",\"keepon_id\",\"datum\") VALUES (DEFAULT, %d, CURRENT_TIMESTAMP, '%s', '%s', %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, '%s', %s) returning mid", $uid, $host, pg_escape_string($title), $startx, $starty, $shiftx, $shifty, $px, $py, $file, $size, $version,$gpx,($keepon_id==NULL)?'NULL':$keepon_id,$datum);
 		$rs = $db->getAll($sql);
 		logsql($sql,$rs);
 	$db->close();
@@ -169,7 +170,7 @@ function map_add($uid,$title,$startx,$starty,$shiftx,$shifty,$px,$py,$host,$file
 	} else {
 		// 重新產生的地圖, 連檔名都要更新
 		$mid = $row[0];
-		$sql = sprintf("UPDATE \"map\" SET \"locX\"=%d,\"locY\"=%d,\"shiftX\"=%d,\"shiftY\"=%d,\"size\"=%d,\"flag\"=0,\"cdate\"=CURRENT_TIMESTAMP,\"title\"='%s',\"version\"=%d,\"filename\"='%s',\"gpx\"=%d,\"datum\"=%s WHERE \"mid\"=%d",$startx, $starty, $shiftx, $shifty, $size,$title,$version,$file, $gpx, $datum, $mid);
+		$sql = sprintf("UPDATE \"map\" SET \"locX\"=%d,\"locY\"=%d,\"shiftX\"=%d,\"shiftY\"=%d,\"size\"=%d,\"flag\"=0,\"cdate\"=CURRENT_TIMESTAMP,\"title\"='%s',\"version\"=%d,\"filename\"='%s',\"gpx\"=%d,\"datum\"=%s WHERE \"mid\"=%d",$startx, $starty, $shiftx, $shifty, $size, pg_escape_string($title),$version,$file, $gpx, $datum, $mid);
 		$rs = $db->Execute($sql);
 		$key=sprintf("map_get_single_%s",$mid);
 		memcached_delete($key);
