@@ -34,8 +34,9 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 }
 use \stange\logging\Slog;
 // keep colorred stdout *and* file log
-$logger =  new Slog(['file'=>"/tmp/cmd_make.log"]);
+$logger =  new Slog(['file'=>"/tmp/".basename($argv[0]).".log"]);
 $logger->useDate(True);
+$logger->info("params=" . implode(" ",$argv));
 // parse param
 list($startx,$starty,$shiftx,$shifty,$datum)=explode(":",$opt['r']);
 if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) || empty($datum))
@@ -132,7 +133,6 @@ if (!empty($log_channel)) {
 }else{
 	$g->setLogger($logger);
 }
-
 $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
 $out=$g->getsimages();
 // debug: print_r($out);

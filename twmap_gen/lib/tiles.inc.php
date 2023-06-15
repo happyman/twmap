@@ -447,10 +447,13 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	if ($debug) {
 		//	error_log(print_r($img, true));
 		error_log(print_r("$xx x $yy", true));
+		$logger->debug(print_r("$xx x $yy", true));
 	}
 	// 左上點所在的 tile, 
 	$rect = getLatLonXYZ($a[0],$a[1],$zoom);
 	if ($debug) {
+		$logger->info("getLatLonXYZ($a[0],$a[1],$zoom)");
+		$logger->info($rect);
 		error_log("getLatLonXYZ($a[0],$a[1],$zoom)");
 		error_log(print_r($rect, true));
 	}
@@ -482,12 +485,12 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 		implode(" ",$img),
 		$xx, $yy, $outimage);
 	exec($cmd, $out, $ret);
-	$logger->info("run $cmd");
 	if ($debug) {
+		$logger->info("run $cmd");
 		error_log("$cmd ret=". implode("",$out) );
 	}
 	// 檢查拼起來是否正確
-	if (@is_array( getimagesize($outimage)) ) {
+	if (!@is_array( getimagesize($outimage)) ) {
 		unlink($outimage);
 		$logger->error("ret=".implode("",$out));
 		return array(FALSE, "err:".$cmd."ret=".implode("",$out), false);
@@ -515,8 +518,10 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	//$cmd = sprintf("convert %s -matte -virtual-pixel Transparent -affine %s -transform +repage %s", $outimage, $affine, $outimage);
 	$cmd = sprintf("convert %s -matte -virtual-pixel Transparent +distort AffineProjection %s -transform +repage %s", $outimage, $affine, $outimage);
 	exec($cmd, $out, $ret);
-	if ($debug)
+	if ($debug){
 		error_log($cmd);
+		$logger->info($cmd);
+	}
 	$str_image_ps_arg = implode(" ",$image_ps_args);
 	//$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 miff:- | composite -gravity northeast %s - png:%s",$outimage,
 // -white-threshold 85%% p
@@ -529,6 +534,7 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 		$str_image_ps_arg, 
 		$cropimage);
 	if ($debug) {
+		$logger->info($cmd);
 		error_log("cmd=". $cmd );
 	}
 	exec($cmd, $out, $ret);
@@ -536,6 +542,7 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	// clean tmpdir
 	exec("rm -r $dir");
 	if ($ret == 0 ) {
+		$logger->success("$cropimage created");
 		return array(TRUE,$cropimage, "made");
 	} else {
 		unlink($cropimage);
