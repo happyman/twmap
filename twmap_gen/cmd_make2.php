@@ -111,12 +111,13 @@ if (isset($debug_flag)){
 // get port and pid
 $port = 0;
 $pid = 0;
+
 if (!empty($log_channel)) {
 	// persist websocket connection for slightly better performance 
 	$port=find_free_port();
 	$cmd = sprintf("websocat -t -1 -u tcp-l:127.0.0.1:%d reuse-raw:%s%s  >/dev/null 2>&1 & echo $!",$port,$logurl_prefix,$log_channel);
 	$pid = exec($cmd,$output);
-	$g->setLog($log_channel,$logurl_prefix,$port,$logger);
+	$g->setLog($log_channel,$logurl_prefix,$port,$logger);	
 	if (isset($opt['agent']))
 		$agent=$opt['agent'];
 	else
@@ -128,6 +129,8 @@ if (!empty($log_channel)) {
 	// OK. let's start.
 	cli_msglog(sprintf("Agent %s Roger that ^_^",$agent));
 	cli_msglog("ps%0");
+}else{
+	$g->setLogger($logger);
 }
 
 $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);

@@ -90,7 +90,7 @@ if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 <?php
 	if (isset($_SESSION['makeparam']['title'])) {
 ?>
-		$("#mapform input[name=title]").val("<?php echo $_SESSION['makeparam']['title']; ?>");
+		$("#mapform input[name=title]").val("<?php echo str_replace('"','\"',$_SESSION['makeparam']['title']); ?>");
 		$("#dialog-message").hide();
 <?php
 	} else {

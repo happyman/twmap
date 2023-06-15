@@ -486,7 +486,8 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	if ($debug) {
 		error_log("$cmd ret=". implode("",$out) );
 	}
-	if ($ret != 0 ) {
+	// 檢查拼起來是否正確
+	if (@is_array( getimagesize($outimage)) ) {
 		unlink($outimage);
 		$logger->error("ret=".implode("",$out));
 		return array(FALSE, "err:".$cmd."ret=".implode("",$out), false);

@@ -86,7 +86,7 @@ function create_rows($maps,$startsn=0) {
 			if (strstr($maps[$i]['filename'],'v3p') || strstr($maps[$i]['filename'],'v2016p')) 
 					$ph = 1; else $ph = 0;
 				if ($maps[$i]['gpx'] == 1 ) {
-					$param = sprintf("mid=%s&title=%s&filename=%s",$maps[$i]['mid'],$maps[$i]['title'],$maps[$i]['filename']);
+					$param = sprintf("mid=%s&title=%s&filename=%s",$maps[$i]['mid'],urlencode($maps[$i]['title']),$maps[$i]['filename']);
 					$op[] = sprintf("<span id='icon_recreate' title=\"mid=%d 重新產生\" 
 						onclick=\"map_action('recreate_gpx','%s')\"></span>", $maps[$i]['mid'],$param);
 				} else {

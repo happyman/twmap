@@ -21,6 +21,7 @@ Class STB {
 	var $datum;
 	var $tmpdir = "/dev/shm";
 	var $debug=0;
+	var $logger=null;
 
 	function __construct($stbdir, $startx, $starty, $sx, $sy, $datum='TWD67',$tmpdir="") {
 		if ($sx > 35 || $sy > 35) {
@@ -89,8 +90,8 @@ Class STB {
 		echo $msg;
 		if ($this->logger)
 			$this->logger->info($msg);
-		else {
-			if (preg_match("/nbr:(.*)/",$msg,$mat)){
+		if ($this->log_channel) {
+			if (preg_match("/nbr:(.*)/",$msg,$mat)){ 
 				$msg = $mat[1];
 			} else {
 				$msg.= "<br>";	
@@ -410,6 +411,7 @@ Class STB2 extends STB {
 	var $datum;
 	var $v3img; 
 	var $tmpdir = "/dev/shm";
+	var $logger = null;
 
 	private $zoom = 16;
 
@@ -435,7 +437,9 @@ Class STB2 extends STB {
 			return TRUE;
 	} 
 	// tag = 2 處理縮圖
-
+	function setLogger($logger){
+		$this->logger = $logger;
+	}
 	function createpng($tag=0, $gray=0, $fuzzy=0, $x=1, $y=1, $debug_flag=0, $borders=array()) {
 		// global $tmppath;
 		// global $tilecachepath;
