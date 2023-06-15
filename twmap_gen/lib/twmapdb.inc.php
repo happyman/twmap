@@ -47,19 +47,22 @@ function logsql($sql,$rs){
 }
 
 function memcached_query($key) {
+	global $CONFIG;
 	$mem = new Memcached;
-	$mem->addServer('localhost',11211);
+	$mem->addServer($CONFIG['memcache_server'],$CONFIG['memcache_port']);
 	return $mem->get($key);
 }
 function memcached_set($key, $data, $ttl=86400){
+	global $CONFIG;
 	$mem = new Memcached;
-	$mem->addServer('localhost',11211);
+	$mem->addServer($CONFIG['memcache_server'],$CONFIG['memcache_port']);
 	$mem->set($key, $data, $ttl);
 	return $data;
 }
 function memcached_delete($key) {
+	global $CONFIG;
 	$mem = new Memcached;
-	$mem->addServer('localhost',11211);
+	$mem->addServer($CONFIG['memcache_server'],$CONFIG['memcache_port']);
 	$mem->delete($key);
 }
 

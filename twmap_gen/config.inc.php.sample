@@ -103,3 +103,6 @@ $CONFIG['admin'] = array( 3 );
 // define('twDEM_path', __ROOT__ ."db/DEM/dem_20m-latlong.tif");
 $CONFIG['poi_file'] = "/home/happyman/poi/MOI_OSM_Taiwan_TOPO_Rudy.poi";
 
+//多台前端要吃同一台
+$CONFIG['memcache_server'] = '127.0.0.1';
+$CONFIG['memcache_port'] = 11211;
