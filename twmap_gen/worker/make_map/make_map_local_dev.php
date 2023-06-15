@@ -11,12 +11,14 @@ while(1){
 	$job = $client->reserve();
 	$params = $job['payload'];
 	// replace callback
-	$cmd = sprintf("/usr/bin/php %s %s --agent local --logurl_prefix '%s'",
-			$CONFIG['cmd_make_local_dev'], $params,$CONFIG['logurl_prefix'] );
+	$cmd = sprintf("/usr/bin/php %s %s --agent local --logurl_prefix '%s' --logfile '/tmp/%s.log'",
+			$CONFIG['cmd_make_local_dev'], $params,$CONFIG['logurl_prefix'] ,basename($argv[0]));
 	system($cmd, $ret);
 	if ($ret==0)
 		$client->delete($job['id']);
-	else
+	else {
 		$client->release($job['id']);
+		sleep(10);
+	}
 	error_log("return $ret");
 }

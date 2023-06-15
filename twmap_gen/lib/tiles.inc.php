@@ -453,7 +453,7 @@ function img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph=0, $debug=0, $opti
 	$rect = getLatLonXYZ($a[0],$a[1],$zoom);
 	if ($debug) {
 		$logger->info("getLatLonXYZ($a[0],$a[1],$zoom)");
-		$logger->info($rect);
+		$logger->debug(print_r($rect,true));
 		error_log("getLatLonXYZ($a[0],$a[1],$zoom)");
 		error_log(print_r($rect, true));
 	}

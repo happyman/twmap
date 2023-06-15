@@ -7,7 +7,7 @@ require_once("lib/slog/load.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:","logurl_prefix:"));
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:","logurl_prefix:","logfile:"));
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 -O outdir -v 2016 -t title [-p][-m /tmp][-g gpxfile:0:0][-c][-G][-e][-3][-d]\n";
 	echo "必須參數:\n";
@@ -30,11 +30,15 @@ if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "       -i ip: log remote ip address --agent myhost\n";
 	echo "       -l log_channel --logurl_prefix for custom url, ex: ws://myhost:9002/twmap_\n";
 	echo "       -a callback url when done\n";
+	echo "       --logfile /tmp/log 若存在也 log 至 file\n";
 	exit(0);
 }
 use \stange\logging\Slog;
 // keep colorred stdout *and* file log
-$logger =  new Slog(['file'=>"/tmp/".basename($argv[0]).".log"]);
+if (isset($opt['logfile']))
+	$logger =  new Slog(['file'=>$opt['logfile']]);
+else
+	$logger = new Slog();
 $logger->useDate(True);
 $logger->info("params=" . implode(" ",$argv));
 // parse param

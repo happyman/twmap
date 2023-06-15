@@ -20,13 +20,15 @@ while(1){
         $outdir = $mat[1];
         @mkdir($outdir,0755, true);
         $image="happyman/docker-twmap-cli:". $CONFIG['docker_ver'];
-        $cmd = sprintf("docker run --rm -i  --shm-size=5gb -v %s:/workdir -v /tmp:/tmp --user=1001:1001 %s /usr/bin/php /twmap/twmap_gen/cmd_make2.php -O /workdir %s --agent %s --logurl_prefix %s", $outdir, $image, str_replace("-O $outdir","",$workload),$CONFIG['agent'],$CONFIG['logurl_prefix']);
+        $cmd = sprintf("docker run --rm -i  --shm-size=5gb -v %s:/workdir -v /tmp:/tmp --user=1001:1001 %s /usr/bin/php /twmap/twmap_gen/cmd_make2.php -O /workdir %s --agent %s --logurl_prefix %s --logfile /tmp/%s.log", $outdir, $image, str_replace("-O $outdir","",$workload),$CONFIG['agent'],$CONFIG['logurl_prefix'],basename($argv[0]));
         error_log($cmd);
         system($cmd, $ret);
 		if ($ret==0)
 			$client->delete($job['id']);
-		else
+		else {
 			$client->release($job['id']);
+			sleep(5);
+		}
         error_log("return $ret");
 	}
 }
