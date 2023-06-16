@@ -1,6 +1,9 @@
 <?php
 // $Id: list.php 354 2013-09-12 09:54:20Z happyman $
-session_start();
+session_start([
+        'read_and_close' => true,
+]);
+
 if (empty($_SESSION['loggedin'])) {
 	header("Location: login.php");
 	exit(0);

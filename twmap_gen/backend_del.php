@@ -1,7 +1,10 @@
 <?php
 // $Id: backend_del.php 282 2012-05-17 08:49:51Z happyman $
 // 1. check login
-session_start();
+session_start([
+        'read_and_close' => true,
+]);
+
 if (empty($_SESSION['loggedin'])) {
 	header("Location: login.php");
 	exit(0);

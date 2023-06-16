@@ -1,20 +1,9 @@
 <?php
 // $Id: logout.php 302 2012-10-29 08:18:22Z happyman $
-session_start();
-
+session_start([
+        'read_and_close' => true,
+]);
 require_once("config.inc.php");
-// logout facebook
-// print("[".$_SESSION['mylogin']['type']."]");
-if ($_SESSION['mylogin']['type'] == 'facebook') {
-	unset($_SESSION['mylogin']['type']);
-	// 不真的去登出 facebook
-	//$session = $facebook->getUser();
-	//	if ($session) {
-	//		header("Location: ".$facebook->getLogOutUrl( array('next'=> $site_url . $site_html_root . "/login.php")));
-	//	} 
-
-} 
-
 $_SESSION = array();
 $_SESSION['loggedin']=false;
 session_destroy();

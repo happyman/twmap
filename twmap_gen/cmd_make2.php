@@ -7,7 +7,14 @@ require_once("lib/slog/load.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:","logurl_prefix:","logfile:"));
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:","logurl_prefix:","logfile:","getopt"));
+// for command line parse
+if (isset($opt['getopt'])){
+	$options=$opt;
+	unset($options['getopt']);
+	echo json_encode($opt);
+	exit(0);
+}
 if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
 	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 -O outdir -v 2016 -t title [-p][-m /tmp][-g gpxfile:0:0][-c][-G][-e][-3][-d]\n";
 	echo "必須參數:\n";
@@ -70,6 +77,7 @@ if (!file_exists($outpath)) {
 		cli_error_out("無法建立 $outpath");
 	}
 }
+
 switch($datum){
 	case 'TWD97':
 		break;
@@ -93,7 +101,9 @@ $outsvg = $outfile_prefix . ".svg";
 $outsvg_big = $outfile_prefix . ".svg2";
 $merged_gpx = $outfile_prefix. ".gpx2";
 $outpdf = $outfile_prefix . ".pdf";
-
+// cmd
+$outcmd = $outfile_prefix . ".cmd";
+$logger->debug($outcmd . " created");
 $stage = 1;
 // 決定哪一種輸出省紙
 if (isset($opt['3']))
@@ -172,7 +182,8 @@ if ($jump <= $stage ) {
 			cli_error_out("unable to read gpx file",0);
 		}
 	}
-	
+	// 這實再把 cmd 寫下來, 以免蓋掉前次的執行
+	file_put_contents($outcmd,implode(" ",$argv)); 
 	$im = $g->createpng(0,0,0,1,1,$debug_flag); // 產生
 	// 產生不出來
 	if ($im === false) 
@@ -361,16 +372,18 @@ if (!empty($callback)){
 		$url.="&agent=".trim($opt['agent']);
 	cli_msglog("call callback api");
 	// $output = file_get_contents($url);
-	try {
-		$output = request_curl($url);
-	} catch (Exception $e) {
-		// 連不上 or 有意外
+	$cmd = sprintf("curl --connect-timeout 2 --max-time 30 --retry 10 --retry-max-time 0 %s",escapeshellarg($url));
+	// 把 cmd 寫下來
+	$logger->debug($cmd);
+	file_put_contents($outcmd,"\n\n$cmd\n",FILE_APPEND); 
+	exec($cmd,$output,$ret);
+	if ($ret != 0) {
 		cli_error_out('callback failed '.$url);
 	}
-	// error_log(print_r($output,true));
 }
 cli_msglog("ps%100");
 $logger->success(sprintf("done params: %s",implode(" ",$argv)));
+// 成功的話 cmd 會一起被搬至新目錄備查
 exit(0);
 
 function cli_notify_web($str){
@@ -399,6 +412,7 @@ function find_free_port() {
     socket_close($sock);
     return $port;
 }
+
 // 抓到 signal 
 function sigint(){
 	exit(80);

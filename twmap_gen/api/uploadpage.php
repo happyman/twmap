@@ -1,7 +1,10 @@
 <?php
 require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
-session_start();
+session_start([
+        'read_and_close' => true,
+]);
+
 list ($login,$uid) = userid();
 if ($login === false) {
 	echo "請登入";

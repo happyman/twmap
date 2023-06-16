@@ -628,7 +628,7 @@ function MyErrorLog($ident, $data) {
 
 // websocket client: https://github.com/vi/websocat
 // cmd_make will persist port 
-function notify_web($channel,$msg_array,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$reuse_port=0,$debug=0){
+function notify_web($channel,$msg_array,$logurl_prefix="ws://twmap:9002/twmap_",$reuse_port=0,$debug=0){
 	if ($reuse_port != 0)
 		$cmd = sprintf("/usr/bin/echo -n %s |nc 127.0.0.1 %d",escapeshellarg($msg_array[0]),$reuse_port);
 	else

@@ -1,7 +1,10 @@
 <?php
 require_once("../config.inc.php");
 
-session_start();
+session_start([
+        'read_and_close' => true,
+]);
+
 $debug = 1;
 $cli = 0;
 $keepon_id = "";

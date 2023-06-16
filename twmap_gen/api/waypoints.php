@@ -3,7 +3,9 @@ $uid = 1;
 require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
 
-session_start();
+session_start([
+        'read_and_close' => true,
+]);
 
 $r = $_REQUEST['r'];
 $x = $_REQUEST['x'];

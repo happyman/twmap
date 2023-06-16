@@ -1,6 +1,9 @@
 <?php
 // $Id: mapform.php 356 2013-09-14 10:00:22Z happyman $
-session_start();
+session_start([
+        'read_and_close' => true,
+]);
+
 if (empty($_SESSION['loggedin'])) {
 	header("Location: login.php");
 	exit(0);
