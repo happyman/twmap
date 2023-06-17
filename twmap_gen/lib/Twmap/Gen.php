@@ -1,7 +1,6 @@
 <?php
 Namespace Happyman\Twmap\Gen;
 
-//require_once("tiles.inc.php");
 Class Gen {
 	var $startx, $starty; //輸入的參數
 	var $shiftx, $shifty; //輸入的參數
@@ -185,23 +184,20 @@ Class Gen {
 				}
 				$fn[] = $fname;
 			}
-
-			$this->logger->debug(print_r($fn, true));
-			// 合併
-			$this->doLog( "merge tiles...");
-			$outi = $outimage = tempnam($this->tmpdir,"MTILES");
-			$montage_bin = "montage";
-			$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
-				implode(" ",$fn), $this->shiftx ,$this->shifty, $this->v3img, $this->shiftx*315, $this->shifty*315, $outi);
-			if ($this->debug)
-				$this->doLog( $cmd );
-			exec($cmd);
-			$cim = imagecreatefrompng($outi);
-			exec("rm ".implode(" ", $fn) . " $outi");
-			$fn=[]; // important to have this
-
 		}
 
+		$this->logger->debug(print_r($fn, true));
+		// 合併
+		$this->doLog( "merge tiles...");
+		$outi = $outimage = tempnam($this->tmpdir,"MTILES");
+		$montage_bin = "montage";
+		$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
+			implode(" ",$fn), $this->shiftx ,$this->shifty, $this->v3img, $this->shiftx*315, $this->shifty*315, $outi);
+		if ($this->debug)
+			$this->doLog( $cmd );
+		exec($cmd);
+		exec("rm ".implode(" ", $fn) . " $outi");
+		$cim = imagecreatefrompng($outi);
 		return $cim;
 	}
 	// pass TW97 or TW67 datum
