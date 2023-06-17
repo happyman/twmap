@@ -15,14 +15,14 @@ if (isset($opt['getopt'])){
 	echo json_encode($opt);
 	exit(0);
 }
-if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
-	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 -O outdir -v 2016 -t title [-p][-m /tmp][-g gpxfile:0:0][-c][-G][-e][-3][-d]\n";
+if (!isset($opt['r']) || !isset($opt['O'])){
+	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 -O outdir -v 2016 [-t title][-p][-m /tmp][-g gpxfile:0:0][-c][-G][-e][-3][-d]\n";
 	echo "必須參數:\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
 	echo "       -O outdir: /home/map/out/000003 輸出目錄\n";
 	echo "       -v 3|2016: 經建3|魯地圖\n";
-	echo "       -t title: title of image\n";
 	echo "選用參數:\n";
+	echo "       -t title: title of image\n";
 	echo "       -p 1|0: 1 是澎湖 pong-hu\n";
 	echo "       -g gpx_file:trk_label:wpt_label 利用GPX檔案產生\n";
 	echo "       -c keep color 彩圖\n";
@@ -54,6 +54,7 @@ if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) || em
 	cli_error_out("參數錯誤",0);
 
 $version=isset($opt['v'])?$opt['v']:2016;
+if (!isset($opt['t'])) $opt['t'] = '地圖產生器預設標題';
 $title=mb_decode_mimeheader($opt['t']);
 $keep_color = (isset($opt['c']))? 1 : 0;
 $ph = isset($opt['p'])? $opt['p'] : 0;
@@ -89,7 +90,7 @@ switch($datum){
 if (isset($opt['m'])){
 	$tmpdir = $opt['m'];
 } else {
-	$tmpdir = '/tmp';
+	$tmpdir = '/dev/shm';
 }
 	
 $outfile_prefix=sprintf("%s/%dx%d-%dx%d-v%d%s_%s",$outpath,$startx*1000,$starty*1000,$shiftx,$shifty,$version,($ph==1)?"p":"",$datum);
@@ -111,18 +112,26 @@ if (isset($opt['3']))
 else
 	$type = determine_type($shiftx, $shifty);
 
-$g = new STB2("", $startx, $starty, $shiftx, $shifty, $ph, $datum, $tmpdir);
+switch($version) {
+	case 3:
+		$g = new Happyman\Twmap\Gen\Gen(['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
+			'debug' => $debug_flag]);
+		break;
+	case 2016:
+		$g = new Happyman\Twmap\Gen\Rudymap_Gen(['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
+			'debug' => $debug_flag, 'version'=>$version]);
+		break;
+}
+
+
 if (!empty($g->err)){
 	cli_error_out(implode(":",$g->err),0);
 }
-$g->version=$version;
 
+// $g->version=$version;
 if (isset($opt['G'])) {
 	$g->include_gpx = 1;
 } 
-if (isset($debug_flag)){
-	$g->setDebug(1);
-}
 // get port and pid
 $port = 0;
 $pid = 0;
@@ -148,13 +157,12 @@ if (!empty($log_channel)) {
 	$g->setLogger($logger);
 }
 $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
-$out=$g->getsimages();
+//$out=$g->getsimages();
 // debug: print_r($out);
-$outx=$g->getoutx(); // 5
-$outy=$g->getouty();  // 7
-$total=count($out);
+$outx=$g->getoutx(); // ceil shiftx /  5
+$outy=$g->getouty();  // ceil shifty / 7
+$total=count($g->getsimages());
 for ($i=0; $i< $total; $i++) {
-	$todo[] = $i;
 	$simage[$i] = sprintf("%s_%d.png",$outfile_prefix,$i);
 }
 //
@@ -182,9 +190,9 @@ if ($jump <= $stage ) {
 			cli_error_out("unable to read gpx file",0);
 		}
 	}
-	// 這實再把 cmd 寫下來, 以免蓋掉前次的執行
+	// 這時再把 cmd 寫下來, 以免蓋掉前次的執行
 	file_put_contents($outcmd,implode(" ",$argv)); 
-	$im = $g->createpng(0,0,0,1,1,$debug_flag); // 產生
+	$im = $g->createpng(); // 產生
 	// 產生不出來
 	if ($im === false) 
 		cli_error_out(implode(":",$g->err));
@@ -211,14 +219,14 @@ if ($jump <= $stage ) {
 		$param['datum']=$datum;
 
 		cli_msglog("create SVG: $outsvg");
-		list($ret,$msg) = gpx2svg($param, $outsvg);
+		list($ret,$msg) = \Happyman\Twmap\Svg\gpx2svg($param, $outsvg);
 		if ($ret === false ) {
 			@unlink($outimage_orig);
 			cli_error_out("gpx2svg fail: ". print_r($msg,true). print_r($param,true));
 		}
 		cli_msglog("create PNG: $outimage");
 		cli_msglog("ps%+3");
-		list ($ret,$msg) = svg2png($outsvg, $outimage, array($shiftx*315,$shifty*315));
+		list ($ret,$msg) = \Happyman\Twmap\Svg\svg2png($outsvg, $outimage, array($shiftx*315,$shifty*315));
 		if ($ret === false ) {
 			@unlink($outimage_orig);
 			@unlink($outimage);
@@ -247,7 +255,7 @@ if ($jump <= $stage ) {
 	cli_msglog("ps%40");
 	if ($keep_color==1) {
 	cli_msglog("keep colorful image...");
-	copy($outimage,$outimage_gray);
+		copy($outimage,$outimage_gray);
 	} else {
 	cli_msglog("grayscale image...");
 	// 產生灰階圖檔
@@ -316,15 +324,12 @@ if ($stage == $jumpstop) {
 }
 cli_msglog("ps%80");
 if ($stage >= $jump ) {
-	cli_msglog("save description...");
-	$desc=new ImageDesc( basename($outimage), $title, $startx*1000, $starty*1000, $shiftx, $shifty, $simage, $outx, $outy, $remote_ip, $version, $datum );
-	$desc->save($outtext);
+	//cli_msglog("save description...");
+	//$desc=new ImageDesc( basename($outimage), $title, $startx*1000, $starty*1000, $shiftx, $shifty, $simage, $outx, $outy, $remote_ip, $version, $datum );
+	//$desc->save($outtext);
 	cli_msglog("make kmz file...");
 	require_once("lib/garmin.inc.php");
 	$kmz = new garminKMZ(3,3,$outimage,$ph,$datum);
-	//if ($debug_flag == 1 )
-	//	$kmz->setDebug(1);
-	// 加上行跡資料
 	if (isset($opt['g'])) {
 		$kmz->addgps("gpx", $param['gpx']);
 	}

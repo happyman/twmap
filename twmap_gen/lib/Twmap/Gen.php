@@ -1,0 +1,449 @@
+<?php
+Namespace Happyman\Twmap\Gen;
+
+//require_once("tiles.inc.php");
+Class Gen {
+	var $startx, $starty; //輸入的參數
+	var $shiftx, $shifty; //輸入的參數
+	var $err = array();
+	var $outsizex, $outsizey;
+	var $im;
+	var $ph; // 澎湖
+	var $version = 3; // 那個圖
+	var $include_gpx = 0; // 是否包含 gpx
+	var $datum = 'TWD97';
+	var $v3img; 
+	var $tmpdir = "/dev/shm";
+	var $logger = null;
+	var $log_channel;
+	var $debug = 0;
+	var $zoom = 16;
+
+	function __construct($options) {
+		if (!isset($options['startx']) || !isset($options['starty']) ||!isset($options['shiftx']) ||!isset($options['starty'])){
+			$this->err[] = "Not enough parameters";
+			return false;
+		}
+		$this->startx = $options['startx'];
+		$this->starty = $options['starty'];
+		$this->shiftx = $options['shiftx'];
+		$this->shifty = $options['shifty'];
+		if (isset($options['ph']))
+			$this->ph = $options['ph'];
+		if (isset($options['datum']))
+			$this->datum = $options['datum'];
+		if (isset($options['version']))
+			$this->version = $options['version'];
+
+		if ($this->shiftx > 35 || $this->shifty > 35) {
+			$this->err[] = "Sorry We Cannot create too big map";
+			return false;
+		}
+		if ($this->is_taiwan() === false){
+			$this->err[] = "不在台澎範圍內";
+			return false;
+		}
+		if (!empty($options['tmpdir'])) {
+			$this->tmpdir = $options['tmpdir'];
+		}
+		if (isset($options['debug']))
+			$this->debug = $options['debug'];
+		return TRUE;
+	}
+
+	function is_taiwan() {
+		$minx = $this->startx;
+		$maxx = $this->startx + $this->shiftx;
+		$miny = $this->starty - $this->shifty;
+		$maxy = $this->starty;
+	
+		if ($this->ph == 1 ){
+			if ($minx >= 280 && $maxx <= 330 && $miny >= 2500 && $maxy <= 2630 )
+			return true;
+		}else{
+			if ($minx >= 150 && $maxx <= 355 && $miny >= 2420 && $maxy <= 2800 )
+			return true; 
+		}
+		return false;
+	}
+	// tag = 2 處理縮圖
+	function setLogger($logger){
+		$this->logger = $logger;
+	}
+
+	function setLog($channel,$logurl_prefix="wss://ws.happyman.idv.tw/twmap_",$port=0,$logger=null) {
+		$this->log_channel = $channel;
+		$this->logurl_prefix = $logurl_prefix;
+		$this->websocat_port = $port;
+		$this->logger=$logger;
+
+	}
+	function doLog($msg) {
+		//if (empty($this->log_channel)
+		echo $msg;
+		if ($this->logger)
+			$this->logger->info($msg);
+		if ($this->log_channel) {
+			if (preg_match("/nbr:(.*)/",$msg,$mat)){ 
+				$msg = $mat[1];
+			} else {
+				$msg.= "<br>";	
+			}
+
+			notify_web($this->log_channel, array($msg),$this->logurl_prefix,$this->websocat_port,$this->debug);
+		}
+	}
+	/**
+	 * 設定輸出大小 5 x 7
+	 */
+	function setoutsize($sx,$sy) {
+		$this->outsizex= $sx;
+		$this->outsizey= $sy;
+	}
+	// x 要幾張 
+	function getoutx() {
+		return ceil($this->shiftx / $this->outsizex);
+	}
+	// y 要幾張
+	function getouty() {
+		return ceil($this->shifty / $this->outsizey);
+	}
+	// 沒用了
+	function getsimages() {
+		// input 4x6
+		$sx=$this->outsizex; // 4 
+		$sy=$this->outsizey; // 6 
+		$out=array();
+		$c=0;
+		$outx = $this->getoutx();
+		$outy = $this->getouty();
+		for ($j=0; $j< $outy; $j++) {
+			for($i=0; $i< $outx; $i++) {
+				$out[$c]["x"]=$this->startx + $i*$sx;
+				$out[$c]["y"]=$this->starty - $j*$sy;
+				if ( ($i+1)*$sx > $this->shiftx )
+					$out[$c]["shx"]=$this->shiftx % $sx;
+				else
+					$out[$c]["shx"]=$sx;
+				if ( ($j+1)*$sy > $this->shifty )
+					$out[$c]["shy"]=$this->shifty % $sy;
+				else
+					$out[$c]["shy"]=$sy;
+				// print_r($out[$c]);
+				$c++;
+			}
+		} 
+		return $out;
+	}
+	/**
+	 * depends on Noto font
+	 */
+	function logo($mylogotext=''){
+		if (!empty($mylogotext))
+			$logotext = $mylogotext;
+		$fpath = sprintf("%s/%s_%s.png",$this->tmpdir,$this->datum,$logotext);
+		if (file_exists($fpath)) { 
+			$this->logger->info("logo $fpath returned");
+			return $fpath;
+		}
+		$cmd = sprintf("convert -resize 85x -pointsize 30 -gravity Center pango:'%s\n%s' -font Noto-Serif-CJK-TC  %s",$this->datum, $logotext, $fpath);
+		$this->logger->info($cmd);
+		exec($cmd,$out,$ret);
+		if ($ret == 0)
+			return $fpath;
+		else {
+			$this->logger->error($cmd . " failed");
+			return false;
+		}
+	}
+
+	// main
+	function createpng() {
+		$v3img = $this->logo($this->getlogotext());
+
+		// 給外面 access
+		$this->v3img = $v3img;
+
+		$pscount = 1; 
+		$pstotal = $this->shiftx * $this->shifty;
+
+		$this->doLog( "check tiles...");
+		for($j=$this->starty; $j>$this->starty-$this->shifty; $j--){
+			for($i=$this->startx; $i<$this->startx+$this->shiftx; $i++){
+				//$tileurl = $this->gettileurl();
+				//$options=array("tile_url"=> $tileurl, "image_ps_args"=> $this->getProcessParams());
+				// tmppath => /dev/shm
+				list ($status, $fname) = $this->img_from_tiles($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph); 
+				// 產生 progress
+				$this->doLog( sprintf("nbr:%s/%s ",$pscount,$pstotal));
+				$this->doLog( sprintf("nbr:ps%%+%d", 20 * $pscount/$pstotal));
+				$pscount++;
+				if ($status === false ) {
+					error_log("error $fname");
+					$this->err[] = $fname;
+					return false;
+				}
+				$fn[] = $fname;
+			}
+
+			$this->logger->debug(print_r($fn, true));
+			// 合併
+			$this->doLog( "merge tiles...");
+			$outi = $outimage = tempnam($this->tmpdir,"MTILES");
+			$montage_bin = "montage";
+			$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
+				implode(" ",$fn), $this->shiftx ,$this->shifty, $this->v3img, $this->shiftx*315, $this->shifty*315, $outi);
+			if ($this->debug)
+				$this->doLog( $cmd );
+			exec($cmd);
+			$cim = imagecreatefrompng($outi);
+			exec("rm ".implode(" ", $fn) . " $outi");
+			$fn=[]; // important to have this
+
+		}
+
+		return $cim;
+	}
+	// pass TW97 or TW67 datum
+	function tempdir($dir=NULL,$prefix=NULL) {
+		$template = "{$prefix}XXXXXX";
+		if (($dir) && (is_dir($dir))) { $tmpdir = "--tmpdir=$dir"; }
+		else { 
+		$tmpdir = '--tmpdir=' . sys_get_temp_dir(); }
+		return exec("mktemp -d " . escapeshellarg($tmpdir) . " $template");
+	  }
+	function img_from_tiles($x, $y, $shiftx, $shifty, $zoom, $ph=0) {
+		
+		$montage_bin = "montage";
+		$debug = $this->debug;
+		$cache_filename = "";
+		$tmpdir = $this->tmpdir;
+		$image_ps_args = $this->getProcessParams();
+		$tileurl = $this->gettileurl();
+		$datum = $this->datum;
+		$logger = $this->logger;
+		// 左上
+		// $dir = $base_dir . "/". $zoom;
+		$dir = $this->tempdir($this->tmpdir, "MDIRXXXXX");
+		// 右下
+		$x1 = $x + $shiftx * 1000;
+		$y1 = $y - $shifty * 1000;
+
+		if ($debug) {
+			$logger->info("img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph, $debug)");
+		}
+		// 輸入的座標是 TWD97 or TWD67
+		if ($datum == 'TWD97'){
+			$proj_func = "proj_97toge2";
+			$ph_proj_func = "ph_proj_97toge2";
+		}	else {
+			$proj_func = "proj_67toge2";
+			$ph_proj_func = "ph_proj_67toge2";
+		}
+		
+		if ($ph == 0 ) {
+			// 台灣本島 proj_67toge2 使用 cs2cs 把 67 轉 97
+			list ($tl_lon,$tl_lat) = $proj_func(array($x,$y));
+			$a = LatLong2XYZ($tl_lon, $tl_lat, $zoom);
+			list ($br_lon,$br_lat) = $proj_func(array($x1,$y1));
+			$b = LatLong2XYZ($br_lon, $br_lat, $zoom);
+		} else {
+			list ($tl_lon,$tl_lat) = $ph_proj_func(array($x,$y));
+			$a = LatLong2XYZ($tl_lon, $tl_lat, $zoom);
+			list ($br_lon,$br_lat) = $ph_proj_func(array($x1,$y1));
+			$b = LatLong2XYZ($br_lon, $br_lat, $zoom);
+		}
+
+		if ($debug) {
+			error_log("x=$x y=$y x1=$x1 y1=$y1 tl=$tl_lon,$tl_lat br=$br_lon,$br_lat");
+			error_log("a=".print_r($a,true)." b=".  print_r($b,true));
+		}
+
+		$xx = $b[0]-$a[0]+1;
+		$yy = $b[1]-$a[1]+1;
+
+		// 先抓圖
+		$download = array();
+		for($j=$a[1];$j<=$b[1];$j++) {
+			for ($i=$a[0]; $i<=$b[0]; $i++) {
+				$imgname = sprintf("%d_%d.png",$i,$j);
+				if (!file_exists("$dir/$imgname")) {
+					$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$i,$j,"$dir/$imgname");
+				}
+			}
+		}
+		// run in parallel
+		file_put_contents("$dir/dl.txt",implode("\n",$download));
+		if ($debug) {
+			//error_log("run parallel -j 4 -- < $dir/dl.txt");
+			error_log("run curl -Z --config $dir/dl.txt");
+			$logger->info("run curl -Z --config $dir/dl.txt");
+		}
+
+		while(1) {
+
+		$cmd = sprintf("curl -Z -L --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 --config %s","$dir/dl.txt");
+		exec($cmd);
+		$img = array();
+		for($j=$a[1];$j<=$b[1];$j++) {
+			for ($i=$a[0]; $i<=$b[0]; $i++) {
+				$imgname = sprintf("%d_%d.png",$i,$j);
+				if (file_exists("$dir/$imgname") && !is_link("$dir/$imgname")) {
+					// 有錯
+					if (filesize("$dir/$imgname") == 0 )
+						continue;
+					if ($debug) {
+						error_log("$dir/$imgname ok ". filesize("$dir/$imgname"));
+						$logger->info("$dir/$imgname ok ". filesize("$dir/$imgname"));
+					}
+					$img[] =  $imgname;
+				} else {
+					if ($debug) {
+						error_log("$dir/$imgname not exist");
+						$logger->error("$dir/$imgname not exist");
+					}
+					// clean tmpdir
+					exec("rm -r $dir");
+					return array(FALSE, "超出圖資範圍", false);
+				}
+			}
+		}
+		break;
+		}
+		if ($debug) {
+			//	error_log(print_r($img, true));
+			error_log(print_r("$xx x $yy", true));
+			$logger->debug(print_r("$xx x $yy", true));
+		}
+		// 左上點所在的 tile, 
+		$rect = getLatLonXYZ($a[0],$a[1],$zoom);
+		if ($debug) {
+			$logger->info("getLatLonXYZ($a[0],$a[1],$zoom)");
+			$logger->debug(print_r($rect,true));
+			error_log("getLatLonXYZ($a[0],$a[1],$zoom)");
+			error_log(print_r($rect, true));
+		}
+		$rx = 256 / $rect->width;
+		$ry = 256 / $rect->height;
+
+		$px_shiftx = ($tl_lon - $rect->x) * $rx;
+		if ($debug) {
+			error_log(sprintf("tl y: %f rect->y %f\n",$tl_lat, $rect->y));
+		}
+		$px_shifty = 256 - (($tl_lat - $rect->y) * $ry);
+
+		if ($debug) {
+			error_log(sprintf("px_shiftx,y = %f %f\n",$px_shiftx, $px_shifty));
+		}
+
+		// 要取的範圍 width px
+		$px_width = ($br_lon - $tl_lon) * $rx;
+		$px_height = ($tl_lat - $br_lat) * $ry;
+
+		if ($debug) {
+			error_log(sprintf("px_width,y = %f %f\n",$px_width, $px_height));
+		}
+		// 拼圖
+		$outimage = tempnam($this->tmpdir,"MTILES");
+		$cmd = sprintf("cd %s; %s %s -mode Concatenate -tile %dx%d png:%s",
+			$dir,
+			$montage_bin,
+			implode(" ",$img),
+			$xx, $yy, $outimage);
+		exec($cmd, $out, $ret);
+		if ($debug) {
+			$logger->info("run $cmd");
+			error_log("$cmd ret=". implode("",$out) );
+		}
+		// 檢查拼起來是否正確
+		if (!@is_array( getimagesize($outimage)) ) {
+			unlink($outimage);
+			$logger->error("ret=".implode("",$out));
+			return array(FALSE, "err:".$cmd."ret=".implode("",$out), false);
+		}
+
+		$cropimage = tempnam($this->tmpdir,"CROP");
+		$resize=sprintf("%dx%d\!",315*$shiftx, 315*$shifty);
+		// tw 121 以東，轉 -0.3 度
+		if (($ph == 0 && $tl_lon > 121 ) || ($ph == 1 && $tl_lon > 119 )) {
+			$rotate_angle = "-0.3";
+			$offset_x = 0;
+			$offset_y = 2;
+			// equals to `affline_rotate $rotate_angle`
+			$affine = "0.999986,-0.005236,0.005236,0.999986,0.000000,0.000000";
+		}
+		else {
+			$rotate_angle = "0.3";
+			$offset_x = 2;
+			$offset_y = 0;
+			$affine = "0.999986,0.005236,-0.005236,0.999986,0.000000,0.000000";
+
+		}
+		// just calc by http://www.imagemagick.org/Usage/scripts/affine_rotate
+		//$afrotate = realpath(dirname(__FILE__)) . "/affine_rotate";
+		//$cmd = sprintf("convert %s -matte -virtual-pixel Transparent -affine %s -transform +repage %s", $outimage, $affine, $outimage);
+		$cmd = sprintf("convert %s -matte -virtual-pixel Transparent +distort AffineProjection %s -transform +repage %s", $outimage, $affine, $outimage);
+		exec($cmd, $out, $ret);
+		if ($debug){
+			error_log($cmd);
+			$logger->info($cmd);
+		}
+		$str_image_ps_arg = implode(" ",$image_ps_args);
+		//$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 miff:- | composite -gravity northeast %s - png:%s",$outimage,
+	// -white-threshold 85%% p
+		$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s %s  png:%s",
+			$outimage,
+			ceil($px_width), ceil($px_height),
+			round($px_shiftx)+$offset_x, round($px_shifty)+$offset_y,
+			$resize,
+			$str_image_ps_arg, 
+			$cropimage);
+
+		if ($debug) {
+			$logger->info($cmd);
+			error_log("cmd=". $cmd );
+		}
+		exec($cmd, $out, $ret);
+		unlink($outimage);
+		// clean tmpdir
+		exec("rm -r $dir");
+		if ($ret == 0 ) {
+			$logger->success("$cropimage created");
+			return array( true ,$cropimage, "made");
+		} else {
+			unlink($cropimage);
+			$logger->error("ret=".implode("",$out));
+			return array( false, "err:".$cmd. "ret=".implode("",$out), false);
+		}
+	}
+	// to override
+	function getlogotext() {
+		return '經建三';
+	}
+	function getProcessParams() {
+		return array("-equalize  -gamma 2.2");
+	}
+	function gettileurl() {
+		if ($this->include_gpx==0){
+			return 'http://make.happyman.idv.tw/map/tw25k2001/%s/%s/%s.png';
+		} else 
+			return 'http://make.happyman.idv.tw/map/twmap_happyman_nowp_nocache/%s/%s/%s.png';
+
+	}
+}
+//eo class
+class Rudymap_Gen extends Gen {
+	var $version = 2016;
+	function getlogotext() {
+		return '魯地圖';
+	}
+	function getProcessParams() {
+		return array("-normalize");
+	}
+	function gettileurl() {
+		if ($this->include_gpx==0){
+			return 'http://make.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
+		} else 
+			return 'http://make.happyman.idv.tw/map/moi_happyman_nowp_nocache/%s/%s/%s.png';
+	}
+}
