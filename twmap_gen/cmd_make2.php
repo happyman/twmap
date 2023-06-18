@@ -159,12 +159,14 @@ if (!empty($log_channel)) {
 $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
 //$out=$g->getsimages();
 // debug: print_r($out);
-$outx=$g->getoutx(); // ceil shiftx /  5
-$outy=$g->getouty();  // ceil shifty / 7
+
+/*
+// get from splitimage
 $total=count($g->getsimages());
 for ($i=0; $i< $total; $i++) {
 	$simage[$i] = sprintf("%s_%d.png",$outfile_prefix,$i);
 }
+*/
 //
 //
 cli_msglog("ps%10");
@@ -192,7 +194,7 @@ if ($jump <= $stage ) {
 	}
 	// 這時再把 cmd 寫下來, 以免蓋掉前次的執行
 	file_put_contents($outcmd,implode(" ",$argv)); 
-	$im = $g->createpng(); // 產生
+	$im = $g->create_base_png(); // 產生
 	// 產生不出來
 	if ($im === false) 
 		cli_error_out(implode(":",$g->err));
@@ -244,12 +246,12 @@ if ($jump <= $stage ) {
 	// 加上 grid
 	if (isset($opt['e'])) {
 		cli_msglog("add 100M grid to image...");
-		im_addgrid($outimage, $g->v3img,  100, $version);
+		$g->im_addgrid($outimage,  100);
 		cli_msglog("ps%+3");
 	}
-	// 若是 moi_osm 則加上 1000 or TWD97  and logo
+	// 若是 moi_osm or TWD97 則加上 1000 格線 , 會使用到 logo
 	if ($version == 2016 || $datum == 'TWD97' ){
-		im_addgrid($outimage, $g->v3img, 1000, $version);
+		$g->im_addgrid($outimage, 1000);
 	}
 	// happyman
 	cli_msglog("ps%40");
@@ -257,18 +259,16 @@ if ($jump <= $stage ) {
 	cli_msglog("keep colorful image...");
 		copy($outimage,$outimage_gray);
 	} else {
-	cli_msglog("grayscale image...");
+		cli_msglog("grayscale image...");
 	// 產生灰階圖檔
-	im_file_gray($outimage, $outimage_gray, $version);
-	// im_tagimage($outimage_gray,$startx,$starty);
+		$g->im_file_gray($outimage, $outimage_gray, $version);
 	}
-	im_tagimage($outimage_gray,$startx,$starty);
+	$g->im_tagimage($outimage_gray,$startx,$starty);
 	cli_msglog("ps%45");
 	// 加上 tag
 	cli_msglog("add tag to image...");
-	im_tagimage($outimage,$startx,$starty);
-	//cli_msglog("$outimage created");
-	unset($g);
+	$g->im_tagimage($outimage,$startx,$starty);
+
 }
 cli_msglog("ps%50");
 $stage = 2;
@@ -280,7 +280,7 @@ if ($stage == $jumpstop) {
 if ($stage >= $jump ) {
 	cli_msglog("split image...");
 	$im = imagecreatefrompng($outimage_gray);
-	splitimage($im, $tiles[$type]['x']*315 , $tiles[$type]['y']*315 , $outfile_prefix, $px, $py, $fuzzy);
+	list ($simage,$outx,$outy) = $g->splitimage($im, $tiles[$type]['x']*315 , $tiles[$type]['y']*315 , $outfile_prefix, $fuzzy);
 	unset($im);
 }
 cli_msglog("ps%60");
@@ -292,30 +292,32 @@ if ($stage == $jumpstop) {
 }
 if ($stage >= $jump ) {
 	// 做各小圖
-	showmem("after free STB");
+	// showmem("after free STB");
+	$total=count($simage);
 	for($i=0;$i<$total;$i++) {
 		// im_file_gray($simage[$i], $simage[$i], $version);
 		// 如果只有一張的情況 
 		if ($total == 1) {
-		 im_simage_resize($type, $simage[$i], $simage[$i], 'Center');
+		 	im_simage_resize($type, $simage[$i], $simage[$i], 'Center');
 		 break;
 		}
-	  cli_msglog(sprintf("%d / %d",$i+1,$total));
+	  	cli_msglog(sprintf("%d / %d",$i+1,$total));
 		im_simage_resize($type, $simage[$i], $simage[$i]);
-	  cli_msglog("resize small image...");
+	  	cli_msglog("resize small image...");
 		$idxfile = sprintf("%s/index-%d.png",$outpath,$i);	
 		$idximg = imageindex($outx,$outy,$i, 80, 80);
 		imagepng($idximg,$idxfile);
-	  cli_msglog("create index image...");
+	  	cli_msglog("create index image...");
 		$overlap=array('right'=>0,'buttom'=>0);
 		if (($i+1) % $outx != 0) $overlap['right'] = 1;
 		if ($i < $outx * ($outy -1)) $overlap['buttom'] = 1;
 		im_addborder($simage[$i], $simage[$i], $type,  $overlap, $idxfile);
 		unlink($idxfile);
-	  cli_msglog("small image border added ...");
+	  	cli_msglog("small image border added ...");
 		cli_msglog("ps:+".sprintf("%d", 20 * $i+1/$total));
 	}
 }
+unset($g);
 showmem("after stage 3");
 $stage = 4;
 if ($stage == $jumpstop) {
@@ -324,9 +326,6 @@ if ($stage == $jumpstop) {
 }
 cli_msglog("ps%80");
 if ($stage >= $jump ) {
-	//cli_msglog("save description...");
-	//$desc=new ImageDesc( basename($outimage), $title, $startx*1000, $starty*1000, $shiftx, $shifty, $simage, $outx, $outy, $remote_ip, $version, $datum );
-	//$desc->save($outtext);
 	cli_msglog("make kmz file...");
 	require_once("lib/garmin.inc.php");
 	$kmz = new garminKMZ(3,3,$outimage,$ph,$datum);

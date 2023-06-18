@@ -1,6 +1,8 @@
 <?php
 Namespace Happyman\Twmap\Gen;
-
+/*
+requires: montage, curl, mktemp, convert, rm
+*/
 Class Gen {
 	var $startx, $starty; //輸入的參數
 	var $shiftx, $shifty; //輸入的參數
@@ -11,7 +13,8 @@ Class Gen {
 	var $version = 3; // 那個圖
 	var $include_gpx = 0; // 是否包含 gpx
 	var $datum = 'TWD97';
-	var $v3img; 
+	// var $v3img; 改成 logoimg
+	var $logoimg; 
 	var $tmpdir = "/dev/shm";
 	var $logger = null;
 	var $log_channel;
@@ -157,11 +160,11 @@ Class Gen {
 	}
 
 	// main
-	function createpng() {
-		$v3img = $this->logo($this->getlogotext());
-
-		// 給外面 access
-		$this->v3img = $v3img;
+	/* 
+	create logo image, base image
+	*/
+	function create_base_png() {
+		$this->logoimg = $this->logo($this->getlogotext());
 
 		$pscount = 1; 
 		$pstotal = $this->shiftx * $this->shifty;
@@ -192,12 +195,17 @@ Class Gen {
 		$outi = $outimage = tempnam($this->tmpdir,"MTILES");
 		$montage_bin = "montage";
 		$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
-			implode(" ",$fn), $this->shiftx ,$this->shifty, $this->v3img, $this->shiftx*315, $this->shifty*315, $outi);
+			implode(" ",$fn), $this->shiftx ,$this->shifty, $this->logoimg, $this->shiftx*315, $this->shifty*315, $outi);
 		if ($this->debug)
 			$this->doLog( $cmd );
+		
 		exec($cmd);
-		exec("rm ".implode(" ", $fn) . " $outi");
+		// remove all temp files
 		$cim = imagecreatefrompng($outi);
+		$fn[] = $outi;
+		foreach($fn as $fname)
+			unlink($fname);
+		
 		return $cim;
 	}
 	// pass TW97 or TW67 datum
@@ -207,7 +215,8 @@ Class Gen {
 		else { 
 		$tmpdir = '--tmpdir=' . sys_get_temp_dir(); }
 		return exec("mktemp -d " . escapeshellarg($tmpdir) . " $template");
-	  }
+	}
+	// 從 web 下載圖磚來拚
 	function img_from_tiles($x, $y, $shiftx, $shifty, $zoom, $ph=0) {
 		
 		$montage_bin = "montage";
@@ -425,6 +434,94 @@ Class Gen {
 		} else 
 			return 'http://make.happyman.idv.tw/map/twmap_happyman_nowp_nocache/%s/%s/%s.png';
 
+	}
+	function im_addgrid($fpath, $step_m = 100) {
+		list ($w, $h) = getimagesize($fpath);
+
+		$step = 315 / (1000 / $step_m );
+		for($i=0; $i<$w; $i+=$step) {
+				$poly[] = sprintf(" -draw 'line %d,%d %d,%d'", round($i), 0 ,round($i),$h);
+		}
+		for($i=0; $i<$h; $i+=$step) {
+				$poly[] = sprintf(" -draw 'line %d,%d %d,%d'", 0, round($i), $w, round($i));
+		}
+
+			// 因為格線會蓋掉 logo, 再蓋回去
+		$cmd = sprintf("convert %s -fill none -stroke black %s -alpha off - | composite -gravity northeast %s - png:%s",
+				 $fpath, implode("", $poly),$this->logoimg, $fpath);
+		if ($this->debug)
+			$this->logger->debug($cmd);
+		exec($cmd,$out,$ret);
+		return ($ret==0)?true:false;
+	
+	}
+	function im_tagimage($fpath, $inp_startx, $inp_starty) {
+		list ($w, $h) = getimagesize($fpath);
+		// tag X
+		$startx = $inp_startx;
+		$starty = $inp_starty;
+		$fontsize = 30;
+		// 下面
+		for($i=0; $i<$w; $i+=315) {
+			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white -border 3 -geometry +%d+%d -composite ",$startx++,$i+1,$h-$fontsize);
+		}
+		// 左邊
+		for($i=0; $i<$h; $i+=315) {
+			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white  -border 3 -geometry +%d+%d -composite ",$starty--,1,$i+1);
+		}
+		$startx = $inp_startx+1;
+		$starty = $inp_starty-1;
+		// 上面
+		for ($i=315; $i<$w; $i+=315) {
+			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white  -border 3 -geometry +%d+%d -composite ",$startx++,$i+1, 1);
+		}
+		// 右邊
+		for($i=315; $i<$h; $i+=315) {
+			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white  -border 3  -geometry +%d+%d -composite ",$starty--,$w- $fontsize * 2.3,$i+1);
+		}
+	
+	
+		$cmd=sprintf("convert %s %s %s",$fpath, implode("",$label),$fpath);
+		if ($this->debug)
+			$this->logger->debug($cmd);
+		// -compose bumpmap
+		exec($cmd,$out,$ret);
+		return ($ret==0)?true:false;
+	
+	}
+	function im_file_gray($fpath, $outpath,  $ver=3) {
+		if ($ver == 1) {
+			$param = "-opaque 'rgb(93,119,80)' -fill white -opaque 'rgb(148,146,145)' -fill white     -fuzz 50%  -fill black -opaque blue  -colorspace gray";
+		} else if ($ver == 3) {
+			$param = "-colorspace gray miff:-|convert miff:- -brightness-contrast 20x5 -tint 40";
+		}  else {
+			$param = "-colorspace gray";
+		}
+		$cmd = sprintf("convert %s %s %s",$fpath, $param, $outpath);
+		if ($this->debug)
+			$this->logger->debug($cmd);
+		exec($cmd,$out,$ret);
+		return $ret;
+	}
+	/* 分成小圖 
+	回傳 images, x ,y 
+	*/
+	function splitimage($im, $sizex, $sizey, $outfile, $fuzzy) {
+		$w=imagesX($im); $h=imagesY($im);
+		$count=0; $py = 0;
+		$total=ceil(($w-$fuzzy)/$sizex) * ceil(($h-$fuzzy)/$sizey);
+		for ($j=0; $j< $h - $fuzzy ; $j+= $sizey) {
+			$py++;
+			for ($i=0; $i< $w - $fuzzy ; $i+= $sizex) {
+				$outfname= $outfile . "_" . $count .".png";
+				$dst=cropimage($im,$i,$j,$sizex+$fuzzy,$sizey+$fuzzy);
+				imagePNG($dst,$outfname);
+				imageDestroy($dst);
+				$imgs[$count++]=$outfname;
+
+			}
+		}
+		return [$imgs,$count/$py,$py];
 	}
 }
 //eo class
