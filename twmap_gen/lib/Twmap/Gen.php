@@ -1,13 +1,13 @@
 <?php
-Namespace Happyman\Twmap\Gen;
+Namespace Happyman\Twmap;
 /*
 requires: montage, curl, mktemp, convert, rm
+目的 拼出 base image
 */
-Class Gen {
+Class Stitcher {
 	var $startx, $starty; //輸入的參數
 	var $shiftx, $shifty; //輸入的參數
 	var $err = array();
-	var $outsizex, $outsizey;
 	var $im;
 	var $ph; // 澎湖
 	var $version = 3; // 那個圖
@@ -95,48 +95,8 @@ Class Gen {
 			notify_web($this->log_channel, array($msg),$this->logurl_prefix,$this->websocat_port,$this->debug);
 		}
 	}
-	/**
-	 * 設定輸出大小 5 x 7
-	 */
-	function setoutsize($sx,$sy) {
-		$this->outsizex= $sx;
-		$this->outsizey= $sy;
-	}
-	// x 要幾張 
-	function getoutx() {
-		return ceil($this->shiftx / $this->outsizex);
-	}
-	// y 要幾張
-	function getouty() {
-		return ceil($this->shifty / $this->outsizey);
-	}
-	// 沒用了
-	function getsimages() {
-		// input 4x6
-		$sx=$this->outsizex; // 4 
-		$sy=$this->outsizey; // 6 
-		$out=array();
-		$c=0;
-		$outx = $this->getoutx();
-		$outy = $this->getouty();
-		for ($j=0; $j< $outy; $j++) {
-			for($i=0; $i< $outx; $i++) {
-				$out[$c]["x"]=$this->startx + $i*$sx;
-				$out[$c]["y"]=$this->starty - $j*$sy;
-				if ( ($i+1)*$sx > $this->shiftx )
-					$out[$c]["shx"]=$this->shiftx % $sx;
-				else
-					$out[$c]["shx"]=$sx;
-				if ( ($j+1)*$sy > $this->shifty )
-					$out[$c]["shy"]=$this->shifty % $sy;
-				else
-					$out[$c]["shy"]=$sy;
-				// print_r($out[$c]);
-				$c++;
-			}
-		} 
-		return $out;
-	}
+
+
 	/**
 	 * depends on Noto font
 	 */
@@ -188,8 +148,8 @@ Class Gen {
 				$fn[] = $fname;
 			}
 		}
-
-		$this->logger->debug(print_r($fn, true));
+		if ($this->debug)
+			$this->logger->debug(print_r($fn, true));
 		// 合併
 		$this->doLog( "merge tiles...");
 		$outi = $outimage = tempnam($this->tmpdir,"MTILES");
@@ -281,13 +241,13 @@ Class Gen {
 		file_put_contents("$dir/dl.txt",implode("\n",$download));
 		if ($debug) {
 			//error_log("run parallel -j 4 -- < $dir/dl.txt");
-			error_log("run curl -Z --config $dir/dl.txt");
+			//error_log("run curl -Z --config $dir/dl.txt");
 			$logger->info("run curl -Z --config $dir/dl.txt");
 		}
 
 		while(1) {
 
-		$cmd = sprintf("curl -Z -L --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 --config %s","$dir/dl.txt");
+		$cmd = sprintf("curl -q -Z -L --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 --config %s","$dir/dl.txt");
 		exec($cmd);
 		$img = array();
 		for($j=$a[1];$j<=$b[1];$j++) {
@@ -325,8 +285,6 @@ Class Gen {
 		if ($debug) {
 			$logger->info("getLatLonXYZ($a[0],$a[1],$zoom)");
 			$logger->debug(print_r($rect,true));
-			error_log("getLatLonXYZ($a[0],$a[1],$zoom)");
-			error_log(print_r($rect, true));
 		}
 		$rx = 256 / $rect->width;
 		$ry = 256 / $rect->height;
@@ -358,7 +316,6 @@ Class Gen {
 		exec($cmd, $out, $ret);
 		if ($debug) {
 			$logger->info("run $cmd");
-			error_log("$cmd ret=". implode("",$out) );
 		}
 		// 檢查拼起來是否正確
 		if (!@is_array( getimagesize($outimage)) ) {
@@ -503,29 +460,10 @@ Class Gen {
 		exec($cmd,$out,$ret);
 		return $ret;
 	}
-	/* 分成小圖 
-	回傳 images, x ,y 
-	*/
-	function splitimage($im, $sizex, $sizey, $outfile, $fuzzy) {
-		$w=imagesX($im); $h=imagesY($im);
-		$count=0; $py = 0;
-		$total=ceil(($w-$fuzzy)/$sizex) * ceil(($h-$fuzzy)/$sizey);
-		for ($j=0; $j< $h - $fuzzy ; $j+= $sizey) {
-			$py++;
-			for ($i=0; $i< $w - $fuzzy ; $i+= $sizex) {
-				$outfname= $outfile . "_" . $count .".png";
-				$dst=cropimage($im,$i,$j,$sizex+$fuzzy,$sizey+$fuzzy);
-				imagePNG($dst,$outfname);
-				imageDestroy($dst);
-				$imgs[$count++]=$outfname;
-
-			}
-		}
-		return [$imgs,$count/$py,$py];
-	}
+	
 }
 //eo class
-class Rudymap_Gen extends Gen {
+class Rudymap_Stitcher extends Stitcher {
 	var $version = 2016;
 	function getlogotext() {
 		return '魯地圖';

@@ -1,7 +1,6 @@
 <?php
+Namespace Happyman\Twmap\Export;
 
-require_once("proj_lib.php");
-require_once("kml_lib.php");
 setlocale(LC_ALL,"zh_TW.UTF-8");
 
 // $Id: garmin.inc.php 361 2013-10-18 15:03:00Z happyman $
@@ -13,7 +12,7 @@ echo "done";
 $gkmz->makekml();
  */
 
-class garminKMZ {
+class GarminKMZ {
 	var $cutx; // km: 
 	var $cuty; // km
 	var $startx; // 298000

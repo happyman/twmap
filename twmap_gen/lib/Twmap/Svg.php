@@ -4,7 +4,7 @@ Namespace Happyman\Twmap\Svg;
 /**
  * depends on GeoPHP class
  */
-class gpxsvg {
+class Gpx2Svg {
 
 	var $width; // pixel
 	var $height;
@@ -834,7 +834,7 @@ return $items;
 
 function gpx2svg($param,$outsvg) {
 
-	$svg = new gpxsvg($param);
+	$svg = new Gpx2Svg($param);
 	$ret = $svg->process();
 	if ($ret === false) {
 		return array(false, $svg->_err);

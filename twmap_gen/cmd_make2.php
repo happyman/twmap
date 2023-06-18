@@ -108,17 +108,17 @@ $logger->debug($outcmd . " created");
 $stage = 1;
 // 決定哪一種輸出省紙
 if (isset($opt['3']))
-	$type = determine_type_a3($shiftx, $shifty);
+	$paper = 'A3';
 else
-	$type = determine_type($shiftx, $shifty);
+	$paper = 'A4';
 
 switch($version) {
 	case 3:
-		$g = new Happyman\Twmap\Gen\Gen(['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
+		$g = new Happyman\Twmap\Stitcher(['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
 			'debug' => $debug_flag]);
 		break;
 	case 2016:
-		$g = new Happyman\Twmap\Gen\Rudymap_Gen(['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
+		$g = new Happyman\Twmap\Rudymap_Stitcher(['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
 			'debug' => $debug_flag, 'version'=>$version]);
 		break;
 }
@@ -156,17 +156,8 @@ if (!empty($log_channel)) {
 }else{
 	$g->setLogger($logger);
 }
-$g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
-//$out=$g->getsimages();
-// debug: print_r($out);
+// $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
 
-/*
-// get from splitimage
-$total=count($g->getsimages());
-for ($i=0; $i< $total; $i++) {
-	$simage[$i] = sprintf("%s_%d.png",$outfile_prefix,$i);
-}
-*/
 //
 //
 cli_msglog("ps%10");
@@ -268,7 +259,7 @@ if ($jump <= $stage ) {
 	// 加上 tag
 	cli_msglog("add tag to image...");
 	$g->im_tagimage($outimage,$startx,$starty);
-
+	unset($g);
 }
 cli_msglog("ps%50");
 $stage = 2;
@@ -280,7 +271,8 @@ if ($stage == $jumpstop) {
 if ($stage >= $jump ) {
 	cli_msglog("split image...");
 	$im = imagecreatefrompng($outimage_gray);
-	list ($simage,$outx,$outy) = $g->splitimage($im, $tiles[$type]['x']*315 , $tiles[$type]['y']*315 , $outfile_prefix, $fuzzy);
+	$sp = new Happyman\Twmap\Splitter(["shiftx"=>$shiftx,"shifty"=>$shifty,"paper"=>$paper,"logger"=>$logger]);
+	list ($simage,$outx,$outy) = $sp->splitimage($im, $outfile_prefix, $fuzzy);
 	unset($im);
 }
 cli_msglog("ps%60");
@@ -298,26 +290,26 @@ if ($stage >= $jump ) {
 		// im_file_gray($simage[$i], $simage[$i], $version);
 		// 如果只有一張的情況 
 		if ($total == 1) {
-		 	im_simage_resize($type, $simage[$i], $simage[$i], 'Center');
+		 	$sp->im_simage_resize($simage[$i], $simage[$i], 'Center');
 		 break;
 		}
 	  	cli_msglog(sprintf("%d / %d",$i+1,$total));
-		im_simage_resize($type, $simage[$i], $simage[$i]);
+		$sp->im_simage_resize($simage[$i], $simage[$i]);
 	  	cli_msglog("resize small image...");
-		$idxfile = sprintf("%s/index-%d.png",$outpath,$i);	
-		$idximg = imageindex($outx,$outy,$i, 80, 80);
-		imagepng($idximg,$idxfile);
-	  	cli_msglog("create index image...");
+		$idxfile = $sp->imageindex($outx,$outy,$i, 80, 80);
+	  	cli_msglog("create index image...".$idxfile);
 		$overlap=array('right'=>0,'buttom'=>0);
-		if (($i+1) % $outx != 0) $overlap['right'] = 1;
-		if ($i < $outx * ($outy -1)) $overlap['buttom'] = 1;
-		im_addborder($simage[$i], $simage[$i], $type,  $overlap, $idxfile);
+		if (($i+1) % $outx != 0) 
+			$overlap['right'] = 1;
+		if ($i < $outx * ($outy -1)) 
+			$overlap['buttom'] = 1;
+		$sp->im_addborder($simage[$i], $simage[$i], $overlap, $idxfile);
 		unlink($idxfile);
 	  	cli_msglog("small image border added ...");
 		cli_msglog("ps:+".sprintf("%d", 20 * $i+1/$total));
 	}
 }
-unset($g);
+unset($sp);
 showmem("after stage 3");
 $stage = 4;
 if ($stage == $jumpstop) {
@@ -327,8 +319,8 @@ if ($stage == $jumpstop) {
 cli_msglog("ps%80");
 if ($stage >= $jump ) {
 	cli_msglog("make kmz file...");
-	require_once("lib/garmin.inc.php");
-	$kmz = new garminKMZ(3,3,$outimage,$ph,$datum);
+	//require_once("lib/garmin.inc.php");
+	$kmz = new  Happyman\Twmap\Export\GarminKMZ(3,3,$outimage,$ph,$datum);
 	if (isset($opt['g'])) {
 		$kmz->addgps("gpx", $param['gpx']);
 	}
@@ -343,8 +335,9 @@ if ($stage == $jumpstop) {
 cli_msglog("ps%90");
 if ($stage >= $jump) {
 	// 產生 pdf
-	require_once("lib/print_pdf.inc.php");
-	$pdf = new print_pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix), 'outfile' => $outpdf, 'infiles' => $simage, 'a3' => $a3 ));
+	//require_once("lib/print_pdf.inc.php");
+	$pdf = new Happyman\Twmap\Export\Pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix),
+		 'outfile' => $outpdf, 'infiles' => $simage, 'a3' => $a3, 'twmap_ver'=> $twmap_gen_version ));
 	$pdf->print_cmd = 0;
 	cli_msglog("save to pdf format");
 	$pdf->doit();
