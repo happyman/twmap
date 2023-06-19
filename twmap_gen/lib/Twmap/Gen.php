@@ -21,6 +21,7 @@ Class Stitcher {
 	var $debug = 0;
 	var $zoom = 16;
 	var $pixel_per_km = 315;
+	var $tile_zyx = 0;
 
 	function __construct($options) {
 		if (!isset($options['startx']) || !isset($options['starty']) ||!isset($options['shiftx']) ||!isset($options['starty'])){
@@ -234,7 +235,10 @@ Class Stitcher {
 			for ($i=$a[0]; $i<=$b[0]; $i++) {
 				$imgname = sprintf("%d_%d.png",$i,$j);
 				if (!file_exists("$dir/$imgname")) {
-					$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$i,$j,"$dir/$imgname");
+					if ($this->tile_zyx == 1)
+						$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$j,$i,"$dir/$imgname");
+					else
+						$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$i,$j,"$dir/$imgname");
 				}
 			}
 		}
@@ -477,5 +481,26 @@ class Rudymap_Stitcher extends Stitcher {
 			return 'http://make.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
 		} else 
 			return 'http://make.happyman.idv.tw/map/moi_happyman_nowp_nocache/%s/%s/%s.png';
+	}
+}
+
+class NLSC_Stitcher extends Stitcher {
+	var $version = 'emap5';
+	var $zoom = 17; // not good idea
+	var $tile_zyx = 1; // swap x and y, normaly z/x/y.png
+	var $pixel_per_km = 630; // zoom == 17 doubles the image
+	function getlogotext() {
+			return 'NLSC';
+	}
+	function getProcessParams() {
+			return array("-normalize");
+	}
+	function gettileurl() {
+			return 'https://wmts.nlsc.gov.tw/wmts/EMAP5/default/EPSG:3857/%s/%s/%s';
+
+			if ($this->include_gpx==0){
+					return 'http://make.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
+			} else
+					return 'http://make.happyman.idv.tw/map/moi_happyman_nowp_nocache/%s/%s/%s.png';
 	}
 }

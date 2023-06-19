@@ -10,16 +10,28 @@ Class Splitter {
     var $pixels;
     var $pasteb, $paster;
     var $tmpdir = '/dev/shm';
+    // fixed 
     var $pixel_per_km = 315;
+    var $real_pixel_per_km = 290;
 
     function __construct($opt){
         // A4 size: 210mm, 297mm 
-        $tiles['A4'] = array('x'=>5, 'y'=>7);
-        $tiles['A4R'] = array('x'=>7, 'y'=>5);
+
+        if ($opt['4x6']){
+            $tiles['A4'] = array('x'=>4, 'y'=>6);
+            $tiles['A3'] = array('x'=>6, 'y'=>8);
+            $this->pixel_per_km = 315;
+            $this->real_pixel_per_km = 437;
+        }else{
+            $tiles['A4'] = array('x'=>5, 'y'=>7);
+            $tiles['A3'] = array('x'=>7, 'y'=>10);
+            $this->pixel_per_km = 315;
+            $this->real_pixel_per_km = 290;
+        }
+        $tiles['A4R'] = array('x'=>$tiles['A4']['y'], 'y'=>$tiles['A4']['x']);
         $pixels['A4'] = array("x"=>1492, "y"=>2110);
         $pixels['A4R'] = array("x"=>2110, "y"=>1492);
-        $tiles['A3'] = array('x'=>7, 'y'=>10);
-        $tiles['A3R'] = array('x'=>10, 'y'=>7);
+        $tiles['A3R'] = array('x'=>$tiles['A3']['y'], 'y'=>$tiles['A3']['x']);
         $pixels['A3'] = array("x"=>2110, "y"=>2984);
         $pixels['A3R'] = array("x"=>2984, "y"=>2110);
         $this->shiftx = $opt['shiftx'];
@@ -47,11 +59,11 @@ Class Splitter {
         $x = $this->shiftx;
         $y = $this->shifty;
         if ($type=='A3'){
-            $pageX = 7;
-            $pageY = 10;
+            $pageX = $this->tiles['A3']['x'];
+            $pageY = $this->tiles['A3']['y'];
         } else {
-            $pageX = 5;
-            $pageY = 7;
+            $pageX = $this->tiles['A4']['x'];
+            $pageY = $this->tiles['A4']['y'];
         }
         $a4 = ceil($x/$pageX) * ceil($y/$pageY);
         $a4r = ceil($x/$pageY) * ceil($y/$pageX);
@@ -108,8 +120,9 @@ Class Splitter {
 	}
     function im_simage_resize($fpath, $outpath, $gravity="NorthWest" ) {
         // 92% is for 5x7,  315*92% = 289.8 ~290px per km.  (1492,2110) => (290x5+40 (2), 290x7+ 80)
-        $cmd = sprintf("convert %s -resize 92%% -background white -compose Copy -gravity %s -extent %dx%d  miff:- |convert - -gravity center -extent %dx%d %s", 
-        $fpath, $gravity, $this->pixels[$this->type]['x'], $this->pixels[$this->type]['y'], $this->pixels[$this->type]['x']+2, $this->pixels[$this->type]['y']+2, $outpath);
+        $ratio = $this->real_pixel_per_km / $this->pixel_per_km;
+        $cmd = sprintf("convert %s -resize %f%% -background white -compose Copy -gravity %s -extent %dx%d  miff:- |convert - -gravity center -extent %dx%d %s", 
+        $fpath, $ratio, $gravity, $this->pixels[$this->type]['x'], $this->pixels[$this->type]['y'], $this->pixels[$this->type]['x']+2, $this->pixels[$this->type]['y']+2, $outpath);
         $this->doLog($cmd);
         exec($cmd,$out,$ret);
         return $ret;
