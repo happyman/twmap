@@ -1,7 +1,7 @@
 <?php
 Namespace Happyman\Twmap;
 /*
-將 Map 分成小圖
+將 Map 分成小圖 
 */
 Class Splitter {
     var $shiftx,$shifty;
@@ -10,6 +10,7 @@ Class Splitter {
     var $pixels;
     var $pasteb, $paster;
     var $tmpdir = '/dev/shm';
+    var $pixel_per_km = 315;
 
     function __construct($opt){
         // A4 size: 210mm, 297mm 
@@ -87,8 +88,8 @@ Class Splitter {
 	回傳 images, x ,y 
 	*/
 	function splitimage($im, $outfile, $fuzzy) {
-        $sizex = $this->tiles[$this->type]['x'] * 315;
-        $sizey = $this->tiles[$this->type]['y'] * 315;
+        $sizex = $this->tiles[$this->type]['x'] * $this->pixel_per_km;
+        $sizey = $this->tiles[$this->type]['y'] * $this->pixel_per_km;
 		$w=imagesX($im); $h=imagesY($im);
 		$count=0; $py = 0;
 		$total=ceil(($w-$fuzzy)/$sizex) * ceil(($h-$fuzzy)/$sizey);
@@ -106,7 +107,7 @@ Class Splitter {
 		return [$imgs,$count/$py,$py];
 	}
     function im_simage_resize($fpath, $outpath, $gravity="NorthWest" ) {
-      
+        // 92% is for 5x7,  315*92% = 289.8 ~290px per km.  (1492,2110) => (290x5+40 (2), 290x7+ 80)
         $cmd = sprintf("convert %s -resize 92%% -background white -compose Copy -gravity %s -extent %dx%d  miff:- |convert - -gravity center -extent %dx%d %s", 
         $fpath, $gravity, $this->pixels[$this->type]['x'], $this->pixels[$this->type]['y'], $this->pixels[$this->type]['x']+2, $this->pixels[$this->type]['y']+2, $outpath);
         $this->doLog($cmd);

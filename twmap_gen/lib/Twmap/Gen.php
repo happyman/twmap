@@ -20,6 +20,7 @@ Class Stitcher {
 	var $log_channel;
 	var $debug = 0;
 	var $zoom = 16;
+	var $pixel_per_km = 315;
 
 	function __construct($options) {
 		if (!isset($options['startx']) || !isset($options['starty']) ||!isset($options['shiftx']) ||!isset($options['starty'])){
@@ -155,7 +156,7 @@ Class Stitcher {
 		$outi = $outimage = tempnam($this->tmpdir,"MTILES");
 		$montage_bin = "montage";
 		$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
-			implode(" ",$fn), $this->shiftx ,$this->shifty, $this->logoimg, $this->shiftx*315, $this->shifty*315, $outi);
+			implode(" ",$fn), $this->shiftx ,$this->shifty, $this->logoimg, $this->shiftx* $this->pixel_per_km, $this->shifty*$this->pixel_per_km, $outi);
 		if ($this->debug)
 			$this->doLog( $cmd );
 		
@@ -325,7 +326,7 @@ Class Stitcher {
 		}
 
 		$cropimage = tempnam($this->tmpdir,"CROP");
-		$resize=sprintf("%dx%d\!",315*$shiftx, 315*$shifty);
+		$resize=sprintf("%dx%d\!",$this->pixel_per_km*$shiftx, $this->pixel_per_km*$shifty);
 		// tw 121 以東，轉 -0.3 度
 		if (($ph == 0 && $tl_lon > 121 ) || ($ph == 1 && $tl_lon > 119 )) {
 			$rotate_angle = "-0.3";
@@ -395,7 +396,7 @@ Class Stitcher {
 	function im_addgrid($fpath, $step_m = 100) {
 		list ($w, $h) = getimagesize($fpath);
 
-		$step = 315 / (1000 / $step_m );
+		$step = $this->pixel_per_km / (1000 / $step_m );
 		for($i=0; $i<$w; $i+=$step) {
 				$poly[] = sprintf(" -draw 'line %d,%d %d,%d'", round($i), 0 ,round($i),$h);
 		}
@@ -419,21 +420,21 @@ Class Stitcher {
 		$starty = $inp_starty;
 		$fontsize = 30;
 		// 下面
-		for($i=0; $i<$w; $i+=315) {
+		for($i=0; $i<$w; $i+=$this->pixel_per_km) {
 			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white -border 3 -geometry +%d+%d -composite ",$startx++,$i+1,$h-$fontsize);
 		}
 		// 左邊
-		for($i=0; $i<$h; $i+=315) {
+		for($i=0; $i<$h; $i+=$this->pixel_per_km) {
 			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white  -border 3 -geometry +%d+%d -composite ",$starty--,1,$i+1);
 		}
 		$startx = $inp_startx+1;
 		$starty = $inp_starty-1;
 		// 上面
-		for ($i=315; $i<$w; $i+=315) {
+		for ($i=$this->pixel_per_km; $i<$w; $i+=$this->pixel_per_km) {
 			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white  -border 3 -geometry +%d+%d -composite ",$startx++,$i+1, 1);
 		}
 		// 右邊
-		for($i=315; $i<$h; $i+=315) {
+		for($i=$this->pixel_per_km; $i<$h; $i+=$this->pixel_per_km) {
 			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white  -border 3  -geometry +%d+%d -composite ",$starty--,$w- $fontsize * 2.3,$i+1);
 		}
 	
