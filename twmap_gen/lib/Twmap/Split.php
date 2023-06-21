@@ -114,17 +114,17 @@ Class Splitter {
     }
     function cropimage($im, $fname, $startx, $starty, $sizex, $sizey) {
 
-	$this->doLog("cropyimage im fname $startx $starty $sizex $sizey");
-        $dst=imageCreatetruecolor($sizex, $sizey);
-        $bgcolor = imagecolorallocate($dst, 255, 255, 255);
-        imagefill($dst,0,0,$bgcolor);
-        $realsizex = imagesx($im) - $startx;
-        $realsizey = imagesy($im) - $starty;
-        imageCopy($dst,$im,0,0,$startx,$starty,$realsizex, $realsizey);
-        // imagePng($dst,"$outfile.png");
-	$this->doLog("cropimage imagecopy(0,0,$startx,$starty,$realsizex,$realsizey) $sizex $sizey");
-        //return $dst;
-	imagePNG($dst,$fname);
+        $this->doLog("cropyimage im fname $startx $starty $sizex $sizey");
+            $dst=imageCreatetruecolor($sizex, $sizey);
+            $bgcolor = imagecolorallocate($dst, 255, 255, 255);
+            imagefill($dst,0,0,$bgcolor);
+            $realsizex = imagesx($im) - $startx;
+            $realsizey = imagesy($im) - $starty;
+            imageCopy($dst,$im,0,0,$startx,$starty,$realsizex, $realsizey);
+            // imagePng($dst,"$outfile.png");
+        $this->doLog("cropimage imagecopy(0,0,$startx,$starty,$realsizex,$realsizey) $sizex $sizey");
+            //return $dst;
+        imagePNG($dst,$fname);
     }
     /* 分成小圖 
 	回傳 images, x ,y 
@@ -140,7 +140,7 @@ Class Splitter {
 		for ($j=0; $j< $h - $fuzzy ; $j+= $sizey) {
 			$py++;
 			for ($i=0; $i< $w - $fuzzy ; $i+= $sizex) {
-				$outfname= $outfile . "_" . $count .".png";
+				$outfname= sprintf("%s_%s_%d.png",$outfile,$this->dimension,$count);
 				$this->cropimage($im,$outfname,$i,$j,$sizex+$fuzzy,$sizey+$fuzzy);
 				$imgs[$count++]=$outfname;
 				$this->doLog($outfname ." created");
@@ -205,5 +205,27 @@ Class Splitter {
         $this->doLog($cmd);
         exec($cmd, $out, $ret);
         return $ret;
+    }
+    // wrap
+    function make_simages($simage,$outx,$outy,$callback) {
+        $total=count($simage);
+        for($i=0;$i<$total;$i++) {
+            if ($total == 1) {
+                $this->im_simage_resize($simage[$i], $simage[$i], 'Center');
+                break;
+            }
+            $callback(sprintf("%d / %d",$i+1,$total));
+            $this->im_simage_resize($simage[$i], $simage[$i]);
+            $idxfile = $this->imageindex($outx,$outy,$i, 80, 80);
+            $overlap=array('right'=>0,'buttom'=>0);
+            if (($i+1) % $outx != 0) 
+                $overlap['right'] = 1;
+            if ($i < $outx * ($outy -1)) 
+                $overlap['buttom'] = 1;
+            $callback("small image border added ...");
+            $this->im_addborder($simage[$i], $simage[$i], $overlap, $idxfile);
+            unlink($idxfile);
+            $callback("ps:+".sprintf("%d", 20 * ($i+1)/$total));
+        }
     }
 }

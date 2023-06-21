@@ -299,7 +299,8 @@ if ($stage >= $jump ) {
 	}
 		
 	$im = imagecreatefrompng($outimage_gray);
-	$sp = new Happyman\Twmap\Splitter(["shiftx"=>$shiftx,"shifty"=>$shifty,"paper"=>$paper,"logger"=>$logger,'dim'=>$dim, 'pixel_per_km'=>$pixel_per_km]);
+	$params = ["shiftx"=>$shiftx,"shifty"=>$shifty,"paper"=>$paper,"logger"=>$logger,'dim'=>$dim, 'pixel_per_km'=>$pixel_per_km];
+	$sp = new Happyman\Twmap\Splitter($params);
 	list ($simage,$outx,$outy) = $sp->splitimage($im, $outfile_prefix, $fuzzy);
 	unset($im);
 }
@@ -312,30 +313,8 @@ if ($stage == $jumpstop) {
 }
 if ($stage >= $jump ) {
 	// 做各小圖
-	// showmem("after free STB");
-	$total=count($simage);
-	for($i=0;$i<$total;$i++) {
-		// im_file_gray($simage[$i], $simage[$i], $version);
-		// 如果只有一張的情況 
-		if ($total == 1) {
-		 	$sp->im_simage_resize($simage[$i], $simage[$i], 'Center');
-		 break;
-		}
-	  	cli_msglog(sprintf("%d / %d",$i+1,$total));
-		$sp->im_simage_resize($simage[$i], $simage[$i]);
-	  	cli_msglog("resize small image...");
-		$idxfile = $sp->imageindex($outx,$outy,$i, 80, 80);
-	  	cli_msglog("create index image...".$idxfile);
-		$overlap=array('right'=>0,'buttom'=>0);
-		if (($i+1) % $outx != 0) 
-			$overlap['right'] = 1;
-		if ($i < $outx * ($outy -1)) 
-			$overlap['buttom'] = 1;
-		$sp->im_addborder($simage[$i], $simage[$i], $overlap, $idxfile);
-		unlink($idxfile);
-	  	cli_msglog("small image border added ...");
-		cli_msglog("ps:+".sprintf("%d", 20 * $i+1/$total));
-	}
+	$sp->make_simages($simage,$outx,$outy,"cli_msglog");
+
 }
 unset($sp);
 showmem("after stage 3");

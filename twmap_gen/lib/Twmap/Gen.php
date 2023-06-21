@@ -163,8 +163,8 @@ Class Stitcher {
 					//$options=array("tile_url"=> $tileurl, "image_ps_args"=> $this->getProcessParams());
 					// tmppath => /dev/shm
 					foreach($layers as $idx=>$layer){
-						if (isset($layer['pre_args']))
-							$pre_args = $layer['pre_args'];
+						if (isset($layer['process']))
+							$pre_args = $layer['process'];
 						else
 							$pre_args = $this->getProcessParams('premerge');
 						list ($status, $fname[$idx]) = $this->img_from_tiles($i*1000, $j*1000, 1, 1, $this->zoom ,$this->ph, $layer['url'], $pre_args); 
@@ -272,10 +272,6 @@ Class Stitcher {
 					// template
 					$url = str_replace(array('{x}','{y}','{z}'), array($i,$j,$zoom),$tileurl);
 					$download[] = sprintf("url=\"$url\"\noutput=\"%s\"","$dir/$imgname");
-					//if ($tile_zyx == 1)
-					//	$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$j,$i,"$dir/$imgname");
-					//else
-					//	$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$i,$j,"$dir/$imgname");
 				}
 			}
 		}
@@ -548,11 +544,12 @@ class NLSC_Stitcher extends Stitcher {
 			if ($this->include_gpx==1){
 				return [
 					['url'=> 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/{z}/{y}/{x}',
-					  'pre_args' => '-level 25%%,100%%,0.1'	],
+					  'process' => '-level 25%%,100%%,0.1'	],
 					['url'=> 'http://make.happyman.idv.tw:8088/happyman_nowp/{z}/{x}/{y}.png',
-					  'pre_args' => ''] # '-monochrome'
+					  'process' => ''] # '-monochrome'
 				];
 			}
-			return [['url'=> 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/{z}/{y}/{x}']];
+			return [['url'=> 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/{z}/{y}/{x}',
+					'process' => '-level 25%%,100%%,0.1'	]];
 	}
 }
