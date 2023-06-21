@@ -132,6 +132,17 @@ Class Stitcher {
 		else
 			return 315;
 	}
+	function blit($fname){
+		if (count($fname)==1)
+			return $fname[0];
+		$newname=$fname[0] . "_merged";
+		$cmd = sprintf("composite  %s -compose Multiply %s",implode(" ",$fname),$newname);
+		$this->logger->info($cmd);
+		exec($cmd);
+		//exit;
+		exec("rm ". implode(" ",$fname));
+		return $newname;
+	}
 	// main
 	/* 
 	create logo image, base image
@@ -144,24 +155,34 @@ Class Stitcher {
 		$pstotal = $this->shiftx * $this->shifty;
 
 		$this->doLog( "check tiles...");
-		for($j=$this->starty; $j>$this->starty-$this->shifty; $j--){
-			for($i=$this->startx; $i<$this->startx+$this->shiftx; $i++){
-				//$tileurl = $this->gettileurl();
-				//$options=array("tile_url"=> $tileurl, "image_ps_args"=> $this->getProcessParams());
-				// tmppath => /dev/shm
-				list ($status, $fname) = $this->img_from_tiles($i*1000, $j*1000, 1, 1, $this->zoom , $this->ph); 
-				// 產生 progress
-				$this->doLog( sprintf("nbr:%s/%s ",$pscount,$pstotal));
-				$this->doLog( sprintf("nbr:ps%%+%d", 20 * $pscount/$pstotal));
-				$pscount++;
-				if ($status === false ) {
-					error_log("error $fname");
-					$this->err[] = $fname;
-					return false;
+		$layers = $this->gettileurl();
+
+			for($j=$this->starty; $j>$this->starty-$this->shifty; $j--){
+				for($i=$this->startx; $i<$this->startx+$this->shiftx; $i++){
+					//$tileurl = $this->gettileurl();
+					//$options=array("tile_url"=> $tileurl, "image_ps_args"=> $this->getProcessParams());
+					// tmppath => /dev/shm
+					foreach($layers as $idx=>$layer){
+						if (isset($layer['pre_args']))
+							$pre_args = $layer['pre_args'];
+						else
+							$pre_args = $this->getProcessParams('premerge');
+						list ($status, $fname[$idx]) = $this->img_from_tiles($i*1000, $j*1000, 1, 1, $this->zoom ,$this->ph, $layer['url'], $pre_args); 
+						if ($status === false ) {
+							$this->err[] = sprintf("%s failed\n",$fname[$idx]);
+							return false;
+						}
+					}
+					$fpath = $this->blit($fname);
+					// 產生 progress
+					$this->doLog( sprintf("nbr:%s/%s ",$pscount,$pstotal));
+					$this->doLog( sprintf("nbr:ps%%+%d", 20 * $pscount/$pstotal));
+					$pscount++;
+					
+					$fn[] = $fpath;
 				}
-				$fn[] = $fname;
 			}
-		}
+
 		if ($this->debug)
 			$this->logger->debug(print_r($fn, true));
 		// 合併
@@ -169,7 +190,7 @@ Class Stitcher {
 		$outi = $outimage = tempnam($this->tmpdir,"MTILES");
 		$montage_bin = "montage";
 		// 加上 logo
-		$psstr = implode(" ",$this->getProcessParams('postmerge'));
+		$psstr = $this->getProcessParams('postmerge');
 		$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! %s png:%s",
 			implode(" ",$fn), $this->shiftx ,$this->shifty, $this->logoimg, $this->shiftx*$this->pixel_per_km, $this->shifty*$this->pixel_per_km, $psstr,$outi);
 		if ($this->debug)
@@ -193,14 +214,13 @@ Class Stitcher {
 		return exec("mktemp -d " . escapeshellarg($tmpdir) . " $template");
 	}
 	// 從 web 下載圖磚來拚
-	function img_from_tiles($x, $y, $shiftx, $shifty, $zoom, $ph=0) {
+	function img_from_tiles($x, $y, $shiftx, $shifty, $zoom, $ph, $tileurl,$pre_args) {
 		
 		$montage_bin = "montage";
 		$debug = $this->debug;
 		$cache_filename = "";
 		$tmpdir = $this->tmpdir;
-		$image_ps_args = $this->getProcessParams('premerge');
-		$tileurl = $this->gettileurl();
+		//$tileurl = $this->gettileurl();
 		$datum = $this->datum;
 		$logger = $this->logger;
 		// 左上
@@ -211,7 +231,7 @@ Class Stitcher {
 		$y1 = $y - $shifty * 1000;
 
 		if ($debug) {
-			$logger->info("img_from_tiles3($x, $y, $shiftx, $shifty, $zoom, $ph, $debug)");
+			$logger->info("img_from_tiles($x, $y, $shiftx, $shifty, $zoom, $ph, $tileurl, $pre_args");
 		}
 		// 輸入的座標是 TWD97 or TWD67
 		if ($datum == 'TWD97'){
@@ -249,10 +269,13 @@ Class Stitcher {
 			for ($i=$a[0]; $i<=$b[0]; $i++) {
 				$imgname = sprintf("%d_%d.png",$i,$j);
 				if (!file_exists("$dir/$imgname")) {
-					if ($this->tile_zyx == 1)
-						$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$j,$i,"$dir/$imgname");
-					else
-						$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$i,$j,"$dir/$imgname");
+					// template
+					$url = str_replace(array('{x}','{y}','{z}'), array($i,$j,$zoom),$tileurl);
+					$download[] = sprintf("url=\"$url\"\noutput=\"%s\"","$dir/$imgname");
+					//if ($tile_zyx == 1)
+					//	$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$j,$i,"$dir/$imgname");
+					//else
+					//	$download[] = sprintf("url=\"$tileurl\"\noutput=\"%s\"",$zoom,$i,$j,"$dir/$imgname");
 				}
 			}
 		}
@@ -265,34 +288,33 @@ Class Stitcher {
 		}
 
 		while(1) {
-
-		$cmd = sprintf("curl -s -Z -L --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 --config %s","$dir/dl.txt");
-		exec($cmd);
-		$img = array();
-		for($j=$a[1];$j<=$b[1];$j++) {
-			for ($i=$a[0]; $i<=$b[0]; $i++) {
-				$imgname = sprintf("%d_%d.png",$i,$j);
-				if (file_exists("$dir/$imgname") && !is_link("$dir/$imgname")) {
-					// 有錯
-					if (filesize("$dir/$imgname") == 0 )
-						continue;
-					if ($debug) {
-						error_log("$dir/$imgname ok ". filesize("$dir/$imgname"));
-						$logger->info("$dir/$imgname ok ". filesize("$dir/$imgname"));
+			$cmd = sprintf("curl -s -Z -L --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 --config %s","$dir/dl.txt");
+			exec($cmd);
+			$img = array();
+			for($j=$a[1];$j<=$b[1];$j++) {
+				for ($i=$a[0]; $i<=$b[0]; $i++) {
+					$imgname = sprintf("%d_%d.png",$i,$j);
+					if (file_exists("$dir/$imgname") && !is_link("$dir/$imgname")) {
+						// 有錯
+						if (filesize("$dir/$imgname") == 0 )
+							continue;
+						if ($debug) {
+							error_log("$dir/$imgname ok ". filesize("$dir/$imgname"));
+							$logger->info("$dir/$imgname ok ". filesize("$dir/$imgname"));
+						}
+						$img[] =  $imgname;
+					} else {
+						if ($debug) {
+							error_log("$dir/$imgname not exist");
+							$logger->error("$dir/$imgname not exist");
+						}
+						// clean tmpdir
+						exec("rm -r $dir");
+						return array(FALSE, "超出圖資範圍", false);
 					}
-					$img[] =  $imgname;
-				} else {
-					if ($debug) {
-						error_log("$dir/$imgname not exist");
-						$logger->error("$dir/$imgname not exist");
-					}
-					// clean tmpdir
-					exec("rm -r $dir");
-					return array(FALSE, "超出圖資範圍", false);
 				}
 			}
-		}
-		break;
+			break;
 		}
 		if ($debug) {
 			//	error_log(print_r($img, true));
@@ -370,16 +392,12 @@ Class Stitcher {
 			$logger->info($cmd);
 		}
 		// pre-merge process args
-		$str_image_ps_arg = implode(" ",$image_ps_args);
-		//$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 miff:- | composite -gravity northeast %s - png:%s",$outimage,
-	// -white-threshold 85%% p
-
 		$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s %s  png:%s",
 			$outimage,
 			ceil($px_width), ceil($px_height),
 			round($px_shiftx)+$offset_x, round($px_shifty)+$offset_y,
 			$resize,
-			$str_image_ps_arg, 
+			$pre_args, 
 			$cropimage);
 
 		if ($debug) {
@@ -406,15 +424,15 @@ Class Stitcher {
 	/* used from img_from_tile */
 	function getProcessParams($when="premerge") {
 		if ($when=='premerge')
-			return array("-equalize  -gamma 2.2");
+			return "-equalize  -gamma 2.2";
 		else
-			return array();
+			return "";
 	}
 	function gettileurl() {
 		if ($this->include_gpx==0){
-			return 'http://make.happyman.idv.tw/map/tw25k2001/%s/%s/%s.png';
+			return [['url'=>'http://make.happyman.idv.tw/map/tw25k2001/{z}/{x}/{y}.png' ]];
 		} else 
-			return 'http://make.happyman.idv.tw/map/twmap_happyman_nowp_nocache/%s/%s/%s.png';
+			return [[ "url"=>'http://make.happyman.idv.tw/map/twmap_happyman_nowp_nocache/{z}/{x}/{y}.png' ]];
 
 	}
 	function im_addgrid($fpath, $step_m = 100) {
@@ -499,15 +517,15 @@ class Rudymap_Stitcher extends Stitcher {
 	}
 	function getProcessParams($when = 'premerge') {
 		if ($when == 'postmerge')
-			return array("-normalize");
+			return "-normalize";
 		else
-			return [];
+			return "";
 	}
 	function gettileurl() {
 		if ($this->include_gpx==0){
-			return 'http://make.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
+			return [['url'=>'http://make.happyman.idv.tw/map/moi_nocache/{z}/{x}/{y}.png']];
 		} else 
-			return 'http://make.happyman.idv.tw/map/moi_happyman_nowp_nocache/%s/%s/%s.png';
+			return [[ 'url'=>'http://make.happyman.idv.tw/map/moi_happyman_nowp_nocache/{z}/{x}/{y}.png']];
 	}
 }
 
@@ -520,13 +538,21 @@ class NLSC_Stitcher extends Stitcher {
 	}
 	function getProcessParams($when = 'premerge') {
 		if ($when == 'postmerge')
-			return [];
+			return "";
 		else
-			return [ "-level 25%%,100%%,0.1" ];
+			return "";
 	}
 	function gettileurl() {
 			//return 'https://wmts.nlsc.gov.tw/wmts/EMAP15/default/EPSG:3857/%s/%s/%s';
 			//return 'https://wmts.nlsc.gov.tw/wmts/MOI_CONTOUR/default/EPSG:3857/%s/%s/%s';
-			return 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/%s/%s/%s';
+			if ($this->include_gpx==1){
+				return [
+					['url'=> 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/{z}/{y}/{x}',
+					  'pre_args' => '-level 25%%,100%%,0.1'	],
+					['url'=> 'http://make.happyman.idv.tw:8088/happyman_nowp/{z}/{x}/{y}.png',
+					  'pre_args' => ''] # '-monochrome'
+				];
+			}
+			return [['url'=> 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/{z}/{y}/{x}']];
 	}
 }
