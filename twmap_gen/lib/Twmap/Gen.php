@@ -105,12 +105,16 @@ Class Stitcher {
 	function logo($mylogotext=''){
 		if (!empty($mylogotext))
 			$logotext = $mylogotext;
-		$fpath = sprintf("%s/%s_%s.png",$this->tmpdir,$this->datum,$logotext);
+		$fpath = sprintf("%s/%s_%s_%d.png",$this->tmpdir,$this->datum,$logotext,$this->zoom);
 		if (file_exists($fpath)) { 
 			$this->logger->info("logo $fpath returned");
 			return $fpath;
 		}
-		$cmd = sprintf("convert -resize 85x -pointsize 30 -gravity Center pango:'%s\n%s' -font Noto-Serif-CJK-TC  %s",$this->datum, $logotext, $fpath);
+		if ($this->zoom> 16)
+			$width = "-resize 170x -pointsize 60";
+		else
+			$width = "-resize 85 -pointsize 30";
+		$cmd = sprintf("convert %s -gravity Center pango:'%s\n%s' -font Noto-Serif-CJK-TC  %s",$width, $this->datum, $logotext, $fpath);
 		$this->logger->info($cmd);
 		exec($cmd,$out,$ret);
 		if ($ret == 0)
@@ -164,8 +168,10 @@ Class Stitcher {
 		$this->doLog( "merge tiles...");
 		$outi = $outimage = tempnam($this->tmpdir,"MTILES");
 		$montage_bin = "montage";
-		$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! png:%s",
-			implode(" ",$fn), $this->shiftx ,$this->shifty, $this->logoimg, $this->shiftx* $this->pixel_per_km, $this->shifty*$this->pixel_per_km, $outi);
+		// 加上 logo
+		$psstr = implode(" ",$this->getProcessParams('postmerge'));
+		$cmd = sprintf("$montage_bin %s -mode Concatenate -tile %dx%d miff:-| composite -gravity northeast %s - miff:-| convert - -resize %dx%d\! %s png:%s",
+			implode(" ",$fn), $this->shiftx ,$this->shifty, $this->logoimg, $this->shiftx*$this->pixel_per_km, $this->shifty*$this->pixel_per_km, $psstr,$outi);
 		if ($this->debug)
 			$this->doLog( $cmd );
 		
@@ -193,7 +199,7 @@ Class Stitcher {
 		$debug = $this->debug;
 		$cache_filename = "";
 		$tmpdir = $this->tmpdir;
-		$image_ps_args = $this->getProcessParams();
+		$image_ps_args = $this->getProcessParams('premerge');
 		$tileurl = $this->gettileurl();
 		$datum = $this->datum;
 		$logger = $this->logger;
@@ -363,9 +369,11 @@ Class Stitcher {
 			error_log($cmd);
 			$logger->info($cmd);
 		}
+		// pre-merge process args
 		$str_image_ps_arg = implode(" ",$image_ps_args);
 		//$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s -contrast-stretch 1x1%% -sharpen 1.5x1.5 miff:- | composite -gravity northeast %s - png:%s",$outimage,
 	// -white-threshold 85%% p
+
 		$cmd=sprintf("convert %s -crop %dx%d+%d+%d -adaptive-resize %s %s  png:%s",
 			$outimage,
 			ceil($px_width), ceil($px_height),
@@ -395,8 +403,12 @@ Class Stitcher {
 	function getlogotext() {
 		return '經建三';
 	}
-	function getProcessParams() {
-		return array("-equalize  -gamma 2.2");
+	/* used from img_from_tile */
+	function getProcessParams($when="premerge") {
+		if ($when=='premerge')
+			return array("-equalize  -gamma 2.2");
+		else
+			return array();
 	}
 	function gettileurl() {
 		if ($this->include_gpx==0){
@@ -430,7 +442,10 @@ Class Stitcher {
 		// tag X
 		$startx = $inp_startx;
 		$starty = $inp_starty;
-		$fontsize = 30;
+		if ($this->zoom == 17)
+			$fontsize = 60;
+		else
+			$fontsize = 30;
 		// 下面
 		for($i=0; $i<$w; $i+=$this->pixel_per_km) {
 			$label[] = sprintf(" -pointsize $fontsize label:%d -trim +repage  -bordercolor white -border 3 -geometry +%d+%d -composite ",$startx++,$i+1,$h-$fontsize);
@@ -482,8 +497,11 @@ class Rudymap_Stitcher extends Stitcher {
 	function getlogotext() {
 		return '魯地圖';
 	}
-	function getProcessParams() {
-		return array("-normalize");
+	function getProcessParams($when = 'premerge') {
+		if ($when == 'postmerge')
+			return array("-normalize");
+		else
+			return [];
 	}
 	function gettileurl() {
 		if ($this->include_gpx==0){
@@ -500,8 +518,11 @@ class NLSC_Stitcher extends Stitcher {
 	function getlogotext() {
 			return 'NLSC';
 	}
-	function getProcessParams() {
-		return array("-normalize");
+	function getProcessParams($when = 'premerge') {
+		if ($when == 'postmerge')
+			return [];
+		else
+			return [ "-level 25%%,100%%,0.1" ];
 	}
 	function gettileurl() {
 			//return 'https://wmts.nlsc.gov.tw/wmts/EMAP15/default/EPSG:3857/%s/%s/%s';
