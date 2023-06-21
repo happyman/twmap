@@ -120,14 +120,22 @@ Class Stitcher {
 			return false;
 		}
 	}
-
+	function getPixelPerKm(){
+		if ($this->zoom == 18)	
+			return 1260;
+		else if ($this->zoom==17)
+			return 630;
+		else
+			return 315;
+	}
 	// main
 	/* 
 	create logo image, base image
 	*/
 	function create_base_png() {
 		$this->logoimg = $this->logo($this->getlogotext());
-
+		// 
+		$this->pixel_per_km = $this->getPixelPerKm();
 		$pscount = 1; 
 		$pstotal = $this->shiftx * $this->shifty;
 
@@ -252,7 +260,7 @@ Class Stitcher {
 
 		while(1) {
 
-		$cmd = sprintf("curl -q -Z -L --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 --config %s","$dir/dl.txt");
+		$cmd = sprintf("curl -s -Z -L --connect-timeout 2 --max-time 30 --retry 99 --retry-max-time 0 --config %s","$dir/dl.txt");
 		exec($cmd);
 		$img = array();
 		for($j=$a[1];$j<=$b[1];$j++) {
@@ -456,7 +464,7 @@ Class Stitcher {
 			$param = "-opaque 'rgb(93,119,80)' -fill white -opaque 'rgb(148,146,145)' -fill white     -fuzz 50%  -fill black -opaque blue  -colorspace gray";
 		} else if ($ver == 3) {
 			$param = "-colorspace gray miff:-|convert miff:- -brightness-contrast 20x5 -tint 40";
-		}  else {
+		}  else {	
 			$param = "-colorspace gray";
 		}
 		$cmd = sprintf("convert %s %s %s",$fpath, $param, $outpath);
@@ -470,6 +478,7 @@ Class Stitcher {
 //eo class
 class Rudymap_Stitcher extends Stitcher {
 	var $version = 2016;
+	var $zoom = 16;
 	function getlogotext() {
 		return '魯地圖';
 	}
@@ -484,23 +493,19 @@ class Rudymap_Stitcher extends Stitcher {
 	}
 }
 
+// still unuseable.
 class NLSC_Stitcher extends Stitcher {
-	var $version = 'emap5';
-	var $zoom = 17; // not good idea
+	var $zoom = 17; 
 	var $tile_zyx = 1; // swap x and y, normaly z/x/y.png
-	var $pixel_per_km = 630; // zoom == 17 doubles the image
 	function getlogotext() {
 			return 'NLSC';
 	}
 	function getProcessParams() {
-			return array("-normalize");
+		return array("-normalize");
 	}
 	function gettileurl() {
-			return 'https://wmts.nlsc.gov.tw/wmts/EMAP5/default/EPSG:3857/%s/%s/%s';
-
-			if ($this->include_gpx==0){
-					return 'http://make.happyman.idv.tw/map/moi_nocache/%s/%s/%s.png';
-			} else
-					return 'http://make.happyman.idv.tw/map/moi_happyman_nowp_nocache/%s/%s/%s.png';
+			//return 'https://wmts.nlsc.gov.tw/wmts/EMAP15/default/EPSG:3857/%s/%s/%s';
+			//return 'https://wmts.nlsc.gov.tw/wmts/MOI_CONTOUR/default/EPSG:3857/%s/%s/%s';
+			return 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/%s/%s/%s';
 	}
 }

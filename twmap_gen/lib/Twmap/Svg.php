@@ -28,6 +28,7 @@ class Gpx2Svg {
 	var $auto_shrink = 0; // 1 表示自動更縮小到可以產生的範圍, 在 keepon 有大範圍地圖適用
 	var $limit = array("km_x" => 24001, "km_y" => 24001); // 24x24 格
 	var $datum = 'TWD67';
+	var $pixel_per_km;
 	var $_err;
 
 	function __construct($params) {
@@ -43,6 +44,7 @@ class Gpx2Svg {
 		$this->colorize = (isset($params['colorize']))? $params['colorize'] : "";
 		$this->auto_shrink = (isset($params['auto_shrink']))? $params['auto_shrink'] : 0;
 		$this->datum = (isset($params['datum']))? $params['datum'] : 'TWD67';
+		$this->pixel_per_km = (isset($params['pixel_per_km']))? $params['pixel_per_km'] : 315;
 	
 
 	}
@@ -206,7 +208,7 @@ class Gpx2Svg {
 			return false;
 		}
 		// 計算字型比例 依照若是標準地圖產生器出圖, 18px (1km 315px)
-		$this->fontsize = intval(18 * ($this->width / (($br[0] - $tl[0])/1000) / 315));
+		$this->fontsize = intval(18 * ($this->width / (($br[0] - $tl[0])/1000) / $this->pixel_per_km));
 		// 若是產生縮圖
 		if ($this->fontsize < $this->default_fontsize)
 			$this->fontsize = $this->default_fontsize;
@@ -223,7 +225,7 @@ class Gpx2Svg {
 		$this->ratio['x'] = $this->width / ($this->bound['br'][0] - $this->bound['tl'][0]);
 		// 經緯度比例這樣會出錯
 		//$this->height = round(($this->bound['tl'][1] - $this->bound['br'][1])*$this->ratio);
-		$this->height = ($tl[1]-$br[1])/1000 * 315;
+		$this->height = ($tl[1]-$br[1])/1000 *  $this->pixel_per_km;
 		$this->ratio['y'] = $this->height / ($this->bound['tl'][1] - $this->bound['br'][1]);
 
 
@@ -310,11 +312,12 @@ class Gpx2Svg {
 		//$this->dump();
 		return true;
 	}
-	function output() {
+	function output($outsvg) {
 		if (!empty($this->_err)) {
 			print_r($this->_err);
 			exit;
 		}
+		ob_start();
 		// 1. header
 		$this->header();
 		// 2. 背景
@@ -327,6 +330,10 @@ class Gpx2Svg {
 		$this->out_comment();
 		// footer
 		$this->footer();
+		$ret = file_put_contents($outsvg,ob_get_contents());
+		ob_end_clean();
+		return $ret;
+	
 	}
 	function out_comment() {
 		printf("<!-- debug: %s-->\n",print_r($this->initparams,true));
@@ -644,7 +651,7 @@ class Gpx2Svg {
 		}
 	}
 	function out_index() {
-		$left = $this->width - 315;
+		$left = $this->width -  $this->pixel_per_km;
 		//$top = 25;
 		//1. 計算能放下多少 wpt,  剩下折行, 最多 $line_len 字
 		//第二行超過就變成 … 
@@ -777,112 +784,94 @@ class Gpx2Svg {
 			// 澎湖
 			return 2;
 	}
+	function svg2png_inkscape($insvg, $outimage,$resize=array()) {
+		$cmd = sprintf("inkscape -e '%s' %s 2>&1", $outimage, $insvg);
+		exec($cmd, $out, $ret);
+		if (strstr($out[count($out)-1],"saved")) {
+			// 再 resize 一下
+			if (!empty($resize) && $resize[0] >=  $this->pixel_per_km && $resize[1] >=  $this->pixel_per_km) {
+				$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
+				exec($cmd2, $out2, $ret);
+			}
+			return array(true, implode("+",$out+$out2));
+		}
+		return array(false, implode("+",$out));
+	}
+	// use convert .. 
+	// http://map.happyman.idv.tw/map/out/000003/90912/276000x2677000-5x7-v3.svg2
+	// http://map.happyman.idv.tw/map/out/000003/90912/test.png
+	function svg2png_magick($insvg, $outimage,$resize=array()) {
+		$cmd = sprintf("convert 'msvg:%s' %s", $insvg, $outimage);
+		exec($cmd, $out, $ret);
+		if ($ret == 0) {
+			// 再 resize 一下
+			if (!empty($resize) && $resize[0] >=$this->pixel_per_km && $resize[1] >= $this->pixel_per_km) {
+				$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
+				exec($cmd2, $out2, $ret);
+			}
+			return array(true, implode("+",$out+$out2));
+		}
+		return array(false, implode("+",$out));
+	}
+	// wrap it
+	function svg2png($in, $out, $resize=array()) {
+		list ($st, $msg) = $this->svg2png_magick($in,$out,$resize);
+		if ($st === false)
+			return $this->svg2png_inkscape($in,$out,$resize);
+		else
+			return array($st, $msg);   
+	}
 };
 	
 function obj2array($obj, $level=0) {
 
-$items = array();
+	$items = array();
 
-if(!is_object($obj)) return $items;
+	if(!is_object($obj)) return $items;
 
-$child = (array)$obj;
+	$child = (array)$obj;
 
-if(sizeof($child)>1) {
-	foreach($child as $aa=>$bb) {
-		if(is_array($bb)) {
-			foreach($bb as $ee=>$ff) {
-				if(!is_object($ff)) {
-					$items[$aa][$ee] = $ff;
+	if(sizeof($child)>1) {
+		foreach($child as $aa=>$bb) {
+			if(is_array($bb)) {
+				foreach($bb as $ee=>$ff) {
+					if(!is_object($ff)) {
+						$items[$aa][$ee] = $ff;
+					} else
+						if(get_class($ff)=='SimpleXMLElement') {
+							$items[$aa][$ee] = obj2array($ff,$level+1);
+						}
+				}
+			} else
+				if(!is_object($bb)) {
+					$items[$aa] = $bb;
 				} else
-					if(get_class($ff)=='SimpleXMLElement') {
-						$items[$aa][$ee] = obj2array($ff,$level+1);
+					if(get_class($bb)=='SimpleXMLElement') {
+						$items[$aa] = obj2array($bb,$level+1);
+					}
+		}
+	} else
+		if(sizeof($child)>0) {
+			foreach($child as $aa=>$bb) {
+				if(!is_array($bb)&&!is_object($bb)) {
+					$items[$aa] = $bb;
+				} else
+					if(is_object($bb)) {
+						$items[$aa] = obj2array($bb,$level+1);
+					} else {
+						foreach($bb as $cc=>$dd) {
+							if(!is_object($dd)) {
+								$items[$obj->getName()][$cc] = $dd;
+							} else
+								if(get_class($dd)=='SimpleXMLElement') {
+									$items[$obj->getName()][$cc] = obj2array($dd,$level+1);
+								}
+						}
 					}
 			}
-		} else
-			if(!is_object($bb)) {
-				$items[$aa] = $bb;
-			} else
-				if(get_class($bb)=='SimpleXMLElement') {
-					$items[$aa] = obj2array($bb,$level+1);
-				}
-	}
-} else
-	if(sizeof($child)>0) {
-		foreach($child as $aa=>$bb) {
-			if(!is_array($bb)&&!is_object($bb)) {
-				$items[$aa] = $bb;
-			} else
-				if(is_object($bb)) {
-					$items[$aa] = obj2array($bb,$level+1);
-				} else {
-					foreach($bb as $cc=>$dd) {
-						if(!is_object($dd)) {
-							$items[$obj->getName()][$cc] = $dd;
-						} else
-							if(get_class($dd)=='SimpleXMLElement') {
-								$items[$obj->getName()][$cc] = obj2array($dd,$level+1);
-							}
-					}
-				}
 		}
-	}
 
-return $items;
+	return $items;
 }
 
 
-
-function gpx2svg($param,$outsvg) {
-
-	$svg = new Gpx2Svg($param);
-	$ret = $svg->process();
-	if ($ret === false) {
-		return array(false, $svg->_err);
-	}
-	ob_start();
-	$svg->output();
-	$ret = file_put_contents($outsvg,ob_get_contents());
-	ob_end_clean();
-	if ($ret === false ){
-		return array(false, "unable to write to $outsvg");
-	}
-	return array(true, "$outsvg created");
-}
-// use inkscape: buggy
-function svg2png_inkscape($insvg, $outimage,$resize=array()) {
-	$cmd = sprintf("inkscape -e '%s' %s 2>&1", $outimage, $insvg);
-	exec($cmd, $out, $ret);
-	if (strstr($out[count($out)-1],"saved")) {
-		// 再 resize 一下
-		if (!empty($resize) && $resize[0] >= 315 && $resize[1] >= 315) {
-			$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
-			exec($cmd2, $out2, $ret);
-		}
-		return array(true, implode("+",$out+$out2));
-	}
-	return array(false, implode("+",$out));
-}
-// use convert .. 
-// http://map.happyman.idv.tw/map/out/000003/90912/276000x2677000-5x7-v3.svg2
-// http://map.happyman.idv.tw/map/out/000003/90912/test.png
-function svg2png_magick($insvg, $outimage,$resize=array()) {
-	$cmd = sprintf("convert 'msvg:%s' %s", $insvg, $outimage);
-	exec($cmd, $out, $ret);
-	if ($ret == 0) {
-		// 再 resize 一下
-		if (!empty($resize) && $resize[0] >= 315 && $resize[1] >= 315) {
-			$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
-			exec($cmd2, $out2, $ret);
-		}
-		return array(true, implode("+",$out+$out2));
-	}
-	return array(false, implode("+",$out));
-}
-// wrap it
-function svg2png($in, $out, $resize=array()) {
-	list ($st, $msg) = svg2png_magick($in,$out,$resize);
-	if ($st === false)
-		return svg2png_inkscape($in,$out,$resize);
-	else
-	 	return array($st, $msg);   
-}

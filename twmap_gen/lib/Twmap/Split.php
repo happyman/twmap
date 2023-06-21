@@ -12,28 +12,52 @@ Class Splitter {
     var $tmpdir = '/dev/shm';
     // fixed 
     var $pixel_per_km = 315;
-    var $real_pixel_per_km = 290;
+    var $dimension = '5x7';
 
     function __construct($opt){
         // A4 size: 210mm, 297mm 
 
-        if ($opt['4x6']){
+        if (isset($opt['dim'])){
+            $this->dimension = $opt['dim'];
+        }
+        if (isset($opt['pixel_per_km']))
+            $this->pixel_per_km = $opt['pixel_per_km'];
+
+        switch($this->dimension){
+        case '4x6':
+        case '6x4':
             $tiles['A4'] = array('x'=>4, 'y'=>6);
             $tiles['A3'] = array('x'=>6, 'y'=>8);
-            $this->pixel_per_km = 315;
-            $this->real_pixel_per_km = 437;
-        }else{
+            break;
+        case '3x4':
+        case '4x3':
+            $tiles['A4'] = array('x'=>3, 'y'=>4);
+            $tiles['A3'] = array('x'=>4, 'y'=>6);
+            break;
+        case '2x3':
+        case '3x2':
+            $tiles['A4'] = array('x'=>2, 'y'=>3);
+            $tiles['A3'] = array('x'=>3, 'y'=>4);
+            break;
+        case '1x2':
+        case '2x1':
+                $tiles['A4'] = array('x'=>1, 'y'=>2);
+                $tiles['A3'] = array('x'=>2, 'y'=>2);
+                break;
+        case '5x7':
+        case '7x5':
+        default:
             $tiles['A4'] = array('x'=>5, 'y'=>7);
             $tiles['A3'] = array('x'=>7, 'y'=>10);
-            $this->pixel_per_km = 315;
-            $this->real_pixel_per_km = 290;
+            break;
         }
+
         $tiles['A4R'] = array('x'=>$tiles['A4']['y'], 'y'=>$tiles['A4']['x']);
         $pixels['A4'] = array("x"=>1492, "y"=>2110);
-        $pixels['A4R'] = array("x"=>2110, "y"=>1492);
+        $pixels['A4R'] = array("x"=>$pixels['A4']['y'], "y"=>$pixels['A4']['x']);
         $tiles['A3R'] = array('x'=>$tiles['A3']['y'], 'y'=>$tiles['A3']['x']);
         $pixels['A3'] = array("x"=>2110, "y"=>2984);
-        $pixels['A3R'] = array("x"=>2984, "y"=>2110);
+        $pixels['A3R'] = array("x"=>$pixels['A3']['y'], "y"=>$pixels['A3']['x']);
         $this->shiftx = $opt['shiftx'];
         $this->shifty = $opt['shifty'];
         $this->tiles = $tiles;
@@ -46,6 +70,7 @@ Class Splitter {
             $this->tmpdir = $opt['tmpdir'];
         $this->type = $this->determine_type($opt['paper']);
         list ($this->pasteb, $this->paster) = $this->make_paste_image();
+	    $this->doLog(print_r([$this->dimension,$this->pixel_per_km,$this->type,$this->pixels[$this->type],$this->tiles [$this->type]],true),'debug');
     }
     function setLogger($logger){
 		$this->logger = $logger;
@@ -71,6 +96,7 @@ Class Splitter {
               return $type . "R";
         }
         // all A4 橫式
+        $this->doLog("type=".$this->type);
         return $type;
     }
     function make_paste_image(){
@@ -86,7 +112,9 @@ Class Splitter {
         }
         return [$pasteb, $paster];
     }
-    function cropimage($im, $startx, $starty, $sizex, $sizey) {
+    function cropimage($im, $fname, $startx, $starty, $sizex, $sizey) {
+
+	$this->doLog("cropyimage im fname $startx $starty $sizex $sizey");
         $dst=imageCreatetruecolor($sizex, $sizey);
         $bgcolor = imagecolorallocate($dst, 255, 255, 255);
         imagefill($dst,0,0,$bgcolor);
@@ -94,34 +122,40 @@ Class Splitter {
         $realsizey = imagesy($im) - $starty;
         imageCopy($dst,$im,0,0,$startx,$starty,$realsizex, $realsizey);
         // imagePng($dst,"$outfile.png");
-        return $dst;
+	$this->doLog("cropimage imagecopy(0,0,$startx,$starty,$realsizex,$realsizey) $sizex $sizey");
+        //return $dst;
+	imagePNG($dst,$fname);
     }
     /* 分成小圖 
 	回傳 images, x ,y 
 	*/
 	function splitimage($im, $outfile, $fuzzy) {
-        $sizex = $this->tiles[$this->type]['x'] * $this->pixel_per_km;
-        $sizey = $this->tiles[$this->type]['y'] * $this->pixel_per_km;
-		$w=imagesX($im); $h=imagesY($im);
+        	$sizex = $this->tiles[$this->type]['x'] * $this->pixel_per_km;
+        	$sizey = $this->tiles[$this->type]['y'] * $this->pixel_per_km;
+		$w=imagesX($im); 
+		$h=imagesY($im);
 		$count=0; $py = 0;
-		$total=ceil(($w-$fuzzy)/$sizex) * ceil(($h-$fuzzy)/$sizey);
+		//$total=ceil(($w-$fuzzy)/$sizex) * ceil(($h-$fuzzy)/$sizey);
+		$this->doLog("spliteimage $sizex $sizey $w $h");
 		for ($j=0; $j< $h - $fuzzy ; $j+= $sizey) {
 			$py++;
 			for ($i=0; $i< $w - $fuzzy ; $i+= $sizex) {
 				$outfname= $outfile . "_" . $count .".png";
-				$dst=$this->cropimage($im,$i,$j,$sizex+$fuzzy,$sizey+$fuzzy);
-				imagePNG($dst,$outfname);
-				imageDestroy($dst);
+				$this->cropimage($im,$outfname,$i,$j,$sizex+$fuzzy,$sizey+$fuzzy);
 				$imgs[$count++]=$outfname;
+				$this->doLog($outfname ." created");
 
 			}
 		}
-		return [$imgs,$count/$py,$py];
+		$ret = [$imgs,$count/$py,$py];
+		$this->doLog(print_r($ret,true),'debug');
+		return $ret;
 	}
     function im_simage_resize($fpath, $outpath, $gravity="NorthWest" ) {
-        // 92% is for 5x7,  315*92% = 289.8 ~290px per km.  (1492,2110) => (290x5+40 (2), 290x7+ 80)
-        $ratio = $this->real_pixel_per_km / $this->pixel_per_km;
-        $cmd = sprintf("convert %s -resize %f%% -background white -compose Copy -gravity %s -extent %dx%d  miff:- |convert - -gravity center -extent %dx%d %s", 
+        // 92% is for 5x7,  1492 -42 / 315*5 = 92%
+        //$ratio = $this->real_pixel_per_km / $this->pixel_per_km * 100;
+	    $ratio = ($this->pixels[$this->type]['x'] - 42) /  ($this->tiles[$this->type]['x'] * $this->pixel_per_km) * 100;
+        $cmd = sprintf("convert %s -resize %.02f%% -background white -compose Copy -gravity %s -extent %dx%d  miff:- |convert - -gravity center -extent %dx%d %s", 
         $fpath, $ratio, $gravity, $this->pixels[$this->type]['x'], $this->pixels[$this->type]['y'], $this->pixels[$this->type]['x']+2, $this->pixels[$this->type]['y']+2, $outpath);
         $this->doLog($cmd);
         exec($cmd,$out,$ret);

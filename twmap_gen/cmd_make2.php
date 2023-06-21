@@ -7,7 +7,7 @@ require_once("lib/slog/load.php");
 ini_set("memory_limit","512M");
 set_time_limit(0);
 
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:","logurl_prefix:","logfile:","getopt"));
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:D:",array("agent:","logurl_prefix:","logfile:","getopt"));
 // for command line parse
 if (isset($opt['getopt'])){
 	$options=$opt;
@@ -29,6 +29,7 @@ if (!isset($opt['r']) || !isset($opt['O'])){
 	echo "       -e draw 100M 格線\n";
 	echo "       -G merge user track_logs 包含使用者行跡\n";
 	echo "       -3 for A3 output 輸出A3\n";
+	echo "       -D 5x7|4x6|3x4|2x3 等輸出 dimension\n";
 	echo "       -m /tmp tmpdir 暫存檔存放目錄\n";
 	echo "除錯用 -d debug \n";
 	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf.\n";
@@ -54,16 +55,20 @@ if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) || em
 	cli_error_out("參數錯誤",0);
 
 $version=isset($opt['v'])?$opt['v']:2016;
-if (!isset($opt['t'])) $opt['t'] = '地圖產生器預設標題';
-$title=mb_decode_mimeheader($opt['t']);
+if (!isset($opt['t'])) 
+	$title = '我的地圖';
+else
+	$title=mb_decode_mimeheader($opt['t']);
 $keep_color = (isset($opt['c']))? 1 : 0;
 $ph = isset($opt['p'])? $opt['p'] : 0;
 $jump = isset($opt['s'])? $opt['s'] : 1;
 if (isset($opt['S'])) $jumpstop = $jump+1; else $jumpstop = 0;
 $remote_ip = isset($opt['i'])? $opt['i'] : "localhost";
 if (isset($opt['d'])) $debug_flag= 1; else $debug_flag = 0;
+// add output dimension
+if (isset($opt['D'])) $dim = $opt['D']; else $dim = '5x7';
 // default 2016, remove version 1
-if (!in_array($version, array(3,2016))) $version=2016;
+if (!in_array($version, array(3,2016,'nlsc'))) $version=2016;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
 if (isset($opt['logurl_prefix'])) 
 	$logurl_prefix=$opt['logurl_prefix'];
@@ -93,7 +98,7 @@ if (isset($opt['m'])){
 	$tmpdir = '/dev/shm';
 }
 	
-$outfile_prefix=sprintf("%s/%dx%d-%dx%d-v%d%s_%s",$outpath,$startx*1000,$starty*1000,$shiftx,$shifty,$version,($ph==1)?"p":"",$datum);
+$outfile_prefix=sprintf("%s/%dx%d-%dx%d-v%s%s_%s",$outpath,$startx*1000,$starty*1000,$shiftx,$shifty,$version,($ph==1)?"p":"",$datum);
 $outimage=$outfile_prefix . ".tag.png";
 $outimage_orig=$outfile_prefix . ".orig.tag.png";
 $outimage_gray=$outfile_prefix . ".gray.png";
@@ -112,14 +117,18 @@ if (isset($opt['3']))
 else
 	$paper = 'A4';
 
+$gparams = ['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
+'debug' => $debug_flag, 'version'=> $version];
+
 switch($version) {
 	case 3:
-		$g = new Happyman\Twmap\Stitcher(['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
-			'debug' => $debug_flag]);
+		$g = new Happyman\Twmap\Stitcher($gparams);
 		break;
 	case 2016:
-		$g = new Happyman\Twmap\Rudymap_Stitcher(['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
-			'debug' => $debug_flag, 'version'=>$version]);
+		$g = new Happyman\Twmap\Rudymap_Stitcher($gparams);
+		break;
+	case 'nlsc':
+		$g = new Happyman\Twmap\NLSC_Stitcher($gparams);
 		break;
 }
 
@@ -210,16 +219,24 @@ if ($jump <= $stage ) {
 		// no more detection
 		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
 		$param['datum']=$datum;
+		$param['pixel_per_km'] = $pixel_per_km;
 
 		cli_msglog("create SVG: $outsvg");
-		list($ret,$msg) = \Happyman\Twmap\Svg\gpx2svg($param, $outsvg);
+		$svg = new Happyman\Twmap\Svg\GpxSvg($param);
+		$ret = $svg->process();
 		if ($ret === false ) {
 			@unlink($outimage_orig);
-			cli_error_out("gpx2svg fail: ". print_r($msg,true). print_r($param,true));
+			cli_error_out("svg process fail: ".print_r($param,true));
+		}
+		$ret = $svg->output($outsvg);
+		if ($ret === false ) {
+			@unlink($outimage_orig);
+			cli_error_out("gpx2svg fail: ". print_r($param,true));
 		}
 		cli_msglog("create PNG: $outimage");
 		cli_msglog("ps%+3");
-		list ($ret,$msg) = \Happyman\Twmap\Svg\svg2png($outsvg, $outimage, array($shiftx*315,$shifty*315));
+		//list ($ret,$msg) = \Happyman\Twmap\Svg\svg2png($outsvg, $outimage, array($shiftx*315,$shifty*315));
+		list ($ret,$msg) = $svg->svg2png($outsvg, $outimage, array($shiftx*$pixel_per_km,$shifty*$pixel_per_km));
 		if ($ret === false ) {
 			@unlink($outimage_orig);
 			@unlink($outimage);
@@ -241,7 +258,7 @@ if ($jump <= $stage ) {
 		cli_msglog("ps%+3");
 	}
 	// 若是 moi_osm or TWD97 則加上 1000 格線 , 會使用到 logo
-	if ($version == 2016 || $datum == 'TWD97' ){
+	if ($version != 3 || $datum == 'TWD97' ){
 		$g->im_addgrid($outimage, 1000);
 	}
 	// happyman
@@ -259,7 +276,6 @@ if ($jump <= $stage ) {
 	// 加上 tag
 	cli_msglog("add tag to image...");
 	$g->im_tagimage($outimage,$startx,$starty);
-	unset($g);
 }
 cli_msglog("ps%50");
 $stage = 2;
@@ -268,10 +284,22 @@ if ($stage == $jumpstop) {
 	echo "stop by -S\n";
 	exit(0);
 }
+$pixel_per_km = $g->getPixelPerKm();
+$logger->info(print_r([$g->zoom, $g->pixel_per_km],true));
+unset($g);
 if ($stage >= $jump ) {
 	cli_msglog("split image...");
+	// shortcut to -s  2
+	if (!file_exists($outimage_gray) && file_exists($outimage) ){
+		copy($outimage,$outimage_gray);
+	}
+	if (!file_exists($outimage_gray)){ 
+		echo "-s 2 requires $outimage_gray\n";
+		exit(1);
+	}
+		
 	$im = imagecreatefrompng($outimage_gray);
-	$sp = new Happyman\Twmap\Splitter(["shiftx"=>$shiftx,"shifty"=>$shifty,"paper"=>$paper,"logger"=>$logger]);
+	$sp = new Happyman\Twmap\Splitter(["shiftx"=>$shiftx,"shifty"=>$shifty,"paper"=>$paper,"logger"=>$logger,'dim'=>$dim, 'pixel_per_km'=>$pixel_per_km]);
 	list ($simage,$outx,$outy) = $sp->splitimage($im, $outfile_prefix, $fuzzy);
 	unset($im);
 }
