@@ -15,6 +15,7 @@ class Pdf {
 	var $a3 = 0;
 	var $twmap_ver;
 	var $logger;
+	var $bookmarkinfo="";
 	function __construct($opt) {
 		if (!isset($opt['infiles']) || !isset($opt['outfile'])){
 			echo "require parameters";
@@ -59,6 +60,23 @@ class Pdf {
 			$callback(sprintf("ps%%+%.2f",$i/$total*20));
 		}
 	}
+	//https://thechriskent.com/2017/04/12/adding-bookmarks-to-pdf-documents-with-pdfmark/
+	function setBookmarkInfo($info) {
+		// input array dim paper count 2x3  4A  4
+		for ($i=0;$i<count($info['dim']);$i++){
+			if ($info['dim'][$i] == '5x7') 
+				$note = "1/25000 輸出";
+			else
+				$note = "其他比例輸出";
+			$remark = sprintf("%s %s %s %d張",$info['dim'][$i],$note, $info['paper'][$i],$info['count'][$i]);
+			$out[] = sprintf("[ /Title %s",$this->str_in_pdf($remark));
+			if ($i==0) $page = 1; else $page = $info['count'][$i-1]+1;
+			$out[] = sprintf("  /Page %d", $page);
+			$out[] =         "  /OUT pdfmark\n";
+		}
+		$this->bookmarkinfo = implode("",$out);
+		$this->logger->debug($this->bookmarkinfo);
+	}
 	function merge_pdf() {
 		$outfiles_line = implode(" ",$this->outfiles);
 		$cmd=sprintf("gs -dOptimize=true -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=%s %s %s;", $this->outfile, $outfiles_line, $this->info_tmp);
@@ -102,7 +120,7 @@ class Pdf {
 		$out[] = sprintf(" /Title %s\n", $this->str_in_pdf($this->title));
 		$out[] = sprintf(" /Subject %s\n", $this->str_in_pdf($this->subject));
 		$out[] = " /Keywords (Taiwan Hiking Map)\n /DOCINFO pdfmark\n";
-		file_put_contents($this->info_tmp, implode("",$out));
+		file_put_contents($this->info_tmp, implode("",$out).$this->bookmarkinfo);
 	}
 
 	function str_in_pdf($str){

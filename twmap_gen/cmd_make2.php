@@ -322,6 +322,7 @@ if ($stage >= $jump ) {
 		list($dim_array[$i],$type_array[$i]) = $sp[$i]->getDimType();
 		list ($simage[$i],$outx[$i],$outy[$i]) = $sp[$i]->splitimage($im, $outfile_prefix, $fuzzy);
 		// 計算總共小圖數量
+		$count_array[$i] = count($simage[$i]);
 		$overall_total+=count($simage[$i]);
 		$i++;
 	}
@@ -339,6 +340,8 @@ if ($stage >= $jump ) {
 	for($i=0;$i<count($dim_array);$i++){
 		$sp[$i]->make_simages($simage[$i],$outx[$i],$outy[$i],"cli_msglog",$overall_total);
 	}
+	// 做了哪些東西
+	$outinfo = [ "dim"=>$dim_array,"paper"=>$type_array, 'count'=>$count_array ];
 }
 unset($sp);
 showmem("after stage 3");
@@ -368,6 +371,7 @@ if ($stage >= $jump) {
 	// 產生 pdf
 	$pdf = new Happyman\Twmap\Export\Pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix),
 		 'outfile' => $outpdf, 'infiles' => array_merge(...$simage), 'a3' => $a3, 'twmap_ver'=> $twmap_gen_version, 'logger'=>$logger ));
+	$pdf->setBookmarkInfo($outinfo);
 	cli_msglog("save to pdf format");
 	$pdf->doit('cli_msglog');
 	$logger->success("$outimage done");
@@ -388,8 +392,7 @@ if ($stage >= $jump && !isset($opt['s'])) {
 	unlink($outimage_gray);
 }
 // save output dim and paper to txt file 
-//  sort($dim_array,SORT_NUMERIC);
-$outtext_content = sprintf("%s",json_encode(["dim"=>$dim_array,"paper"=>$type_array]));
+$outtext_content = sprintf("%s",json_encode($outinfo));
 file_put_contents($outtext,$outtext_content);
 $logger->info($outtext_content . " wrote to $outtext");
 // not register db yet
