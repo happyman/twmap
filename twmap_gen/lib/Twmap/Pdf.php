@@ -14,6 +14,7 @@ class Pdf {
 	var $paramok = 0;
 	var $a3 = 0;
 	var $twmap_ver;
+	var $logger;
 	function __construct($opt) {
 		if (!isset($opt['infiles']) || !isset($opt['outfile'])){
 			echo "require parameters";
@@ -32,11 +33,16 @@ class Pdf {
 		if (isset($opt['quiet']) && $opt['quiet'] == 1) $this->print_cmd = 0;
 		if (isset($opt['outfile'])) $this->outfile = $opt['outfile'];
 		if (isset($opt['a3'])) $this->a3 = $opt['a3'];
+		if (isset($opt['logger'])) { 
+			$this->logger = $opt['logger'];
+			$this->print_cmd = 1;
+		}
 		if (isset($opt['twmap_ver'])) $this->twmap_ver = $opt['twmap_ver'];
 	}
 
-	function png2pdf() {
+	function png2pdf($callback) {
 		$i=0;
+		$total=count($this->infiles);
 		foreach($this->infiles as $infile) {
 			$this->outfiles[$i] = $infile.".pdf";
 			// consider margin
@@ -46,16 +52,18 @@ class Pdf {
 			$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 8.27 -height 11.69 -imagewidth 8.27 -imageheight 11.69 |ps2pdf -r300x300 -sPAPERSIZE=a4 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
 			$i++;
 			if ($this->print_cmd)
-				echo "$cmd\n";
+				$this->logger->info("$cmd");
 			if ($this->do)
 				exec($cmd);
+			$callback(sprintf("convert png to pdf %d / %d",$i,$total));
+			$callback(sprintf("ps%%+%.2f",$i/$total*20));
 		}
 	}
 	function merge_pdf() {
 		$outfiles_line = implode(" ",$this->outfiles);
 		$cmd=sprintf("gs -dOptimize=true -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=%s %s %s;", $this->outfile, $outfiles_line, $this->info_tmp);
 		if ($this->print_cmd)
-			echo "$cmd\n";
+			$this->logger->info("$cmd");
 		if ($this->do)
 			exec($cmd);
 	}
@@ -63,20 +71,25 @@ class Pdf {
 		$outfiles_line = implode(" ",$this->outfiles);
 		$cmd = "rm ". $outfiles_line . "  $this->info_tmp";
 		if ($this->print_cmd)
-			echo "$cmd\n";
+			$this->logger->info("$cmd\n");
 		if ($this->do)
 			exec($cmd);
 	}
 
 
-	function doit() {
+	function doit($callback) {
+		// ps:+ 共 5%
 		if ($this->paramok == 1 ) {
+			$callback('create pdf metadata...');
 			$this->create_pdf_meta();
-			$this->png2pdf();
+			$this->png2pdf($callback);
+			$callback('merge pdf...');
 			$this->merge_pdf();
-			if ($this->do_cleanup == 1)
+			if ($this->do_cleanup == 1){
 				$this->cleanup();
+			}
 			if (file_exists($this->outfile)) {
+				$callback('merge pdf done');
 				return $this->outfile;
 			}
 		}
@@ -95,7 +108,7 @@ class Pdf {
 	function str_in_pdf($str){
 		$cmd = sprintf("echo '%s'| iconv -f utf8 -t utf-16 |od -x -A none",$str);
 		if ($this->print_cmd)
-			echo $cmd ."\n";
+			$this->logger->info("$cmd");
 		if ($this->do)
 			 exec($cmd,$out,$ret);
 			//echo "ret=$ret\n" . print_r($out);

@@ -138,7 +138,7 @@ function handle_message(evt) {
 	var logmsg = evt.data;
 	if (logmsg.indexOf("ps%") === 0) {
 		var pst = logmsg.substr(logmsg.indexOf("%") + 1);
-		// 如果是新增的話 ps:+2
+		// 如果是新增的話 ps%+2
 		if (pst.substr(0, 1) == "+") {
 			var val = arguments.callee.startval;
 			var addval = Number(pst.substr(1));

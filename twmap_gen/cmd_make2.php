@@ -29,7 +29,7 @@ if (!isset($opt['r']) || !isset($opt['O'])){
 	echo "       -e draw 100M 格線\n";
 	echo "       -G merge user track_logs 包含使用者行跡\n";
 	echo "       -3 for A3 output 輸出A3\n";
-	echo "       -D 5x7|4x6|3x4|2x3 等輸出 dimension\n";
+	echo "       -D 5x7|4x6|3x4|2x3|1x2 等輸出 dimension, 可使用多次\n";
 	echo "       -m /tmp tmpdir 暫存檔存放目錄\n";
 	echo "除錯用 -d debug \n";
 	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf.\n";
@@ -65,8 +65,18 @@ $jump = isset($opt['s'])? $opt['s'] : 1;
 if (isset($opt['S'])) $jumpstop = $jump+1; else $jumpstop = 0;
 $remote_ip = isset($opt['i'])? $opt['i'] : "localhost";
 if (isset($opt['d'])) $debug_flag= 1; else $debug_flag = 0;
-// add output dimension
-if (isset($opt['D'])) $dim = $opt['D']; else $dim = '5x7';
+// add output dimension, allowed multiple dims
+if (isset($opt['D'])) {
+	if (is_array($opt['D'])) {
+		$dim = $opt['D'];
+	} else {
+		// string
+		$dim = [ $opt['D'] ];
+	}
+}
+else 
+	$dim = [ '5x7' ];
+
 // default 2016, remove version 1
 if (!in_array($version, array(3,2016,'nlsc'))) $version=2016;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
@@ -242,15 +252,14 @@ if ($jump <= $stage ) {
 			@unlink($outimage);
 			cli_error_out("svg2png fail: $msg");
 		}
-
-		// outimage 已生成
-		//$im = imagecreatefrompng($outimage);
-		// 這不要了
 		@unlink($outimage_orig);
 	} else {
-		write_and_forget($im,$outimage,$debug_flag);
-	}
+		ImagePNG($im, $outimage);
+		unset($im);
 
+	}
+	cli_msglog('optimize png...');
+	$g->optimize_png($outimage);
 	// 加上 grid
 	if (isset($opt['e'])) {
 		cli_msglog("add 100M grid to image...");
@@ -299,9 +308,23 @@ if ($stage >= $jump ) {
 	}
 		
 	$im = imagecreatefrompng($outimage_gray);
-	$params = ["shiftx"=>$shiftx,"shifty"=>$shifty,"paper"=>$paper,"logger"=>$logger,'dim'=>$dim, 'pixel_per_km'=>$pixel_per_km];
-	$sp = new Happyman\Twmap\Splitter($params);
-	list ($simage,$outx,$outy) = $sp->splitimage($im, $outfile_prefix, $fuzzy);
+	$i=0;$overall_total=0;
+	foreach($dim as $dimension) {
+		$params = ["shiftx"=>$shiftx,"shifty"=>$shifty,"paper"=>$paper,"logger"=>$logger,'dim'=>$dimension, 'pixel_per_km'=>$pixel_per_km];
+		try {
+			$sp[$i] = new Happyman\Twmap\Splitter($params);
+		} catch (Exception $e) {
+			// undefined dimension
+			$logger->info(sprintf("undefined dimension %s",$dimension));
+			continue;
+		}
+		// 取得修正過的 dimension 
+		list($dim_array[$i],$type_array[$i]) = $sp[$i]->getDimType();
+		list ($simage[$i],$outx[$i],$outy[$i]) = $sp[$i]->splitimage($im, $outfile_prefix, $fuzzy);
+		// 計算總共小圖數量
+		$overall_total+=count($simage[$i]);
+		$i++;
+	}
 	unset($im);
 }
 cli_msglog("ps%60");
@@ -313,8 +336,9 @@ if ($stage == $jumpstop) {
 }
 if ($stage >= $jump ) {
 	// 做各小圖
-	$sp->make_simages($simage,$outx,$outy,"cli_msglog");
-
+	for($i=0;$i<count($dim_array);$i++){
+		$sp[$i]->make_simages($simage[$i],$outx[$i],$outy[$i],"cli_msglog",$overall_total);
+	}
 }
 unset($sp);
 showmem("after stage 3");
@@ -323,7 +347,7 @@ if ($stage == $jumpstop) {
 	echo "stop by -S\n";
 	exit(0);
 }
-cli_msglog("ps%80");
+cli_msglog("ps%70");
 if ($stage >= $jump ) {
 	cli_msglog("make kmz file...");
 	//require_once("lib/garmin.inc.php");
@@ -339,16 +363,14 @@ if ($stage == $jumpstop) {
 	echo "stop by -S\n";
 	exit(0);
 }
-cli_msglog("ps%90");
+cli_msglog("ps%75");
 if ($stage >= $jump) {
 	// 產生 pdf
-	//require_once("lib/print_pdf.inc.php");
 	$pdf = new Happyman\Twmap\Export\Pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix),
-		 'outfile' => $outpdf, 'infiles' => $simage, 'a3' => $a3, 'twmap_ver'=> $twmap_gen_version ));
-	$pdf->print_cmd = 0;
+		 'outfile' => $outpdf, 'infiles' => array_merge(...$simage), 'a3' => $a3, 'twmap_ver'=> $twmap_gen_version, 'logger'=>$logger ));
 	cli_msglog("save to pdf format");
-	$pdf->doit();
-	$logger->info("$outimage done");
+	$pdf->doit('cli_msglog');
+	$logger->success("$outimage done");
 }
 showmem("after stage 5");
 $stage = 6;
@@ -360,11 +382,16 @@ cli_msglog("ps%95");
 // 如果有給 -s, 就不刪圖檔
 if ($stage >= $jump && !isset($opt['s'])) {
 	cli_msglog("almost done,cleanup...");
-	foreach($simage as $simage_file) {
+	foreach(array_merge(...$simage) as $simage_file) {
 		unlink($simage_file);
 	}
 	unlink($outimage_gray);
 }
+// save output dim and paper to txt file 
+//  sort($dim_array,SORT_NUMERIC);
+$outtext_content = sprintf("%s",json_encode(["dim"=>$dim_array,"paper"=>$type_array]));
+file_put_contents($outtext,$outtext_content);
+$logger->info($outtext_content . " wrote to $outtext");
 // not register db yet
 if (!empty($callback)){
 	cli_msglog("register this map");
@@ -399,7 +426,8 @@ function cli_notify_web($str){
 function cli_msglog($str){
 	global $logger;
 	cli_notify_web($str);
-	$logger->info($str);
+	// Web means this message sent to websocket
+	$logger->info("[Web] ".$str);
 }
 function cli_error_out($str, $exitcode=60) {
 	global $argv, $logger;

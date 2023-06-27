@@ -502,9 +502,20 @@ Class Stitcher {
 		exec($cmd,$out,$ret);
 		return $ret;
 	}
-	
-}
-//eo class
+	function optimize_png($fname){
+		// http://pointlessramblings.com/posts/pngquant_vs_pngcrush_vs_optipng_vs_pngnq/
+		// 縮小 png
+		if (file_exists('/usr/bin/pngquant')) {
+			$cmd = sprintf("pngquant --speed 1 -f --quality 65-95 -o %s %s",escapeshellarg($fname),escapeshellarg($fname));
+		} else if (file_exists("/usr/bin/advpng")) {
+		// optimize the size
+			$cmd = sprintf("advpng -4 -q -z %s",escapeshellarg($fname));
+		}
+		$this->logger->info($cmd);
+		exec($cmd,$out,$ret);
+		return $ret;
+	}
+} //eo class
 class Rudymap_Stitcher extends Stitcher {
 	var $version = 2016;
 	var $zoom = 16;
