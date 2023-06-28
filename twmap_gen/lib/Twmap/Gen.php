@@ -4,6 +4,7 @@ Namespace Happyman\Twmap;
 requires: montage, curl, mktemp, convert, rm
 目的 拼出 base image
 */
+
 Class Stitcher {
 	var $startx, $starty; //輸入的參數
 	var $shiftx, $shifty; //輸入的參數
@@ -94,7 +95,7 @@ Class Stitcher {
 				$msg.= "<br>";	
 			}
 
-			notify_web($this->log_channel, array($msg),$this->logurl_prefix,$this->websocat_port,$this->debug);
+			Websocat::notify_web($this->log_channel, $msg ,$this->logurl_prefix,$this->websocat_port,$this->debug);
 		}
 	}
 
@@ -235,24 +236,24 @@ Class Stitcher {
 		}
 		// 輸入的座標是 TWD97 or TWD67
 		if ($datum == 'TWD97'){
-			$proj_func = "proj_97toge2";
-			$ph_proj_func = "ph_proj_97toge2";
+			$proj_func = "Happyman\Twmap\Proj::proj_97toge2";
+			$ph_proj_func = "Happyman\Twmap\Proj::ph_proj_97toge2";
 		}	else {
-			$proj_func = "proj_67toge2";
-			$ph_proj_func = "ph_proj_67toge2";
+			$proj_func = "Happyman\Twmap\Proj::proj_67toge2";
+			$ph_proj_func = "Happyman\Twmap\Proj::ph_proj_67toge2";
 		}
 		
 		if ($ph == 0 ) {
 			// 台灣本島 proj_67toge2 使用 cs2cs 把 67 轉 97
 			list ($tl_lon,$tl_lat) = $proj_func(array($x,$y));
-			$a = LatLong2XYZ($tl_lon, $tl_lat, $zoom);
+			$a = Proj::LatLong2XYZ($tl_lon, $tl_lat, $zoom);
 			list ($br_lon,$br_lat) = $proj_func(array($x1,$y1));
-			$b = LatLong2XYZ($br_lon, $br_lat, $zoom);
+			$b = Proj::LatLong2XYZ($br_lon, $br_lat, $zoom);
 		} else {
 			list ($tl_lon,$tl_lat) = $ph_proj_func(array($x,$y));
-			$a = LatLong2XYZ($tl_lon, $tl_lat, $zoom);
+			$a = Proj::LatLong2XYZ($tl_lon, $tl_lat, $zoom);
 			list ($br_lon,$br_lat) = $ph_proj_func(array($x1,$y1));
-			$b = LatLong2XYZ($br_lon, $br_lat, $zoom);
+			$b = Proj::LatLong2XYZ($br_lon, $br_lat, $zoom);
 		}
 
 		if ($debug) {
@@ -318,7 +319,7 @@ Class Stitcher {
 			$logger->debug(print_r("$xx x $yy", true));
 		}
 		// 左上點所在的 tile, 
-		$rect = getLatLonXYZ($a[0],$a[1],$zoom);
+		$rect = Proj::getLatLonXYZ($a[0],$a[1],$zoom);
 		if ($debug) {
 			$logger->info("getLatLonXYZ($a[0],$a[1],$zoom)");
 			$logger->debug(print_r($rect,true));

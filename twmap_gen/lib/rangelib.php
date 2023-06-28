@@ -525,6 +525,7 @@ function addtagborder2($oim, $x, $y, $i, $startx, $starty, $outputsize, $shiftx,
 	return $im;
 }
 
+// to delete
 function write_and_forget(&$im, $fname, $debug=0) {
 	ImagePNG($im, $fname);
 	imagedestroy($im);
@@ -540,10 +541,12 @@ function write_and_forget(&$im, $fname, $debug=0) {
 		}
 	}
 }
+/*
 function showmem($str){
 	$mem = memory_get_usage();
 	error_log(sprintf("memory %d KB %s\n", $mem / 1024,$str));
 }
+*/
 
 // function printableimage($fname,
 /*

@@ -1,6 +1,7 @@
 <?php
 Namespace Happyman\Twmap\Svg;
 
+use Happyman\Twmap\Proj;
 /**
  * depends on GeoPHP class
  */
@@ -51,26 +52,26 @@ class Gpx2Svg {
 	function coordtotm2($a, $ph) {
 		if ($ph == 1) {
 			if ($this->datum == 'TWD97')
-				return proj_geto97_ph($a);
+				return Proj::proj_geto97_ph($a);
 			else
-				return proj_geto672_ph($a);
+				return Proj::proj_geto672_ph($a);
 		}
 		if ($this->datum == 'TWD97')
-			return proj_geto97($a);
+			return Proj::proj_geto97($a);
 		else
-			return proj_geto672($a);
+			return Proj::proj_geto672($a);
 	}
 	function tm2tocoord($a, $ph) {
 		if ($ph == 1) {
 			if ($this->datum == 'TWD97')
-				return ph_proj_97toge2($a);
+				return Proj::ph_proj_97toge2($a);
 		else
-				return proj_67toge2_ph($a);
+				return Proj::proj_67toge2_ph($a);
 		}
 		if ($this->datum == 'TWD97')
-			return proj_97toge2($a);
+			return Proj::proj_97toge2($a);
 		else
-			return proj_67toge2($a);
+			return Proj::proj_67toge2($a);
 	}
 	
 	function dump() {
@@ -287,7 +288,7 @@ class Gpx2Svg {
 			}
 			// 處理 track 的高度
 		}
-		$this->ele_bound = array($min, $max);
+		$this->ele_bound = array(($min<0)?0:$min, ($max<0)?0:$max);
 		//$this->dump();
 		//$this->waypoint = $arr['wpt'];
 		$j = 0;
@@ -650,6 +651,31 @@ class Gpx2Svg {
 			}
 		}
 	}
+	function word_split($str, $width) {
+		$len = mb_strlen($str,'utf-8');
+		for($i=1;$i<=$len;$i++){
+			$word[$i-1] = mb_substr($str, $i-1, 1, 'utf-8');
+	
+		}
+		$newstr = $word[0];
+		$teststr = "";
+		$lastlen = mb_strwidth($newstr, 'utf-8');
+		for($i=1;$i<$len;$i++){
+			// echo "word $i = " . $word[$i] . "\n";
+			$teststr = $newstr . $word[$i];
+			$testlen = mb_strwidth($teststr,'utf-8');
+			if ($testlen % $width == 0 ) {
+				$newstr .= $word[$i];
+				$newstr .= "\n";
+			} else if ($testlen % $width == 1 ) {
+				$newstr .= "\n".$word[$i];
+			} else {
+				$newstr .= $word[$i];
+			}
+		}
+		return explode("\n",trim($newstr));
+		//echo $len;
+	}
 	function out_index() {
 		$left = $this->width -  $this->pixel_per_km;
 		//$top = 25;
@@ -657,12 +683,12 @@ class Gpx2Svg {
 		//第二行超過就變成 … 
 		// $total_row = count($this->waypoint);
 		$line_len = 24;
-        	$j=1;$index=1;
+        	$j=1;$index=1;	
 		mb_internal_encoding('UTF-8');
 		$line[0] = array('index' => 'No.', 'data'=>"座標及說明");
 		foreach($this->waypoint as $wpt) {
 			$str = sprintf("%d,%d %s",$wpt['tw67'][0], $wpt['tw67'][1],trim($wpt['name']));
-			$d = word_split($str, $line_len);
+			$d = $this->word_split($str, $line_len);
 		    for($i=0;$i<count($d);$i++) {
 				if($i==0)
 				 $line[$j]['index'] = $index++;
@@ -785,7 +811,7 @@ class Gpx2Svg {
 			return 2;
 	}
 	function svg2png_inkscape($insvg, $outimage,$resize=array()) {
-		$cmd = sprintf("inkscape -e '%s' %s 2>&1", $outimage, $insvg);
+		$cmd = sprintf("inkscape -o '%s' %s 2>&1", $outimage, $insvg);
 		exec($cmd, $out, $ret);
 		if (strstr($out[count($out)-1],"saved")) {
 			// 再 resize 一下

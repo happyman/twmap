@@ -1,6 +1,7 @@
 <?php
 Namespace Happyman\Twmap\Export;
 
+
 class Pdf {
 	var $infiles;
 	var $outfiles;
@@ -47,10 +48,22 @@ class Pdf {
 		foreach($this->infiles as $infile) {
 			$this->outfiles[$i] = $infile.".pdf";
 			// consider margin
+			// A4:  210mmx297mm
 			if ($this->a3 == 1)
-			$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 11.69 -height 16.53 -imagewidth 11.69 -imageheight 16.53 |ps2pdf -r300x300 -sPAPERSIZE=a3 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
+				$outsize="A3"; 
+			else
+				$outsize="A4";
+			// use img2pdf much faster
+			$cmd = sprintf("img2pdf --output %s -S %s --fit shrink --auto-orient %s", $this->outfiles[$i],$outsize,$infile);
+			//else
+			
+			if (0) { 
+				// old way
+				if ($this->a3 == 1)
+				$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 11.69 -height 16.53 -imagewidth 11.69 -imageheight 16.53 |ps2pdf -r300x300 -sPAPERSIZE=a3 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
 				else
-			$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 8.27 -height 11.69 -imagewidth 8.27 -imageheight 11.69 |ps2pdf -r300x300 -sPAPERSIZE=a4 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
+				$cmd =sprintf("cat %s | pngtopnm | pnmtops -width 8.27 -height 11.69 -imagewidth 8.27 -imageheight 11.69 |ps2pdf -r300x300 -sPAPERSIZE=a4 -dOptimize=true -dEmbedAllFonts=true - %s", $infile, $this->outfiles[$i]);
+			}
 			$i++;
 			if ($this->print_cmd)
 				$this->logger->info("$cmd");

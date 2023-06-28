@@ -1,8 +1,18 @@
 <?php
-//$Id: cmd_make.php 291 2012-06-20 06:10:01Z happyman $
-// 1. check login
-require_once("config.inc.php");
-require_once("lib/slog/load.php");
+/**
+ * 地圖產生器出圖主程式
+ */
+define('__ROOT__', dirname(__FILE__). "/");
+require_once(__ROOT__."lib/Twmap/Websocat.php");
+require_once(__ROOT__."lib/Twmap/Proj.php");
+require_once(__ROOT__."lib/Twmap/Gen.php");
+require_once(__ROOT__."lib/Twmap/Split.php");
+require_once(__ROOT__."lib/geoPHP/geoPHP.inc");
+require_once(__ROOT__."lib/Twmap/Svg.php");
+require_once(__ROOT__."lib/Twmap/Kmz.php");
+require_once(__ROOT__."lib/Twmap/Pdf.php");
+require_once(__ROOT__."lib/slog/load.php");
+$twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 
 ini_set("memory_limit","512M");
 set_time_limit(0);
@@ -29,10 +39,10 @@ if (!isset($opt['r']) || !isset($opt['O'])){
 	echo "       -e draw 100M 格線\n";
 	echo "       -G merge user track_logs 包含使用者行跡\n";
 	echo "       -3 for A3 output 輸出A3\n";
-	echo "       -D 5x7|4x6|3x4|2x3|1x2 等輸出 dimension, 可使用多次\n";
+	echo "       -D 5x7|4x6|3x4|2x3|1x2 等輸出 dimension, 可使用多次, 空則為 5x7\n";
 	echo "       -m /tmp tmpdir 暫存檔存放目錄\n";
 	echo "除錯用 -d debug \n";
-	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf.\n";
+	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create kmz 5: create pdf.\n";
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
 	echo "以下地圖產生器使用:\n";
 	echo "       -i ip: log remote ip address --agent myhost\n";
@@ -161,9 +171,10 @@ $pid = 0;
 
 if (!empty($log_channel)) {
 	// persist websocket connection for slightly better performance 
-	$port=find_free_port();
-	$cmd = sprintf("websocat -t -1 -u tcp-l:127.0.0.1:%d reuse-raw:%s%s  >/dev/null 2>&1 & echo $!",$port,$logurl_prefix,$log_channel);
-	$pid = exec($cmd,$output);
+	list ($pid,$port) = Happyman\Twmap\Websocat::persist($logurl_prefix,$log_channel);
+	//$port=find_free_port();
+	//$cmd = sprintf("websocat -t -1 -u tcp-l:127.0.0.1:%d reuse-raw:%s%s  >/dev/null 2>&1 & echo $!",$port,$logurl_prefix,$log_channel);
+	//$pid = exec($cmd,$output);
 	$g->setLog($log_channel,$logurl_prefix,$port,$logger);	
 	if (isset($opt['agent']))
 		$agent=$opt['agent'];
@@ -179,10 +190,8 @@ if (!empty($log_channel)) {
 }else{
 	$g->setLogger($logger);
 }
-// $g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
+$pixel_per_km = $g->getPixelPerKm();
 
-//
-//
 cli_msglog("ps%10");
 showmem("after STB created");
 if ($jump <= $stage ) {
@@ -236,7 +245,7 @@ if ($jump <= $stage ) {
 		$param['pixel_per_km'] = $pixel_per_km;
 
 		cli_msglog("create SVG: $outsvg");
-		$svg = new Happyman\Twmap\Svg\GpxSvg($param);
+		$svg = new Happyman\Twmap\Svg\Gpx2Svg($param);
 		$ret = $svg->process();
 		if ($ret === false ) {
 			@unlink($outimage_orig);
@@ -249,7 +258,6 @@ if ($jump <= $stage ) {
 		}
 		cli_msglog("create PNG: $outimage");
 		cli_msglog("ps%+3");
-		//list ($ret,$msg) = \Happyman\Twmap\Svg\svg2png($outsvg, $outimage, array($shiftx*315,$shifty*315));
 		list ($ret,$msg) = $svg->svg2png($outsvg, $outimage, array($shiftx*$pixel_per_km,$shifty*$pixel_per_km));
 		if ($ret === false ) {
 			@unlink($outimage_orig);
@@ -297,7 +305,6 @@ if ($stage == $jumpstop) {
 	echo "stop by -S\n";
 	exit(0);
 }
-$pixel_per_km = $g->getPixelPerKm();
 $logger->info(print_r([$g->zoom, $g->pixel_per_km],true));
 unset($g);
 if ($stage >= $jump ) {
@@ -324,7 +331,7 @@ if ($stage >= $jump ) {
 		}
 		// 取得修正過的 dimension 
 		list($dim_array[$i],$type_array[$i]) = $sp[$i]->getDimType();
-		list ($simage[$i],$outx[$i],$outy[$i]) = $sp[$i]->splitimage($im, $outfile_prefix, $fuzzy);
+		list ($simage[$i],$outx[$i],$outy[$i]) = $sp[$i]->splitimage($im, $outfile_prefix);
 		// 計算總共小圖數量
 		$count_array[$i] = count($simage[$i]);
 		$overall_total+=count($simage[$i]);
@@ -402,8 +409,6 @@ $logger->info($outtext_content . " wrote to $outtext");
 // not register db yet
 if (!empty($callback)){
 	cli_msglog("register this map");
-	//cli_msglog("call $callback");
-	//$r = request_curl($callback,"GET",["ch"=>$log_channel,"status"=>"ok"]);
 	$url=sprintf('%s?ch=%s&status=ok&params=%s',$callback,$log_channel,urlencode(implode(" ",$argv)));
 	// log
 	if (isset($opt['agent']))
@@ -425,9 +430,10 @@ $logger->success(sprintf("done params: %s",implode(" ",$argv)));
 exit(0);
 
 function cli_notify_web($str){
-	global $log_channel,$logurl_prefix, $debug_flag, $port;
-	if (!empty($log_channel))
-		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$logurl_prefix,$port,$debug_flag);
+	global $port, $logger, $log_channel;
+	if (!empty($log_channel)) {
+		Happyman\Twmap\Websocat::notify_web_nc($str,$port);
+	}
 }
 
 function cli_msglog($str){
@@ -445,12 +451,7 @@ function cli_error_out($str, $exitcode=60) {
 	exit($exitcode);
 }
 
-function find_free_port() {
-    $sock = socket_create_listen(0);
-    socket_getsockname($sock, $addr, $port);
-    socket_close($sock);
-    return $port;
-}
+
 
 // 抓到 signal 
 function sigint(){
@@ -468,4 +469,8 @@ function shutdown() {
 		$msg.=" failed";
 	}
 	$logger->success($msg);
+}
+function showmem($str){
+	$mem = memory_get_usage();
+	error_log(sprintf("memory %d KB %s\n", $mem / 1024,$str));
 }

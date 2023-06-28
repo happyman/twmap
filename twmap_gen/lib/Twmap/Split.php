@@ -130,7 +130,7 @@ Class Splitter {
     /* 分成小圖 
 	回傳 images, x ,y 
 	*/
-	function splitimage($im, $outfile, $fuzzy=0) {
+	function splitimage($im, $outfile, $fuzzy=20) {
         	$sizex = $this->tiles[$this->type]['x'] * $this->pixel_per_km;
         	$sizey = $this->tiles[$this->type]['y'] * $this->pixel_per_km;
 		$w=imagesX($im); 
