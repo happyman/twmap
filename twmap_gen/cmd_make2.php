@@ -76,7 +76,11 @@ if (isset($opt['D'])) {
 }
 else 
 	$dim = [ '5x7' ];
-
+$dim = array_unique($dim, SORT_NUMERIC);
+foreach($dim as $dimm) {
+	if (!in_array($dimm, [ '1x2','2x3','3x4','4x6','5x7' ]))
+		cli_error_out("unsupported dim $dimm");
+}
 // default 2016, remove version 1
 if (!in_array($version, array(3,2016,'nlsc'))) $version=2016;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
