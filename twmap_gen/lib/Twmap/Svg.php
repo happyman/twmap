@@ -49,6 +49,27 @@ class Gpx2Svg {
 	
 
 	}
+	static function check(){
+		$req=[ 'convert' => [ 'package'=>'imagemagick', 'test'=>''] , 
+		'inkscape' => [ 'package'=>'inkscape','test'=>'--help', 'optional'=>1 ]];
+		$err=0;
+		$classname=get_called_class();
+		foreach($req as $bin=>$meta){
+			$cmd=sprintf("%s %s",$bin,$meta['test']);
+			exec($cmd,$out,$ret);
+			if ($ret!=0){
+				printf("[%s] %s not installed, please install %s",$classname,$bin,$meta['package']);
+				if (!isset($meta['optional']))
+					$err++;
+			}else{
+				printf("[%s] %s installed %s\n",$classname,$bin,isset($meta['optional'])?"(optional)":"");
+			}
+		}
+		if ($err>0)
+			return false;
+		else
+			return true;
+	}
 	function coordtotm2($a, $ph) {
 		if ($ph == 1) {
 			if ($this->datum == 'TWD97')

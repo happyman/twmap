@@ -16,13 +16,23 @@ $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 
 ini_set("memory_limit","512M");
 set_time_limit(0);
-
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:D:",array("agent:","logurl_prefix:","logfile:","getopt"));
+use Happyman\Twmap;
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:D:",array("agent:","logurl_prefix:","logfile:","getopt","check"));
 // for command line parse
 if (isset($opt['getopt'])){
 	$options=$opt;
 	unset($options['getopt']);
 	echo json_encode($opt);
+	exit(0);
+}
+if (isset($opt['check'])){
+	Happyman\Twmap\Proj::check();
+	Happyman\Twmap\Svg\Gpx2Svg::check();
+	Happyman\Twmap\Export\Pdf::check();
+	Happyman\Twmap\Export\GarminKmz::check();
+	Happyman\Twmap\Stitcher::check();
+	Happyman\Twmap\Splitter::check();
+	Happyman\Twmap\Websocat::check();
 	exit(0);
 }
 if (!isset($opt['r']) || !isset($opt['O'])){
@@ -41,6 +51,7 @@ if (!isset($opt['r']) || !isset($opt['O'])){
 	echo "       -3 for A3 output 輸出A3\n";
 	echo "       -D 5x7|4x6|3x4|2x3|1x2 等輸出 dimension, 可使用多次, 空則為 5x7\n";
 	echo "       -m /tmp tmpdir 暫存檔存放目錄\n";
+	echo "       --check 檢查相依執行程式\n";
 	echo "除錯用 -d debug \n";
 	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create kmz 5: create pdf.\n";
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";

@@ -17,6 +17,27 @@ class Pdf {
 	var $twmap_ver;
 	var $logger;
 	var $bookmarkinfo="";
+	static function check(){
+		$req=[ 'img2pdf' => [ 'package'=>'img2pdf', 'test'=>'--help'] , 
+		       'convert' => [ 'package'=>'imagemagick','test'=>'--help'],
+			   'gs' => ['package'=>'ghostscript', 'test'=> '--help']];
+		$err=0;
+		$classname=get_called_class();
+		foreach($req as $bin=>$meta){
+			$cmd=sprintf("%s %s",$bin,$meta['test']);
+			exec($cmd,$out,$ret);
+			if ($ret!=0){
+				printf("[%s] %s not installed, please install %s",$classname,$bin,$meta['package']);
+				$err++;
+			}else{
+				printf("[%s] %s installed\n",$classname,$bin);
+			}
+		}
+		if ($err>0)
+			return false;
+		else
+			return true;
+	}
 	function __construct($opt) {
 		if (!isset($opt['infiles']) || !isset($opt['outfile'])){
 			echo "require parameters";

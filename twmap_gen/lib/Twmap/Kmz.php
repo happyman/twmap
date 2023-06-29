@@ -26,6 +26,29 @@ class GarminKMZ {
 	var $datum;
 	var $debug = 0;
 	var $logger = null;
+
+	static function check(){
+		$req=[ 'gpsbabel' => [ 'package'=>'gpsbabel', 'test'=>'--help'] , 
+		       'convert' => [ 'package'=>'imagemagick','test'=>'--help'],
+			   'zip' => ['package'=>'zip', 'test'=> '-L'] ];
+			
+		$err=0;
+		$classname=get_called_class();
+		foreach($req as $bin=>$meta){
+			$cmd=sprintf("%s %s",$bin,$meta['test']);
+			exec($cmd,$out,$ret);
+			if ($ret!=0){
+				printf("[%s] %s not installed, please install %s",$classname,$bin,$meta['package']);
+				$err++;
+			}else{
+				printf("[%s] %s installed\n",$classname,$bin);
+			}
+		}
+		if ($err>0)
+			return false;
+		else
+			return true;
+	}
 	function __construct($cutx,$cuty,$fname,$ph=0,$datum='TWD97',$logger=null) {
 		if (preg_match("/(\d+)x(\d+)-(\d+)x(\d+)/",basename($fname),$r)){
 			if (file_exists($fname)) {

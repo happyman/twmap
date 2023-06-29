@@ -8,6 +8,24 @@ class Proj {
 		121d21'6.689"E => 121.351858056
 		23d53'21.232"N => 23.8892311111
 	*/
+	static function check(){
+		$req=[ 'cs2cs' => 'proj-bin', 'proj' => 'proj-bin' ];
+		$err=0;
+		$classname=get_called_class();
+		foreach($req as $bin=>$package){
+			exec("$bin >/dev/null 2>&1",$out,$ret);
+			if ($ret!=0){
+				printf("[%s] %s not installed, please install %s",$classname,$bin,$package);
+				$err++;
+			}else{
+				printf("[%s] %s installed\n",$classname,$bin);
+			}
+		}
+		if ($err>0)
+			return false;
+		else
+			return true;
+	}
 
 	static function cs2cs_t67to97($x,$y,$ph) {
 		if ($ph==1) $lon_0 = 119; else $lon_0 = 121;
@@ -181,9 +199,9 @@ class Proj {
 		return $degree."d$minutes'$seconds\"";
 	}
 
-	//Demo_TW();
 
 
+/*
 	static function Demo_TW() {
 		$p=array(282745,2641869);
 		print_r($p);
@@ -232,7 +250,7 @@ class Proj {
 		//$p=proj_geto67($q);
 		//print_r($p);
 	}
-
+*/
 	static function LatLong2XYZ($lon,$lat,$zoom) {
 		$xtile = floor((($lon + 180) / 360) * pow(2, $zoom));
 		$ytile = floor((1 - log(tan(deg2rad($lat)) + 1 / cos(deg2rad($lat))) / pi()) /2 * pow(2, $zoom));

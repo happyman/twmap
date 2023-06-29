@@ -23,7 +23,33 @@ Class Stitcher {
 	var $zoom = 16;
 	var $pixel_per_km = 315;
 	var $tile_zyx = 0;
+	
+	static function check(){
+		$req=[ 'montage' => [ 'package'=>'imagemagick', 'test'=>'--help'] , 
+		       'composite' => [ 'package'=>'imagemagick','test'=>'--help'],
+			   'pngquant' => ['package'=>'pngquant', 'test'=> '--help'],
+			   'advpng' => ['package'=> 'advancecomp', 'test'=>'-h', 'optional'=>1],
+			   'mktemp' => ['package'=>'coreutils', 'test'=>''], // rm, echo 
+			   'curl'=>['package'=>'curl','test'=>'--help']];
 
+		$err=0;
+		$classname=get_called_class();
+		foreach($req as $bin=>$meta){
+			$cmd=sprintf("%s %s",$bin,$meta['test']);
+			exec($cmd,$out,$ret);
+			if ($ret!=0){
+				printf("[%s] %s not installed, please install %s",$classname,$bin,$meta['package']);
+				if (!isset($meta['optional']))
+					$err++;
+			}else{
+				printf("[%s] %s installed %s\n",$classname,$bin,isset($meta['optional'])?"(optional)":"");
+			}
+		}
+		if ($err>0)
+			return false;
+		else
+			return true;
+	}
 	function __construct($options) {
 		if (!isset($options['startx']) || !isset($options['starty']) ||!isset($options['shiftx']) ||!isset($options['starty'])){
 			$this->err[] = "Not enough parameters";

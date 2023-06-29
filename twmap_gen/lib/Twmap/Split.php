@@ -14,6 +14,25 @@ Class Splitter {
     var $pixel_per_km = 315;
     var $dimension = '5x7';
 
+    static function check(){
+		$req=[ 'convert' => [ 'package'=>'imagemagick', 'test'=>''] ];
+		$err=0;
+        $classname=get_called_class();
+		foreach($req as $bin=>$meta){
+			$cmd=sprintf("%s %s",$bin,$meta['test']);
+			exec($cmd,$out,$ret);
+			if ($ret!=0){
+				printf("[%s] %s not installed, please install %s",$classname,$bin,$meta['package']);
+				$err++;
+			}else{
+				printf("[%s] %s installed\n",$classname,$bin);
+			}
+		}
+		if ($err>0)
+			return false;
+		else
+			return true;
+	}
     function __construct($opt){
         // A4 size: 210mm, 297mm 
 
