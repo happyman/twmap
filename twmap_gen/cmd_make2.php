@@ -5,12 +5,12 @@
 define('__ROOT__', dirname(__FILE__). "/");
 require_once(__ROOT__."lib/Twmap/Websocat.php");
 require_once(__ROOT__."lib/Twmap/Proj.php");
-require_once(__ROOT__."lib/Twmap/Gen.php");
-require_once(__ROOT__."lib/Twmap/Split.php");
+require_once(__ROOT__."lib/Twmap/Stitcher.php");
+require_once(__ROOT__."lib/Twmap/Splitter.php");
 require_once(__ROOT__."lib/geoPHP/geoPHP.inc");
-require_once(__ROOT__."lib/Twmap/Svg.php");
-require_once(__ROOT__."lib/Twmap/Kmz.php");
-require_once(__ROOT__."lib/Twmap/Pdf.php");
+require_once(__ROOT__."lib/Twmap/Svg/Gpx2Svg.php");
+require_once(__ROOT__."lib/Twmap/Export/GarminKmz.php");
+require_once(__ROOT__."lib/Twmap/Export/Pdf.php");
 require_once(__ROOT__."lib/slog/load.php");
 $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 
@@ -210,7 +210,8 @@ if ($jump <= $stage ) {
 	if (file_exists($outimage)) {
 		// 如果 10 分鐘之前的 dead file, 清除之
 	  if (time() - filemtime($outimage) > 600) {
-	  	$files = map_files($outimage);
+		// map_files
+	  	$files = glob($outfile_prefix . "*");
 		foreach($files as $f) {
 			$ret = unlink($f);
 		}
