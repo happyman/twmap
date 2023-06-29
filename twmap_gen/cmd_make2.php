@@ -110,6 +110,9 @@ if (isset($opt['logurl_prefix']))
 else 
 	$logurl_prefix="wss://ws.happyman.idv.tw/twmap_";
 $outpath=$opt['O'];
+if (!is_dir($outpath)){
+	cli_error_out("wrong outpath -O $outpath");
+}
 $a3 = (isset($opt['3']))? 1 : 0;
 $callback=(isset($opt['a']))?$opt['a']:"";
 if (!file_exists($outpath)) {

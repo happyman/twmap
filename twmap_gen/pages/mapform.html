@@ -82,6 +82,7 @@
 				<tr>
 				<td><span class="step" id="step_bound">2</span></td>
 				<td>n x m</td><td>
+					<!--
 						<button class="ui-state-default ui-corner-all hp" type=button name=bt id=bt >A 4</button>
 						<span id="a4" name="a4">
 							<select name=aashiftx>
@@ -90,17 +91,19 @@
 							<select name=aashifty>
 								{html_options values=$aashifty output=$aashifty selected="5"}
 							</select>
-							A4 直式 如 5x7 格, A3 直式 7x10
+							A4 直式 如 5x7 格, A3 直式 7x10 
 						</span>
-						<span id="all" name="all" style=display:none>
+						-->
+						<span id="all" name="all">
 							<select name=anyshiftx>
 								{html_options values=$anyshiftx output=$anyshiftx selected="1"}
 							</select> X
 							<select name=anyshifty>
 								{html_options values=$anyshifty output=$anyshifty selected="1"}
 							</select>
-							如 10x8 格
+							公里。如 5x7 輸出則接近 1/25000 方格。
 						</span>
+						<!--
 						<span id="a4r" name="a4r" style="display:none">
 							<select name=aarshiftx>
 								{html_options values=$aarshiftx output=$aarshiftx selected="7"}
@@ -110,6 +113,7 @@
 							</select>
 							A4 橫式 如 7x5 格, A3 橫式 10x7
 						</span>
+					-->
 				</td></tr>
 				<tr>
 			<td><span class="step" id="step_area">5</span></td>
@@ -131,12 +135,16 @@
 					</select>  
 			</td></tr>
 			<tr><td></td><td>其他</td>
-				<td>
+				<td style="width: 800px">
 				<label><input type="checkbox" name="97datum" value="1">TWD97</label>
 				<label><input type="checkbox" name="grid_100M" value="1">100米格線</label>
 				<label><input type="checkbox" name="inc_trace" value="1" title='不含航點' checked >包含山友track</label>
 				<label><input type="checkbox" name="keep_color" value="1">彩圖</label>
-				<label><input type="checkbox" name="a3_paper" value="1">A3</label>
+				<label><input id='a3' type="checkbox" name="a3_paper" value="1">A3</label>
+				<label><input type="checkbox" id='out57' name="out57" value="1" checked >5x7輸出</label>
+				<label><input type="checkbox" id="out46" name="out46" value="1">4x6輸出</label>
+				<label><input type="checkbox" id='out34' name="out34" value="1">3x4輸出</label>
+				<label><input type="checkbox" id='out23' name="out23" value="1">2x3輸出</label>
 				</td>
 			</tr>
 			<tr><td>

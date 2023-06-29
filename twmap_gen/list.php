@@ -104,7 +104,8 @@ function create_rows($maps,$startsn=0) {
 			$op[] = sprintf("<span id='icon_browse' onclick=\"map_action('link',%d)\" title='外部連結'></span>\n", $maps[$i]['mid']);
 		}
 		$rows[$i]['op'] = implode("\n",$op);
-		$td[$i] = array($rows[$i]['sn'], $rows[$i]['date'], $rows[$i]['title'],$rows[$i]['x'],$rows[$i]['y'], $rows[$i]['grid'],sprintf("%s %s",$rows[$i]['pages'],$rows[$i]['pagetype']),$rows[$i]['version'],$rows[$i]['size'],$rows[$i]['op']);
+		//$td[$i] = array($rows[$i]['sn'], $rows[$i]['date'], $rows[$i]['title'],$rows[$i]['x'],$rows[$i]['y'], $rows[$i]['grid'],sprintf("%s %s",$rows[$i]['pages'],$rows[$i]['pagetype']),$rows[$i]['version'],$rows[$i]['size'],$rows[$i]['op']);
+		$td[$i] = array($rows[$i]['sn'], $rows[$i]['date'], $rows[$i]['title'],$rows[$i]['x'],$rows[$i]['y'], $rows[$i]['grid'],$rows[$i]['version'],$rows[$i]['size'],$rows[$i]['op']);
 	}
 
 

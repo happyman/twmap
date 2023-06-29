@@ -452,6 +452,8 @@ function map_expire($mid) {
 	foreach($files as $f) {
 		// 不刪除 gpx 檔案
 		if(strstr(basename($f),'.gpx')) continue;
+		// 不刪除 cmd 跟 txt for reference
+		if(strstr(basename($f),'.txt') || strstr(basename($f),".cmd")) continue;
 		$ret = unlink($f);
 		if ($ret === false ) {
 			return false;
