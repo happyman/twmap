@@ -134,7 +134,9 @@
 						<option value="3" >經建三版</option>
 					</select>  
 			</td></tr>
-			<tr><td></td><td>其他</td>
+			
+			<tr>
+				<td><span class="step" id="step_other">7</span></td><td>其他</td>
 				<td style="width: 800px">
 				<label><input type="checkbox" name="97datum" value="1">TWD97</label>
 				<label><input type="checkbox" name="grid_100M" value="1">100米格線</label>
@@ -147,8 +149,15 @@
 				<label><input type="checkbox" id='out23' name="out23" value="1">2x3輸出</label>
 				</td>
 			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td>
+				預設輸出A4一張5x7灰階PDF，程式會以節省紙張為原則自動判斷直式或橫式。
+				<br>可由上述選項改變。老花的話可一併輸出其他比例的方格如4x6及3x4。
+			</tr>
 			<tr><td>
-					<span class="step" id="step_go">7</span>
+					<span class="step" id="step_go">8</span>
 			</td>
 			<td></td>
 				<td><button class="ui-state-default ui-corner-all hp" type=button name="create" id="create">產生</button>
@@ -160,11 +169,7 @@
 					<input type=hidden name=formid id="formid" value="{$formid}">
 				</td>
 			</tr>
-			<tr>
-			<td></td>
-			<td colspan=2>
-				輸出為直式或橫式, 程式會以節省紙張為原則自動判斷。
-					</tr>
+
 			<tr><td colspan=3>
 	<a href='https://www.facebook.com/twmapgen/' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a> 
 	<img src='imgs/discuss_icon.png'/>

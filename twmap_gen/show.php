@@ -214,6 +214,17 @@ default:
 	if (map_file_exists($map['filename'], 'pdf')) {
 		$links['pdf'] = $links['fullmap_path'] . "/". basename(map_file_name($map['filename'], 'pdf'));
 	}
+	if (map_file_exists($map['filename'], 'txt')){
+		$json = json_decode(file_get_contents(map_file_name($map['filename'], 'txt')),true);
+		if ($json !== null){
+			$map['output'] = '<ul>';
+			for($i=0;$i<count($json['dim']);$i++){
+				$map['output'] .=sprintf("<li>%s %s %d張<br>",$json['dim'][$i],$json['paper'][$i],$json['count'][$i]);
+			}
+			$map['output'] .= '</ul>';
+				// {"dim":["2x3","4x6","5x7"],"paper":["A4","A4","A4"],"count":[4,1,1]}
+		}
+	}
 	if (count($imgarr)>0) {
 		foreach($imgarr as $imgs ) {
 			$links['simgs'][] = $links['fullmap_path'] . "/" . basename($imgs);

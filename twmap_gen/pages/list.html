@@ -25,7 +25,7 @@ $(document).ready(function(){
 			"iDisplayLength": 10,
 			"bProcessing": true,
 			"bServerSide":  true,
-		 "bStateSave": true, // 記住狀態
+		 	"bStateSave": true, // 記住狀態
 			"sAjaxSource": "list.php",
 			"sPaginationType": "full",
 			"aLengthMenu": [[10,20,30,-1],[10,20,30,"all"]],
@@ -34,8 +34,9 @@ $(document).ready(function(){
 			"bAutoWidth": false,
 			"aoColumns": [
 			{ "sTitle": "序號" , "bSortable": false , "sWidth": "40px"},
+			{ "sTitle": "mid"  },
 			{ "sTitle": "日期", "sWidth": "100px" },
-			{ "sTitle": "標題" ,"sWidth": "230px"},
+			{ "sTitle": "標題" ,"sWidth": "220px"},
 			{ "sTitle": "X" },
 			{ "sTitle": "Y" },
 			{ "sTitle": "格", "sWidth": "20px" },

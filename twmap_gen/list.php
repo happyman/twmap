@@ -29,7 +29,7 @@ if (!isset($_REQUEST['iDisplayStart']))  {
 } 
 // 輸出 ajax
 else {
-	$maps = map_list_get($_SESSION['uid']);
+	$maps = map_list_get($_SESSION['uid'],'DESC');
 
 	$start = intval($_REQUEST['iDisplayStart']);
 	$limit = intval($_REQUEST['iDisplayLength']);
@@ -69,6 +69,7 @@ function create_rows($maps,$startsn=0) {
 		$rows[$i]['x'] = $maps[$i]['locX'];
 		$rows[$i]['y'] = $maps[$i]['locY'];
 		$rows[$i]['grid'] = sprintf("%dx%d",$maps[$i]['shiftX'], $maps[$i]['shiftY']);
+		/*
 		$rows[$i]['pages'] = $maps[$i]['pageX'] * $maps[$i]['pageY'];
 		//if (map_file_exists($maps[$i]['filename'], 'pdf'))
 		if (strtotime($rows[$i]['date'] ) > strtotime('2013-06-27'))
@@ -76,6 +77,7 @@ function create_rows($maps,$startsn=0) {
 		else
 
 			$rows[$i]['pagetype'] = (determine_type($maps[$i]['shiftX'], $maps[$i]['shiftY'], 1) == 'A4R')? '<img src="imgs/a4r.png" width="20px" alt="橫印" title="A4橫" />' : "";
+			*/
 		$rows[$i]['version'] =  sprintf("TWD%s %s",$maps[$i]['datum'],versionname($maps[$i]['version']));
 		$rows[$i]['size'] = humanreadable($maps[$i]['size']);
 
@@ -105,7 +107,7 @@ function create_rows($maps,$startsn=0) {
 		}
 		$rows[$i]['op'] = implode("\n",$op);
 		//$td[$i] = array($rows[$i]['sn'], $rows[$i]['date'], $rows[$i]['title'],$rows[$i]['x'],$rows[$i]['y'], $rows[$i]['grid'],sprintf("%s %s",$rows[$i]['pages'],$rows[$i]['pagetype']),$rows[$i]['version'],$rows[$i]['size'],$rows[$i]['op']);
-		$td[$i] = array($rows[$i]['sn'], $rows[$i]['date'], $rows[$i]['title'],$rows[$i]['x'],$rows[$i]['y'], $rows[$i]['grid'],$rows[$i]['version'],$rows[$i]['size'],$rows[$i]['op']);
+		$td[$i] = array($rows[$i]['sn'], $maps[$i]['mid'],$rows[$i]['date'], $rows[$i]['title'],$rows[$i]['x'],$rows[$i]['y'], $rows[$i]['grid'],$rows[$i]['version'],$rows[$i]['size'],$rows[$i]['op']);
 	}
 
 

@@ -25,10 +25,14 @@
 				<li>本圖左上角座標 X={$map.locX},Y={$map.locY}
 				<li>延伸 東方 {$map.shiftX} 與 南方 {$map.shiftY} 公里
 				<li id="calc"></li>
-				<li>列印共需要 {$map.pageX * $map.pageY} 張紙
+				<!-- <li>列印共需要 {$map.pageX * $map.pageY} 張紙 -->
+				{if $map.output}
+				<li>輸出 {$map.output}</li>
+				{/if}
 				<li>產生日期: {$map.cdate}
 				{if $links.pdf}
-				<li><img src='imgs/pdf_icon.png' border=0/><a href="{$links.pdf}" class='showtip' title='下載可列印 pdf' target=_blank>下載列印 pdf</a><!-- 或 <a href="http://sync.hamicloud.net" target=_blank title="台灣版的 cloudbox"><img src='imgs/cb.png' border=0/></a>
+				<li><img src='imgs/pdf_icon.png' border=0/><a href="{$links.pdf}" class='
+					\wtip' title='下載可列印 pdf' target=_blank>下載列印 pdf</a><!-- 或 <a href="http://sync.hamicloud.net" target=_blank title="台灣版的 cloudbox"><img src='imgs/cb.png' border=0/></a>
 				<a href="cloudprint.php?mid={$map.mid}" target="print">產生雲端列印碼 去 7-11 列印</a> 時代的眼淚 -->
 					   <ul>
 							           <li><span class="copy">{$links.pdf}</span>
@@ -76,15 +80,10 @@ done
 				<li><img src='imgs/earth_icon.png'  class="showtip" title="可用於 google earth 呈現或者 GPS 裝置" /> Google Earth 套圖
 				<ul> <li><a href="{$links.kmz}"  target="_blank" >KMZ 下載 (分小圖,適用於 GPSr 的 Custom Map)</a> </ul>
 					{/if}
-					<!--
-					<li><img src='imgs/oruxmap_icon.png' class="showtip" title="Android 軟體" />Oruxmap 離線地圖
-					<ul> <li> <a href="orux.php?mid={$map.mid}">7z 下載 (可使用於 Oruxmap 手機軟體)</a> </ul>
-					-->
 			</ul><!-- 總 -->
 			</td>
 			<td valign="top" align="right" height="800">
 				 {if isset($links.pdf) }
-				 <!-- <iframe src="http://docs.google.com/viewer?url={$links.pdf|urlencode}&embedded=true" width="512" style="border: none;" height="800"></iframe> -->
 				 <iframe src="{$links.pdf}" width="512" style="border: none;" height="800"></iframe>
 				 {else}
 				 {html_table loop=$imgdata cols=$map.pageX table_attr='style="border: 0px; border-spacing: 0px;padding-top: 95px" width=512' }  

@@ -202,9 +202,9 @@ function map_get_ids($uid, $limit = 10) {
 	return $rs;
 }
 // 取 ok, expired  flag = 0 or 1 的地圖, 用來算限制
-function map_list_get($uid) {
+function map_list_get($uid, $order='') {
 	$db=get_conn();
-	$sql = sprintf("select * from \"map\" where \"uid\"=%s AND (flag = 1 or flag = 0) ORDER BY mid",$uid);
+	$sql = sprintf("select * from \"map\" where \"uid\"=%s AND (flag = 1 or flag = 0) ORDER BY mid %s",$uid,$order);
 	$rs = $db->GetAll($sql);
 	$db->close();
 	logsql($sql,$rs);
