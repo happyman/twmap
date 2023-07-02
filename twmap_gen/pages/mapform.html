@@ -6,7 +6,10 @@
 							<li> 我有行跡檔: 選擇輸入方式 (gdb 或 gpx 格式), 上傳產生. 
 							</ol>
 				</div>
-				<textarea id="log_message" class="normal_note" style="resize: none;font-size:smaller; float: right; width: 200px; height: 360px">Have a lot of fun!</textarea>
+				<div style="resize: none;font-size:smaller; float: right; ">
+				<textarea id="log_message" class="normal_note" style="width: 200px; height: 360px" >Have a lot of fun!</textarea>
+				<br><a href='#' onclick='testnotify()'>顯示debug訊息</a>
+				</div>
 	<FORM name=mapform id=mapform method=post enctype="multipart/form-data"  action="backend_make.php">
 		<table id="makemaptable">
 			<tr class='method'>
@@ -42,10 +45,10 @@
 				</td>
 				<td>選項</td>
 					<td>
-						<label><input type="checkbox" name="auto_shrink" value="1">自動縮至可出圖範圍<img src='icons/beta.gif'/></label>
-						<label><input type="checkbox" name="trk_label" value="1">航跡標記</label>
-						<label><input type="radio" name="wpt_label" checked value="1">航點標記:另建索引</label>
-						<label><input type="radio" name="wpt_label" value="2">航點標記:在旁邊</label>
+						<label class="option"><input type="checkbox" name="auto_shrink" value="1">自動縮至可出圖範圍<img src='icons/beta.gif'/></label>
+						<label class="option"><input type="checkbox" name="trk_label" value="1">航跡標記</label>
+						<label class="option"><input type="radio" name="wpt_label" checked value="1">航點標記:另建索引</label>
+						<label class="option"><input type="radio" name="wpt_label" value="2">航點標記:在旁邊</label>
 					</td>
 				</tr>
 			</tbody>
@@ -79,9 +82,13 @@
 					<td><input type=text size=4 name='starty' class="required" minlength="4"></input>000 如 2578 (2424-2800)
 						(左上角座標的 Y 軸)
 				</td></tr>
+				<tr><td></td><td></td><td>
+					<label><input type="checkbox" name="97datum" value="1">TWD97</label> TM2座標系統 (未勾選為 TWD67 TM2)</td>
+				</tr>
 				<tr>
 				<td><span class="step" id="step_bound">2</span></td>
 				<td>n x m</td><td>
+					<!--
 						<button class="ui-state-default ui-corner-all hp" type=button name=bt id=bt >A 4</button>
 						<span id="a4" name="a4">
 							<select name=aashiftx>
@@ -90,17 +97,19 @@
 							<select name=aashifty>
 								{html_options values=$aashifty output=$aashifty selected="5"}
 							</select>
-							A4 直式 如 5x7 格, A3 直式 7x10
+							A4 直式 如 5x7 格, A3 直式 7x10 
 						</span>
-						<span id="all" name="all" style=display:none>
+						-->
+						<span id="all" name="all">
 							<select name=anyshiftx>
 								{html_options values=$anyshiftx output=$anyshiftx selected="1"}
 							</select> X
 							<select name=anyshifty>
 								{html_options values=$anyshifty output=$anyshifty selected="1"}
 							</select>
-							如 10x8 格
+							公里。
 						</span>
+						<!--
 						<span id="a4r" name="a4r" style="display:none">
 							<select name=aarshiftx>
 								{html_options values=$aarshiftx output=$aarshiftx selected="7"}
@@ -110,6 +119,7 @@
 							</select>
 							A4 橫式 如 7x5 格, A3 橫式 10x7
 						</span>
+					-->
 				</td></tr>
 				<tr>
 			<td><span class="step" id="step_area">5</span></td>
@@ -130,17 +140,30 @@
 						<option value="3" >經建三版</option>
 					</select>  
 			</td></tr>
-			<tr><td></td><td>其他</td>
-				<td>
-				<label><input type="checkbox" name="97datum" value="1">TWD97</label>
-				<label><input type="checkbox" name="grid_100M" value="1">100米格線</label>
-				<label><input type="checkbox" name="inc_trace" value="1" title='不含航點' checked >包含山友track</label>
-				<label><input type="checkbox" name="keep_color" value="1">彩圖</label>
-				<label><input type="checkbox" name="a3_paper" value="1">A3</label>
+			
+			<tr>
+				<td><span class="step" id="step_other">7</span></td><td>其他</td>
+				<td style="width: 800px">
+				
+				<label class="option"><input type="checkbox" name="grid_100M" value="1">100米格線</label>
+				<label class="option"><input type="checkbox" name="inc_trace" value="1" title='不含航點' checked >包含山友track</label>
+				<label class="option"><input type="checkbox" name="keep_color" value="1">彩圖</label>
+				<label class="option"><input id='a3' type="checkbox" name="a3_paper" title="預設為 A4" value="1">A3</label><br>
+				<label class="option"><input type="checkbox" id='out57' name="out57" value="1" checked >5x7輸出</label>
+				<label class="option"><input type="checkbox" id="out46" name="out46" value="1">4x6輸出</label>
+				<label class="option"><input type="checkbox" id='out34' name="out34" value="1">3x4輸出</label>
+				<label class="option"><input type="checkbox" id='out23' name="out23" value="1">2x3輸出</label>
 				</td>
 			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td>
+				預設輸出A4一張5x7灰階PDF，接近1/25000比例。程式會以節省紙張為原則自動判斷直式或橫式。
+				<br>若預設比例老花眼看不清楚的話，可一併勾選其他比例如4x6輸出及3x4輸出。
+			</tr>
 			<tr><td>
-					<span class="step" id="step_go">7</span>
+					<span class="step" id="step_go">8</span>
 			</td>
 			<td></td>
 				<td><button class="ui-state-default ui-corner-all hp" type=button name="create" id="create">產生</button>
@@ -152,16 +175,12 @@
 					<input type=hidden name=formid id="formid" value="{$formid}">
 				</td>
 			</tr>
-			<tr>
-			<td></td>
-			<td colspan=2>
-				輸出為直式或橫式, 程式會以節省紙張為原則自動判斷。
-					</tr>
+
 			<tr><td colspan=3>
+				<div style="text-align: right;">
 	<a href='https://www.facebook.com/twmapgen/' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a> 
-	<img src='imgs/discuss_icon.png'/>
-		<br>
-		<a href='#' onclick='testnotify()'>顯示debug訊息</a>
+	<img src='imgs/discuss_icon.png'/></div>
+
 		
 		</tr>
 

@@ -1,7 +1,6 @@
 <?php
+Namespace Happyman\Twmap\Export;
 
-require_once("proj_lib.php");
-require_once("kml_lib.php");
 setlocale(LC_ALL,"zh_TW.UTF-8");
 
 // $Id: garmin.inc.php 361 2013-10-18 15:03:00Z happyman $
@@ -13,7 +12,7 @@ echo "done";
 $gkmz->makekml();
  */
 
-class garminKMZ {
+class GarminKMZ {
 	var $cutx; // km: 
 	var $cuty; // km
 	var $startx; // 298000
@@ -27,6 +26,29 @@ class garminKMZ {
 	var $datum;
 	var $debug = 0;
 	var $logger = null;
+
+	static function check(){
+		$req=[ 'gpsbabel' => [ 'package'=>'gpsbabel', 'test'=>'--help'] , 
+		       'convert' => [ 'package'=>'imagemagick','test'=>'--help'],
+			   'zip' => ['package'=>'zip', 'test'=> '-L'] ];
+			
+		$err=0;
+		$classname=get_called_class();
+		foreach($req as $bin=>$meta){
+			$cmd=sprintf("%s %s",$bin,$meta['test']);
+			exec($cmd,$out,$ret);
+			if ($ret!=0){
+				printf("[%s] %s not installed, please install %s",$classname,$bin,$meta['package']);
+				$err++;
+			}else{
+				printf("[%s] %s installed\n",$classname,$bin);
+			}
+		}
+		if ($err>0)
+			return false;
+		else
+			return true;
+	}
 	function __construct($cutx,$cuty,$fname,$ph=0,$datum='TWD97',$logger=null) {
 		if (preg_match("/(\d+)x(\d+)-(\d+)x(\d+)/",basename($fname),$r)){
 			if (file_exists($fname)) {
@@ -141,11 +163,11 @@ class garminKMZ {
 	function transcoord($p1,$p2,$p3,$p4) {
 		$r = array();
 		if ($this->datum == 'TWD97'){
-			$proj_func = "proj_97toge2";
-			$ph_proj_func = "ph_proj_97toge2";
+			$proj_func = "Happyman\Twmap\Proj::proj_97toge2";
+			$ph_proj_func = "Happyman\Twmap\Proj::ph_proj_97toge2";
 		}   else {
-			$proj_func = "proj_67toge2";
-			$ph_proj_func = "ph_proj_67toge2";
+			$proj_func = "Happyman\Twmap\Proj::proj_67toge2";
+			$ph_proj_func = "Happyman\Twmap\Proj::ph_proj_67toge2";
 		}
 		if ($this->ph == 1 ) {
 			list ($r['W'],$r['N']) = $ph_proj_func($p1);

@@ -1,6 +1,11 @@
 <?php
+Namespace Happyman\Twmap\Svg;
 
-class gpxsvg {
+use Happyman\Twmap\Proj;
+/**
+ * depends on GeoPHP class
+ */
+class Gpx2Svg {
 
 	var $width; // pixel
 	var $height;
@@ -24,6 +29,7 @@ class gpxsvg {
 	var $auto_shrink = 0; // 1 表示自動更縮小到可以產生的範圍, 在 keepon 有大範圍地圖適用
 	var $limit = array("km_x" => 24001, "km_y" => 24001); // 24x24 格
 	var $datum = 'TWD67';
+	var $pixel_per_km;
 	var $_err;
 
 	function __construct($params) {
@@ -39,32 +45,54 @@ class gpxsvg {
 		$this->colorize = (isset($params['colorize']))? $params['colorize'] : "";
 		$this->auto_shrink = (isset($params['auto_shrink']))? $params['auto_shrink'] : 0;
 		$this->datum = (isset($params['datum']))? $params['datum'] : 'TWD67';
+		$this->pixel_per_km = (isset($params['pixel_per_km']))? $params['pixel_per_km'] : 315;
 	
 
+	}
+	static function check(){
+		$req=[ 'convert' => [ 'package'=>'imagemagick', 'test'=>''] , 
+		'inkscape' => [ 'package'=>'inkscape','test'=>'--help', 'optional'=>1 ]];
+		$err=0;
+		$classname=get_called_class();
+		foreach($req as $bin=>$meta){
+			$cmd=sprintf("%s %s",$bin,$meta['test']);
+			exec($cmd,$out,$ret);
+			if ($ret!=0){
+				printf("[%s] %s not installed, please install %s",$classname,$bin,$meta['package']);
+				if (!isset($meta['optional']))
+					$err++;
+			}else{
+				printf("[%s] %s installed %s\n",$classname,$bin,isset($meta['optional'])?"(optional)":"");
+			}
+		}
+		if ($err>0)
+			return false;
+		else
+			return true;
 	}
 	function coordtotm2($a, $ph) {
 		if ($ph == 1) {
 			if ($this->datum == 'TWD97')
-				return proj_geto97_ph($a);
+				return Proj::proj_geto97_ph($a);
 			else
-				return proj_geto672_ph($a);
+				return Proj::proj_geto672_ph($a);
 		}
 		if ($this->datum == 'TWD97')
-			return proj_geto97($a);
+			return Proj::proj_geto97($a);
 		else
-			return proj_geto672($a);
+			return Proj::proj_geto672($a);
 	}
-		function tm2tocoord($a, $ph) {
+	function tm2tocoord($a, $ph) {
 		if ($ph == 1) {
 			if ($this->datum == 'TWD97')
-				return ph_proj_97toge2($a);
+				return Proj::ph_proj_97toge2($a);
 		else
-				return proj_67toge2_ph($a);
+				return Proj::proj_67toge2_ph($a);
 		}
 		if ($this->datum == 'TWD97')
-			return proj_97toge2($a);
+			return Proj::proj_97toge2($a);
 		else
-			return proj_67toge2($a);
+			return Proj::proj_67toge2($a);
 	}
 	
 	function dump() {
@@ -73,9 +101,8 @@ class gpxsvg {
 	// 利用 geoPHP 取得 bbox, 不用自己 parse 半天
 	// 取得本圖的 bounds
 	function get_bbox($gpx_str){
-		require_once("geoPHP/geoPHP.inc");
 		try {
-		$geom = geoPHP::load($gpx_str, 'gpx');
+		$geom = \geoPHP::load($gpx_str, 'gpx');
 		$bbox = $geom->getBBox();
 		$tl = $this->is_taiwan($bbox['minx'], $bbox['maxy']);
 		$br = $this->is_taiwan($bbox['maxx'], $bbox['miny']);
@@ -137,32 +164,6 @@ class gpxsvg {
 		error_log("fit_a4:$x,$y->$xx,$yy");
 		return array($tl, $br);
 
-	}
-	// 偵測到底 gpx 範圍多大
-	// used in track.inc.php
-	function detect_bbox(){
-			list($x,$y,$x1,$y1) = $this->get_bbox(file_get_contents($this->gpx));
-			//if ($this->taiwan == 0)
-			//	return array(false,"not in Taiwan or Pong Hu");
-			if ($this->taiwan == 1 ) {
-			list($tx, $ty) = proj_geto672(array($x,$y));
-			list($tx1, $ty1) = proj_geto672(array($x1,$y1));
-			} else {
-			list($tx, $ty) = proj_geto672_ph(array($x,$y));
-			list($tx1, $ty1) = proj_geto672_ph(array($x1,$y1));
-			}
-			// get tl and br
-			$tl = array( floor($tx / 1000)*1000, ceil($ty / 1000)*1000);
-			$br = array( ceil($tx1 / 1000)*1000, floor($ty1 / 1000)*1000);
-			//  
-			$this->bound_twdtm2 = array("tl" => $tl, "br" => $br , "ph"=> ($this->taiwan==2)?1:0);
-			if ($br[0] - $tl[0] >= $this->limit['km_x'] || $tl[1] - $br[1] >= $this->limit['km_y'] ) {
-				$over = 1;
-			} else {
-				$over = 0;
-			}
-			return array(true, array("is_taiwan"=> $this->taiwan,
-			"x"=> ($br[0] - $tl[0])/1000 , "y"=> ($tl[1] - $br[1])/1000, "over" => $over, "bbox" => "$y $x $y1 $x1"));
 	}
 	
 	function process() {
@@ -229,7 +230,7 @@ class gpxsvg {
 			return false;
 		}
 		// 計算字型比例 依照若是標準地圖產生器出圖, 18px (1km 315px)
-		$this->fontsize = intval(18 * ($this->width / (($br[0] - $tl[0])/1000) / 315));
+		$this->fontsize = intval(18 * ($this->width / (($br[0] - $tl[0])/1000) / $this->pixel_per_km));
 		// 若是產生縮圖
 		if ($this->fontsize < $this->default_fontsize)
 			$this->fontsize = $this->default_fontsize;
@@ -246,7 +247,7 @@ class gpxsvg {
 		$this->ratio['x'] = $this->width / ($this->bound['br'][0] - $this->bound['tl'][0]);
 		// 經緯度比例這樣會出錯
 		//$this->height = round(($this->bound['tl'][1] - $this->bound['br'][1])*$this->ratio);
-		$this->height = ($tl[1]-$br[1])/1000 * 315;
+		$this->height = ($tl[1]-$br[1])/1000 *  $this->pixel_per_km;
 		$this->ratio['y'] = $this->height / ($this->bound['tl'][1] - $this->bound['br'][1]);
 
 
@@ -308,7 +309,7 @@ class gpxsvg {
 			}
 			// 處理 track 的高度
 		}
-		$this->ele_bound = array($min, $max);
+		$this->ele_bound = array(($min<0)?0:$min, ($max<0)?0:$max);
 		//$this->dump();
 		//$this->waypoint = $arr['wpt'];
 		$j = 0;
@@ -333,11 +334,12 @@ class gpxsvg {
 		//$this->dump();
 		return true;
 	}
-	function output() {
+	function output($outsvg) {
 		if (!empty($this->_err)) {
 			print_r($this->_err);
 			exit;
 		}
+		ob_start();
 		// 1. header
 		$this->header();
 		// 2. 背景
@@ -350,6 +352,10 @@ class gpxsvg {
 		$this->out_comment();
 		// footer
 		$this->footer();
+		$ret = file_put_contents($outsvg,ob_get_contents());
+		ob_end_clean();
+		return $ret;
+	
 	}
 	function out_comment() {
 		printf("<!-- debug: %s-->\n",print_r($this->initparams,true));
@@ -370,293 +376,7 @@ class gpxsvg {
 		printf("<!-- bound_ele: %f %f -->\n",$this->ele_bound[0], $this->ele_bound[1]);
 	}
 	function color($ele) {
-		global $color_spectrum;
-
-		if ($this->colorize == 0  || $ele < 0) return "#000000";
-
-		$total = count($color_spectrum)-1;
-		$n = floor(($ele - $this->ele_bound[0]) * $total / ($this->ele_bound[1] - $this->ele_bound[0]));
-		//if ($n >= $total)
-		//printf("ele=%d %f %f $n\n",$ele, $this->ele_bound[0], $this->ele_bound[1]);
-		return sprintf("#%s", $color_spectrum[$n]);
-	}
-	function out_tracks() {
-		for($i=0;$i<count($this->track);$i++) {
-			$trk_id = sprintf("t%d", $i+1);
-			printf('	<g id="%s (%s) track" opacity="0.9">',$this->track[$i]['name'], $trk_id);
-			for($j=0;$j<count($this->track[$i]['point'])-1;$j++) {
-				$p_id = $j+1;
-				printf('		<line fill="none" id="%s p%d" stroke="%s" stroke-width="2" x1="%.4f" x2="%.4f" y1="%.4f" y2="%.4f" />'."\n",$trk_id, $p_id, 
-					$this->color($this->track[$i]['point'][$j]['ele']), 
-					$this->track[$i]['point'][$j]['rel'][0], $this->track[$i]['point'][$j+1]['rel'][0],
-					$this->track[$i]['point'][$j]['rel'][1], $this->track[$i]['point'][$j+1]['rel'][1]);
-
-			}
-			printf("        </g>\n");
-			// 輸出 label
-			if ($this->show_label_trk == 1) {
-				// 位置在第一個點 x+20
-				printf('       <g id="%s (%s) label" opacity="1" transform="translate(0,0)" x="%.4f" y="%.4f">		<text fill="#ff0000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="%s (%s) name" opacity="1" text-anchor="middle" x="%.4f" y="%.4f">%s</text></g>'. "\n", 
-					$this->track[$i]['name'], $trk_id,
-					$this->track[$i]['point'][0]['rel'][0]+20,
-					$this->track[$i]['point'][0]['rel'][1],
-					$this->fontsize,
-					$this->track[$i]['name'], $trk_id,
-					$this->track[$i]['point'][0]['rel'][0]+20,
-					$this->track[$i]['point'][0]['rel'][1],
-					$this->track[$i]['name']);
-
-
-			}
-		}
-	}
-	function out_index() {
-		$left = $this->width - 315;
-		//$top = 25;
-		//1. 計算能放下多少 wpt,  剩下折行, 最多 $line_len 字
-		//第二行超過就變成 … 
-		// $total_row = count($this->waypoint);
-		$line_len = 24;
-        	$j=1;$index=1;
-		mb_internal_encoding('UTF-8');
-		$line[0] = array('index' => 'No.', 'data'=>"座標及說明");
-		foreach($this->waypoint as $wpt) {
-			$str = sprintf("%d,%d %s",$wpt['tw67'][0], $wpt['tw67'][1],trim($wpt['name']));
-			$d = word_split($str, $line_len);
-		    for($i=0;$i<count($d);$i++) {
-				if($i==0)
-				 $line[$j]['index'] = $index++;
-				else
-				 $line[$j]['index'] = " ";
-				$line[$j]['data'] = $d[$i];
-				$j++;
-			}
-		}
-		//error_log(print_r($line,true));
-		$total_row = count($line);
-		// 總高度不能超過
-		$total = floor(($this->height - 50 )/$this->fontsize)-1;
-		if ($total_row > $total) $total_row = $total;
-		//error_log("total_row=".$total_row);
-
-		$height = $this->fontsize * $total_row  + 2;
-
-		$top = 25 + ($this->height - 50  - $height) / 2; // vcenter
-		echo "<g id=\"index\">\n";
-		// 2. 畫出框框
-		printf("    <rect id='index_frame' x='%d' y='%d' height='%d' width='300' fill='#FFFFFF'/>\n",$left,$top,$height);
-		printf("     <text id='index_col_num' x='%d' y='%d' font-size='%d' font-weight='bold' fill='#000000'>\n", $left, $top, $this->fontsize);
-		$j=0;
-		// 號碼
-		foreach($line as $useless) {
-			if ($j > $total_row ) break;
-			//printf("        <tspan x='%d' y='%d'>%s</tspan>\n",$left, ($j*$this->fontsize)+$top, $j++ );
-			printf("        <tspan x='%d' y='%d'>%s</tspan>\n",$left, ($j+1)*$this->fontsize+$top, $line[$j++]['index'] );
-
-		}
-		echo "</text>\n";
-		$left2 = $left + 2*$this->fontsize;
-		printf("<text id='index_col_name' x='%d' y='%d' font-size='%d' fill='#000000'>\n", $left2,$top, $this->fontsize);
-		$j=0;
-		foreach($line as $useless) {
-			if ($j > $total_row ) break;
-			// printf("<tspan x='%d' y='%d'>%d,%d %s</tspan>\n",$left2, ($j*$this->fontsize)+ $top, $wpt['tw67'][0],$wpt['tw67'][1],$wpt['name']);
-			printf("<tspan x='%d' y='%d'>%s</tspan>\n",$left2, ($j+1)*$this->fontsize+ $top,$line[$j]['data']);
-			$j++;
-		}
-		echo "</text></g>";
-
-	}
-	function out_waypoints() {
-		if (empty($this->waypoint)) return;
-		echo ' <g id="Waypoints">';
-		$j=1;
-		foreach($this->waypoint as $wpt) {
-			printf('	<circle cx="%.4f" cy="%.4f" fill="#000000" fill-opacity="1" id="%s (w%d) marker" r="2" stroke="#000000" stroke-opacity="1" stroke-width="1.0" />'.  "\n" ,
-				$wpt['rel'][0], $wpt['rel'][1],$wpt['name'], $j );
-			// 顯示 wpt label: 1 顯示 index 2. 顯示在旁邊 3. 都要
-			if ($this->show_label_wpt > 0 ) {
-				if ($this->show_label_wpt == 1 )
-					$wpt_label = "$j";
-				else if ($this->show_label_wpt == 2)
-					$wpt_label = $wpt['name'];
-				else if ($this->show_label_wpt == 3)
-					$wpt_label = sprintf("%d %s",$j,$wpt['name']);
-
-				printf('	<g id="%s (w%d) label" transform="translate(0,0)" x="%.4f" y="%.4f"><text fill="#000000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="%s (w%d) name" text-anchor="start" x="%.4f" y="%.4f">%s</text> </g>' . "\n",
-					str_replace("&","_",$wpt['name']), $j, $wpt['rel'][0], $wpt['rel'][1],
-					$this->fontsize,
-					str_replace("&","_",$wpt['name']), $j, $wpt['rel'][0], $wpt['rel'][1],
-					$wpt_label
-				);
-			}
-
-			$j++;
-		}
-		echo "</g>\n";
-		// 如果是顯示 indexed table
-		if ($this->show_label_wpt == 1 || $this->show_label_wpt == 3) {
-			$this->out_index();
-		}
-		// 產生 logo
-		if ($this->logotext) {
-			$locx = 40;
-			$locy = $this->height - 10 ;
-			printf('	<text fill="#000000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="twmap3svg"  text-anchor="start" x="%.4f" y="%.4f">%s</text>'."\n", $this->fontsize * 2, $locx, $locy, $this->logotext);
-		}
-	}
-	// 相對 pixel
-	function rel_px($x, $y) {
-		$px = ($x - $this->bound['tl'][0])*$this->ratio['x'];
-		$py = ($this->bound['tl'][1]- $y)*$this->ratio['y'];
-		return array($px,$py);
-	}
-	function header() {
-		echo '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
-?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-			<svg height="<?php echo $this->height;?>" onload="init(evt)" width="<?php echo $this->width;?>" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">        <script type="text/ecmascript"><![CDATA[
-			var SVGDoc; var SVGRoot;
-		function init(evt) {
-			SVGDoc = evt.getTarget().getOwnerDocument();
-			SVGRoot = SVGDoc.getDocumentElement();
-		}]]>
-			</script>     
-<?php
-	}
-
-	function footer() {
-		echo "</svg>\n";
-	}
-	function out_background() {
-		printf('<g id="background image" opacity="1" transform="translate(0,0)">');
-		if ($this->bgimg) {
-			printf('<image height="%d" id="background map 1" opacity="1" width="%d" x="0" y="0" xlink:href="%s" />', $this->height, $this->width, $this->bgimg);
-		}
-		echo "</g>\n";
-	}
-	function is_taiwan($lon,$lat) {
-		if ($lon < 119.31 || $lon > 124.56 || $lat < 21.88 || $lat >25.31  ) {
-			return 0;
-		} else if ( $lon > 119.72 ) {
-			return 1;
-		} else
-			// 澎湖
-			return 2;
-	}
-
-};
-
-function hsv2rgb($h, $s, $v) {
-
-	# Adapted from C source code found here:
-	# http://www.cs.rit.edu/~ncs/color/t_convert.html
-
-	if ($s == 0) {        # achromatic
-		$r = $g = $b = $v;
-		return array($r * 255, $g * 255, $b * 255);
-	}
-
-	$h %= 360;
-
-	$h /= 60;
-	$i = floor($h);
-	$f = $h - $i;
-	$p = $v * (1 - $s);
-	$q = $v * (1 - $s * $f);
-	$t = $v * (1 - $s * (1 - $f));
-
-	switch($i) {
-	case 0:
-		$r = $v;
-		$g = $t;
-		$b = $p;
-		break;
-	case 1:
-		$r = $q;
-		$g = $v;
-		$b = $p;
-		break;
-	case 2:
-		$r = $p;
-		$g = $v;
-		$b = $t;
-		break;
-	case 3:
-		$r = $p;
-		$g = $q;
-		$b = $v;
-		break;
-	case 4:
-		$r = $t;
-		$g = $p;
-		$b = $v;
-		break;
-	default:        # and case 5:
-		$r = $v;
-		$g = $p;
-		$b = $q;
-		break;
-	}
-
-	return array($r * 255, $g * 255, $b * 255);
-
-
-}
-
-function rgb2hsv($red, $green, $blue) {
-
-	# Adapted from C source code found here:
-	# http://www.cs.rit.edu/~ncs/color/t_convert.html
-
-
-	# Need values from 0 - 1 instead of 0 - 255
-	#
-	$r = $red   / 255;
-	$g = $green / 255;
-	$b = $blue  / 255;
-
-	$min = min($r, $g, $b);    
-	$max = max($r, $g, $b);    
-
-	$v = $max;
-
-	$delta = $max - $min;
-
-	if ($max != 0) {
-		$s = $delta / $max;
-	} else {
-		$s = 0;
-		$h = -1;
-		return array($h, $s, $v);
-	}
-
-
-	if ($delta) {
-
-		if ($r == $max) {
-			$h = ($g - $b) / $delta;
-		} else if ($g == $max) {
-			$h = 2 + ($b - $r) / $delta;
-		} else {
-			$h = 4 + ($r - $g) / $delta;
-		}
-
-	} else {
-		$h = 0;
-	}
-
-	$h *= 60;
-
-	if ($h < 0) {
-		$h += 360;
-	}
-
-	return array($h, $s, $v);
-
-}
-
-$color_spectrum = array("ff00fe"
+	$color_spectrum = array("ff00fe"
 	,"ff00fd","ff00fc","ff00fb","ff00fa","ff00f9","ff00f8"
 	,"ff00f7","ff00f6","ff00f5","ff00f4","ff00f3","ff00f2"
 	,"ff00f1","ff00f0","ff00ef","ff00ee","ff00ed","ff00ec"
@@ -914,6 +634,242 @@ $color_spectrum = array("ff00fe"
 	,"f900ff","fa00ff","fb00ff","fc00ff","fd00ff","fe00ff"
 	,"ff00ff");
 
+		if ($this->colorize == 0  || $ele < 0) return "#000000";
+
+		$total = count($color_spectrum)-1;
+		$n = floor(($ele - $this->ele_bound[0]) * $total / ($this->ele_bound[1] - $this->ele_bound[0]));
+		//if ($n >= $total)
+		//printf("ele=%d %f %f $n\n",$ele, $this->ele_bound[0], $this->ele_bound[1]);
+		return sprintf("#%s", $color_spectrum[$n]);
+	}
+	function out_tracks() {
+		for($i=0;$i<count($this->track);$i++) {
+			$trk_id = sprintf("t%d", $i+1);
+			printf('	<g id="%s (%s) track" opacity="0.9">',$this->track[$i]['name'], $trk_id);
+			for($j=0;$j<count($this->track[$i]['point'])-1;$j++) {
+				$p_id = $j+1;
+				printf('		<line fill="none" id="%s p%d" stroke="%s" stroke-width="2" x1="%.4f" x2="%.4f" y1="%.4f" y2="%.4f" />'."\n",$trk_id, $p_id, 
+					$this->color($this->track[$i]['point'][$j]['ele']), 
+					$this->track[$i]['point'][$j]['rel'][0], $this->track[$i]['point'][$j+1]['rel'][0],
+					$this->track[$i]['point'][$j]['rel'][1], $this->track[$i]['point'][$j+1]['rel'][1]);
+
+			}
+			printf("        </g>\n");
+			// 輸出 label
+			if ($this->show_label_trk == 1) {
+				// 位置在第一個點 x+20
+				printf('       <g id="%s (%s) label" opacity="1" transform="translate(0,0)" x="%.4f" y="%.4f">		<text fill="#ff0000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="%s (%s) name" opacity="1" text-anchor="middle" x="%.4f" y="%.4f">%s</text></g>'. "\n", 
+					$this->track[$i]['name'], $trk_id,
+					$this->track[$i]['point'][0]['rel'][0]+20,
+					$this->track[$i]['point'][0]['rel'][1],
+					$this->fontsize,
+					$this->track[$i]['name'], $trk_id,
+					$this->track[$i]['point'][0]['rel'][0]+20,
+					$this->track[$i]['point'][0]['rel'][1],
+					$this->track[$i]['name']);
+
+
+			}
+		}
+	}
+	function word_split($str, $width) {
+		$len = mb_strlen($str,'utf-8');
+		for($i=1;$i<=$len;$i++){
+			$word[$i-1] = mb_substr($str, $i-1, 1, 'utf-8');
+	
+		}
+		$newstr = $word[0];
+		$teststr = "";
+		$lastlen = mb_strwidth($newstr, 'utf-8');
+		for($i=1;$i<$len;$i++){
+			// echo "word $i = " . $word[$i] . "\n";
+			$teststr = $newstr . $word[$i];
+			$testlen = mb_strwidth($teststr,'utf-8');
+			if ($testlen % $width == 0 ) {
+				$newstr .= $word[$i];
+				$newstr .= "\n";
+			} else if ($testlen % $width == 1 ) {
+				$newstr .= "\n".$word[$i];
+			} else {
+				$newstr .= $word[$i];
+			}
+		}
+		return explode("\n",trim($newstr));
+		//echo $len;
+	}
+	function out_index() {
+		$left = $this->width -  $this->pixel_per_km;
+		//$top = 25;
+		//1. 計算能放下多少 wpt,  剩下折行, 最多 $line_len 字
+		//第二行超過就變成 … 
+		// $total_row = count($this->waypoint);
+		$line_len = 24;
+        	$j=1;$index=1;	
+		mb_internal_encoding('UTF-8');
+		$line[0] = array('index' => 'No.', 'data'=>"座標及說明");
+		foreach($this->waypoint as $wpt) {
+			$str = sprintf("%d,%d %s",$wpt['tw67'][0], $wpt['tw67'][1],trim($wpt['name']));
+			$d = $this->word_split($str, $line_len);
+		    for($i=0;$i<count($d);$i++) {
+				if($i==0)
+				 $line[$j]['index'] = $index++;
+				else
+				 $line[$j]['index'] = " ";
+				$line[$j]['data'] = $d[$i];
+				$j++;
+			}
+		}
+		//error_log(print_r($line,true));
+		$total_row = count($line);
+		// 總高度不能超過
+		$total = floor(($this->height - 50 )/$this->fontsize)-1;
+		if ($total_row > $total) $total_row = $total;
+		//error_log("total_row=".$total_row);
+
+		$height = $this->fontsize * $total_row  + 2;
+
+		$top = 25 + ($this->height - 50  - $height) / 2; // vcenter
+		echo "<g id=\"index\">\n";
+		// 2. 畫出框框
+		printf("    <rect id='index_frame' x='%d' y='%d' height='%d' width='300' fill='#FFFFFF'/>\n",$left,$top,$height);
+		printf("     <text id='index_col_num' x='%d' y='%d' font-size='%d' font-weight='bold' fill='#000000'>\n", $left, $top, $this->fontsize);
+		$j=0;
+		// 號碼
+		foreach($line as $useless) {
+			if ($j > $total_row ) break;
+			//printf("        <tspan x='%d' y='%d'>%s</tspan>\n",$left, ($j*$this->fontsize)+$top, $j++ );
+			printf("        <tspan x='%d' y='%d'>%s</tspan>\n",$left, ($j+1)*$this->fontsize+$top, $line[$j++]['index'] );
+
+		}
+		echo "</text>\n";
+		$left2 = $left + 2*$this->fontsize;
+		printf("<text id='index_col_name' x='%d' y='%d' font-size='%d' fill='#000000'>\n", $left2,$top, $this->fontsize);
+		$j=0;
+		foreach($line as $useless) {
+			if ($j > $total_row ) break;
+			// printf("<tspan x='%d' y='%d'>%d,%d %s</tspan>\n",$left2, ($j*$this->fontsize)+ $top, $wpt['tw67'][0],$wpt['tw67'][1],$wpt['name']);
+			printf("<tspan x='%d' y='%d'>%s</tspan>\n",$left2, ($j+1)*$this->fontsize+ $top,$line[$j]['data']);
+			$j++;
+		}
+		echo "</text></g>";
+
+	}
+	function out_waypoints() {
+		if (empty($this->waypoint)) return;
+		echo ' <g id="Waypoints">';
+		$j=1;
+		foreach($this->waypoint as $wpt) {
+			printf('	<circle cx="%.4f" cy="%.4f" fill="#000000" fill-opacity="1" id="%s (w%d) marker" r="2" stroke="#000000" stroke-opacity="1" stroke-width="1.0" />'.  "\n" ,
+				$wpt['rel'][0], $wpt['rel'][1],$wpt['name'], $j );
+			// 顯示 wpt label: 1 顯示 index 2. 顯示在旁邊 3. 都要
+			if ($this->show_label_wpt > 0 ) {
+				if ($this->show_label_wpt == 1 )
+					$wpt_label = "$j";
+				else if ($this->show_label_wpt == 2)
+					$wpt_label = $wpt['name'];
+				else if ($this->show_label_wpt == 3)
+					$wpt_label = sprintf("%d %s",$j,$wpt['name']);
+
+				printf('	<g id="%s (w%d) label" transform="translate(0,0)" x="%.4f" y="%.4f"><text fill="#000000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="%s (w%d) name" text-anchor="start" x="%.4f" y="%.4f">%s</text> </g>' . "\n",
+					str_replace("&","_",$wpt['name']), $j, $wpt['rel'][0], $wpt['rel'][1],
+					$this->fontsize,
+					str_replace("&","_",$wpt['name']), $j, $wpt['rel'][0], $wpt['rel'][1],
+					$wpt_label
+				);
+			}
+
+			$j++;
+		}
+		echo "</g>\n";
+		// 如果是顯示 indexed table
+		if ($this->show_label_wpt == 1 || $this->show_label_wpt == 3) {
+			$this->out_index();
+		}
+		// 產生 logo
+		if ($this->logotext) {
+			$locx = 40;
+			$locy = $this->height - 10 ;
+			printf('	<text fill="#000000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="twmap3svg"  text-anchor="start" x="%.4f" y="%.4f">%s</text>'."\n", $this->fontsize * 2, $locx, $locy, $this->logotext);
+		}
+	}
+	// 相對 pixel
+	function rel_px($x, $y) {
+		$px = ($x - $this->bound['tl'][0])*$this->ratio['x'];
+		$py = ($this->bound['tl'][1]- $y)*$this->ratio['y'];
+		return array($px,$py);
+	}
+	function header() {
+		echo '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+			<svg height="<?php echo $this->height;?>" onload="init(evt)" width="<?php echo $this->width;?>" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">        <script type="text/ecmascript"><![CDATA[
+			var SVGDoc; var SVGRoot;
+		function init(evt) {
+			SVGDoc = evt.getTarget().getOwnerDocument();
+			SVGRoot = SVGDoc.getDocumentElement();
+		}]]>
+			</script>     
+<?php
+	}
+
+	function footer() {
+		echo "</svg>\n";
+	}
+	function out_background() {
+		printf('<g id="background image" opacity="1" transform="translate(0,0)">');
+		if ($this->bgimg) {
+			printf('<image height="%d" id="background map 1" opacity="1" width="%d" x="0" y="0" xlink:href="%s" />', $this->height, $this->width, $this->bgimg);
+		}
+		echo "</g>\n";
+	}
+	function is_taiwan($lon,$lat) {
+		if ($lon < 119.31 || $lon > 124.56 || $lat < 21.88 || $lat >25.31  ) {
+			return 0;
+		} else if ( $lon > 119.72 ) {
+			return 1;
+		} else
+			// 澎湖
+			return 2;
+	}
+	function svg2png_inkscape($insvg, $outimage,$resize=array()) {
+		$cmd = sprintf("inkscape -o '%s' %s 2>&1", $outimage, $insvg);
+		exec($cmd, $out, $ret);
+		if (strstr($out[count($out)-1],"saved")) {
+			// 再 resize 一下
+			if (!empty($resize) && $resize[0] >=  $this->pixel_per_km && $resize[1] >=  $this->pixel_per_km) {
+				$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
+				exec($cmd2, $out2, $ret);
+			}
+			return array(true, implode("+",$out+$out2));
+		}
+		return array(false, implode("+",$out));
+	}
+	// use convert .. 
+	// http://map.happyman.idv.tw/map/out/000003/90912/276000x2677000-5x7-v3.svg2
+	// http://map.happyman.idv.tw/map/out/000003/90912/test.png
+	function svg2png_magick($insvg, $outimage,$resize=array()) {
+		$cmd = sprintf("convert 'msvg:%s' %s", $insvg, $outimage);
+		exec($cmd, $out, $ret);
+		if ($ret == 0) {
+			// 再 resize 一下
+			if (!empty($resize) && $resize[0] >=$this->pixel_per_km && $resize[1] >= $this->pixel_per_km) {
+				$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
+				exec($cmd2, $out2, $ret);
+			}
+			return array(true, implode("+",$out+$out2));
+		}
+		return array(false, implode("+",$out));
+	}
+	// wrap it
+	function svg2png($in, $out, $resize=array()) {
+		list ($st, $msg) = $this->svg2png_magick($in,$out,$resize);
+		if ($st === false)
+			return $this->svg2png_inkscape($in,$out,$resize);
+		else
+			return array($st, $msg);   
+	}
+};
+	
 function obj2array($obj, $level=0) {
 
 	$items = array();
@@ -965,57 +921,4 @@ function obj2array($obj, $level=0) {
 	return $items;
 }
 
-function gpx2svg($param,$outsvg) {
 
-	$svg = new gpxsvg($param);
-	$ret = $svg->process();
-	if ($ret === false) {
-		return array(false, $svg->_err);
-	}
-	ob_start();
-	$svg->output();
-	$ret = file_put_contents($outsvg,ob_get_contents());
-	ob_end_clean();
-	if ($ret === false ){
-		return array(false, "unable to write to $outsvg");
-	}
-	return array(true, "$outsvg created");
-}
-// use inkscape: buggy
-function svg2png_inkscape($insvg, $outimage,$resize=array()) {
-	$cmd = sprintf("inkscape -e '%s' %s 2>&1", $outimage, $insvg);
-	exec($cmd, $out, $ret);
-	if (strstr($out[count($out)-1],"saved")) {
-		// 再 resize 一下
-		if (!empty($resize) && $resize[0] >= 315 && $resize[1] >= 315) {
-			$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
-			exec($cmd2, $out2, $ret);
-		}
-		return array(true, implode("+",$out+$out2));
-	}
-	return array(false, implode("+",$out));
-}
-// use convert .. 
-// http://map.happyman.idv.tw/map/out/000003/90912/276000x2677000-5x7-v3.svg2
-// http://map.happyman.idv.tw/map/out/000003/90912/test.png
-function svg2png_magick($insvg, $outimage,$resize=array()) {
-	$cmd = sprintf("convert 'msvg:%s' %s", $insvg, $outimage);
-	exec($cmd, $out, $ret);
-	if ($ret == 0) {
-		// 再 resize 一下
-		if (!empty($resize) && $resize[0] >= 315 && $resize[1] >= 315) {
-			$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
-			exec($cmd2, $out2, $ret);
-		}
-		return array(true, implode("+",$out+$out2));
-	}
-	return array(false, implode("+",$out));
-}
-// wrap it
-function svg2png($in, $out, $resize=array()) {
-	list ($st, $msg) = svg2png_magick($in,$out,$resize);
-	if ($st === false)
-		return svg2png_inkscape($in,$out,$resize);
-	else
-	 	return array($st, $msg);   
-}

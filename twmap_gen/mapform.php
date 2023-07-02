@@ -1,7 +1,6 @@
 <?php
-// $Id: mapform.php 356 2013-09-14 10:00:22Z happyman $
 session_start([
-        'read_and_close' => true,
+        //'read_and_close' => true,
 ]);
 
 if (empty($_SESSION['loggedin'])) {
@@ -78,9 +77,9 @@ if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 	$("#mapform select[name=anyshiftx]").val("<?php echo $_SESSION['makeparam']['shiftx']; ?>");
 	$("#mapform select[name=anyshifty]").val("<?php echo $_SESSION['makeparam']['shifty']; ?>");
 	$("#mapform input[name=kiss]").val(1);
-	$("#all").show();
-	$("#a4").hide();
-	$("#mapform button[name=bt]").html('ANY');
+	//$("#all").show();
+	//$("#a4").hide();
+	//$("#mapform button[name=bt]").html('ANY');
 	$("#mapform input[name=startx]").attr("readonly", true);
 	$("#mapform input[name=starty]").attr("readonly", true);
 	$("#mapform select[name=anyshiftx]").attr("disabled", true);
@@ -122,6 +121,10 @@ if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 	unset($_SESSION['makeparam2']);
 } // makeparam2
 ?>
+$('#a3').click(function(){
+	alert("A3 打勾後面輸出 5x7變7x10,4x6變6x8,3x4變6x4,2x3變3x4。");
+});
+/*
 $('#bt').unbind('click').click(function() {
 	if (called == 1) return;
 	if ($("#mapform button[name=bt]").html() == 'A 4') {
@@ -147,6 +150,7 @@ $('#bt').unbind('click').click(function() {
 
 	}
 });
+*/
 $('#bt1').unbind('click').click(function() {
 	if ($("#mapform button[name=bt1]").html() == '輸入座標產生') {
 		$("#mapform button[name=bt1]").html('上傳航跡檔產生');
@@ -162,7 +166,8 @@ $('#bt1').unbind('click').click(function() {
 		$("#mapform input[name=gps]").val(1);
 		// tips
 		$('#step_version').text("4");
-		$('#step_go').text("5");
+		$('#step_other').text("5");
+		$('#step_go').text("6");
 	} else {
 		$("#mapform button[name=bt1]").html('輸入座標產生');
 		$(".gpx_mode").hide();
@@ -180,7 +185,8 @@ $('#bt1').unbind('click').click(function() {
 		$('#step_bound').text("4");
 		$('#step_area').text("5");
 		$('#step_version').text("6");
-		$('#step_go').text("7");
+		$('#step_other').text("7");
+		$('#step_go').text("8");
 	}
 });
 $('#create').unbind('click').click(function() {
@@ -309,6 +315,7 @@ $('#switch_bt1').click(function() {
 	$('#bt1').trigger('click');
 });
 // keep log in every 5 mins
+/*
 function refresh_session() {
 	$.get('refresh_session.php', function( data ) {
 		console.log(data);
@@ -318,7 +325,7 @@ function refresh_session() {
 	});
 }
 setInterval(refresh_session,300000);
-
+*/
 
 $(document).ready(function(){
 	//alert("here");
@@ -332,7 +339,8 @@ $(document).ready(function(){
 	$('#step_bound').text("4");
 	$('#step_area').text("5");
 	$('#step_version').text("6");
-	$('#step_go').text("7");
+	$('#step_other').text("7");
+	$('#step_go').text("8");
 	// blinking('bt1',1);
 	if (called == 1 ) {
 		$(".method").hide();

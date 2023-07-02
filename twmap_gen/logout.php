@@ -1,7 +1,7 @@
 <?php
 // $Id: logout.php 302 2012-10-29 08:18:22Z happyman $
 session_start([
-        'read_and_close' => true,
+   //     'read_and_close' => true,
 ]);
 require_once("config.inc.php");
 $_SESSION = array();

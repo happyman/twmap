@@ -5,19 +5,36 @@
 	 font-weight: bold;
  }
  #progressbar {
-	 float: right;
+	 float: left;
 	 width: 300px;
 	 line-height: 22px;
 	 text-align: center;
  }
+#mapTable tbody tr.odd td {
+    background: #bcd9e1;
+}
 </style>
 <div id="progressbar" ><span class="progressLabel">1234</span></div>
 <table id="mapTable" style="width: 100%">
+	<thead>
+		<tr>
+			<th>序號</th>
+			<th>mid</th>
+			<th>日期</th>
+			<th>標題</th>
+			<th>X</th>
+			<th>Y</th>
+			<th>格</th>
+			<th>版本</th>
+			<th>空間</th>
+			<th>操作</th>
+			</tr></thead>
 </table>
 <script type="text/javascript" charset="utf-8">
 var ps = {$ps};
 var info = "{$psinfo}";
 $(document).ready(function(){
+	/*
 	var dt = $("#mapTable").dataTable( {
 	"bFilter": false,
 		"bInfo": false,
@@ -25,7 +42,7 @@ $(document).ready(function(){
 			"iDisplayLength": 10,
 			"bProcessing": true,
 			"bServerSide":  true,
-		 "bStateSave": true, // 記住狀態
+		 	"bStateSave": true, // 記住狀態
 			"sAjaxSource": "list.php",
 			"sPaginationType": "full",
 			"aLengthMenu": [[10,20,30,-1],[10,20,30,"all"]],
@@ -34,23 +51,41 @@ $(document).ready(function(){
 			"bAutoWidth": false,
 			"aoColumns": [
 			{ "sTitle": "序號" , "bSortable": false , "sWidth": "40px"},
+			{ "sTitle": "mid"  },
 			{ "sTitle": "日期", "sWidth": "100px" },
-			{ "sTitle": "標題" ,"sWidth": "200px"},
+			{ "sTitle": "標題" ,"sWidth": "220px"},
 			{ "sTitle": "X" },
 			{ "sTitle": "Y" },
 			{ "sTitle": "格", "sWidth": "20px" },
-			{ "sTitle": "張" , "sWidth": "30px"},
+			//{ "sTitle": "張" , "sWidth": "30px"},
 			{ "sTitle": "版", "sWidth": "10px"},
 			{ "sTitle": "空間" },
 			{ "sTitle": "操作" , "bSortable": false }
 			]});
+		*/
+		var dt = $("#mapTable").DataTable( {
+			ajax: {
+				url: 'list.php?ajax=1'
+			},
+			dom: '<"top"f>rt<"bottom"lp>',
+			pagingType: 'full',	
+			StateSave: true,
+			pageLength: 10,
+			lengthMenu: [[10,20,30,-1],[10,20,30,"all"]],
+			"columnDefs": [
+    		{ "searchable": false, "targets": [0,1,6,7,8,9] },
+			{ "orderable": false, "targets": 9 }
+  ]
 
+
+
+		});
 	$(window).resize(function() {
 	//	  console.log("resized");
 	//		dt.fnDraw(false);
-			setTimeout(function() {
-		  $("#mapTable").width("100%");
-			}, 250);
+	//		setTimeout(function() {
+//		  $("#mapTable").width("100%");
+//			}, 250);
 	});
 	var progressbar = $( "#progressbar" );
 	progressbar.progressbar({ value: ps });

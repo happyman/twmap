@@ -15,11 +15,9 @@ if (empty($keyword)){
 ?>
 <html>
 <head><title>POI search</title>
-<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-
-
-<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-<link href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" type="text/css" rel="Stylesheet" />
+<!--// https://datatables.net/download/  include jquery 3 -->
+<link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/datatables.min.css" rel="stylesheet"/> 
+<script src="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/datatables.min.js"></script>
 
 <style>
 html {
@@ -143,6 +141,7 @@ $(document).ready(function() {
             bSort: true,
 			lengthChange: false,
 			pageLength: 100,
+			dom: "lrtip",
            aoColumns: [ { sTitle: "keyword", bSortable: false, sWidth: '100px' }, 
 					    { sTitle: '分類', bSortable: true, sWidth: '200px' }, 
 						{ sTitle: '座標', bSortable: false }, 

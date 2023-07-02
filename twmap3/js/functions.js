@@ -134,7 +134,14 @@ function generate_btn_click() {
         map.setCenter(new google.maps.LatLng(miniY + (maxiY - miniY) / 2, miniX + (maxiX - miniX) / 2));
         ismakingmap = 1;
         $.blockUI({
-            message: $('#inputtitleform')
+          message: $('#inputtitleform'),
+          // https://stackoverflow.com/questions/9146520/is-there-anyway-to-have-jquery-blockui-vertically-center-on-the-screen David's answer
+	  centerY: false,
+          centerX: false,
+           css:{
+             position: 'fixed',
+             margin: 'auto'
+           }
         });
 }
 

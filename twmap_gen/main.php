@@ -4,7 +4,7 @@ require_once("config.inc.php");
 ob_start('sanitize_output');
 if (!isset($_SESSION))
 	session_start([
-        'read_and_close' => true,
+ //       'read_and_close' => true,
 ]);
 
 

@@ -167,7 +167,7 @@ if (map_full($MY_SESSION['uid'], $user['limit'], $recreate_flag)) {
 }
 $datum=(isset($inp['97datum']))? 'TWD97': 'TWD67';
 $outpath = sprintf("%s/%06d", $out_root_tmp, $MY_SESSION['uid']);
-$outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%d%s_%s", $outpath, $startx * 1000, $starty * 1000, $shiftx, $shifty, $version, ($ph == 1) ? 'p' : "", $datum);
+$outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%s%s_%s", $outpath, $startx * 1000, $starty * 1000, $shiftx, $shifty, $version, ($ph == 1) ? 'p' : "", $datum);
 $outimage = $outfile_prefix . ".tag.png";
 $outgpx = $outfile_prefix . ".gpx";
 
@@ -204,10 +204,15 @@ else
 	$type = determine_type($shiftx, $shifty);
 $outx = ceil($shiftx / $tiles[$type]['x']);
 $outy = ceil($shifty / $tiles[$type]['y']);
-showmem("before call cmd_make.php");
 $log_channel = $inp['formid'];
+
+$dim .= isset($inp['out57'])? '-D 5x7 ' : '';
+$dim .= isset($inp['out46'])? '-D 4x6 ' : '';
+$dim .= isset($inp['out34'])? '-D 3x4 ' : '';
+$dim .= isset($inp['out23'])? '-D 2x3 ' : '';
+
 mb_internal_encoding('UTF-8');
-$cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s %s %s %s %s -a %s", $startx, $starty, $shiftx, $shifty, 
+$cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s %s %s %s %s %s -a %s", $startx, $starty, $shiftx, $shifty, 
 	isset($inp['97datum'])? 'TWD97': 'TWD67',
 	$outpath, $version, _mb_mime_encode($title,"UTF-8"), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $log_channel, isset($inp['grid_100M']) ? '-e' : '',
 	// 是否包含 100M grid
@@ -216,6 +221,7 @@ $cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /d
 	isset($inp['keep_color']) ? '-c' : '',
 	// 是否輸出彩圖
 	isset($inp['a3_paper']) ? '-3' : '',
+	$dim,
 	// callback url
 	sprintf("%s%s/api/made.php",$site_url,$site_html_root)
 );
@@ -223,7 +229,7 @@ msglog($cmd_param);
 
 // check api/made.php
 // uid limit r_flag xx yy shiftx shifty datum version outx outy title outimage ip channel
-$add_param_array=[ $MYUID, $user['limit'], $recreate_flag, $xx, $yy, $shiftx, $shifty,  isset($inp['97datum'])? "97":"67",$version, $outx, $outy, $title,$outimage, $_SERVER['REMOTE_ADDR'],$log_channel ];
+$add_param_array=[ $MYUID, $user['limit'], $recreate_flag, $xx, $yy, $shiftx, $shifty,  isset($inp['97datum'])? "97":"67",$version, $outx, $outy, $title,$outimage, $_SERVER['REMOTE_ADDR'],$log_channel, isset($inp['a3_paper'])?'A3':'A4' ];
 // ouch forget to consider ipv6 addr
 $add_param_str=json_encode($add_param_array);
 
@@ -259,44 +265,7 @@ if (isset($CONFIG['use_queue']) && $CONFIG['use_queue'] == true){
 		error_out($errline);
 	}
 	//finish_task($add_param_str);
-}
-
-// myuid user from session, remote_addr
-// $inp a3_paper 97datum formid  version 
-// $xx $yy  $shiftx $shifty $title  
-// tiles  out_rot from config
-function finish_task($param) {
-	//global $MYUID, $user, $recreate_flag, $inp, $shiftx, $tiles, $shifty, $outimage, $title, $xx, $yy, $_SERVER,  $version, $out_root;
-	// before register, check count again
-	global $out_root;
-	list ($uid, $limit, $recreate_flag,  $xx, $yy, $shiftx, $shifty, $datum,$version, $outx, $outy, $title,$outimage, $remote_ip,$log_channel) = explode(":",$param);
-
-	if (map_full($uid, $limit, $recreate_flag)) {
-		$files = map_files($outimage);
-		foreach ($files as $f) {
-			@unlink($f);
-		}
-		error_out("已經達到數量限制" . $user['limit']);
-	}
-	if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
-		$save_gpx = 1;
-	} else {
-		$save_gpx = 0;
-	}
-	$mid = map_add($uid, $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $remote_ip, $outimage, map_size($outimage), $version, $save_gpx, NULL, $datum);
-
-	if ($mid === false ) {
-		error_out("寫入資料庫失敗,請回報 $outimage");
-	}
-	// 最後搬移到正確目錄
-	map_migrate($out_root, $uid, $mid);
-
-
-	$okmsg = msglog("done");
-
-	msglog("notify web $log_channel with $mid");
-	notify_web($log_channel,array("finished!$mid"));
-	ok_out(implode("", $okmsg), $mid);
+	// moved to made.php
 }
 
 

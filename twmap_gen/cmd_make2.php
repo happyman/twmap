@@ -1,13 +1,23 @@
 <?php
-//$Id: cmd_make.php 291 2012-06-20 06:10:01Z happyman $
-// 1. check login
-require_once("config.inc.php");
-require_once("lib/slog/load.php");
+/**
+ * 地圖產生器出圖主程式
+ */
+define('__ROOT__', dirname(__FILE__). "/");
+require_once(__ROOT__."lib/Twmap/Websocat.php");
+require_once(__ROOT__."lib/Twmap/Proj.php");
+require_once(__ROOT__."lib/Twmap/Stitcher.php");
+require_once(__ROOT__."lib/Twmap/Splitter.php");
+require_once(__ROOT__."lib/geoPHP/geoPHP.inc");
+require_once(__ROOT__."lib/Twmap/Svg/Gpx2Svg.php");
+require_once(__ROOT__."lib/Twmap/Export/GarminKmz.php");
+require_once(__ROOT__."lib/Twmap/Export/Pdf.php");
+require_once(__ROOT__."lib/slog/load.php");
+$twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 
 ini_set("memory_limit","512M");
 set_time_limit(0);
-
-$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:",array("agent:","logurl_prefix:","logfile:","getopt"));
+use Happyman\Twmap;
+$opt = getopt("O:r:v:t:i:p:g:Ges:dSl:c3m:a:D:",array("agent:","logurl_prefix:","logfile:","getopt","check"));
 // for command line parse
 if (isset($opt['getopt'])){
 	$options=$opt;
@@ -15,23 +25,35 @@ if (isset($opt['getopt'])){
 	echo json_encode($opt);
 	exit(0);
 }
-if (!isset($opt['r']) || !isset($opt['O'])|| !isset($opt['t'])){
-	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 -O outdir -v 2016 -t title [-p][-m /tmp][-g gpxfile:0:0][-c][-G][-e][-3][-d]\n";
+if (isset($opt['check'])){
+	Happyman\Twmap\Proj::check();
+	Happyman\Twmap\Svg\Gpx2Svg::check();
+	Happyman\Twmap\Export\Pdf::check();
+	Happyman\Twmap\Export\GarminKmz::check();
+	Happyman\Twmap\Stitcher::check();
+	Happyman\Twmap\Splitter::check();
+	Happyman\Twmap\Websocat::check();
+	exit(0);
+}
+if (!isset($opt['r']) || !isset($opt['O'])){
+	echo "Usage: $argv[0] -r 236:2514:6:4:TWD67 -O outdir -v 2016 [-t title][-p][-m /tmp][-g gpxfile:0:0][-c][-G][-e][-3][-d]\n";
 	echo "必須參數:\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
 	echo "       -O outdir: /home/map/out/000003 輸出目錄\n";
 	echo "       -v 3|2016: 經建3|魯地圖\n";
-	echo "       -t title: title of image\n";
 	echo "選用參數:\n";
+	echo "       -t title: title of image\n";
 	echo "       -p 1|0: 1 是澎湖 pong-hu\n";
 	echo "       -g gpx_file:trk_label:wpt_label 利用GPX檔案產生\n";
 	echo "       -c keep color 彩圖\n";
 	echo "       -e draw 100M 格線\n";
 	echo "       -G merge user track_logs 包含使用者行跡\n";
 	echo "       -3 for A3 output 輸出A3\n";
+	echo "       -D 5x7|4x6|3x4|2x3|1x2 等輸出 dimension, 可使用多次, 空則為 5x7\n";
 	echo "       -m /tmp tmpdir 暫存檔存放目錄\n";
+	echo "       --check 檢查相依執行程式\n";
 	echo "除錯用 -d debug \n";
-	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create txt/kmz 5: create pdf.\n";
+	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create kmz 5: create pdf.\n";
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
 	echo "以下地圖產生器使用:\n";
 	echo "       -i ip: log remote ip address --agent myhost\n";
@@ -54,15 +76,34 @@ if (empty($startx) || empty($starty)  || empty($shiftx)  || empty($shifty) || em
 	cli_error_out("參數錯誤",0);
 
 $version=isset($opt['v'])?$opt['v']:2016;
-$title=mb_decode_mimeheader($opt['t']);
+if (!isset($opt['t'])) 
+	$title = '我的地圖';
+else
+	$title=mb_decode_mimeheader($opt['t']);
 $keep_color = (isset($opt['c']))? 1 : 0;
 $ph = isset($opt['p'])? $opt['p'] : 0;
 $jump = isset($opt['s'])? $opt['s'] : 1;
 if (isset($opt['S'])) $jumpstop = $jump+1; else $jumpstop = 0;
 $remote_ip = isset($opt['i'])? $opt['i'] : "localhost";
 if (isset($opt['d'])) $debug_flag= 1; else $debug_flag = 0;
+// add output dimension, allowed multiple dims
+if (isset($opt['D'])) {
+	if (is_array($opt['D'])) {
+		$dim = $opt['D'];
+	} else {
+		// string
+		$dim = [ $opt['D'] ];
+	}
+}
+else 
+	$dim = [ '5x7' ];
+$dim = array_unique($dim, SORT_NUMERIC);
+foreach($dim as $dimm) {
+	if (!in_array($dimm, [ '1x2','2x3','3x4','4x6','5x7' ]))
+		cli_error_out("unsupported dim $dimm");
+}
 // default 2016, remove version 1
-if (!in_array($version, array(3,2016))) $version=2016;
+if (!in_array($version, array(3,2016,'nlsc'))) $version=2016;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
 if (isset($opt['logurl_prefix'])) 
 	$logurl_prefix=$opt['logurl_prefix'];
@@ -89,10 +130,10 @@ switch($datum){
 if (isset($opt['m'])){
 	$tmpdir = $opt['m'];
 } else {
-	$tmpdir = '/tmp';
+	$tmpdir = '/dev/shm';
 }
 	
-$outfile_prefix=sprintf("%s/%dx%d-%dx%d-v%d%s_%s",$outpath,$startx*1000,$starty*1000,$shiftx,$shifty,$version,($ph==1)?"p":"",$datum);
+$outfile_prefix=sprintf("%s/%dx%d-%dx%d-v%s%s_%s",$outpath,$startx*1000,$starty*1000,$shiftx,$shifty,$version,($ph==1)?"p":"",$datum);
 $outimage=$outfile_prefix . ".tag.png";
 $outimage_orig=$outfile_prefix . ".orig.tag.png";
 $outimage_gray=$outfile_prefix . ".gray.png";
@@ -107,31 +148,44 @@ $logger->debug($outcmd . " created");
 $stage = 1;
 // 決定哪一種輸出省紙
 if (isset($opt['3']))
-	$type = determine_type_a3($shiftx, $shifty);
+	$paper = 'A3';
 else
-	$type = determine_type($shiftx, $shifty);
+	$paper = 'A4';
 
-$g = new STB2("", $startx, $starty, $shiftx, $shifty, $ph, $datum, $tmpdir);
+$gparams = ['startx'=> $startx, 'starty'=> $starty, 'shiftx'=> $shiftx, 'shifty'=> $shifty, 'ph'=> $ph, 'datum'=>$datum, 'tmpdir'=>$tmpdir,
+'debug' => $debug_flag, 'version'=> $version];
+
+switch($version) {
+	case 3:
+		$g = new Happyman\Twmap\Stitcher($gparams);
+		break;
+	case 2016:
+		$g = new Happyman\Twmap\Rudymap_Stitcher($gparams);
+		break;
+	case 'nlsc':
+		$g = new Happyman\Twmap\NLSC_Stitcher($gparams);
+		break;
+}
+
+
 if (!empty($g->err)){
 	cli_error_out(implode(":",$g->err),0);
 }
-$g->version=$version;
 
+// $g->version=$version;
 if (isset($opt['G'])) {
 	$g->include_gpx = 1;
 } 
-if (isset($debug_flag)){
-	$g->setDebug(1);
-}
 // get port and pid
 $port = 0;
 $pid = 0;
 
 if (!empty($log_channel)) {
 	// persist websocket connection for slightly better performance 
-	$port=find_free_port();
-	$cmd = sprintf("websocat -t -1 -u tcp-l:127.0.0.1:%d reuse-raw:%s%s  >/dev/null 2>&1 & echo $!",$port,$logurl_prefix,$log_channel);
-	$pid = exec($cmd,$output);
+	list ($pid,$port) = Happyman\Twmap\Websocat::persist($logurl_prefix,$log_channel);
+	//$port=find_free_port();
+	//$cmd = sprintf("websocat -t -1 -u tcp-l:127.0.0.1:%d reuse-raw:%s%s  >/dev/null 2>&1 & echo $!",$port,$logurl_prefix,$log_channel);
+	//$pid = exec($cmd,$output);
 	$g->setLog($log_channel,$logurl_prefix,$port,$logger);	
 	if (isset($opt['agent']))
 		$agent=$opt['agent'];
@@ -147,18 +201,8 @@ if (!empty($log_channel)) {
 }else{
 	$g->setLogger($logger);
 }
-$g->setoutsize($tiles[$type]['x'],$tiles[$type]['y']);
-$out=$g->getsimages();
-// debug: print_r($out);
-$outx=$g->getoutx(); // 5
-$outy=$g->getouty();  // 7
-$total=count($out);
-for ($i=0; $i< $total; $i++) {
-	$todo[] = $i;
-	$simage[$i] = sprintf("%s_%d.png",$outfile_prefix,$i);
-}
-//
-//
+$pixel_per_km = $g->getPixelPerKm();
+
 cli_msglog("ps%10");
 showmem("after STB created");
 if ($jump <= $stage ) {
@@ -166,7 +210,8 @@ if ($jump <= $stage ) {
 	if (file_exists($outimage)) {
 		// 如果 10 分鐘之前的 dead file, 清除之
 	  if (time() - filemtime($outimage) > 600) {
-	  	$files = map_files($outimage);
+		// map_files
+	  	$files = glob($outfile_prefix . "*");
 		foreach($files as $f) {
 			$ret = unlink($f);
 		}
@@ -182,9 +227,9 @@ if ($jump <= $stage ) {
 			cli_error_out("unable to read gpx file",0);
 		}
 	}
-	// 這實再把 cmd 寫下來, 以免蓋掉前次的執行
+	// 這時再把 cmd 寫下來, 以免蓋掉前次的執行
 	file_put_contents($outcmd,implode(" ",$argv)); 
-	$im = $g->createpng(0,0,0,1,1,$debug_flag); // 產生
+	$im = $g->create_base_png(); // 產生
 	// 產生不出來
 	if ($im === false) 
 		cli_error_out(implode(":",$g->err));
@@ -209,58 +254,61 @@ if ($jump <= $stage ) {
 		// no more detection
 		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
 		$param['datum']=$datum;
+		$param['pixel_per_km'] = $pixel_per_km;
 
 		cli_msglog("create SVG: $outsvg");
-		list($ret,$msg) = gpx2svg($param, $outsvg);
+		$svg = new Happyman\Twmap\Svg\Gpx2Svg($param);
+		$ret = $svg->process();
 		if ($ret === false ) {
 			@unlink($outimage_orig);
-			cli_error_out("gpx2svg fail: ". print_r($msg,true). print_r($param,true));
+			cli_error_out("svg process fail: ".print_r($param,true));
+		}
+		$ret = $svg->output($outsvg);
+		if ($ret === false ) {
+			@unlink($outimage_orig);
+			cli_error_out("gpx2svg fail: ". print_r($param,true));
 		}
 		cli_msglog("create PNG: $outimage");
 		cli_msglog("ps%+3");
-		list ($ret,$msg) = svg2png($outsvg, $outimage, array($shiftx*315,$shifty*315));
+		list ($ret,$msg) = $svg->svg2png($outsvg, $outimage, array($shiftx*$pixel_per_km,$shifty*$pixel_per_km));
 		if ($ret === false ) {
 			@unlink($outimage_orig);
 			@unlink($outimage);
 			cli_error_out("svg2png fail: $msg");
 		}
-
-		// outimage 已生成
-		//$im = imagecreatefrompng($outimage);
-		// 這不要了
 		@unlink($outimage_orig);
 	} else {
-		write_and_forget($im,$outimage,$debug_flag);
-	}
+		ImagePNG($im, $outimage);
+		unset($im);
 
+	}
+	cli_msglog('optimize png...');
+	$g->optimize_png($outimage);
 	// 加上 grid
 	if (isset($opt['e'])) {
 		cli_msglog("add 100M grid to image...");
-		im_addgrid($outimage, $g->v3img,  100, $version);
+		$g->im_addgrid($outimage,  100);
 		cli_msglog("ps%+3");
 	}
-	// 若是 moi_osm 則加上 1000 or TWD97  and logo
-	if ($version == 2016 || $datum == 'TWD97' ){
-		im_addgrid($outimage, $g->v3img, 1000, $version);
+	// 若是 moi_osm or TWD97 則加上 1000 格線 , 會使用到 logo
+	if ($version != 3 || $datum == 'TWD97' ){
+		$g->im_addgrid($outimage, 1000);
 	}
 	// happyman
 	cli_msglog("ps%40");
 	if ($keep_color==1) {
 	cli_msglog("keep colorful image...");
-	copy($outimage,$outimage_gray);
+		copy($outimage,$outimage_gray);
 	} else {
-	cli_msglog("grayscale image...");
+		cli_msglog("grayscale image...");
 	// 產生灰階圖檔
-	im_file_gray($outimage, $outimage_gray, $version);
-	// im_tagimage($outimage_gray,$startx,$starty);
+		$g->im_file_gray($outimage, $outimage_gray, $version);
 	}
-	im_tagimage($outimage_gray,$startx,$starty);
+	$g->im_tagimage($outimage_gray,$startx,$starty);
 	cli_msglog("ps%45");
 	// 加上 tag
 	cli_msglog("add tag to image...");
-	im_tagimage($outimage,$startx,$starty);
-	//cli_msglog("$outimage created");
-	unset($g);
+	$g->im_tagimage($outimage,$startx,$starty);
 }
 cli_msglog("ps%50");
 $stage = 2;
@@ -269,10 +317,38 @@ if ($stage == $jumpstop) {
 	echo "stop by -S\n";
 	exit(0);
 }
+$logger->info(print_r([$g->zoom, $g->pixel_per_km],true));
+unset($g);
 if ($stage >= $jump ) {
 	cli_msglog("split image...");
+	// shortcut to -s  2
+	if (!file_exists($outimage_gray) && file_exists($outimage) ){
+		copy($outimage,$outimage_gray);
+	}
+	if (!file_exists($outimage_gray)){ 
+		echo "-s 2 requires $outimage_gray\n";
+		exit(1);
+	}
+		
 	$im = imagecreatefrompng($outimage_gray);
-	splitimage($im, $tiles[$type]['x']*315 , $tiles[$type]['y']*315 , $outfile_prefix, $px, $py, $fuzzy);
+	$i=0;$overall_total=0;
+	foreach($dim as $dimension) {
+		$params = ["shiftx"=>$shiftx,"shifty"=>$shifty,"paper"=>$paper,"logger"=>$logger,'dim'=>$dimension, 'pixel_per_km'=>$pixel_per_km];
+		try {
+			$sp[$i] = new Happyman\Twmap\Splitter($params);
+		} catch (Exception $e) {
+			// undefined dimension
+			$logger->info(sprintf("undefined dimension %s",$dimension));
+			continue;
+		}
+		// 取得修正過的 dimension 
+		list($dim_array[$i],$type_array[$i]) = $sp[$i]->getDimType();
+		list ($simage[$i],$outx[$i],$outy[$i]) = $sp[$i]->splitimage($im, $outfile_prefix);
+		// 計算總共小圖數量
+		$count_array[$i] = count($simage[$i]);
+		$overall_total+=count($simage[$i]);
+		$i++;
+	}
 	unset($im);
 }
 cli_msglog("ps%60");
@@ -284,47 +360,24 @@ if ($stage == $jumpstop) {
 }
 if ($stage >= $jump ) {
 	// 做各小圖
-	showmem("after free STB");
-	for($i=0;$i<$total;$i++) {
-		// im_file_gray($simage[$i], $simage[$i], $version);
-		// 如果只有一張的情況 
-		if ($total == 1) {
-		 im_simage_resize($type, $simage[$i], $simage[$i], 'Center');
-		 break;
-		}
-	  cli_msglog(sprintf("%d / %d",$i+1,$total));
-		im_simage_resize($type, $simage[$i], $simage[$i]);
-	  cli_msglog("resize small image...");
-		$idxfile = sprintf("%s/index-%d.png",$outpath,$i);	
-		$idximg = imageindex($outx,$outy,$i, 80, 80);
-		imagepng($idximg,$idxfile);
-	  cli_msglog("create index image...");
-		$overlap=array('right'=>0,'buttom'=>0);
-		if (($i+1) % $outx != 0) $overlap['right'] = 1;
-		if ($i < $outx * ($outy -1)) $overlap['buttom'] = 1;
-		im_addborder($simage[$i], $simage[$i], $type,  $overlap, $idxfile);
-		unlink($idxfile);
-	  cli_msglog("small image border added ...");
-		cli_msglog("ps:+".sprintf("%d", 20 * $i+1/$total));
+	for($i=0;$i<count($dim_array);$i++){
+		$sp[$i]->make_simages($simage[$i],$outx[$i],$outy[$i],"cli_msglog",$overall_total);
 	}
+	// 做了哪些東西
+	$outinfo = [ "dim"=>$dim_array,"paper"=>$type_array, 'count'=>$count_array ];
 }
+unset($sp);
 showmem("after stage 3");
 $stage = 4;
 if ($stage == $jumpstop) {
 	echo "stop by -S\n";
 	exit(0);
 }
-cli_msglog("ps%80");
+cli_msglog("ps%70");
 if ($stage >= $jump ) {
-	cli_msglog("save description...");
-	$desc=new ImageDesc( basename($outimage), $title, $startx*1000, $starty*1000, $shiftx, $shifty, $simage, $outx, $outy, $remote_ip, $version, $datum );
-	$desc->save($outtext);
 	cli_msglog("make kmz file...");
-	require_once("lib/garmin.inc.php");
-	$kmz = new garminKMZ(3,3,$outimage,$ph,$datum);
-	//if ($debug_flag == 1 )
-	//	$kmz->setDebug(1);
-	// 加上行跡資料
+	//require_once("lib/garmin.inc.php");
+	$kmz = new  Happyman\Twmap\Export\GarminKMZ(3,3,$outimage,$ph,$datum);
 	if (isset($opt['g'])) {
 		$kmz->addgps("gpx", $param['gpx']);
 	}
@@ -336,15 +389,15 @@ if ($stage == $jumpstop) {
 	echo "stop by -S\n";
 	exit(0);
 }
-cli_msglog("ps%90");
+cli_msglog("ps%75");
 if ($stage >= $jump) {
 	// 產生 pdf
-	require_once("lib/print_pdf.inc.php");
-	$pdf = new print_pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix), 'outfile' => $outpdf, 'infiles' => $simage, 'a3' => $a3 ));
-	$pdf->print_cmd = 0;
+	$pdf = new Happyman\Twmap\Export\Pdf(array('title'=> $title, 'subject'=> basename($outfile_prefix),
+		 'outfile' => $outpdf, 'infiles' => array_merge(...$simage), 'a3' => $a3, 'twmap_ver'=> $twmap_gen_version, 'logger'=>$logger ));
+	$pdf->setBookmarkInfo($outinfo);
 	cli_msglog("save to pdf format");
-	$pdf->doit();
-	$logger->info("$outimage done");
+	$pdf->doit('cli_msglog');
+	$logger->success("$outimage done");
 }
 showmem("after stage 5");
 $stage = 6;
@@ -356,16 +409,18 @@ cli_msglog("ps%95");
 // 如果有給 -s, 就不刪圖檔
 if ($stage >= $jump && !isset($opt['s'])) {
 	cli_msglog("almost done,cleanup...");
-	foreach($simage as $simage_file) {
+	foreach(array_merge(...$simage) as $simage_file) {
 		unlink($simage_file);
 	}
 	unlink($outimage_gray);
 }
+// save output dim and paper to txt file 
+$outtext_content = sprintf("%s",json_encode($outinfo));
+file_put_contents($outtext,$outtext_content);
+$logger->info($outtext_content . " wrote to $outtext");
 // not register db yet
 if (!empty($callback)){
 	cli_msglog("register this map");
-	//cli_msglog("call $callback");
-	//$r = request_curl($callback,"GET",["ch"=>$log_channel,"status"=>"ok"]);
 	$url=sprintf('%s?ch=%s&status=ok&params=%s',$callback,$log_channel,urlencode(implode(" ",$argv)));
 	// log
 	if (isset($opt['agent']))
@@ -387,15 +442,17 @@ $logger->success(sprintf("done params: %s",implode(" ",$argv)));
 exit(0);
 
 function cli_notify_web($str){
-	global $log_channel,$logurl_prefix, $debug_flag, $port;
-	if (!empty($log_channel))
-		notify_web($log_channel,array(str_replace("\n","<br>",$str)),$logurl_prefix,$port,$debug_flag);
+	global $port, $logger, $log_channel;
+	if (!empty($log_channel)) {
+		Happyman\Twmap\Websocat::notify_web_nc($str,$port);
+	}
 }
 
 function cli_msglog($str){
 	global $logger;
 	cli_notify_web($str);
-	$logger->info($str);
+	// Web means this message sent to websocket
+	$logger->info("[Web] ".$str);
 }
 function cli_error_out($str, $exitcode=60) {
 	global $argv, $logger;
@@ -406,12 +463,7 @@ function cli_error_out($str, $exitcode=60) {
 	exit($exitcode);
 }
 
-function find_free_port() {
-    $sock = socket_create_listen(0);
-    socket_getsockname($sock, $addr, $port);
-    socket_close($sock);
-    return $port;
-}
+
 
 // 抓到 signal 
 function sigint(){
@@ -429,4 +481,8 @@ function shutdown() {
 		$msg.=" failed";
 	}
 	$logger->success($msg);
+}
+function showmem($str){
+	$mem = memory_get_usage();
+	error_log(sprintf("memory %d KB %s\n", $mem / 1024,$str));
 }

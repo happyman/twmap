@@ -525,6 +525,7 @@ function addtagborder2($oim, $x, $y, $i, $startx, $starty, $outputsize, $shiftx,
 	return $im;
 }
 
+// to delete
 function write_and_forget(&$im, $fname, $debug=0) {
 	ImagePNG($im, $fname);
 	imagedestroy($im);
@@ -540,10 +541,12 @@ function write_and_forget(&$im, $fname, $debug=0) {
 		}
 	}
 }
+/*
 function showmem($str){
 	$mem = memory_get_usage();
 	error_log(sprintf("memory %d KB %s\n", $mem / 1024,$str));
 }
+*/
 
 // function printableimage($fname,
 /*
@@ -659,3 +662,129 @@ function indexcmp($a,$b){
 		  return intval($aa[1]) - intval($bb[1]);
 }
 
+
+function request_curl($url, $method='GET', $params=array(),$hdr=array()) {
+	$params_line = http_build_query($params, '', '&');
+	$curl = curl_init($url . ($method == 'GET' && $params_line ? '?' . $params_line : ''));
+	$headers = array();
+	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+//	curl_setopt($curl, CURLOPT_PROXY, "192.168.168.17:3128");
+	curl_setopt($curl, CURLOPT_HEADER, false);
+	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl, CURLOPT_DNS_USE_GLOBAL_CACHE, false );
+	curl_setopt($curl, CURLOPT_DNS_CACHE_TIMEOUT, 1 );
+
+
+        if ($method == 'POST') {
+                curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $params_line);
+
+        } elseif ($method == 'POSTFILE') {
+                curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
+                curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        } elseif ($method == "GETFILE") {
+                curl_setopt($curl,CURLOPT_FILE, $params['fd']);
+        } elseif ($method == 'POSTJSON') {
+                $data_string = json_encode($params);
+                curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+				// for Keepon API
+				curl_setopt($curl, CURLOPT_COOKIE, 'AspxAutoDetectCookieSupport=1');
+				$headers =  array( 'Content-Type: application/json','Content-Length: ' . strlen($data_string),'Accept: application/json');
+        } elseif ($method == 'HEAD') {
+                curl_setopt($curl, CURLOPT_HEADER, true);
+                curl_setopt($curl, CURLOPT_NOBODY, true);
+				curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+		} else {
+                curl_setopt($curl, CURLOPT_HTTPGET, true);
+        }
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array_merge($hdr , $headers) );
+	
+        $response = curl_exec($curl);
+	if($method == 'HEAD') {
+		$headers = array();
+		foreach(explode("\n", $response) as $header) {
+			$pos = strpos($header,':');
+			$name = strtolower(trim(substr($header, 0, $pos)));
+			$headers[$name] = trim(substr($header, $pos+1));
+		}
+		return $headers;
+	}
+	$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+	if ($httpCode != 200 && $httpCode != 302) {
+		throw new ErrorException("HTTP return $httpCode", $httpCode );
+	}
+	// error_log("curl $method $url" . print_r(array_merge($hdr,$headers),true));
+
+	if (curl_errno($curl)) {
+		throw new ErrorException(curl_error($curl), curl_errno($curl));
+	}
+
+	return $response;
+}
+
+
+
+// websocket client: https://github.com/vi/websocat
+// cmd_make will persist port 
+function notify_web($channel,$msg_array,$logurl_prefix="ws://twmap:9002/twmap_",$reuse_port=0,$debug=0){
+	if ($reuse_port != 0)
+		$cmd = sprintf("/usr/bin/echo -n %s |nc 127.0.0.1 %d",escapeshellarg($msg_array[0]),$reuse_port);
+	else
+		$cmd = sprintf("/usr/bin/echo '%s' |base64 -d | /usr/bin/websocat --no-line -1 -t -  %s%s",base64_encode($msg_array[0]),$logurl_prefix,$channel);
+	if ($debug == 1)
+		echo "$cmd\n";
+	exec($cmd);
+}
+
+
+// frontend functions for backend_make
+//
+function error_out($str) {
+	global $ERROROUT;
+	if ($ERROROUT == 'ajax') {
+		$data['error'] = $str;
+		$data['status'] = "error";
+		echo json_encode($data);
+	} else {
+		error_log("error_out $str");
+?>
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head><body>
+		<script type="text/javascript">
+		function goBack()
+		{
+			window.history.back()
+		}
+		</script>
+<h1><?php echo $str; ?></h1>
+<input type="button" value="回到上頁" onclick="goBack()" />
+</body></html>
+<?php
+		exit(0);
+	}
+	exit(0);
+}
+function ok_out($str,$insert_id) {
+	global $ERROROUT;
+	if ($ERROROUT == 'ajax') {
+
+		header("Content-Type: application/json");
+		$data['msg'] = $str;
+		$data['id'] = $insert_id;
+		$data['status'] = "ok";
+		echo json_encode($data);
+		//error_log("ok_out".$str);
+		flush();
+		exit(0);
+	} else {
+		echo "<script>location.replace('main.php?tab=3&mid=$insert_id');</script>";
+		exit(0);
+	}
+}
