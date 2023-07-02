@@ -1,27 +1,23 @@
 <table id="bigbox">
-	<tr><td width=400 valign="top" align="left">
+	<tr><td width=400 valign="top" style='text-align: left;'>
 			<ul>
 				<li>標題: <b class="ui-state-default">{$map.title}</b>
 				{if $map.keepon_id && $map.keepon_id != 'NULL' && !is_numeric($map.keepon_id)}
 				<li>紀錄: <a href='http://www.keepon.com.tw/redirectMap-{$map.keepon_id}.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>
 				{/if}
-				<li>本頁<a href='{$links.page}'>連結</a> (張貼參考請使用下列 URL):
-				<ul><li><span class="copy">{$links.page}</span>
-					<li><img src="icons/facebook_share_icon.gif" class="fbshare" tile="分享到 facebook"> share to facebook<br/>
-			</ul>
-				{if $html_head == 1}
-				<!-- AddThis Button BEGIN -->
-				<li><div class="addthis_toolbox addthis_default_style ">分享
-					<a class="addthis_button_facebook"></a>
-					<a class="addthis_button_plurk"></a>
-					<a class="addthis_button_twitter"></a>
-					<a class="addthis_button_google"></a>
-					<a class="addthis_button_compact"></a>
-					<a class="addthis_counter addthis_bubble_style"></a>
-				</div>
-				<script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4ef97c3d467e0504"></script>
-				<!-- AddThis Button END -->
-				{/if}
+				<li>點選下列連結分享: 
+					<a href="{$links.page}">{$links.page}</a>
+					<!-- AddToAny -->
+					<div class="a2a_kit a2a_kit_size_32 a2a_default_style data-a2a-url='{$links.page}' data-a2a-title='show'">
+						<a class="a2a_button_twitter"></a>
+						<a class="a2a_button_line"></a>
+						<a class="a2a_button_facebook"></a>
+						<a class="a2a_button_telegram"></a>
+						<a class="a2a_button_email"></a>
+						<a class="a2a_button_copy_link"></a>
+					</div>
+					<script async src="https://static.addtoany.com/menu/page.js"></script>
+						<!-- AddToAny END -->
 				<li>本圖左上角座標 X={$map.locX},Y={$map.locY}
 				<li>延伸 東方 {$map.shiftX} 與 南方 {$map.shiftY} 公里
 				<li id="calc"></li>
@@ -81,7 +77,7 @@ done
 					{/if}
 			</ul><!-- 總 -->
 			</td>
-			<td valign="top" align="right" height="800">
+			<td valign="top" style='text-align:right; height:800px'>
 				 {if isset($links.pdf) }
 				 <iframe src="{$links.pdf}" width="512" style="border: none;" height="800"></iframe>
 				 {else}
@@ -90,6 +86,7 @@ done
 			</td>
 		</tr>
 	</table>
+
 	<script>
 		$(document).ready(function() {
 

@@ -34,35 +34,6 @@
 var ps = {$ps};
 var info = "{$psinfo}";
 $(document).ready(function(){
-	/*
-	var dt = $("#mapTable").dataTable( {
-	"bFilter": false,
-		"bInfo": false,
-		"bJQueryUI": false,
-			"iDisplayLength": 10,
-			"bProcessing": true,
-			"bServerSide":  true,
-		 	"bStateSave": true, // 記住狀態
-			"sAjaxSource": "list.php",
-			"sPaginationType": "full",
-			"aLengthMenu": [[10,20,30,-1],[10,20,30,"all"]],
-			"sDom": '<"top"pl>rt<"bottom"p>',
-			"bScrollCollapse": true,
-			"bAutoWidth": false,
-			"aoColumns": [
-			{ "sTitle": "序號" , "bSortable": false , "sWidth": "40px"},
-			{ "sTitle": "mid"  },
-			{ "sTitle": "日期", "sWidth": "100px" },
-			{ "sTitle": "標題" ,"sWidth": "220px"},
-			{ "sTitle": "X" },
-			{ "sTitle": "Y" },
-			{ "sTitle": "格", "sWidth": "20px" },
-			//{ "sTitle": "張" , "sWidth": "30px"},
-			{ "sTitle": "版", "sWidth": "10px"},
-			{ "sTitle": "空間" },
-			{ "sTitle": "操作" , "bSortable": false }
-			]});
-		*/
 		var dt = $("#mapTable").DataTable( {
 			ajax: {
 				url: 'list.php?ajax=1'
@@ -75,10 +46,7 @@ $(document).ready(function(){
 			"columnDefs": [
     		{ "searchable": false, "targets": [0,1,6,7,8,9] },
 			{ "orderable": false, "targets": 9 }
-  ]
-
-
-
+ 			 ]
 		});
 	$(window).resize(function() {
 	//	  console.log("resized");
@@ -89,10 +57,11 @@ $(document).ready(function(){
 	});
 	var progressbar = $( "#progressbar" );
 	progressbar.progressbar({ value: ps });
+	// 須配合上面 dataTables dom option
 	progressbar.appendTo(".top");
 	// label
 	progressbar.children().css("background","lightgreen");
-	// progress bar
+	// progress bar, -20px 是把綠色色塊搬到正確位置。
 	progressbar.children().eq(1).css('position','relative').css('top','-20px');
 	$( ".progressLabel" ).text(info).css("background","").css("background-color", "transparent").css('z-index',"100");
 	// $.fn.DataTable.ext.pager.numbers_length = 5;
