@@ -6,7 +6,10 @@
 							<li> 我有行跡檔: 選擇輸入方式 (gdb 或 gpx 格式), 上傳產生. 
 							</ol>
 				</div>
-				<textarea id="log_message" class="normal_note" style="resize: none;font-size:smaller; float: right; width: 200px; height: 360px">Have a lot of fun!</textarea>
+				<div style="resize: none;font-size:smaller; float: right; ">
+				<textarea id="log_message" class="normal_note" style="width: 200px; height: 360px" >Have a lot of fun!</textarea>
+				<br><a href='#' onclick='testnotify()'>顯示debug訊息</a>
+				</div>
 	<FORM name=mapform id=mapform method=post enctype="multipart/form-data"  action="backend_make.php">
 		<table id="makemaptable">
 			<tr class='method'>
@@ -104,7 +107,7 @@
 							<select name=anyshifty>
 								{html_options values=$anyshifty output=$anyshifty selected="1"}
 							</select>
-							公里。如 5x7 輸出則接近 1/25000 方格。
+							公里。
 						</span>
 						<!--
 						<span id="a4r" name="a4r" style="display:none">
@@ -174,10 +177,10 @@
 			</tr>
 
 			<tr><td colspan=3>
+				<div style="text-align: right;">
 	<a href='https://www.facebook.com/twmapgen/' target="_blank" class="ui-state-default ui-corner-all hp">建議或討論</a> 
-	<img src='imgs/discuss_icon.png'/>
-		<br>
-		<a href='#' onclick='testnotify()'>顯示debug訊息</a>
+	<img src='imgs/discuss_icon.png'/></div>
+
 		
 		</tr>
 

@@ -10,6 +10,9 @@
 	 line-height: 22px;
 	 text-align: center;
  }
+#mapTable tbody tr.odd td {
+    background: #bcd9e1;
+}
 </style>
 <div id="progressbar" ><span class="progressLabel">1234</span></div>
 <table id="mapTable" style="width: 100%">
@@ -70,7 +73,8 @@ $(document).ready(function(){
 			pageLength: 10,
 			lengthMenu: [[10,20,30,-1],[10,20,30,"all"]],
 			"columnDefs": [
-    		{ "searchable": false, "targets": [0,1,6,7,8] }
+    		{ "searchable": false, "targets": [0,1,6,7,8,9] },
+			{ "orderable": false, "targets": 9 }
   ]
 
 
