@@ -30,9 +30,21 @@
 	var makeprogress; 
 	var loggedin = {$loggedin|default:0};
 	var wsServer;
+	function refresh_session() {
+	$.get('refresh_session.php', function( data ) {
+		console.log(data);
+		if (data.trim() == 'FAIL') {
+			window.location.href = 'logout.php';
+		}
+	});		
+	}
+	setInterval(refresh_session,300000);
+
 	</script>
 	<!-- build:js js/twmap.js -->
 	<script src="js/twmap.js"></script>
 	<!-- endbuild -->
+
+
 </body>
 	</html>

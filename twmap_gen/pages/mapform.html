@@ -42,10 +42,10 @@
 				</td>
 				<td>選項</td>
 					<td>
-						<label><input type="checkbox" name="auto_shrink" value="1">自動縮至可出圖範圍<img src='icons/beta.gif'/></label>
-						<label><input type="checkbox" name="trk_label" value="1">航跡標記</label>
-						<label><input type="radio" name="wpt_label" checked value="1">航點標記:另建索引</label>
-						<label><input type="radio" name="wpt_label" value="2">航點標記:在旁邊</label>
+						<label class="option"><input type="checkbox" name="auto_shrink" value="1">自動縮至可出圖範圍<img src='icons/beta.gif'/></label>
+						<label class="option"><input type="checkbox" name="trk_label" value="1">航跡標記</label>
+						<label class="option"><input type="radio" name="wpt_label" checked value="1">航點標記:另建索引</label>
+						<label class="option"><input type="radio" name="wpt_label" value="2">航點標記:在旁邊</label>
 					</td>
 				</tr>
 			</tbody>
@@ -79,6 +79,9 @@
 					<td><input type=text size=4 name='starty' class="required" minlength="4"></input>000 如 2578 (2424-2800)
 						(左上角座標的 Y 軸)
 				</td></tr>
+				<tr><td></td><td></td><td>
+					<label><input type="checkbox" name="97datum" value="1">TWD97</label> TM2座標系統 (未勾選為 TWD67 TM2)</td>
+				</tr>
 				<tr>
 				<td><span class="step" id="step_bound">2</span></td>
 				<td>n x m</td><td>
@@ -138,23 +141,23 @@
 			<tr>
 				<td><span class="step" id="step_other">7</span></td><td>其他</td>
 				<td style="width: 800px">
-				<label><input type="checkbox" name="97datum" value="1">TWD97</label>
-				<label><input type="checkbox" name="grid_100M" value="1">100米格線</label>
-				<label><input type="checkbox" name="inc_trace" value="1" title='不含航點' checked >包含山友track</label>
-				<label><input type="checkbox" name="keep_color" value="1">彩圖</label>
-				<label><input id='a3' type="checkbox" name="a3_paper" value="1">A3</label>
-				<label><input type="checkbox" id='out57' name="out57" value="1" checked >5x7輸出</label>
-				<label><input type="checkbox" id="out46" name="out46" value="1">4x6輸出</label>
-				<label><input type="checkbox" id='out34' name="out34" value="1">3x4輸出</label>
-				<label><input type="checkbox" id='out23' name="out23" value="1">2x3輸出</label>
+				
+				<label class="option"><input type="checkbox" name="grid_100M" value="1">100米格線</label>
+				<label class="option"><input type="checkbox" name="inc_trace" value="1" title='不含航點' checked >包含山友track</label>
+				<label class="option"><input type="checkbox" name="keep_color" value="1">彩圖</label>
+				<label class="option"><input id='a3' type="checkbox" name="a3_paper" title="預設為 A4" value="1">A3</label><br>
+				<label class="option"><input type="checkbox" id='out57' name="out57" value="1" checked >5x7輸出</label>
+				<label class="option"><input type="checkbox" id="out46" name="out46" value="1">4x6輸出</label>
+				<label class="option"><input type="checkbox" id='out34' name="out34" value="1">3x4輸出</label>
+				<label class="option"><input type="checkbox" id='out23' name="out23" value="1">2x3輸出</label>
 				</td>
 			</tr>
 			<tr>
 				<td></td>
 				<td></td>
 				<td>
-				預設輸出A4一張5x7灰階PDF，程式會以節省紙張為原則自動判斷直式或橫式。
-				<br>可由上述選項改變。老花的話可一併輸出其他比例的方格如4x6及3x4。
+				預設輸出A4一張5x7灰階PDF，接近1/25000比例。程式會以節省紙張為原則自動判斷直式或橫式。
+				<br>若預設比例老花眼看不清楚的話，可一併勾選其他比例如4x6輸出及3x4輸出。
 			</tr>
 			<tr><td>
 					<span class="step" id="step_go">8</span>

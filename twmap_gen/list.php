@@ -11,7 +11,7 @@ if (empty($_SESSION['loggedin'])) {
 
 require_once("config.inc.php");
 // 輸出基本表格
-if (!isset($_REQUEST['iDisplayStart']))  {
+if (!isset($_REQUEST['ajax']))  {
 	$count = map_list_count($_SESSION['uid']);
 	$user = fetch_user($_SESSION['mylogin']);
 	if ($user === false){
@@ -19,7 +19,7 @@ if (!isset($_REQUEST['iDisplayStart']))  {
 		exit(0);
 	}
 	$ps = ($count /  $user['limit'] )*100;
-	$psinfo = sprintf(" %d / %d", $count, $user['limit']);
+	$psinfo = sprintf(" %d / %d 如不夠用可刪除舊圖", $count, $user['limit']);
 
 	$smarty->assign("ps",$ps);
 	$smarty->assign("psinfo",$psinfo);
@@ -28,9 +28,10 @@ if (!isset($_REQUEST['iDisplayStart']))  {
 	echo $smarty->fetch("list.html");
 } 
 // 輸出 ajax
+// Sort?
 else {
 	$maps = map_list_get($_SESSION['uid'],'DESC');
-
+/*
 	$start = intval($_REQUEST['iDisplayStart']);
 	$limit = intval($_REQUEST['iDisplayLength']);
 	$result_map = array();
@@ -44,6 +45,13 @@ else {
 	$response['aaData'] = create_rows($result_map,$start);
 
 	//print_r($_REQUEST);
+	exit(json_encode($response));
+	*/
+	for($i=0; $i< count($maps); $i++) {
+		if (isset($maps[$i]))
+			$result_map[] = $maps[$i];
+	}
+	$response['data'] = create_rows($result_map,0);
 	exit(json_encode($response));
 }
 function versionname($ver){
