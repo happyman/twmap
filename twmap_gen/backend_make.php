@@ -67,7 +67,7 @@ if ($inp['gps'] == 1) {
 		else {
 
 			// 輸入的是 gpx , 讀出邊界範圍, 本 svg 不做為轉檔之用, 因為尚未得到圖檔大小
-			$svg = new gpxsvg(array("gpx" => $tmp_gpx, "width" => 1024, "fit_a4" => 1, "auto_shrink" => (isset($inp['auto_shrink'])) ? 1 : 0,
+			$svg = new Happyman\Twmap\Svg\Gpx2Svg(array("gpx" => $tmp_gpx, "width" => 1024, "fit_a4" => 1, "auto_shrink" => (isset($inp['auto_shrink'])) ? 1 : 0,
 				"show_label_trk" => (isset($inp['trk_label'])) ? 1 : 0, "show_label_wpt" => $inp['wpt_label'], "datum"=> isset($inp['97datum'])? 'TWD97': 'TWD67'));
 			$ret = $svg->process();
 			msglog("svg get_bound processed");

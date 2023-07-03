@@ -5,8 +5,9 @@
 define('__ROOT__', dirname(__FILE__). "/");
 require_once(__ROOT__."vendor/autoload.php");
 require_once(__ROOT__. "lib/rangelib.php");
-require_once(__ROOT__."lib/STB.inc.php");
-require_once(__ROOT__."lib/svglib.php");
+require_once(__ROOT__."lib/geoPHP/geoPHP.inc");
+require_once(__ROOT__."lib/Twmap/Proj.php");
+require_once(__ROOT__."lib/Twmap/Svg/Gpx2Svg.php");
 require_once(__ROOT__."lib/phpwee-php-minifier/phpwee.php");
 
 $protocol = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
@@ -20,15 +21,11 @@ $site_html_root = "/gen";
 define('WWWRUN_UID', 1001);
 
 // 放一版的圖資目錄
-$stbpath = 'http://make.happyman.idv.tw/~happyman/stb';
+// $stbpath = 'http://make.happyman.idv.tw/~happyman/stb';
 // 放從 TMS 的圖磚
 // 放3版 1x1 的圖檔
-$tilecachepath = "/home/happyman/twmapcache/cache";
+// $tilecachepath = "/home/happyman/twmapcache/cache";
 
-// 不重要
-//if (!file_exists($tilepath."/16")) {
-//	die("image dir not ready");
-//}
 $tmppath = "/home/happyman/twmapcache/tmp"; 
 $diskfullchk = "/home/happyman/map/";
 $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
@@ -36,25 +33,6 @@ $TWMAP3_html_root = "/map";
 $TWMAP3URL = "/map/index.php";
 $BETA = 0; // beta for debug output
 $ERROROUT = "ajax";
-
-$stitch['A4']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
-$stitch['A4']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
-$stitch['A4R']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
-$stitch['A4R']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
-$stitch['A3']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
-$stitch['A3']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
-$stitch['A3R']['right'] = realpath(__ROOT__."imgs/5x7-paste-r.png");
-$stitch['A3R']['buttom'] = realpath(__ROOT__."imgs/5x7-paste-b.png");
-$tiles['A4'] = array('x'=>5, 'y'=>7);
-$tiles['A4R'] = array('x'=>7, 'y'=>5);
-$pixels['A4'] = array("x"=>1492, "y"=>2110);
-$pixels['A4R'] = array("x"=>2110, "y"=>1492);
-$tiles['A3'] = array('x'=>7, 'y'=>10);
-$tiles['A3R'] = array('x'=>10, 'y'=>7);
-$pixels['A3'] = array("x"=>2110, "y"=>2984);
-$pixels['A3R'] = array("x"=>2984, "y"=>2110);
-
-$fuzzy = 20;
 
 /* DB 設定寫在這裡 */
 $db_host = '';

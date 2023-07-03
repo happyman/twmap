@@ -230,6 +230,7 @@ function b64img($path){
 $data = file_get_contents($path);
 return  'data:image/' . $type . ';base64,' . base64_encode($data);
 }
+
 function process_track($fpath, $fname,$ext) {
 	global $debug;
 	if (!file_exists($fpath))
@@ -264,9 +265,9 @@ function process_track($fpath, $fname,$ext) {
 	}	
 
 	if (file_exists($gpx_fname) && file_exists($kml_fname)){
-		$svg = new gpxsvg(array("gpx"=> $gpx_fname, "width"=>1024, "fit_a4" => 0, "auto_shrink" => 0,	"show_label_trk" => 0, "show_label_wpt" => 2));
+		$svg = new Happyman\Twmap\Svg\Gpx2Svg(array("gpx"=> $gpx_fname, "width"=>1024, "fit_a4" => 0, "auto_shrink" => 0,	"show_label_trk" => 0, "show_label_wpt" => 2));
 		$res =  $svg->detect_bbox();		
-		// error_log(print_r($res,true));
+		// error_log(print_r($res,true))
 		return array( 0, "done $kml_fname, $gpx_fname", 
 			array("size"=>filesize($fpath)+filesize($kml_fname)+filesize($gpx_fname), 
 			"bbox"=>$res[1]['bbox'], "km_x"=>$res[1]['x'], "km_y"=>$res[1]['y'], 

@@ -26,7 +26,7 @@ if ($login === false) {
 <body>
 <hr>
 <p>
-<p align=right>歡迎使用	<a href="uploadpage.php">重載本頁</a>|<a href="exportkml.php">下載圖資</a>|<a href="<?php echo $TWMAP3_html_root; ?>/about.php">關於</a>
+<p style='text-align: right;'>歡迎使用	<a href="uploadpage.php">重載本頁</a>|<a href="exportkml.php">下載圖資</a>|<a href="<?php echo $TWMAP3_html_root; ?>/about.php">關於</a>
 </p>
 <form action="upload.php"
       class="dropzone"
