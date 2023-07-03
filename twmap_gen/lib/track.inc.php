@@ -248,7 +248,7 @@ function process_track($fpath, $fname,$ext) {
 		case 'gdb':
 			gpsbabel_convert($fpath,$ext,$gpx_fname,"gpx");
 			gpsbabel_convert($fpath,$ext,$kml_fname,"kml");
-			berak;
+			break;
 		case 'gpx':
 			gpsbabel_seg2trk($fpath,$gpx_fname);
 			gpsbabel_convert($gpx_fname,$ext,$kml_fname,"kml");
