@@ -1,7 +1,6 @@
 <?php
 require_once("header.inc");
 require_once("../config.inc.php");
-
 list($st, $uid) = userid();
 if ($st !== true){
 	header("Location: ". $site_html_root . "/login.php");

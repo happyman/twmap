@@ -844,7 +844,7 @@ function mapnik_svg_gen($tw67_bbox,$background_image_path, $outpath) {
 /**
  * [tilestache_clean 新增/刪除 mid 的時候 hook
  */
-function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twmap_gpx"){
+function tilestache_clean($mid, $realdo = 1){
 	if ($mid < 0 ){
 		$tid = $mid * -1;
 		$rs = track_get_single($tid);
@@ -865,46 +865,10 @@ function tilestache_clean($mid, $realdo = 1,$cache_dir="/home/nas/twmapcache/twm
 		$title = $row['title'];
 		}
 	// moi_osm_gpx 
-	$cmd2 = sprintf("ssh happyman@tile tilestache-clean -c /home/happyman/etc/tile_main_8089.cfg -l gpxtrack -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd2 = sprintf("ssh happyman@twmap tilestache-clean.py -c /home/happyman/etc/tile_main_8089.cfg -l gpxtrack -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	exec($cmd2);
 	error_log("tilestache_clean: ". $cmd2);
 	return array(true, "gpxtrack cleaned");
-	/*
-	   利用 tilestache-clean 的 output 來砍另一層 cache 
-
-	   10164 of 10192... twmap_gpx/18/219563/112348.png
-	   10165 of 10192... twmap_gpx/18/219564/112348.png
-	   10166 of 10192... twmap_gpx/18/219565/112348.png
-	   10167 of 10192... twmap_gpx/18/219566/112348.png
-	   10168 of 10192... twmap_gpx/18/219567/112348.png
-	   10169 of 10192... twmap_gpx/18/219568/112348.png
-	   10170 of 10192... twmap_gpx/18/219569/112348.png
-	   10171 of 10192... twmap_gpx/18/219570/112348.png
-	   10172 of 10192... twmap_gpx/18/219571/112348.png
-	   10173 of 10192... twmap_gpx/18/219572/112348.png
-	   10174 of 10192... twmap_gpx/18/219573/112348.png
-	   10175 of 10192... twmap_gpx/18/219574/112348.png
-	 */
-	/* twmap_gpx 是經建3疊 gpxtrack, 已不需要
-	exec($cmd,$out,$ret);
-	if ($ret == 0){
-		foreach($out as $line){
-			list($a,$png) = preg_split("/\.\.\./",$line);
-			$clean[] = trim($png);
-		}
-		// real delete cache
-		if ($realdo == 1) {
-			foreach($clean as $line){
-			$del = $cache_dir . "/". $line;
-			@unlink($del);
-			}
-			return array(true,$title ."cleaned");
-		}
-		return array(true,$clean);
-	}
-	else
-		return array(false,implode("\n",$out));
-	 */
 }
 
 function remove_gpx_from_gis($mid){
