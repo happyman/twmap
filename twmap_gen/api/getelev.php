@@ -240,7 +240,7 @@ exit();
 				
 				list ($status, $result) = get_distance2($wkt_str, twDEM_path);
 				if ($status === true) {
-					printf("<br>距離: %.02f 公尺, 頭尾端點方向角: %.06f (%s)",$sum, $result['azimuth'],deg2dms($result['azimuth']));
+					printf("<br>距離: %.02f 公尺, 頭尾端點方向角: %.06f (%s)",$sum, $result['azimuth'],Happyman\Twmap\Proj::deg2dms($result['azimuth']));
 					distance_display($result);
 					printf("<br>高度圖");
 				}

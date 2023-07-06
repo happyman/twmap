@@ -18,7 +18,7 @@ if (isset($_GET['tab'])) {
         $_SESSION['initial_tab'] = $jump;
 }
 
-if (empty($_SESSION['loggedin'])) {
+if (!isset($_SESSION['uid']) || empty($_SESSION['loggedin'])) {
 	// 如果從地圖瀏覽器導登入過來
 	if (isset($_GET['return']) && $_GET['return'] == 'twmap3' ) {
 		$_SESSION['redirto'] = $TWMAP3URL;

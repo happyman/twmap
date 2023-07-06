@@ -26,7 +26,7 @@ when -1 * A.tid IN (select mid from \"gpx_trk\")
 then 1 
 else 0
 end as imported, * from \"track\" A where A.uid=%d AND A.status <> 3 ORDER BY %s",$uid,$order);
-	error_log($sql);
+		//error_log($sql);
 	$rs = $db->getAll($sql);
 	return $rs;
 }

@@ -9,11 +9,11 @@ list($st, $info) = login_info();
                                         $greetings = sprintf("歡迎光臨");
                                         $greetings_admin = sprintf("請<a href='%s' target=_top >登入</a>",$CONFIG['site_twmap_html_root'] . "main.php?return=twmap3" );
                                 } else {
-                                        $greetings = sprintf("歡迎 %s<img src='%s' />",$info['user_nickname'],$info['user_icon']);
+                                        $greetings = sprintf("歡迎 %s<img src='%s'  title='uid=%d'/>",$info['user_nickname'],$info['user_icon'],$_SESSION['uid']);
 					if (is_admin()) 
-					$greetings_admin = "你的身份是管理者";
+					$greetings_admin = sprintf("你的身份是管理者 (%d)",$_SESSION['uid']);
 					else
-					$greetings_admin = "你的身份是使用者";
+					$greetings_admin = sprintf("你的身份是使用者 (%d)",$_SESSION['uid']);
 					
                                 }
 
@@ -35,7 +35,7 @@ $(document).ready(function() {
 </script>
 <body><hr>
                 <div id="footer" title="About"  name="footer">
-                        <div align="right"><div id="openwin"></div>
+                        <div style="text-align: right"><div id="openwin"></div>
 			<h2><?php echo $greetings; ?></h2>
 			</div>
 			地圖瀏覽器使用方法:
