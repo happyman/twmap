@@ -91,8 +91,7 @@ if ($inp['gps'] == 1) {
 	// 2.1. 處理上傳檔案
 
 
-}
-else if ($inp['gps'] == 2) {
+} else if ($inp['gps'] == 2) {
 
 	// a. 從 mid 確認 expire 是不是 1, 然後檔案存不存在
 
@@ -110,25 +109,10 @@ else if ($inp['gps'] == 2) {
 	$inp['shifty'] = $row['shiftY'];
 	if (strstr($tmp_gpx, "p.gpx")) $inp['ph'] = 1;
 	else $inp['ph'] = 0;
-}
-else {
-	switch ($inp['kiss']) {
-	case '2':
-		$inp['shiftx'] = $inp['aashiftx'];
-		$inp['shifty'] = $inp['aashifty'];
-		break;
-
-	case '3':
-		$inp['shiftx'] = $inp['aarshiftx'];
-		$inp['shifty'] = $inp['aarshifty'];
-		break;
-
-	case '1':
-	default:
+} else {
+	// 從前網頁端輸入
 	$inp['shiftx'] = $inp['anyshiftx'];
 	$inp['shifty'] = $inp['anyshifty'];
-	break;
-	}
 }
 
 if (empty($inp['startx']) || empty($inp['starty']) || empty($inp['shiftx']) || empty($inp['shifty']) || empty($inp['title']) || empty($inp['formid'])) {
@@ -198,12 +182,16 @@ $MYUID = $MY_SESSION['uid'];
 
 // 呼叫 cmd_line make, 他也需要 gpx aware
 // -l 傳入 email:formid 作為識別 channel 與 msg owner -m 傳入 tmpdir
+/*
 if (isset($inp['a3_paper']))
 	$type = determine_type_a3($shiftx, $shifty);
 else
 	$type = determine_type($shiftx, $shifty);
 $outx = ceil($shiftx / $tiles[$type]['x']);
 $outy = ceil($shifty / $tiles[$type]['y']);
+*/
+// 因為可多種輸出，所以不再紀錄。
+$outx=0;$outy=0;
 $log_channel = $inp['formid'];
 
 $dim .= isset($inp['out57'])? '-D 5x7 ' : '';

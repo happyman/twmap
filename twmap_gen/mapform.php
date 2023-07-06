@@ -76,10 +76,6 @@ if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 	$("#mapform input[name=starty]").val("<?php echo $_SESSION['makeparam']['y'];?>");
 	$("#mapform select[name=anyshiftx]").val("<?php echo $_SESSION['makeparam']['shiftx']; ?>");
 	$("#mapform select[name=anyshifty]").val("<?php echo $_SESSION['makeparam']['shifty']; ?>");
-	$("#mapform input[name=kiss]").val(1);
-	//$("#all").show();
-	//$("#a4").hide();
-	//$("#mapform button[name=bt]").html('ANY');
 	$("#mapform input[name=startx]").attr("readonly", true);
 	$("#mapform input[name=starty]").attr("readonly", true);
 	$("#mapform select[name=anyshiftx]").attr("disabled", true);
@@ -124,33 +120,7 @@ if (isset($_SESSION['makeparam']) && isset($_SESSION['makeparam']['x'])) {
 $('#a3').click(function(){
 	alert("A3 打勾後面輸出 5x7變7x10,4x6變6x8,3x4變6x4,2x3變3x4。");
 });
-/*
-$('#bt').unbind('click').click(function() {
-	if (called == 1) return;
-	if ($("#mapform button[name=bt]").html() == 'A 4') {
-		//$("#mapform button[name=bt]").val('A 4');
-		$("#mapform button[name=bt]").html('ANY');
-		$("#mapform input[name=kiss]").val(1);
-		$("#all").show();
-		$("#a4").hide();
-		$("#a4r").hide();
-	} else if ($("#mapform button[name=bt]").html() == 'A4R') {
-		//$("#mapform button[name=bt]").val('ANY');
-		$("#mapform button[name=bt]").html('A 4');
-		$("#mapform input[name=kiss]").val(2);
-		$("#a4").show();
-		$("#all").hide();
-		$("#a4r").hide();
-	} else {
-		$("#mapform button[name=bt]").html('A4R');
-		$("#mapform input[name=kiss]").val(3);
-		$("#a4r").show();
-		$("#all").hide();
-		$("#a4").hide();
 
-	}
-});
-*/
 $('#bt1').unbind('click').click(function() {
 	if ($("#mapform button[name=bt1]").html() == '輸入座標產生') {
 		$("#mapform button[name=bt1]").html('上傳航跡檔產生');
@@ -314,18 +284,6 @@ $('#create3').unbind('click').click(function() {
 $('#switch_bt1').click(function() {
 	$('#bt1').trigger('click');
 });
-// keep log in every 5 mins
-/*
-function refresh_session() {
-	$.get('refresh_session.php', function( data ) {
-		console.log(data);
-		if (data.trim() == 'FAIL') {
-			window.location.href = 'logout.php';
-		}
-	});
-}
-setInterval(refresh_session,300000);
-*/
 
 $(document).ready(function(){
 	//alert("here");

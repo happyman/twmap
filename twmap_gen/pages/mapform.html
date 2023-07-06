@@ -88,18 +88,6 @@
 				<tr>
 				<td><span class="step" id="step_bound">2</span></td>
 				<td>n x m</td><td>
-					<!--
-						<button class="ui-state-default ui-corner-all hp" type=button name=bt id=bt >A 4</button>
-						<span id="a4" name="a4">
-							<select name=aashiftx>
-								{html_options values=$aashiftx output=$aashiftx selected="7"}
-							</select> X
-							<select name=aashifty>
-								{html_options values=$aashifty output=$aashifty selected="5"}
-							</select>
-							A4 直式 如 5x7 格, A3 直式 7x10 
-						</span>
-						-->
 						<span id="all" name="all">
 							<select name=anyshiftx>
 								{html_options values=$anyshiftx output=$anyshiftx selected="1"}
@@ -109,17 +97,6 @@
 							</select>
 							公里。
 						</span>
-						<!--
-						<span id="a4r" name="a4r" style="display:none">
-							<select name=aarshiftx>
-								{html_options values=$aarshiftx output=$aarshiftx selected="7"}
-							</select> X
-							<select name=aarshifty>
-								{html_options values=$aarshifty output=$aarshifty selected="5"}
-							</select>
-							A4 橫式 如 7x5 格, A3 橫式 10x7
-						</span>
-					-->
 				</td></tr>
 				<tr>
 			<td><span class="step" id="step_area">5</span></td>
@@ -170,7 +147,6 @@
 					<button class="ui-state-default ui-corner-all hp" type=button name="create2" id="create2">上傳產生 </button>
 					<button class="ui-state-default ui-corner-all hp" type=button name="create3" id="create3">重新產生 </button>
 			        .... 或 <a class="ui-state-default ui-corner-all" href="main.php">清空重來</a>
-					<input type=hidden name=kiss value="2">
 					<input type=hidden name=gps value="0">
 					<input type=hidden name=formid id="formid" value="{$formid}">
 				</td>
