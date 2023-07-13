@@ -462,6 +462,15 @@ var DebugTile_Options = {
 	name: "debug",
 	alt: "Debug XYZ tile"
 };
+var Tri1999_Options = {
+	getTileUrl: function (a, b) {
+			return "//tile.happyman.idv.tw/map/tri1999/" + b + "/" + a.x + "/" + a.y + ".png";
+	},
+	tileSize: new google.maps.Size(256, 256),	
+	maxZoom: 15,
+	name: "林崇雄百岳及一等點位置圖",
+	alt: "Taiwan Mountain 1999"
+};
 // 前景
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
@@ -484,6 +493,7 @@ var Hillshading_MapType = new google.maps.ImageMapType(Hillshading_Options);
 var TW5KArielPIC_MapType = new google.maps.ImageMapType(TW5KArielPIC_Options);
 var Geo2016_MapType = new google.maps.ImageMapType(Geo2016_Options);
 var DebugTile_MapType = new google.maps.ImageMapType(DebugTile_Options);
+var Tri1999_MapType = new google.maps.ImageMapType(Tri1999_Options);
 
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
@@ -517,7 +527,9 @@ var copyrights = {
 	'jm20k_1921': "<a target=\"_blank\" href=\"http://ndaip.sinica.edu.tw/content.jsp?option_id=2621&index_info_id=6924\">台灣堡圖(大正版)</a>",
 	'jm20k_1904': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣堡圖(明治版)</a>",
 	'jm20k_1904_tri': "<a target=\"_blank\" href=\"https://gis.rchss.sinica.edu.tw/mapclub_20221208/\">台灣歷史百年地圖</a> - 《三角測量點及水準測量點明細表》之附圖</a>",
+	'tri1999': '林崇雄先生於1999年手繪歡迎使用',
 	'tw5kariel': "台灣5000:1相片基本圖"
+
 };
 var logos = {
 	'tw25k_v1': "- 經1版",
@@ -2049,7 +2061,7 @@ function initialize() {
 				// style: google.maps.MapTypeControlStyle.DEFAULT,
 				position: google.maps.ControlPosition.TOP_LEFT,
 				// dropdown menu 要重複一次
-				mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', 'moi_osm_en', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis", "nlsc_emap", "theme", 'debug', 'geo2016', 'fandi', 'jm20k_1921', 'jm50k', 'tw50k', 'hillshading', 'tw5kariel', 'nlsc_photo_mix', 'general2011']
+				mapTypeIds: ['general2011', 'twmapv1', 'taiwan', 'moi_osm', 'moi_osm_en', google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, "atis", "nlsc_emap", "theme", 'debug', 'tri1999', 'geo2016', 'fandi', 'jm20k_1921', 'jm50k', 'tw50k', 'hillshading', 'tw5kariel', 'nlsc_photo_mix', 'general2011']
 			}
 		});
 
@@ -2253,6 +2265,7 @@ function initialize() {
 	map.mapTypes.set('moi_osm_twmap', MOI_OSM_TWMAP_MapType);
 	map.mapTypes.set('fandi', FanDi_MapType);
 	map.mapTypes.set('debug',DebugTile_MapType);
+	map.mapTypes.set('tri1999',Tri1999_MapType);
 	map.mapTypes.set('geo2016',Geo2016_MapType);
 	map.mapTypes.set('jm20k_1904', JM20K1904_MapType);
 	map.mapTypes.set('jm20k_1904_tri', JM20K1904_triangulation_MapType);
