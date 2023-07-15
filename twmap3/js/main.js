@@ -894,7 +894,7 @@ function restoreMapState(state) {
 		$("#marker_sw_select").dropdownchecklist("refresh");
 		markerFilter();
 	}
-	if (state.show_kml_layer === 0)
+	if (state.show_kml_layer == 0) 
 		$("#kml_sw").trigger('click');
 	if (state.zoom)
 		map.setZoom(parseInt(state.zoom));
