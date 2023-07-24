@@ -11,7 +11,7 @@ list($st, $info) = login_info();
                                 } else {
                                         $greetings = sprintf("歡迎 %s<img src='%s'  title='uid=%d'/>",$info['user_nickname'],$info['user_icon'],$_SESSION['uid']);
 					if (is_admin()) 
-					$greetings_admin = sprintf("你的身份是管理者 (%d)",$_SESSION['uid']);
+					$greetings_admin = sprintf("你的身份是管理者 (%d) (%s)",$_SESSION['uid'],php_uname('n'));
 					else
 					$greetings_admin = sprintf("你的身份是使用者 (%d)",$_SESSION['uid']);
 					

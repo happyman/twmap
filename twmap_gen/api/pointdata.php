@@ -3,7 +3,7 @@ require_once("../config.inc.php");
 if(!ob_start("ob_gzhandler")) ob_start();
 
 session_start([
-        'read_and_close' => true,
+       // 'read_and_close' => true,
 ]);
 
 $id = (isset($_REQUEST['id']))? $_REQUEST['id'] : NULL;
