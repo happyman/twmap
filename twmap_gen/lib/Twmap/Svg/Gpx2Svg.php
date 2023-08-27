@@ -356,6 +356,8 @@ class Gpx2Svg {
 			}
 		}
 		unset($arr);
+		if (!isset($this->track))
+			return false;
 		//$this->dump();
 		return true;
 	}

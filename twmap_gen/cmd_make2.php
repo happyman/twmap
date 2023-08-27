@@ -220,11 +220,28 @@ if ($jump <= $stage ) {
 		cli_error_out("若發生此問題, 通常表示上一個出圖過程 crash 殘留檔案, 請回報此路徑 $outimage",0);
 	  }
 	}
-	// 先檢查是否有 gpx 存在與否
+	// 先檢查是否有 gpx 存在與否, 轉換看看，及早發現錯誤
 	if (isset($opt['g'])) {
 		list($param['gpx'],$param['show_label_trk'],$param['show_label_wpt'])=explode(":",$opt['g']);
 		if (!file_exists($param['gpx'])) {
 			cli_error_out("unable to read gpx file",0);
+		}
+
+		$param['logotext'] = $title;
+		$param['bgimg'] = "TEST_IMG";
+		$param['fit_a4'] = 0;
+		// no more detection
+		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
+		$param['datum']=$datum;
+		$param['pixel_per_km'] = $pixel_per_km;
+		$param['width']=$shiftx*$pixel_per_km;
+
+		cli_msglog("create SVG: $outsvg");
+		$svg = new Happyman\Twmap\Svg\Gpx2Svg($param);
+		$ret = $svg->process();
+		if ($ret === false ) {
+			@unlink($outimage_orig);
+			cli_error_out("GPX process 失敗" . $param['gpx']);
 		}
 	}
 	// 這時再把 cmd 寫下來, 以免蓋掉前次的執行
@@ -238,16 +255,13 @@ if ($jump <= $stage ) {
 
 	// 如果有 gpx 相關參數
 	if (isset($opt['g'])) {
-		//list($param['gpx'],$param['show_label_trk'],$param['show_label_wpt'])=explode(":",$opt['g']);
-		//if (!file_exists($param['gpx'])) {
-		//	cli_error_out("unable to read gpx file");
-		//}
-		$param['width'] = imagesx($im);
+		// $param['width'] = imagesx($im);
 		ImagePNG($im, $outimage_orig);
 		if (file_exists($outimage_orig)) {
-			cli_msglog("create PNG: $outimage_orig done");
+			cli_msglog("create background PNG: $outimage_orig done");
 			cli_msglog("ps%+3");
 		}
+		/*
 		$param['logotext'] = $title;
 		$param['bgimg'] = $outimage_orig;
 		$param['fit_a4'] = 0;
@@ -263,6 +277,8 @@ if ($jump <= $stage ) {
 			@unlink($outimage_orig);
 			cli_error_out("svg process fail: ".print_r($param,true));
 		}
+		*/
+		$svg->bgimg = $outimage_orig;
 		$ret = $svg->output($outsvg);
 		if ($ret === false ) {
 			@unlink($outimage_orig);
