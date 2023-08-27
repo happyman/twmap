@@ -241,7 +241,7 @@ if ($jump <= $stage ) {
 		$ret = $svg->process();
 		if ($ret === false ) {
 			@unlink($outimage_orig);
-			cli_error_out("GPX process 失敗" . $param['gpx']);
+			cli_error_out("GPX process 失敗" . $param['gpx'], 0);
 		}
 	}
 	// 這時再把 cmd 寫下來, 以免蓋掉前次的執行
