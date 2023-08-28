@@ -282,7 +282,7 @@ class Gpx2Svg {
 		if (isset($arr['trk']['trkseg']))
 			$arr['trk'][0] = $arr['trk'];
 		// 共有多少 tracks?
-		$total_tracks = count($arr['trk']);
+		$total_tracks = isset($arr['trk'])?count($arr['trk']):0;
 		$min=8000;
 		$max=0;
 		for($i=0;$i<$total_tracks;$i++) {
@@ -356,7 +356,7 @@ class Gpx2Svg {
 			}
 		}
 		unset($arr);
-		if (!isset($this->track))
+		if (empty($this->track) && empty($this->waypoint))
 			return false;
 		//$this->dump();
 		return true;
@@ -670,6 +670,7 @@ class Gpx2Svg {
 		return sprintf("#%s", $color_spectrum[$n]);
 	}
 	function out_tracks() {
+		if (empty($this->track)) return;
 		for($i=0;$i<count($this->track);$i++) {
 			$trk_id = sprintf("t%d", $i+1);
 			printf('	<g id="%s (%s) track" opacity="0.9">',$this->track[$i]['name'], $trk_id);
