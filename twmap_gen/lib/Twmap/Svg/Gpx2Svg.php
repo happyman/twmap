@@ -686,7 +686,7 @@ class Gpx2Svg {
 			// 輸出 label
 			if ($this->show_label_trk == 1) {
 				// 位置在第一個點 x+20
-				printf('       <g id="%s (%s) label" opacity="1" transform="translate(0,0)" x="%.4f" y="%.4f">		<text fill="#ff0000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="%s (%s) name" opacity="1" text-anchor="middle" x="%.4f" y="%.4f">%s</text></g>'. "\n", 
+				printf('       <g id="%s (%s) label" opacity="1" transform="translate(0,0)" x="%.4f" y="%.4f">		<text fill="#ff0000" font-family="WenQuanYi-Zen-Hei-Mono" font-size="%d" id="%s (%s) name" opacity="1" text-anchor="middle" x="%.4f" y="%.4f">%s</text></g>'. "\n", 
 					$this->track[$i]['name'], $trk_id,
 					$this->track[$i]['point'][0]['rel'][0]+20,
 					$this->track[$i]['point'][0]['rel'][1],
@@ -798,7 +798,7 @@ class Gpx2Svg {
 				else if ($this->show_label_wpt == 3)
 					$wpt_label = sprintf("%d %s",$j,$wpt['name']);
 
-				printf('	<g id="%s (w%d) label" transform="translate(0,0)" x="%.4f" y="%.4f"><text fill="#000000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="%s (w%d) name" text-anchor="start" x="%.4f" y="%.4f">%s</text> </g>' . "\n",
+				printf('	<g id="%s (w%d) label" transform="translate(0,0)" x="%.4f" y="%.4f"><text fill="#000000" font-family="WenQuanYi-Zen-Hei-Mono" font-size="%d" id="%s (w%d) name" text-anchor="start" x="%.4f" y="%.4f">%s</text> </g>' . "\n",
 					str_replace("&","_",$wpt['name']), $j, $wpt['rel'][0], $wpt['rel'][1],
 					$this->fontsize,
 					str_replace("&","_",$wpt['name']), $j, $wpt['rel'][0], $wpt['rel'][1],
@@ -817,7 +817,7 @@ class Gpx2Svg {
 		if ($this->logotext) {
 			$locx = 40;
 			$locy = $this->height - 10 ;
-			printf('	<text fill="#000000" font-family="WenQuanYi-Zen-Hei-Mono-Regular" font-size="%d" id="twmap3svg"  text-anchor="start" x="%.4f" y="%.4f">%s</text>'."\n", $this->fontsize * 2, $locx, $locy, $this->logotext);
+			printf('	<text fill="#000000" font-family="WenQuanYi-Zen-Hei-Mono" font-size="%d" id="twmap3svg"  text-anchor="start" x="%.4f" y="%.4f">%s</text>'."\n", $this->fontsize * 2, $locx, $locy, $this->logotext);
 		}
 	}
 	// 相對 pixel
@@ -862,7 +862,7 @@ class Gpx2Svg {
 	function svg2png_inkscape($insvg, $outimage,$resize=array()) {
 		$cmd = sprintf("inkscape -o '%s' %s 2>&1", $outimage, $insvg);
 		exec($cmd, $out, $ret);
-		if (strstr($out[count($out)-1],"saved")) {
+		if (strstr($out[count($out)-1],"exported")) {
 			// 再 resize 一下
 			if (!empty($resize) && $resize[0] >=  $this->pixel_per_km && $resize[1] >=  $this->pixel_per_km) {
 				$cmd2 = sprintf("convert %s -resize %dx%d\! %s", $outimage, $resize[0],$resize[1],$outimage);
@@ -890,11 +890,14 @@ class Gpx2Svg {
 	}
 	// wrap it
 	function svg2png($in, $out, $resize=array()) {
+		return $this->svg2png_inkscape($in,$out,$resize);
+		/* requires fonts-wqy-zenhei 
 		list ($st, $msg) = $this->svg2png_magick($in,$out,$resize);
 		if ($st === false)
 			return $this->svg2png_inkscape($in,$out,$resize);
 		else
-			return array($st, $msg);   
+			return array($st, $msg); 
+		*/  
 	}
 };
 	
