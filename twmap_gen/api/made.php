@@ -1,14 +1,18 @@
 <?php
-
+//
+// made.php
+// callback for queue worker when map is done.
+//
 require_once("../config.inc.php");
-
 
 if (!isset($_REQUEST['ch'] ) || !isset($_REQUEST['status'])){
 	exit("require params");
 }
 $log_channel=$_REQUEST['ch'];
-$param  = memcached_query($_REQUEST['ch']);
-error_log($param);
+
+$param  = redis_get($log_channel);
+// error_log(print_r([$log_channel,$param],true)); 
+
 if ($param === FALSE) {
 	my_error_out("no such channel");
 }
@@ -26,7 +30,8 @@ function my_error_out($msg){
 }
 function finish_task($param) {
 	global $out_root;
-	list ($uid, $limit, $recreate_flag,  $xx, $yy, $shiftx, $shifty, $datum,$version, $outx, $outy, $title,$outimage, $remote_ip,$log_channel,$paper) = json_decode($param, true);
+	//list ($uid, $limit, $recreate_flag,  $xx, $yy, $shiftx, $shifty, $datum,$version, $outx, $outy, $title,$outimage, $remote_ip,$log_channel,$paper) = json_decode($param, true);
+	extract( json_decode($param, true));
 
 	if (map_full($uid, $limit, $recreate_flag)) {
 		$files = map_files($outimage);
@@ -40,7 +45,7 @@ function finish_task($param) {
 	} else {
 		$save_gpx = 0;
 	}
-	$mid = map_add($uid, $title, $xx, $yy, $shiftx, $shifty, $outx, $outy, $remote_ip, $outimage, map_size($outimage), $version, $save_gpx, NULL, $datum);
+	$mid = map_add($uid, $title, $xx, $yy, $shiftx, $shifty, 0, 0, $remote_ip, $outimage, map_size($outimage), $version, $save_gpx, NULL, $datum);
 
 	if ($mid === false ) {
 		my_error_out("寫入資料庫失敗,請回報 $outimage");
@@ -55,7 +60,10 @@ function finish_task($param) {
 	make_map_log($mid, $log_channel, $_REQUEST['agent'], $_REQUEST['params']);
 
 	$okmsg = msglog("done $mid");
-
+	// 刪除 redis key
+	redis_delete($cmd_param_key);
+	redis_delete($log_channel);
+	
 	msglog("notify web $log_channel with $mid");
 	notify_web($log_channel,array("finished!$mid"));
 }

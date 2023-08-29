@@ -65,6 +65,26 @@ function memcached_delete($key) {
 	$mem->addServer($CONFIG['memcache_server'],$CONFIG['memcache_port']);
 	$mem->delete($key);
 }
+/* redis functions */
+function redis_conn(){
+	global $CONFIG;
+	$redis=new Redis();
+	$redis->pconnect($CONFIG['redis_server'], $CONFIG['redis_port']);
+	$redis->auth($CONFIG['redis_password']);
+	return $redis;
+}
+function redis_get($key){
+	$redis = redis_conn();	
+	return $redis->get($key);
+}
+function redis_set($key,$val){
+	$redis = redis_conn();	
+	return $redis->set($key,$val,86400*30*3); // default 3 months
+}
+function redis_delete($key){
+	$redis = redis_conn();
+	return $redis->unlink($key);
+}
 
 function fetch_user($mylogin) {
 	if (!isset($mylogin['email']) || !isset($mylogin['type']))
@@ -1450,3 +1470,4 @@ function sanitize_output($buffer) {
 // 
 require_once("track.inc.php");
 require_once("export/php-export-data.class.php");
+

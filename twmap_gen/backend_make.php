@@ -1,6 +1,6 @@
 <?php
 
-//$Id: backend_make.php 356 2013-09-14 10:00:22Z happyman $
+// backend_make.php 
 // 1. check login
 session_start([
 	'read_and_close' => true,
@@ -180,16 +180,6 @@ if ($inp['gps'] == 1 || $inp['gps'] == 2) {
 
 $MYUID = $MY_SESSION['uid'];
 
-// 呼叫 cmd_line make, 他也需要 gpx aware
-// -l 傳入 email:formid 作為識別 channel 與 msg owner -m 傳入 tmpdir
-/*
-if (isset($inp['a3_paper']))
-	$type = determine_type_a3($shiftx, $shifty);
-else
-	$type = determine_type($shiftx, $shifty);
-$outx = ceil($shiftx / $tiles[$type]['x']);
-$outy = ceil($shifty / $tiles[$type]['y']);
-*/
 // 因為可多種輸出，所以不再紀錄。
 $outx=0;$outy=0;
 $log_channel = $inp['formid'];
@@ -200,7 +190,7 @@ $dim .= isset($inp['out34'])? '-D 3x4 ' : '';
 $dim .= isset($inp['out23'])? '-D 2x3 ' : '';
 
 mb_internal_encoding('UTF-8');
-$cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /dev/shm -l %s %s %s %s %s %s -a %s", $startx, $starty, $shiftx, $shifty, 
+$cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %s -t '%s' -i %s -p %d %s -m /dev/shm -l %s %s %s %s %s %s -a %s", $startx, $starty, $shiftx, $shifty, 
 	isset($inp['97datum'])? 'TWD97': 'TWD67',
 	$outpath, $version, _mb_mime_encode($title,"UTF-8"), $_SERVER['REMOTE_ADDR'], $ph, $svg_params, $log_channel, isset($inp['grid_100M']) ? '-e' : '',
 	// 是否包含 100M grid
@@ -215,13 +205,22 @@ $cmd_param = sprintf("-r %d:%d:%d:%d:%s -O %s -v %d -t '%s' -i %s -p %d %s -m /d
 );
 msglog($cmd_param);
 
-// check api/made.php
-// uid limit r_flag xx yy shiftx shifty datum version outx outy title outimage ip channel
-$add_param_array=[ $MYUID, $user['limit'], $recreate_flag, $xx, $yy, $shiftx, $shifty,  isset($inp['97datum'])? "97":"67",$version, $outx, $outy, $title,$outimage, $_SERVER['REMOTE_ADDR'],$log_channel, isset($inp['a3_paper'])?'A3':'A4' ];
-// ouch forget to consider ipv6 addr
-$add_param_str=json_encode($add_param_array);
+// dedup: id startx starty shiftx shifty datum ph version
+// 避免重複, 以上述為 key
+$cmd_param_key=sprintf("%d:%d:%d:%d:%d:%s:%d:%s",$MYUID, $startx, $starty, $shiftx, $shifty,isset($inp['97datum'])? 'TWD97': 'TWD67', $ph,  $version);
+if (redis_get($cmd_param_key)!==FALSE){
+	error_out('已在處理佇列中，不要重複新增...');
+}
+// 存入, 記得 made 要刪除
+redis_set($cmd_param_key,time());
 
-memcached_set($log_channel, $add_param_str);
+// check api/made.php 把要給後端的參數包起來
+
+$make_param_array=array('uid'=>$MYUID, 'limit'=>$user['limit'], 'recreate_flag'=> $recreate_flag, 'xx'=>$xx, 'yy'=>$yy, 'shiftx'=>$shiftx, 'shifty'=>$shifty, 
+'datum'=>isset($inp['97datum'])? "97":"67", 'version'=>$version,'title'=>$title, 'outimage'=>$outimage,
+'$remote_ip'=> $_SERVER['REMOTE_ADDR'], 'log_channel'=>$log_channel, 'paper'=> isset($inp['a3_paper'])?'A3':'A4', 'cmd_param_key'=>$cmd_param_key );
+
+redis_set($log_channel, json_encode($make_param_array));
 
 
 use xobotyi\beansclient\Client as beansclient;

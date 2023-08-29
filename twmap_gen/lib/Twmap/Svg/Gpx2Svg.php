@@ -50,8 +50,9 @@ class Gpx2Svg {
 
 	}
 	static function check(){
-		$req=[ 'convert' => [ 'package'=>'imagemagick', 'test'=>''] , 
-		'inkscape' => [ 'package'=>'inkscape','test'=>'--help', 'optional'=>1 ]];
+		$req=[ 
+			'convert' => [ 'package'=>'imagemagick', 'test'=>''] , 
+			'inkscape' => [ 'package'=>'inkscape','test'=>'--help', 'optional'=>1 ]];
 		$err=0;
 		$classname=get_called_class();
 		foreach($req as $bin=>$meta){

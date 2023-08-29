@@ -1,7 +1,8 @@
 <?php
-//ini_set("session.gc_maxlifetime", 86400);
+// ini_set("session.gc_maxlifetime", 86400);
 // set this in php ini
-// $Id$
+// config.inc.php.sample
+
 define('__ROOT__', dirname(__FILE__). "/");
 require_once(__ROOT__."vendor/autoload.php");
 require_once(__ROOT__. "lib/rangelib.php");
@@ -20,18 +21,11 @@ $site_html_root = "/gen";
 // 30 for SuSE, 33 for Ububtu
 define('WWWRUN_UID', 1001);
 
-// 放一版的圖資目錄
-// $stbpath = 'http://make.happyman.idv.tw/~happyman/stb';
-// 放從 TMS 的圖磚
-// 放3版 1x1 的圖檔
-// $tilecachepath = "/home/happyman/twmapcache/cache";
-
 $tmppath = "/home/happyman/twmapcache/tmp"; 
 $diskfullchk = "/home/happyman/map/";
 $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 $TWMAP3_html_root = "/map";
 $TWMAP3URL = "/map/index.php";
-$BETA = 0; // beta for debug output
 $ERROROUT = "ajax";
 
 /* DB 設定寫在這裡 */
@@ -43,9 +37,8 @@ $db_port = '5432';
 $db_dsn = sprintf("postgres9://%s:%s@%s:%s/%s",$db_user,$db_pass,$db_host,$db_port,$db_name);
 $gdal_dsn = sprintf("PG:dbname='%s' user='%s' password='%s' host='%s' port='%s'",$db_name,$db_user,$db_pass,$db_host,$db_port);
 
-
 require_once(__ROOT__."lib/twmapdb.inc.php");
-/* login */
+
 if (php_sapi_name() != "cli") {
 	/* template */
 	$smarty = new Smarty();
@@ -63,24 +56,25 @@ if (php_sapi_name() != "cli") {
 }
 
 #
-
-# Keppon API : queue
+# Keppon API : queue // to remove
 define('GEARMAN_SERVER','127.0.0.1');
 $CONFIG['use_gearman'] = false;
 
 # check backend_make 
 # 產生地圖 queue
-$CONFIG['use_queue'] = false;
+$CONFIG['use_queue'] = true
 $CONFIG['beanstalk_server'] = 'localhost';
 $CONFIG['beanstalk_port'] = '11300';
 $CONFIG['beanstalk_tube'] = 'make_map';
 
 $CONFIG['admin'] = array( 3 );
-//  gdalwarp -t_srs EPSG:4326 dem_20m.tif dem_20m-latlong.tif
-//  source: http://data.gov.tw/node/35430
-// define('twDEM_path', __ROOT__ ."db/DEM/dem_20m-latlong.tif");
+define('twDEM_path', __ROOT__ ."db/DEM/dem_20m-latlong.tif");
 $CONFIG['poi_file'] = "/home/happyman/poi/MOI_OSM_Taiwan_TOPO_Rudy.poi";
 
 //多台前端要吃同一台
 $CONFIG['memcache_server'] = '127.0.0.1';
 $CONFIG['memcache_port'] = 11211;
+// redis server
+$CONFIG['redis_server'] = '127.0.0.1';
+$CONFIG['redis_port'] = 6379;
+$CONFIG['redis_password'] = 'myredispassword';
