@@ -84,7 +84,7 @@ class Proj {
 	}
 	static function ph_proj_97toge2($p){
 		$x=$p[0];$y=$p[1];
-		$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=119 +x_0=250000 +k=0.9999";
+		$proj="proj -I +proj=tmerc +ellps=aust_SA +lon_0=119 +x_0=250000 +k=0.9999 -f '%.8f' ";
 		$ret=shell_exec("echo $x $y | $proj");
 		return preg_split("/\s+/",$ret);
 	}
