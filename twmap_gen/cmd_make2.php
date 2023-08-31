@@ -40,7 +40,7 @@ if (!isset($opt['r']) || !isset($opt['O'])){
 	echo "必須參數:\n";
 	echo "       -r params: startx:starty:shiftx:shifty:datum  datum:TWD67 or TWD97\n";
 	echo "       -O outdir: /home/map/out/000003 輸出目錄\n";
-	echo "       -v 3|2016: 經建3|魯地圖\n";
+	echo "       -v 3|2016|1904|1916|1921|1924: 經建3|魯地圖|堡圖|蕃地|堡圖2|陸測\n";
 	echo "選用參數:\n";
 	echo "       -t title: title of image\n";
 	echo "       -p 1|0: 1 是澎湖 pong-hu\n";
@@ -103,7 +103,8 @@ foreach($dim as $dimm) {
 		cli_error_out("unsupported dim $dimm");
 }
 // default 2016, remove version 1
-if (!in_array($version, array(3,2016,'nlsc'))) $version=2016;
+if (!in_array($version, array(3,2016,'nlsc',1904,1916,1921, 1924))) 
+	$version=2016;
 if (isset($opt['l'])) $log_channel = $opt['l']; else $log_channel = "";
 if (isset($opt['logurl_prefix'])) 
 	$logurl_prefix=$opt['logurl_prefix'];
@@ -139,8 +140,6 @@ $outimage_orig=$outfile_prefix . ".orig.tag.png";
 $outimage_gray=$outfile_prefix . ".gray.png";
 $outtext=$outfile_prefix . ".txt";
 $outsvg = $outfile_prefix . ".svg";
-$outsvg_big = $outfile_prefix . ".svg2";
-$merged_gpx = $outfile_prefix. ".gpx2";
 $outpdf = $outfile_prefix . ".pdf";
 // cmd
 $outcmd = $outfile_prefix . ".cmd";
@@ -162,20 +161,23 @@ switch($version) {
 	case 2016:
 		$g = new Happyman\Twmap\Rudymap_Stitcher($gparams);
 		break;
+	case 1904: // 堡圖
+		$g = new Happyman\Twmap\JM20K1904_Stitcher($gparams);
+		break;
+	case 1916: // 蕃地
+		$g = new Happyman\Twmap\JM50K1916_Stitcher($gparams);
+		break;
+	case 1921: // 堡圖紅字版
+		$g = new Happyman\Twmap\JM20K1921_Stitcher($gparams);
+		break;
+	case 1924: // 路測
+		$g = new Happyman\Twmap\JM50K1924_Stitcher($gparams);
+		break;
 	case 'nlsc':
 		$g = new Happyman\Twmap\NLSC_Stitcher($gparams);
 		break;
 }
 
-
-if (!empty($g->err)){
-	cli_error_out(implode(":",$g->err),0);
-}
-
-// $g->version=$version;
-if (isset($opt['G'])) {
-	$g->include_gpx = 1;
-} 
 // get port and pid
 $port = 0;
 $pid = 0;
@@ -201,7 +203,16 @@ if (!empty($log_channel)) {
 }else{
 	$g->setLogger($logger);
 }
+
 $pixel_per_km = $g->getPixelPerKm();
+if (isset($opt['G'])) {
+	$g->include_gpx = 1;
+} 
+// initial 就失敗了, 再會。
+if (!empty($g->err)){
+	cli_msglog(implode(":",$g->err));
+	cli_error_out(implode(":",$g->err),0);
+}
 
 cli_msglog("ps%10");
 showmem("after STB created");
@@ -220,7 +231,7 @@ if ($jump <= $stage ) {
 		cli_error_out("若發生此問題, 通常表示上一個出圖過程 crash 殘留檔案, 請回報此路徑 $outimage",0);
 	  }
 	}
-	// 先檢查是否有 gpx 存在與否, 轉換看看，及早發現錯誤
+	// 1先檢查是否有 gpx 存在與否, 2轉換看看，及早發現錯誤
 	if (isset($opt['g'])) {
 		list($param['gpx'],$param['show_label_trk'],$param['show_label_wpt'])=explode(":",$opt['g']);
 		if (!file_exists($param['gpx'])) {
@@ -246,6 +257,7 @@ if ($jump <= $stage ) {
 	}
 	// 這時再把 cmd 寫下來, 以免蓋掉前次的執行
 	file_put_contents($outcmd,implode(" ",$argv)); 
+	cli_msglog(sprintf("本次出 %s 圖",$g->getlogotext()));
 	$im = $g->create_base_png(); // 產生
 	// 產生不出來
 	if ($im === false) 
@@ -261,24 +273,9 @@ if ($jump <= $stage ) {
 			cli_msglog("create background PNG: $outimage_orig done");
 			cli_msglog("ps%+3");
 		}
-		/*
-		$param['logotext'] = $title;
-		$param['bgimg'] = $outimage_orig;
-		$param['fit_a4'] = 0;
-		// no more detection
-		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
-		$param['datum']=$datum;
-		$param['pixel_per_km'] = $pixel_per_km;
-
-		cli_msglog("create SVG: $outsvg");
-		$svg = new Happyman\Twmap\Svg\Gpx2Svg($param);
-		$ret = $svg->process();
-		if ($ret === false ) {
-			@unlink($outimage_orig);
-			cli_error_out("svg process fail: ".print_r($param,true));
-		}
-		*/
+		// change background image to the stitched PNG
 		$svg->bgimg = $outimage_orig;
+		// create SVG
 		$ret = $svg->output($outsvg);
 		if ($ret === false ) {
 			@unlink($outimage_orig);

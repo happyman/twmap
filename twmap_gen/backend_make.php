@@ -123,7 +123,8 @@ if (empty($inp['startx']) || empty($inp['starty']) || empty($inp['shiftx']) || e
 
 $version = isset($inp['version']) ? $inp['version'] : "3";
 // if ($version < 1 || $version > 3) $version = 3;
-if ($version != 1 && $version != 3 && $version != 2016) $version = "3";
+if (!in_array($version, array(3, 2016, 1904, 1916, 1921, 1924))) 
+	$version = 2016;
 $shiftx = $inp['shiftx'];
 $shifty = $inp['shifty'];
 $title = $inp['title'];

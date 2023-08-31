@@ -11,10 +11,9 @@ Class Stitcher {
 	var $err = array();
 	var $im;
 	var $ph; // 澎湖
-	var $version = 3; // 那個圖
+	var $version = 2016; // 那個圖
 	var $include_gpx = 0; // 是否包含 gpx
 	var $datum = 'TWD97';
-	// var $v3img; 改成 logoimg
 	var $logoimg; 
 	var $tmpdir = "/dev/shm";
 	var $logger = null;
@@ -520,13 +519,39 @@ Class Stitcher {
 			$param = "-opaque 'rgb(93,119,80)' -fill white -opaque 'rgb(148,146,145)' -fill white     -fuzz 50%  -fill black -opaque blue  -colorspace gray";
 		} else if ($ver == 3) {
 			$param = "-colorspace gray miff:-|convert miff:- -brightness-contrast 20x5 -tint 40";
-		}  else {	
+		}  else if ($ver == 1921 || $ver == 1904 || $ver == 1924) {	
+			// 堡圖 / 陸測 都用 adaptive thresholding
+			return $this->im_file_gray_at($fpath,$outpath);
+		} else {
 			$param = "-colorspace gray";
 		}
 		$cmd = sprintf("convert %s %s %s",$fpath, $param, $outpath);
 		if ($this->debug)
 			$this->logger->debug($cmd);
 		exec($cmd,$out,$ret);
+		return $ret;
+	}
+	// Adaptive Thresholding 多謝 Lee Lim
+	function im_file_gray_at($fpath, $outpath) {
+		// method 2 from http://www.fmwconcepts.com/imagemagick/localthresh/index.php
+		$tmpa = tempnam($this->tmpdir,"ata_") .".mpc";
+		$tmpm = tempnam($this->tmpdir,"atm_") . ".mpc";
+		$tmpt = tempnam($this->tmpdir,"att_") . ".mpc";
+		$tmps = tempnam($this->tmpdir,"ats_") . ".mpc";
+		// -r 20   => 20/3 = 6.66667
+		// -b 3    => 3/100 = 0.03
+		$cmd[] = sprintf("convert -quiet %s -colorspace gray -alpha off +repage %s",$fpath,$tmpa);
+		$cmd[] = sprintf("convert %s -blur 0x6.66667 %s",$tmpa,$tmpm);
+		$cmd[] = sprintf("convert \( %s %s -compose multiply -composite -blur 0x6.66667 \) \( %s %s -compose multiply -composite \) +swap -compose minus -composite -gamma 2 %s",
+		$tmpa,$tmpa,$tmpm,$tmpm,$tmps);
+		$cmd[] = sprintf("convert %s %s +swap -compose minus -composite \( %s -evaluate multiply 0.03 \) +swap -compose minus -composite -threshold 1 %s",
+		$tmpa,$tmpm,$tmps,$tmpt);
+		$cmd[] = sprintf("convert %s %s",$tmpt,$outpath);
+		$cmd[] = sprintf("rm %s %s %s %s",$tmpa,$tmpm,$tmpt,$tmps);
+		$execute_cmd = implode(";",$cmd);
+		if ($this->debug)
+			$this->logger->debug($execute_cmd);
+		exec($execute_cmd,$out,$ret);
 		return $ret;
 	}
 	function optimize_png($fname){
@@ -583,11 +608,112 @@ class NLSC_Stitcher extends Stitcher {
 				return [
 					['url'=> 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/{z}/{y}/{x}',
 					  'process' => '-level 25%%,100%%,0.1'	],
-					['url'=> 'http://make.happyman.idv.tw:8088/happyman_nowp/{z}/{x}/{y}.png',
+					['url'=> 'http://make.happyman.idv.tw/map/happyman_nowp/{z}/{x}/{y}.png',
 					  'process' => ''] # '-monochrome'
 				];
 			}
 			return [['url'=> 'https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/{z}/{y}/{x}',
 					'process' => '-level 25%%,100%%,0.1'	]];
+	}
+}
+class JM20K1904_Stitcher extends Stitcher {
+	var $zoom = 16;
+	function getlogotext() {
+		return '堡圖1904';
+	}	
+	function getProcessParams($when = 'premerge') {
+		if ($when == 'postmerge')
+			return "-normalize";
+		else
+			return "";
+	}
+	function gettileurl() {
+		$url = 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904-jpg-{z}-{x}-{y}';
+		if ($this->include_gpx==1){
+			return [
+				['url'=> $url,
+				  'process' => ''	],
+				['url'=> 'http://make.happyman.idv.tw/map/happyman_nowp/{z}/{x}/{y}.png',
+				  'process' => ''] 
+			];
+		} 
+		return [['url'=> $url,
+				'process' => ''	]];	
+	}
+}
+class JM50K1916_Stitcher extends Stitcher {
+	var $zoom = 16;
+	function getlogotext() {
+		return '蕃地1916';
+	}	
+	function getProcessParams($when = 'premerge') {
+		if ($when == 'postmerge')
+			return "-normalize";
+		else
+			return "";
+	}
+	function gettileurl() {
+		$url = 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM50K_1916-jpg-{z}-{x}-{y}';
+		if ($this->include_gpx==1){
+			return [
+				['url'=> $url,
+				  'process' => ''	],
+				['url'=> 'http://make.happyman.idv.tw/map/happyman_nowp/{z}/{x}/{y}.png',
+				  'process' => ''] 
+			];
+		} 
+		return [['url'=> $url,
+				'process' => ''	]];	
+	}
+}
+//
+class JM20K1921_Stitcher extends Stitcher {
+	var $zoom = 16;
+	function getlogotext() {
+		return '堡圖1921';
+	}	
+	function getProcessParams($when = 'premerge') {
+		if ($when == 'postmerge')
+			return "";
+		else
+			return "";
+	}
+	function gettileurl() {
+		$url = 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1921-jpg-{z}-{x}-{y}';
+		if ($this->include_gpx==1){
+			return [
+				['url'=> $url,
+				  'process' => '-level 25%%'	],
+				['url'=> 'http://make.happyman.idv.tw/map/happyman_nowp/{z}/{x}/{y}.png',
+				  'process' => ''] 
+			];
+		} 
+		return [['url'=> $url,
+				'process' => '-level 25%%'	]];	
+	}
+}
+class JM50K1924_Stitcher extends Stitcher {
+	var $zoom = 16;
+	function getlogotext() {
+		return '陸測1924';
+	}	
+	function getProcessParams($when = 'premerge') {
+		if ($when == 'postmerge')
+			return "";
+		else
+			return "";
+	}
+	function gettileurl() {
+		$url = 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM50K_1924_new-jpg-{z}-{x}-{y}';
+		if ($this->include_gpx==1){
+			return [
+				['url'=> $url,
+				  'process' => ''	],
+				['url'=> 'http://make.happyman.idv.tw:8088/happyman_nowp/{z}/{x}/{y}.png',
+				  'process' => ''] # '-monochrome'
+			];
+		}
+		return [['url'=> $url,
+				'process' => ''	]];	
 	}
 }

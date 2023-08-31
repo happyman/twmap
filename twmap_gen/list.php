@@ -55,12 +55,11 @@ else {
 	exit(json_encode($response));
 }
 function versionname($ver){
-	if ($ver == 2016)
-		return "魯地圖";
-	else if ($ver == 3)
-		return "經建3";
+	$version=[1=>'經建1',3=>'經建3',2016=>'魯地圖',1904=>'堡圖',1916=>'蕃地',1924=>'陸測',1921=>'堡圖2'];
+	if (isset($version[$ver]))
+		return $version[$ver];
 	else
-		return "經建1";
+		return '其他';
 }
 function create_rows($maps,$startsn=0) {
 	global $TWMAP3URL;
@@ -78,15 +77,6 @@ function create_rows($maps,$startsn=0) {
 		$rows[$i]['x'] = $maps[$i]['locX'];
 		$rows[$i]['y'] = $maps[$i]['locY'];
 		$rows[$i]['grid'] = sprintf("%dx%d",$maps[$i]['shiftX'], $maps[$i]['shiftY']);
-		/*
-		$rows[$i]['pages'] = $maps[$i]['pageX'] * $maps[$i]['pageY'];
-		//if (map_file_exists($maps[$i]['filename'], 'pdf'))
-		if (strtotime($rows[$i]['date'] ) > strtotime('2013-06-27'))
-			$rows[$i]['pagetype'] = '<img src="imgs/pdf_icon.png" width="32px" alt="PDF" />';
-		else
-
-			$rows[$i]['pagetype'] = (determine_type($maps[$i]['shiftX'], $maps[$i]['shiftY'], 1) == 'A4R')? '<img src="imgs/a4r.png" width="20px" alt="橫印" title="A4橫" />' : "";
-			*/
 		$rows[$i]['version'] =  sprintf("TWD%s %s",$maps[$i]['datum'],versionname($maps[$i]['version']));
 		$rows[$i]['size'] = humanreadable($maps[$i]['size']);
 
@@ -97,17 +87,17 @@ function create_rows($maps,$startsn=0) {
 		// 如果地圖已經過期
 		if ($maps[$i]['flag'] == 1 ) {
 			// 看看是不是澎湖
-			if (strstr($maps[$i]['filename'],'v3p') || strstr($maps[$i]['filename'],'v2016p')) 
-					$ph = 1; else $ph = 0;
-				if ($maps[$i]['gpx'] == 1 ) {
-					$param = sprintf("mid=%s&title=%s&filename=%s",$maps[$i]['mid'],urlencode($maps[$i]['title']),$maps[$i]['filename']);
-					$op[] = sprintf("<span id='icon_recreate' title=\"mid=%d 重新產生\" 
-						onclick=\"map_action('recreate_gpx','%s')\"></span>", $maps[$i]['mid'],$param);
-				} else {
+			//if (strstr($maps[$i]['filename'],'v3p') || strstr($maps[$i]['filename'],'v2016p')) 
+			if (preg_match('/v\d+p/',$maps[$i]['filename'])) $ph = 1; else $ph = 0;
+			// version 看起來還是數字
+			if ($maps[$i]['gpx'] == 1 ) {
+				$param = sprintf("mid=%s&title=%s&filename=%s",$maps[$i]['mid'],urlencode($maps[$i]['title']),$maps[$i]['filename']);
+				$op[] = sprintf("<span id='icon_recreate' title=\"mid=%d 重新產生\" 
+				onclick=\"map_action('recreate_gpx','%s')\"></span>", $maps[$i]['mid'],$param);
+			} else {
 					$param = sprintf("x=%d&y=%d&shiftx=%d&shifty=%d&title=%s&version=%d&ph=%d&datum=TWD%s",$maps[$i]['locX']/1000,$maps[$i]['locY']/1000,$maps[$i]['shiftX'],$maps[$i]['shiftY'],urlencode($maps[$i]['title']),$maps[$i]['version'],$ph,$maps[$i]['datum']);
 					$op[] = sprintf("<span id='icon_recreate' title=\"mid=%d 重新產生\" 
-						onclick=\"map_action('recreate','%s')\"></span>",$maps[$i]['mid'],  $param);
-
+					onclick=\"map_action('recreate','%s')\"></span>",$maps[$i]['mid'],  $param);
 			}
 		} else {
 			$op[] = sprintf("<span id='icon_recycle' onclick=\"map_action('expire',%d)\" title=\"清理空間\"></span>",$maps[$i]['mid']);
