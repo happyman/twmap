@@ -66,13 +66,13 @@ function make_kml($mid) {
 	// test kml happyman add test path
 	$cachefile = sprintf("/srv/www/htdocs/map/gpxtmp/test/%06d/%d/%s",$map['uid'], $map['mid'], basename(str_replace(".gpx", ".kml", $gpx)));
 	if (file_exists($gpx)) {
-		if (0 && file_exists($cachefile) && filemtime($cachefile) >= filemtime($gpx)) {
+		if (file_exists($cachefile) && filemtime($cachefile) >= filemtime($gpx)) {
 			return array(true, $cachefile);
 		}
 		@mkdir(dirname($cachefile),0755, true);
 		//$cmds_args[10]  = "-x nuketypes,tracks,routes -x simplify,count=10 -x position,distance=20k";
-		//	$cmds_args[11]  = "-x nuketypes,tracks,routes -x position,distance=10k";
-		//	$cmds_args[12]  = "-x nuketypes,tracks,routes -x position,distance=5k";
+		//$cmds_args[11]  = "-x nuketypes,tracks,routes -x position,distance=10k";
+		//$cmds_args[12]  = "-x nuketypes,tracks,routes -x position,distance=5k";
 		//$cmds_args[13]  = "-x nuketypes,tracks,routes -x position,distance=2k";
 		//$cmds_args[14]  = "-x nuketypes,tracks,routes -x position,distance=1k";
 		//$cmds_args[15]  = "-x nuketypes,tracks,routes -x position,distance=500m";
@@ -81,9 +81,10 @@ function make_kml($mid) {
 		//$cmds_args[18]  = "-x nuketypes,tracks,routes -x position,distance=1m";
 		$cmd = sprintf("gpsbabel -i gpx -f %s -x nuketypes,points -o kml,lines=1,points=0,line_color=%s,line_width=3 -F %s", $gpx, pick_color($mid),$cachefile);
 		exec($cmd);
-			return array(true, $cachefile);
+		sleep(1);
+		return array(true, $cachefile);
 	} else  {
-				return array(false, "no gpx");
+		return array(false, "no gpx");
 	}
 }
 
