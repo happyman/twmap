@@ -709,7 +709,7 @@ class JM50K1924_Stitcher extends Stitcher {
 			return [
 				['url'=> $url,
 				  'process' => ''	],
-				['url'=> 'http://make.happyman.idv.tw:8088/happyman_nowp/{z}/{x}/{y}.png',
+				['url'=> 'http://make.happyman.idv.tw/map/happyman_nowp/{z}/{x}/{y}.png',
 				  'process' => ''] # '-monochrome'
 			];
 		}
