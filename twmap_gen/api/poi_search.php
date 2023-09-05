@@ -42,10 +42,13 @@ th {
 	background-color: yellow;
 	cursor: pointer;
 }
+.hightlight {
+	background-color: yellow;
+}
 </style>
 </head>
 <body>
-<h2 align=right>魯地圖 POI search</h2>
+<h2 style="align: right">魯地圖 POI search</h2>
 <hr>
 <form method=get><input id="keyword" type=text name="name" value="<?php echo $_REQUEST['name'];?>"><input type=submit value="POI搜尋">
 <?php
@@ -55,6 +58,7 @@ class poi_search {
 	var $db;
 	var $cat; // category name
 	var $cat_desc_arr; // category description
+	var $version;
 	function __construct($o=array()){
 		if (isset($o['file']) && file_exists($o['file'])) $this->file=$o['file'];
 		try {
@@ -65,14 +69,19 @@ class poi_search {
 			return false;
 		}
 		$this->load_category();
+		$stmt = $this->db->query("select value from metadata where name='version'");
+		$result = $stmt->fetch(PDO::FETCH_ASSOC);
+		// error_log(print_r($result,true));
+		$this->version = $result['value'];
 	}
+	
 	function load_category(){
 		$stmt = $this->db->query("select * from poi_categories");
 		$result = $stmt->fetchAll();
 		foreach($result as $row){
 			$this->cat[$row['id']] = array($row['id'],$row['name'],$row['parent']);
 			  if ($row['name'] == 'root')
-                                       $rootid = $row['id'];
+                    $rootid = $row['id'];
 		}
 		foreach($result as $row) {
 			$cur = $this->cat[$row['id']];
@@ -90,7 +99,10 @@ class poi_search {
 		// for better search performance, create new table instead of sub-query
 		$sql_table = sprintf("create table if not exists poi_data1 AS select id,data,category from poi_data inner join poi_category_map using (id)");
 		$this->db->query($sql_table);
-		$sql = sprintf("select A.id as id, A.data as data, A.category as category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from poi_data1 A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 50", pg_escape_string($name));
+		if ($this->version==3)
+			$sql = sprintf("select A.id as id, A.data as data, A.category as category, lat as Lat, lon as Lon from poi_data1 A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 50", pg_escape_string($name));
+		else
+			$sql = sprintf("select A.id as id, A.data as data, A.category as category, (B.minLat+B.maxLat)/2 as Lat, (B.minLon+B.maxLon)/2 as Lon from poi_data1 A, poi_index B where A.id=B.id and data like '%%%s%%' order by category limit 50", pg_escape_string($name));
 		$stmt = $this->db->query($sql);
 		$result= $stmt->fetchAll(PDO::FETCH_ASSOC);
 		return $result;
@@ -107,7 +119,7 @@ if ($ss === false ){
 	exit(0);
 }
 $result = $ss->search($keyword);
-error_log(print_r($result,true));
+// error_log(print_r($result,true));
 if (count($result)>0) {
 	echo "<br><table id='poitable' style='width: 100%'><thead><tr><td>data<td>category<td>location<td>行政區</tr></thead><tbody>";
 //print_r($result);
@@ -125,16 +137,21 @@ if (count($result)>0) {
 				$rown_string = "未知";
 			}
 			$loc = sprintf("%f,%f",$data['Lat'],$data['Lon']);
-        	printf("\n<tr><td><a href=# onclick='javascript:flyto(\"%s\");return false'>%s</a><td>%s<td><a href=# onclick='javascript:flyto(\"%s\");return false'>%s</a><td>%s</tr>"
-			,$loc,$data['data'],htmlentities($ss->category_desc($data['category'])),$loc,$loc,$town_string);
+			$hightlighted = preg_replace("/\w*?$keyword\w*/i", "<span class='hightlight'>$0</span>", str_replace(array("\r\n", "\r", "\n"), "<br />", $data['data']));
+        	printf("\n<tr><td>%s<td>%s<td><a href=# onclick='javascript:flyto(\"%s\");return false'>%s</a><td>%s</tr>"
+			,$hightlighted ,htmlentities($ss->category_desc($data['category'])),$loc,$loc,$town_string);
 	}
 	
 	?>
 	</tbody></table>
 <script>
 function flyto(name){
+	if(window.top!==window.self){
 		$("#tags",parent.document).val(name);
 		$("#goto",parent.document).trigger('click');
+	} else {
+		location=href='<?php echo $TWMAP3URL . "?goto="?>'+ name;
+	}
 }
 $(document).ready(function() {
 	$('table#poitable').dataTable( {
