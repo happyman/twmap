@@ -31,6 +31,7 @@ class Gpx2Svg {
 	var $datum = 'TWD67';
 	var $pixel_per_km;
 	var $_err;
+	var $logger;
 
 	function __construct($params) {
 		$this->width = $params['width'];
@@ -46,6 +47,7 @@ class Gpx2Svg {
 		$this->auto_shrink = (isset($params['auto_shrink']))? $params['auto_shrink'] : 0;
 		$this->datum = (isset($params['datum']))? $params['datum'] : 'TWD67';
 		$this->pixel_per_km = (isset($params['pixel_per_km']))? $params['pixel_per_km'] : 315;
+		$this->logger =  (isset($params['logger']))? $params['logger'] : null;
 	
 
 	}
@@ -95,9 +97,16 @@ class Gpx2Svg {
 		else
 			return Proj::proj_67toge2($a);
 	}
-	
+	function doLog($msg,$type='info') {
+		if (is_array($msg))
+			$msg = print_r($msg, true);
+        if ($this->logger)
+            $this->logger->$type($msg);
+        echo "$msg\n";
+    }
 	function dump() {
-		print_r($this);
+		//print_r($this);
+		$this->doLog(print_r($this,true));
 	}
 	// 利用 geoPHP 取得 bbox, 不用自己 parse 半天
 	// 取得本圖的 bounds
@@ -187,7 +196,7 @@ class Gpx2Svg {
 		$xx = ($br[0] - $tl[0])/1000;
 		$yy = ($tl[1] - $br[1])/1000;
 		//error_log(print_r(array($x,$y), true));
-		error_log("fit_a4:$x,$y->$xx,$yy");
+		$this->doLog("fit_a4:$x,$y->$xx,$yy");
 		return array($tl, $br);
 
 	}
@@ -199,7 +208,8 @@ class Gpx2Svg {
 		}
 		// LIBXML_NOCDATA parse CDATA correctly
 		$xml = simplexml_load_file($this->gpx, null, LIBXML_NOCDATA);
-		$arr = obj2array($xml);
+		//$arr = obj2array($xml);
+		$arr = $this->simplexmlToArray($xml);
 		// 1. 取得 bounds, 轉換成 twd67 最近的 bounds
 
 		//list($x,$y,$x1,$y1) = $this->get_bound($arr);
@@ -284,43 +294,46 @@ class Gpx2Svg {
 			$arr['trk'][0] = $arr['trk'];
 		// 共有多少 tracks?
 		$total_tracks = isset($arr['trk'])?count($arr['trk']):0;
+		//print_r($arr['trk']);
+		//print_r($arr['wpt']);
 		$min=8000;
 		$max=0;
 		for($i=0;$i<$total_tracks;$i++) {
 			if (!isset($arr['trk'][$i]['name'])) {
 				// skip track without "name"
 				// echo "no name:" . var_dump($arr['trk']);
+				
 				continue;
 			}
-			$this->track[$i] = array("name"=> $arr['trk'][$i]['name']);
+			$this->track[$i]['name'] = $arr['trk'][$i]['name'];
 
 			$j=0;
-			foreach($arr['trk'][$i]['trkseg']['trkseg'] as $trk_point) {
-				// skip route/track without '@attributes'
-				// echo "get point:";
-				// print_r($trk_point);
-				if (!isset($trk_point['@attributes']['lon'])){
-					if (!isset($trk_point['trkpt']['lon']))
-						continue;
-					else {
-						$trk_point['@attributes']['lon'] = $trk_point['trkpt']['lon'];
-						$trk_point['@attributes']['lat'] = $trk_point['trkpt']['lat'];
-					}
 
-				}
+			// 只有一層
+			if (isset($arr['trk'][$i]['trkseg']['trkpt']['lat']))
+				$arr['trk'][$i]['trkseg']['trkpt'][0] = $arr['trk'][$i]['trkseg']['trkpt'];
 
-				if($trk_point['@attributes']['lon'] > $this->bound['br'][0] ||
-					$trk_point['@attributes']['lon']  < $this->bound['tl'][0] ||
-					$trk_point['@attributes']['lat'] > $this->bound['tl'][1] ||
-					$trk_point['@attributes']['lat']  < $this->bound['br'][1] ){
-					// echo "oob!!!!!\n";	
+			foreach($arr['trk'][$i]['trkseg']['trkpt'] as $trk_point) {
+				
+				// $this->doLog($trk_point);
+				// 1. filter bad data
+				if (!isset($trk_point['lon']) || !isset($trk_point['lat'])){
 					continue;
 				}
+
+				if ($trk_point['lon'] >$this->bound['br'][0] || 
+				$trk_point['lon'] < $this->bound['tl'][0] ||
+				$trk_point['lat'] > $this->bound['tl'][1] ||
+				$trk_point['lat'] < $this->bound['br'][1] ) {
+					print_r("oob");
+					continue;
+				}
+				// 2. 高度處理
 				if (isset($trk_point['ele'])) {
 					// 如果高度小於 0 
 					if ($trk_point['ele'] < 0 ) {
 						$trk_point['ele'] =0;
-						$arr['trk'][$i]['trkseg']['trkseg']['ele'] = 0;
+						// $arr['trk'][$i]['trkseg']['trkseg']['ele'] = 0;
 					}
 					if ($trk_point['ele'] < $min) 
 						$min = $trk_point['ele'];
@@ -330,29 +343,30 @@ class Gpx2Svg {
 					$trk_point['ele'] = -100;
 				}
 				$this->track[$i]['point'][$j] = $trk_point;
-				$this->track[$i]['point'][$j]['rel'] = $this->rel_px($trk_point['@attributes']['lon'],$trk_point['@attributes']['lat']);
+				$this->track[$i]['point'][$j]['rel'] = $this->rel_px($trk_point['lon'],$trk_point['lat']);
 				$j++;
 			}
 			// 處理 track 的高度
-		}
+		}	
+		$this->doLog($this->track);
 		$this->ele_bound = array(($min<0)?0:$min, ($max<0)?0:$max);
 		//$this->dump();
 		//$this->waypoint = $arr['wpt'];
 		$j = 0;
 		if (isset($arr['wpt'])){
 			foreach($arr['wpt'] as $waypoint) {
-				if($waypoint['@attributes']['lon'] > $this->bound['br'][0] ||
-					$waypoint['@attributes']['lon']  < $this->bound['tl'][0] ||
-					$waypoint['@attributes']['lat'] > $this->bound['tl'][1] ||
-					$waypoint['@attributes']['lat']  < $this->bound['br'][1] )
+				if($waypoint['lon'] > $this->bound['br'][0] ||
+					$waypoint['lon']  < $this->bound['tl'][0] ||
+					$waypoint['lat'] > $this->bound['tl'][1] ||
+					$waypoint['lat']  < $this->bound['br'][1] )
 					continue;
-				print_r($waypoint);
+				//print_r($waypoint);
 				$this->waypoint[$j] = $waypoint;
-				$this->waypoint[$j]['rel'] = $this->rel_px($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']);
+				$this->waypoint[$j]['rel'] = $this->rel_px($waypoint['lon'],$waypoint['lat']);
 				if ($this->taiwan == 1)
-					$this->waypoint[$j]['tw67'] = $this->coordtotm2(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']),0);
+					$this->waypoint[$j]['tw67'] = $this->coordtotm2(array($waypoint['lon'],$waypoint['lat']),0);
 				else
-					$this->waypoint[$j]['tw67'] = $this->coordtotm2(array($waypoint['@attributes']['lon'],$waypoint['@attributes']['lat']),1);
+					$this->waypoint[$j]['tw67'] = $this->coordtotm2(array($waypoint['lon'],$waypoint['lat']),1);
 				$j++;
 			}
 		}
@@ -900,57 +914,35 @@ class Gpx2Svg {
 			return array($st, $msg); 
 		*/  
 	}
-};
-	
-function obj2array($obj, $level=0) {
-
-	$items = array();
-
-	if(!is_object($obj)) return $items;
-
-	$child = (array)$obj;
-
-	if(sizeof($child)>1) {
-		foreach($child as $aa=>$bb) {
-			if(is_array($bb)) {
-				foreach($bb as $ee=>$ff) {
-					if(!is_object($ff)) {
-						$items[$aa][$ee] = $ff;
-					} else
-						if(get_class($ff)=='SimpleXMLElement') {
-							$items[$aa][$ee] = obj2array($ff,$level+1);
-						}
+	// https://gist.github.com/jasondmoss/7344311
+	// 比較正確版本
+	function simplexmlToArray($xml)
+	{
+		$ar = array();
+		foreach ($xml->children() as $k => $v) {
+			$child = $this->simplexmlToArray($v);
+			if (count($child) == 0) {
+				$child = (string) $v;
+			}
+			foreach ($v->attributes() as $ak => $av) {
+				if (!is_array($child)) {
+					$child = array("value" => $child);
 				}
-			} else
-				if(!is_object($bb)) {
-					$items[$aa] = $bb;
-				} else
-					if(get_class($bb)=='SimpleXMLElement') {
-						$items[$aa] = obj2array($bb,$level+1);
-					}
-		}
-	} else
-		if(sizeof($child)>0) {
-			foreach($child as $aa=>$bb) {
-				if(!is_array($bb)&&!is_object($bb)) {
-					$items[$aa] = $bb;
-				} else
-					if(is_object($bb)) {
-						$items[$aa] = obj2array($bb,$level+1);
-					} else {
-						foreach($bb as $cc=>$dd) {
-							if(!is_object($dd)) {
-								$items[$obj->getName()][$cc] = $dd;
-							} else
-								if(get_class($dd)=='SimpleXMLElement') {
-									$items[$obj->getName()][$cc] = obj2array($dd,$level+1);
-								}
-						}
-					}
+				$child[$ak] = (string) $av;
+			}
+			if (!array_key_exists($k, $ar)) {
+				$ar[$k] = $child;
+			} else {
+				if (!is_string($ar[$k]) && isset($ar[$k][0])) {
+					$ar[$k][] = $child;
+				} else {
+					$ar[$k] = array($ar[$k]);
+					$ar[$k][] = $child;
+				}
 			}
 		}
-
-	return $items;
-}
-
+		return $ar;
+	}
+};
+	
 

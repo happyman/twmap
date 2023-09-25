@@ -246,6 +246,7 @@ if ($jump <= $stage ) {
 		$param['datum']=$datum;
 		$param['pixel_per_km'] = $pixel_per_km;
 		$param['width']=$shiftx*$pixel_per_km;
+		$param['logger']=$logger;
 
 		cli_msglog("create SVG: $outsvg");
 		$svg = new Happyman\Twmap\Svg\Gpx2Svg($param);
