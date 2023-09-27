@@ -289,11 +289,21 @@ class Gpx2Svg {
 
 		// 2. 取得所有 trk point 的高度 作為 colorize trk 的依據
 		// $this->dump();
-		// 像 oruxmap 會產生只有一層的 trk, 而不會有 trk 的 array => 為了不想重寫 parser, 放到 array 去
-		if (isset($arr['trk']['trkseg']))
-			$arr['trk'][0] = $arr['trk'];
+
+		// 像 oruxmap 會產生只有一層的 trk, 而不會有 trk 的 array, garmin 的就是每個 track 只有一個 trkseg
+		// 而且 oruxmaps 的 trkseg 是 num array
+		// 把 trkseg 當作 trk[0] = trk[trkseg][0]
+		$i=0;
+		if (isset($arr['trk']['trkseg'])) {
+			foreach($arr['trk']['trkseg'] as $trkpta) {
+				$arr['trk'][$i++]['trkseg'] = $trkpta;
+			}
+			unset($arr['trk']['trkseg']);
+		}
+
 		// 共有多少 tracks?
 		$total_tracks = isset($arr['trk'])?count($arr['trk']):0;
+		// debug:
 		//print_r($arr['trk']);
 		//print_r($arr['wpt']);
 		$min=8000;
