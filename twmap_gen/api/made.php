@@ -26,6 +26,8 @@ function my_error_out($msg){
 	global $log_channel;
 	notify_web($log_channel,array("err:".$msg));
 	msglog("err:$msg");
+	header("HTTP/1.0 400 Bad Request");
+	printf("<h1>%s</h1>",print_r($msg,true));
 	exit(0);
 }
 function finish_task($param) {
@@ -66,6 +68,7 @@ function finish_task($param) {
 	
 	msglog("notify web $log_channel with $mid");
 	notify_web($log_channel,array("finished!$mid"));
+	printf("<h1>$okmsg</h1>");
 }
 
 

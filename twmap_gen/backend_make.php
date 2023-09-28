@@ -185,6 +185,7 @@ $MYUID = $MY_SESSION['uid'];
 $outx=0;$outy=0;
 $log_channel = $inp['formid'];
 
+$dim = "";
 $dim .= isset($inp['out57'])? '-D 5x7 ' : '';
 $dim .= isset($inp['out46'])? '-D 4x6 ' : '';
 $dim .= isset($inp['out34'])? '-D 3x4 ' : '';
@@ -219,7 +220,7 @@ redis_set($cmd_param_key,time());
 
 $make_param_array=array('uid'=>$MYUID, 'limit'=>$user['limit'], 'recreate_flag'=> $recreate_flag, 'xx'=>$xx, 'yy'=>$yy, 'shiftx'=>$shiftx, 'shifty'=>$shifty, 
 'datum'=>isset($inp['97datum'])? "97":"67", 'version'=>$version,'title'=>$title, 'outimage'=>$outimage,
-'$remote_ip'=> $_SERVER['REMOTE_ADDR'], 'log_channel'=>$log_channel, 'paper'=> isset($inp['a3_paper'])?'A3':'A4', 'cmd_param_key'=>$cmd_param_key );
+'remote_ip'=> $_SERVER['REMOTE_ADDR'], 'log_channel'=>$log_channel, 'paper'=> isset($inp['a3_paper'])?'A3':'A4', 'cmd_param_key'=>$cmd_param_key );
 
 redis_set($log_channel, json_encode($make_param_array));
 
@@ -270,10 +271,12 @@ function msglog($str) {
 
 function _mb_mime_encode($string, $encoding)
 {
+	// https://www.php.net/manual/zh/function.mb-encode-mimeheader.php
     $pos = 0;
     // after 36 single bytes characters if then comes MB, it is broken
     // but I trimmed it down to 24, to stay 100% < 76 chars per line
     $split = 24;
+	$_string = "";
     while ($pos < mb_strlen($string, $encoding))
     {
         $output = mb_strimwidth($string, $pos, $split, "", $encoding);

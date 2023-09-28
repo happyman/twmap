@@ -439,9 +439,9 @@ if (!empty($callback)){
 	// log
 	if (isset($opt['agent']))
 		$url.="&agent=".trim($opt['agent']);
-	cli_msglog("call callback api");
+	cli_msglog("call callback api");	
 	// $output = file_get_contents($url);
-	$cmd = sprintf("curl --connect-timeout 2 --max-time 30 --retry 10 --retry-max-time 0 %s",escapeshellarg($url));
+	$cmd = sprintf("curl --fail-with-body --connect-timeout 2 --max-time 30 --retry 10 --retry-max-time 0 %s",escapeshellarg($url));
 	// 把 cmd 寫下來
 	$logger->debug($cmd);
 	file_put_contents($outcmd,"\n\n$cmd\n",FILE_APPEND); 
