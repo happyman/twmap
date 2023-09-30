@@ -32,6 +32,16 @@ $(document).ready(function() {
                 $('#openwin').html('<a href="<?php echo $site_html_root; ?>" target=_top>獨立視窗</a>');
         }
 });
+
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q1DHK68EH5"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Q1DHK68EH5');
+
 </script>
 <body><hr>
                 <div id="footer" title="About"  name="footer">

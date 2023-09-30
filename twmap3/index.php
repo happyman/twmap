@@ -302,9 +302,6 @@ printf("var shorten_url = '%s';",$CONFIG['shorten_url']);
 	<div id="msg" style="background-color: white;">
 	</div>
 <script>
-	var _gaq = _gaq || [];
-	_gaq.push(['_setAccount', 'UA-19949015-1']);
-	_gaq.push(['_trackPageview']);
 	$(function() {
 	$.getScript( "js/main.js?ts=<?php echo time();?>" ).done(function() {
 		initialize();
@@ -325,6 +322,14 @@ printf("var shorten_url = '%s';",$CONFIG['shorten_url']);
 	});
 
 });
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q1DHK68EH5"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Q1DHK68EH5');
 
 </script>
 </body>

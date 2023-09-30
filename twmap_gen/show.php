@@ -39,38 +39,30 @@ if ($mid < 0 ){
 	$smarty->assign("site_root_url", $site_url . $site_html_root);
 // $smarty->assign("ogimage", array("thumb.php?mid=$mid&size=s", "thumb.php?mid=$mid&size=m", "thumb.php?mid=$mid&size=l"));
 	$smarty->assign("html_head", $html_head);
-if ($html_head == 1 ) {
-        echo $smarty->fetch("header.html");
-        if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1 ) {
-                $smarty->assign("user_icon", 'imgs/icon_'.$_SESSION['mylogin']['type']. '.png');
-                $smarty->assign("user_email", $_SESSION['mylogin']['email'] );
-                $smarty->assign("user_nickname", $_SESSION['mylogin']['nick'] );
-                $smarty->assign("lastest_mid", "&mid=$mid" );
-                $smarty->assign("initial_tab", 3 );
-                $smarty->assign("browser_url", $TWMAP3URL );
-                $smarty->assign("loggedin", 1);
-        } else { // 沒有登入
-                // require_once('lib/fb/facebook.php');
-                //require_once('lib/xuite.php');
-                $smarty->assign("lastest_mid", "&mid=$mid" );
-                $smarty->assign("initial_tab", 2 );
-                $smarty->assign("showing", true );
-                $smarty->assign("browser_url", $TWMAP3URL );
-                $smarty->assign("loggedin", 0);
-                // $smarty->assign("login_xuite", $xuite->getLoginUrl());
-                /* $smarty->assign("login_fb",
-                        $facebook->getLoginUrl(  array(
-                                'canvas'    => 0,
-                                'fbconnect' => 1,
-                                'req_perms' => 'email'
+	if ($html_head == 1 ) {
+			echo $smarty->fetch("header.html");
+			if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == 1 ) {
+					$smarty->assign("user_icon", 'imgs/icon_'.$_SESSION['mylogin']['type']. '.png');
+					$smarty->assign("user_email", $_SESSION['mylogin']['email'] );
+					$smarty->assign("user_nickname", $_SESSION['mylogin']['nick'] );
+					$smarty->assign("lastest_mid", "&mid=$mid" );
+					$smarty->assign("initial_tab", 3 );
+					$smarty->assign("browser_url", $TWMAP3URL );
+					$smarty->assign("loggedin", 1);
+			} else { // 沒有登入
+					// require_once('lib/fb/facebook.php');
+					//require_once('lib/xuite.php');
+					$smarty->assign("lastest_mid", "&mid=$mid" );
+					$smarty->assign("initial_tab", 2 );
+					$smarty->assign("showing", true );
+					$smarty->assign("browser_url", $TWMAP3URL );
+					$smarty->assign("loggedin", 0);
 
-                        )));
-		*/
-                $smarty->assign("user_icon", "imgs/icon-map.png");
-        }
-        echo $smarty->fetch("main.html");
-        exit;
-}
+					$smarty->assign("user_icon", "imgs/icon-map.png");
+			}
+			echo $smarty->fetch("main.html");
+			exit;
+	}
 
 	$smarty->assign('map',$map);
 	$gpx_link = $site_url . str_replace($out_root,$out_html_root,sprintf("%s%d/%s_p.gpx",$map['path'],$map['tid'],$map['md5name']));
@@ -88,8 +80,10 @@ if ($html_head == 1 ) {
 	$links['page'] = pagelink($map);
 	$smarty->assign('links',$links);
 	$smarty->display('show_track.html');
+	echo $smarty->fetch("analytics.html");
 	exit(0);
-}
+} // end of mid < 0
+
 // 3. 顯示地圖
 // $html_root = $out_html_root . sprintf("/%06d/%d", $map['uid'],$mid);
 $html_root = $out_html_root . str_replace($out_root, "", dirname($map['filename']));
@@ -123,15 +117,6 @@ if ($html_head == 1 ) {
 		$smarty->assign("showing", true );
 		$smarty->assign("browser_url", $TWMAP3URL );
 		$smarty->assign("loggedin", 0);
-		// $smarty->assign("login_xuite", $xuite->getLoginUrl());
-		/* $smarty->assign("login_fb",
-			$facebook->getLoginUrl(  array(
-				'canvas'    => 0,
-				'fbconnect' => 1,
-				'req_perms' => 'email'
-
-			)));
- 		*/
 		$smarty->assign("user_icon", "imgs/icon-map.png");
 	} 
 	echo $smarty->fetch("main.html");
@@ -144,6 +129,7 @@ case 2:
 	map_accessed($mid);
 	$smarty->assign('map',$map);
 	$smarty->display('show_deleted.html');
+	echo $smarty->fetch("analytics.html");
 	exit;
 	break;
 case 1:
@@ -158,6 +144,7 @@ case 1:
 	$smarty->assign('map',$map);
 	$smarty->assign('links',$links);
 	$smarty->display('show_expired.html');
+	echo $smarty->fetch("analytics.html");
 	exit;
 	break;
 case 0:
@@ -237,6 +224,7 @@ default:
 	$smarty->assign("map",$map);
 	$smarty->assign("links",$links);
 	$smarty->display("show_ok.html");
+	echo $smarty->fetch("analytics.html");
 	exit;
 	// ad();
 	//footer();
