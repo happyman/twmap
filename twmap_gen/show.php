@@ -49,9 +49,8 @@ if ($mid < 0 ){
 					$smarty->assign("initial_tab", 3 );
 					$smarty->assign("browser_url", $TWMAP3URL );
 					$smarty->assign("loggedin", 1);
+					$smarty->assign("logout_url", "lib/Hybrid/auth.php?provider=". $_SESSION['mylogin']['type'] . "&action=logout");
 			} else { // 沒有登入
-					// require_once('lib/fb/facebook.php');
-					//require_once('lib/xuite.php');
 					$smarty->assign("lastest_mid", "&mid=$mid" );
 					$smarty->assign("initial_tab", 2 );
 					$smarty->assign("showing", true );
@@ -109,6 +108,7 @@ if ($html_head == 1 ) {
 		$smarty->assign("initial_tab", 3 );
 		$smarty->assign("browser_url", $TWMAP3URL );
 		$smarty->assign("loggedin", 1);
+		$smarty->assign("logout_url", "lib/Hybrid/auth.php?provider=". $_SESSION['mylogin']['type'] . "&action=logout");
 	} else { // 沒有登入
 		//require_once('lib/fb/facebook.php');
 		//require_once('lib/xuite.php');

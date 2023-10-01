@@ -22,7 +22,7 @@
 				<li>延伸 東方 {$map.shiftX} 與 南方 {$map.shiftY} 公里
 				<li id="calc"></li>
 				<!-- <li>列印共需要 {$map.pageX * $map.pageY} 張紙 -->
-				{if $map.output}
+				{if array_key_exists('output',$map) }
 				<li>輸出 {$map.output}</li>
 				{/if}
 				<li>產生日期: {$map.cdate}
