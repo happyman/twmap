@@ -398,7 +398,7 @@ function map_migrate($root,$uid,$mid) {
 	foreach($files as $f) {
 		$cmd = "/bin/mv $f $dir";
 		exec($cmd);
-		error_log("migrate $mid:$cmd");
+		//error_log("migrate $mid:$cmd");
 	}
 	//$newfilename = sprintf("%s/%s",$dir, basename($row['filename']));
 	// 3. 更新資料庫
@@ -1262,6 +1262,7 @@ function get_distance2($wkt_str, $twDEM_path){
 	if ($elev_data[0] > $maxele) $maxele = $elev_data[0];
 	if ($elev_data[0] < $minele) $minele = $elev_data[0];
 	$sumele = $elev_data[0];
+	$dist[0]=0; $dist2[0]=0;
 	for($i=1;$i<count($points);$i++) {
 		$point = explode(" ",$points[$i]);
 		$ele = $elev_data[$i];
@@ -1303,14 +1304,10 @@ function get_distance2($wkt_str, $twDEM_path){
 	for($i=0;$i<count($points);$i++) {
 		$sum+=$dist[$i];
 		$sum2+=$dist2[$i];
-		// $sum2+=$dist2[$i];
-		$msg.=sprintf("<pre>%d %s %d h=%.02f d=%.02f d1=%.02f  \n",$i,$points[$i],$elev_data[$i],$elediff[$i],$dist[$i],$dist2[$i]);
-		//if ($i>0) {
-			$slope_y = $a*$sum+$b;
-			if ($elev_data[$i] > $slope_y) $cross = 1;
-			$charts[] =sprintf("[%.02f,%.02f,%.02f]",$sum,$elev_data[$i], $slope_y);
-			
-		//}
+		$slope_y = $a*$sum+$b;
+		if ($elev_data[$i] > $slope_y) 
+			$cross = 1;
+		$charts[] =sprintf("[%.02f,%.02f,%.02f]",$sum,$elev_data[$i], $slope_y);	
 	}
 	return array(true,array("step"=>20, "d"=>$sum, "d1"=>$sum2, "avgele" => $sumele / count($points),
 	"ascent"=>$ascent, "descent"=>$descent, "outofrange" => $outofrange, "maxele"=> $maxele, "minele" => $minele, "chart"=>implode(",",$charts), "azimuth"=>$azi_result['azimuth'], "cross"=>$cross));

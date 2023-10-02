@@ -68,7 +68,7 @@ function finish_task($param) {
 	
 	msglog("notify web $log_channel with $mid");
 	notify_web($log_channel,array("finished!$mid"));
-	printf("<h1>$okmsg</h1>");
+	printf("<h1>%s</h1>",$okmsg[0]);
 }
 
 
