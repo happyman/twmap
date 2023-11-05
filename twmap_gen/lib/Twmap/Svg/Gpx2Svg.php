@@ -20,7 +20,7 @@ class Gpx2Svg {
 	var $ele_bound;
 	var $show_label_wpt = 0;
 	var $show_label_trk= 0;
-	var $input_bound67;
+	var $input_tm2bbox;
 	var $logotext;
 	var $taiwan;
 	var $do_fit_a4 = 1;
@@ -39,10 +39,10 @@ class Gpx2Svg {
 		$this->gpx = $params['gpx'];
 		$this->show_label_trk =(isset($params['show_label_trk'])) ? $params['show_label_trk'] :0;
 		$this->show_label_wpt =(isset($params['show_label_wpt'])) ? $params['show_label_wpt'] : 0;
-		$this->input_bound67 = (isset($params['input_bound67'])) ? $params['input_bound67'] : array();
+		$this->input_tm2bbox = (isset($params['input_tm2bbox'])) ? $params['input_tm2bbox'] : array();
 		$this->do_fit_a4 = (isset($params['fit_a4']) && $params['fit_a4'] == 1 ) ? 1 : 0;
 		$this->logotext = (isset($params['logotext']))? $params['logotext'] : "";
-		$this->initparams = array("width"=>$this->width, "bgimg"=> $this->bgimg, "logotext" => $this->logotext , "gpx"=>$this->gpx , "input_bound67"=> $this->input_bound67, "show_label_trk"=>$this->show_label_trk, "show_label_wpt" =>  $this->show_label_wpt , "do_fit_a4" => $this->do_fit_a4 );
+		$this->initparams = array("width"=>$this->width, "bgimg"=> $this->bgimg, "logotext" => $this->logotext , "gpx"=>$this->gpx , "input_tm2bbox"=> $this->input_tm2bbox, "show_label_trk"=>$this->show_label_trk, "show_label_wpt" =>  $this->show_label_wpt , "do_fit_a4" => $this->do_fit_a4 );
 		$this->colorize = (isset($params['colorize']))? $params['colorize'] : "";
 		$this->auto_shrink = (isset($params['auto_shrink']))? $params['auto_shrink'] : 0;
 		$this->datum = (isset($params['datum']))? $params['datum'] : 'TWD67';
@@ -236,10 +236,10 @@ class Gpx2Svg {
 			list($tx1, $ty1) = $this->coordtotm2(array($x1,$y1),1);
 		}
 		// cmd_make 帶入已算參數, 免重算
-		if (isset($this->input_bound67['x'])) {
+		if (isset($this->input_tm2bbox['x'])) {
 			// 免算
-			$tl = array($this->input_bound67['x'], $this->input_bound67['y']);
-			$br = array($this->input_bound67['x1'], $this->input_bound67['y1']);
+			$tl = array($this->input_tm2bbox['x'], $this->input_tm2bbox['y']);
+			$br = array($this->input_tm2bbox['x1'], $this->input_tm2bbox['y1']);
 		} else {
 			// 如果需要多 index 的話, 才 expend
 			// 並且不是範圍已經輸入了
@@ -298,43 +298,28 @@ class Gpx2Svg {
 
 		// 2. 取得所有 trk point 的高度 作為 colorize trk 的依據
 		// $this->dump();
-
-		// 像 oruxmap 會產生只有一層的 trk, 而不會有 trk 的 array, garmin 的就是每個 track 只有一個 trkseg
-		// 而且 oruxmaps 的 trkseg 是 num array
-		// 把 trkseg 當作 trk[0] = trk[trkseg][0]
-		$i=0;
-		if (isset($arr['trk']['trkseg'])) {
-			foreach($arr['trk']['trkseg'] as $trkpta) {
-				$arr['trk'][$i++]['trkseg'] = $trkpta;
-			}
-			unset($arr['trk']['trkseg']);
-		}
-
 		// 共有多少 tracks?
-		$total_tracks = isset($arr['trk'])?count($arr['trk']):0;
+		// 用 gpsbabel -ack 成1條了, 所以只要處理 segements.
+		if (isset($arr['trk']['name'])) 
+			$this->track[0]['name'] = trim($arr['trk']['name']);
+		else
+			$this->track[0]['name'] = 'unnamed track'; 
+		// $total_tracks = isset($arr['trk'])?count($arr['trk']):0;
+		$total_segs = count($arr['trk']['trkseg']);
 		// debug:
 		//print_r($arr['trk']);
 		//print_r($arr['wpt']);
-		$min=8000;
+		// 有些無 trkseg array
+		if (!isset($arr['trk']['trkseg'][0])){
+			$arr['trk']['trkseg'][0] = $arr['trk']['trkseg'];
+		}
+		$min=8000;                        
 		$max=0;
-		for($i=0;$i<$total_tracks;$i++) {
-			if (!isset($arr['trk'][$i]['name'])) {
-				// skip track without "name"
-				// echo "no name:" . var_dump($arr['trk']);
-				
-				continue;
-			}
-			$this->track[$i]['name'] = $arr['trk'][$i]['name'];
-
+		for($i=0;$i<$total_segs;$i++) {
 			$j=0;
-
-			// 只有一層
-			if (isset($arr['trk'][$i]['trkseg']['trkpt']['lat']))
-				$arr['trk'][$i]['trkseg']['trkpt'][0] = $arr['trk'][$i]['trkseg']['trkpt'];
-
-			foreach($arr['trk'][$i]['trkseg']['trkpt'] as $trk_point) {
+			foreach($arr['trk']['trkseg'][$i]['trkpt'] as $trk_point) {
 				
-				// $this->doLog($trk_point);
+				//$this->doLog($trk_point);
 				// 1. filter bad data
 				if (!isset($trk_point['lon']) || !isset($trk_point['lat'])){
 					continue;
@@ -361,13 +346,13 @@ class Gpx2Svg {
 				} else {
 					$trk_point['ele'] = -100;
 				}
-				$this->track[$i]['point'][$j] = $trk_point;
-				$this->track[$i]['point'][$j]['rel'] = $this->rel_px($trk_point['lon'],$trk_point['lat']);
+				$this->track[0]['point'][$j] = $trk_point;
+				$this->track[0]['point'][$j]['rel'] = $this->rel_px($trk_point['lon'],$trk_point['lat']);
 				$j++;
 			}
 			// 處理 track 的高度
-		}	
-		$this->doLog($this->track);
+		}
+		//$this->doLog($this->track);
 		$this->ele_bound = array(($min<0)?0:$min, ($max<0)?0:$max);
 		//$this->dump();
 		//$this->waypoint = $arr['wpt'];
@@ -393,6 +378,11 @@ class Gpx2Svg {
 		if (empty($this->track) && empty($this->waypoint))
 			return false;
 		//$this->dump();
+		$this->doLog(sprintf("name: %s",$this->track[0]['name']));
+		if ($this->waypoint)
+		$this->doLog(sprintf("wpts %d",count($this->waypoint)));
+		if ($this->track)
+		$this->doLog(sprintf("trkpts: %d",count($this->track[0]['point'])));
 		return true;
 	}
 	function output($outsvg) {

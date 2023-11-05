@@ -53,7 +53,7 @@ if (!isset($opt['r']) || !isset($opt['O'])){
 	echo "       -m /tmp tmpdir 暫存檔存放目錄\n";
 	echo "       --check 檢查相依執行程式\n";
 	echo "除錯用 -d debug \n";
-	echo "       -s 1-5: from stage 1: create_tag_png 2: split images 3: make simages 4: create kmz 5: create pdf.\n";
+	echo "       -s 0-5: from stage 0: parse argv 1: create_tag_png 2: split images 3: make simages 4: create kmz 5: create pdf.\n";
 	echo "       -S use with -s, if -s 2 -S, means do only step 2\n";
 	echo "以下地圖產生器使用:\n";
 	echo "       -i ip: log remote ip address --agent myhost\n";
@@ -82,8 +82,12 @@ else
 	$title=mb_decode_mimeheader($opt['t']);
 $keep_color = (isset($opt['c']))? 1 : 0;
 $ph = isset($opt['p'])? $opt['p'] : 0;
-$jump = isset($opt['s'])? $opt['s'] : 1;
-if (isset($opt['S'])) $jumpstop = $jump+1; else $jumpstop = 0;
+$jump = isset($opt['s'])? $opt['s'] : 0;
+if (isset($opt['S'])) 
+	$jumpstop = $jump+1; 
+else
+	// 預設不停止
+	$jumpstop = 0;
 $remote_ip = isset($opt['i'])? $opt['i'] : "localhost";
 if (isset($opt['d'])) $debug_flag= 1; else $debug_flag = 0;
 // add output dimension, allowed multiple dims
@@ -144,7 +148,7 @@ $outpdf = $outfile_prefix . ".pdf";
 // cmd
 $outcmd = $outfile_prefix . ".cmd";
 $logger->debug($outcmd . " created");
-$stage = 1;
+$stage = 0;
 // 決定哪一種輸出省紙
 if (isset($opt['3']))
 	$paper = 'A3';
@@ -214,51 +218,59 @@ if (!empty($g->err)){
 	cli_error_out(implode(":",$g->err),0);
 }
 
+
+
+if (file_exists($outimage)) {
+	// 如果 10 分鐘之前的 dead file, 清除之
+	if (time() - filemtime($outimage) > 600) {
+	// map_files
+	$files = glob($outfile_prefix . "*");
+	foreach($files as $f) {
+		$ret = unlink($f);
+	}
+	} else {
+	cli_msglog("$outimage exists");
+	cli_error_out("若發生此問題, 通常表示上一個出圖過程 crash 殘留檔案, 請回報此路徑 $outimage",0);
+	}
+}
+// 1先檢查是否有 gpx 存在與否, 2轉換看看，及早發現錯誤
+if (isset($opt['g'])) {
+	list($param['gpx'],$param['show_label_trk'],$param['show_label_wpt'])=explode(":",$opt['g']);
+	if (!file_exists($param['gpx'])) {
+		cli_error_out("unable to read gpx file",0);
+	}
+
+	$param['logotext'] = $title;
+	$param['bgimg'] = "TEST_IMG";
+	$param['fit_a4'] = 0;
+	// no more detection
+	$param['input_tm2bbox'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
+	$param['datum']=$datum;
+	$param['pixel_per_km'] = $pixel_per_km;
+	$param['width']=$shiftx*$pixel_per_km;
+	$param['logger']=$logger;
+
+	// cli_msglog("create SVG: $outsvg");
+	$svg = new Happyman\Twmap\Svg\Gpx2Svg($param);
+	$ret = $svg->process();
+	if ($ret === false ) {
+		@unlink($outimage_orig);
+		cli_error_out("GPX process 失敗" . $param['gpx'], 0);
+	}
+
+}
+// 這時再把 cmd 寫下來, 以免蓋掉前次的執行
+file_put_contents($outcmd,implode(" ",$argv)); 
+cli_msglog(sprintf("本次出 %s 圖",$g->getlogotext()));
 cli_msglog("ps%10");
 showmem("after STB created");
-if ($jump <= $stage ) {
 
-	if (file_exists($outimage)) {
-		// 如果 10 分鐘之前的 dead file, 清除之
-	  if (time() - filemtime($outimage) > 600) {
-		// map_files
-	  	$files = glob($outfile_prefix . "*");
-		foreach($files as $f) {
-			$ret = unlink($f);
-		}
-	  } else {
-	  	cli_msglog("$outimage exists");
-		cli_error_out("若發生此問題, 通常表示上一個出圖過程 crash 殘留檔案, 請回報此路徑 $outimage",0);
-	  }
-	}
-	// 1先檢查是否有 gpx 存在與否, 2轉換看看，及早發現錯誤
-	if (isset($opt['g'])) {
-		list($param['gpx'],$param['show_label_trk'],$param['show_label_wpt'])=explode(":",$opt['g']);
-		if (!file_exists($param['gpx'])) {
-			cli_error_out("unable to read gpx file",0);
-		}
-
-		$param['logotext'] = $title;
-		$param['bgimg'] = "TEST_IMG";
-		$param['fit_a4'] = 0;
-		// no more detection
-		$param['input_bound67'] = array("x" => $startx * 1000, 'y'=> $starty * 1000, 'x1' => ($startx+$shiftx)*1000, 'y1' => ($starty-$shifty)*1000, 'ph' => $ph);
-		$param['datum']=$datum;
-		$param['pixel_per_km'] = $pixel_per_km;
-		$param['width']=$shiftx*$pixel_per_km;
-		$param['logger']=$logger;
-
-		// cli_msglog("create SVG: $outsvg");
-		$svg = new Happyman\Twmap\Svg\Gpx2Svg($param);
-		$ret = $svg->process();
-		if ($ret === false ) {
-			@unlink($outimage_orig);
-			cli_error_out("GPX process 失敗" . $param['gpx'], 0);
-		}
-	}
-	// 這時再把 cmd 寫下來, 以免蓋掉前次的執行
-	file_put_contents($outcmd,implode(" ",$argv)); 
-	cli_msglog(sprintf("本次出 %s 圖",$g->getlogotext()));
+$stage =1;
+if ($stage == $jumpstop) {
+	echo "stop by -S\n";
+	exit(0);
+}
+if ($stage >= $jump ) {
 	$im = $g->create_base_png(); // 產生
 	// 產生不出來
 	if ($im === false) 
