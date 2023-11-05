@@ -54,6 +54,7 @@ class Gpx2Svg {
 	static function check(){
 		$req=[ 
 			'convert' => [ 'package'=>'imagemagick', 'test'=>''] , 
+			'gpsbabel' => [ 'package' => 'gpsbabel', 'test'=>'-V'] ,			
 			'inkscape' => [ 'package'=>'inkscape','test'=>'--help', 'optional'=>1 ]];
 		$err=0;
 		$classname=get_called_class();
@@ -200,14 +201,22 @@ class Gpx2Svg {
 		return array($tl, $br);
 
 	}
-	
 	function process() {
 		if (!isset($this->gpx) || !file_exists($this->gpx)) {
 			$this->_err[] = "no gpx file input";
 			return false;
 		}
+		// 把 tracks 都合併
+		$cmd = sprintf("gpsbabel -i gpx -f %s -x track,pack  -o gpx -F -",$this->gpx);
+		exec($cmd, $out, $ret );
+		if ($ret != 0 ){
+			$this->_err[] = implode("",$out);
+			return false;
+		}
+
 		// LIBXML_NOCDATA parse CDATA correctly
-		$xml = simplexml_load_file($this->gpx, null, LIBXML_NOCDATA);
+		//$xml = simplexml_load_file($this->gpx, null, LIBXML_NOCDATA);
+		$xml = simplexml_load_string(implode("",$out), null, LIBXML_NOCDATA);
 		//$arr = obj2array($xml);
 		$arr = $this->simplexmlToArray($xml);
 		// 1. 取得 bounds, 轉換成 twd67 最近的 bounds

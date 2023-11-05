@@ -248,7 +248,7 @@ if ($jump <= $stage ) {
 		$param['width']=$shiftx*$pixel_per_km;
 		$param['logger']=$logger;
 
-		cli_msglog("create SVG: $outsvg");
+		// cli_msglog("create SVG: $outsvg");
 		$svg = new Happyman\Twmap\Svg\Gpx2Svg($param);
 		$ret = $svg->process();
 		if ($ret === false ) {
