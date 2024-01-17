@@ -886,6 +886,7 @@ function tilestache_clean($mid, $realdo = 1){
 		}
 	// moi_osm_gpx 
 	$cmd2 = sprintf("ssh happyman@twmap tilestache-clean.py -c /home/happyman/etc/tile_main_8089.cfg -l gpxtrack -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
+	$cmd2 = sprintf("tilestache-clean.py -c /home/happyman/etc/tile_main_8089.cfg -l gpxtrack -b %f %f %f %f 10 11 12 13 14 15 16 17 18 2>&1 > /dev/null ",$tl[1],$tl[0],$br[1],$br[0]);
 	exec($cmd2);
 	error_log("tilestache_clean: ". $cmd2);
 	return array(true, "gpxtrack cleaned");
@@ -1385,17 +1386,27 @@ function ogr2ogr_export_gpx($mid, $merged_gpx) {
 	$cmd = sprintf("ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES %s %s -where \"mid=%d\" gpx_trk ", $trk_gpx, $gdal_dsn, $mid);
 	// echo $cmd;
 	exec($cmd, $out, $ret);
-	if ($ret != 0 ) return array(false, "export trk failed");
+	if ($ret != 0 ) {
+		error_log($cmd . " fail");
+		return array(false, "export trk failed");
+	}
 	$wpt_gpx =  tempnam("/tmp","EXPW") . ".gpx";
 	$cmd2 = sprintf("ogr2ogr -f GPX -dsco GPX_USE_EXTENSIONS=YES -lco FORCE_GPX_TRACK=YES %s %s -where \"mid=%d\" gpx_wp ", $wpt_gpx, $gdal_dsn, $mid);
 	// echo $cmd2;
 	exec($cmd2, $out, $ret);
-	if ($ret != 0 ) return array(false, "export wpt failed");
+	if ($ret != 0 ) {
+		error_log($cmd2 . " fail");
+		return array(false, "export wpt failed");
+	}
 	// $merged_gpx = tempnam("/tmp","EXPM") . ".gpx";
 	$cmd3 = sprintf("gpsbabel -i gpx -f %s -f %s -o gpx,gpxver=1.1 -F %s",$trk_gpx,$wpt_gpx,$merged_gpx);
 	exec($cmd3, $out, $ret);
-	if ($ret != 0 ) return array(false, "merge gpx failed: $cmd3");
-	unlink($wpt_gpx);unlink($trk_gpx);
+	if ($ret != 0 ) {
+		error_log($cmd3 . " fail");
+		return array(false, "merge gpx failed: $cmd3");
+	}
+	unlink($wpt_gpx);
+	unlink($trk_gpx);
 	return array(true, "ok");
 }
 // map ranking system

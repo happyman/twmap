@@ -34,8 +34,9 @@ $db_user = "";
 $db_pass = "";
 $db_name = "";
 $db_port = '5432';
-$db_dsn = sprintf("postgres9://%s:%s@%s:%s/%s",$db_user,$db_pass,$db_host,$db_port,$db_name);
-$gdal_dsn = sprintf("PG:dbname='%s' user='%s' password='%s' host='%s' port='%s'",$db_name,$db_user,$db_pass,$db_host,$db_port);
+$db_dsn = sprintf("postgres://%s:%s@%s:%s/%s",$db_user,$db_pass,$db_host,$db_port,$db_name);
+// from gdal 3.4
+$gdal_dsn = sprintf("postgresql://%s:%s@%s:%s/%s",$db_user,$db_pass,$db_host,$db_port,$db_name);
 
 require_once(__ROOT__."lib/twmapdb.inc.php");
 
