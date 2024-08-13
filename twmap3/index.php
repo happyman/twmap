@@ -193,6 +193,7 @@ printf("var shorten_url = '%s';",$CONFIG['shorten_url']);
 			 <div id='CGNAME'>
 				     <select title="切換路圖" name="road" id="changegname" style="height: 32px; font-family: FontAwesome, Ariel;">
 						     <option value="GoogleNames">&#xf1a0; &nbsp;道路</option>
+							 <option value="HL20240403">2024新崩坍</option>
 							 <option value="NLSCNames">nlsc 道路</option>
 							 <option value="RUDY_BN">魯地圖BN</option>
 							 <option value="RUDY_DN">魯地圖DN</option>

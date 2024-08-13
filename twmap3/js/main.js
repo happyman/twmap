@@ -471,6 +471,15 @@ var Tri1999_Options = {
 	name: "林崇雄百岳及一等點位置圖",
 	alt: "Taiwan Mountain 1999"
 };
+var HL20240403_Options = {
+        getTileUrl: function (a, b) {
+                        return "//tile.happyman.idv.tw/map/hl20240403/" + b + "/" + a.x + "/" + a.y + ".png";
+        },
+        tileSize: new google.maps.Size(256, 256),
+        maxZoom: 15,
+        name: "2024花蓮地震災害新形成崩壁",
+        alt: "農村水保署"
+};
 // 前景
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
@@ -494,6 +503,7 @@ var TW5KArielPIC_MapType = new google.maps.ImageMapType(TW5KArielPIC_Options);
 var Geo2016_MapType = new google.maps.ImageMapType(Geo2016_Options);
 var DebugTile_MapType = new google.maps.ImageMapType(DebugTile_Options);
 var Tri1999_MapType = new google.maps.ImageMapType(Tri1999_Options);
+var HL20240403_MapType = new google.maps.ImageMapType(HL20240403_Options);
 
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
@@ -528,6 +538,7 @@ var copyrights = {
 	'jm20k_1904': "<a target=\"_blank\" href=\"http://gissrv4.sinica.edu.tw/gis/twhgis.aspx\">台灣歷史百年地圖</a> - 台灣堡圖(明治版)</a>",
 	'jm20k_1904_tri': "<a target=\"_blank\" href=\"https://gis.rchss.sinica.edu.tw/mapclub_20221208/\">台灣歷史百年地圖</a> - 《三角測量點及水準測量點明細表》之附圖</a>",
 	'tri1999': '林崇雄先生於1999年手繪歡迎使用',
+	'hl20240403': '農村水保署及東華大學數位人文與地圖研究室',
 	'tw5kariel': "台灣5000:1相片基本圖"
 
 };
@@ -1997,6 +2008,9 @@ function setRoadMap() {
 	} else if ( name == 'Compartment' ) {
 		map.overlayMapTypes.insertAt(i++, Compartment_MapType);
                 console.log('insert Compartment overlay');
+	}else if (name == 'HL20240403' ) {
+		map.overlayMapTypes.insertAt(i++, HL20240403_MapType);
+                console.log('insert HL20240403 overlay');
 	}
 	if (show_kml_layer == 1) {
 		map.overlayMapTypes.insertAt(i++, GPXTrackMapType);
