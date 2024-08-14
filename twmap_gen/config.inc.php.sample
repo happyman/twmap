@@ -40,6 +40,7 @@ $gdal_dsn = sprintf("postgresql://%s:%s@%s:%s/%s",$db_user,$db_pass,$db_host,$db
 
 require_once(__ROOT__."lib/twmapdb.inc.php");
 
+use Smarty\Smarty;
 if (php_sapi_name() != "cli") {
 	/* template */
 	$smarty = new Smarty();
