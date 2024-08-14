@@ -122,6 +122,11 @@ if ($html_head == 1 ) {
 	echo $smarty->fetch("main.html");
 	exit;
 }
+if (isset($map['keepon_id']) && is_numeric($map['keepon_id'])){
+	// ok
+} else {
+	unset($map['keepon_id']);
+}
 // 如果是內嵌
 switch($map['flag']) {
 case 2:

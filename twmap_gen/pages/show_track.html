@@ -7,10 +7,6 @@
 				<li>下載 GPX: <a href='{$gpx_link}' download='{$gpx_download_name}'>{$gpx_download_name}</a>
 				<li>外連網址: <a href='{$show_link}' target=_blank>{$show_link}</a>
 				{/if}
-			     {if $map.keepon_id && $map.keepon_id != 'NULL' && !is_numeric($map.keepon_id)}
-                                <li>紀錄: <a href='http://www.keepon.com.tw/redirectMap-{$map.keepon_id}.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>
-                                {/if}
- 
 				<li>範圍: {$map.bbox}
 				<li>延伸東方 {$map.km_x} 與 南方 {$map.km_y} 公里
 				<li>日期: {$map.cdate}

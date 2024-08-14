@@ -8,7 +8,7 @@
 				{if isset($gpx_link)}
 				<li>下載GPX: <a href='{$gpx_link}'>{$gpx_link}</a>
 				{/if}
-			     {if $map.keepon_id && $map.keepon_id != 'NULL' && !is_numeric($map.keepon_id)}
+			     	 {if isset($map.keepon_id)}
                                 <li>紀錄: <a href='http://www.keepon.com.tw/redirectMap-{$map.keepon_id}.html' target=_blank><img src='http://www.keepon.com.tw/img/ic_launcher-web.png' height='60px' border=0></a>
                                 {/if}
 
