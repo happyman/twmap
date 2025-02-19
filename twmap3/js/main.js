@@ -3209,10 +3209,13 @@ function markerFilter() {
 				if (availableTagsMeta[i].prom_idx > 0) {
 					want = 1;
 				}
-
+			} else if (s[k] == '11') {
+				if  (availableTagsMeta[i].type == '警察駐在所' || availableTagsMeta[i].type == '蕃務駐在所') 
+					want = 1;
 			} else if (s[k] == '7') {
 				// 其他
-				if (availableTagsMeta[i].class == '0') {
+				if (availableTagsMeta[i].class == '0' && 
+					!(availableTagsMeta[i].type == '警察駐在所' || availableTagsMeta[i].type == '蕃務駐在所')) {
 					want = 1;
 				}
 			} else if (s[k] == '4') {

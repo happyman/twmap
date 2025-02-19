@@ -226,6 +226,7 @@ printf("var shorten_url = '%s';",$CONFIG['shorten_url']);
       		<option selected="selected" value="9">百名山</option>
       		<option selected="selected" value="8">溫泉</option>
 		<option selected="selected" value="10">獨立峰</option>
+		<option selected="selected" value="11">駐在所</option>
 			<option selected="selected" value="7">其他</option>
 			</select>
 			
