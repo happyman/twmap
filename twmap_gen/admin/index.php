@@ -139,7 +139,9 @@ $(document).ready(function () {
     '岩石',
     '崩壁',
     '山屋',
-    '吊橋'],
+    '吊橋',
+    '蕃務駐在所', '警察駐在所'
+    ],
 	display: function(data) {
 		var $img = $('<span><img src="//map.happyman.idv.tw/icon/' + encodeURIComponent(data.record.type) + '.png" />' + data.record.type + '</span>' );
 		return $img;
