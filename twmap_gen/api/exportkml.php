@@ -25,19 +25,39 @@ if ($st === true)
 else
 	$owner = 0;
 
-if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
+if (isset($_REQUEST['kml'])) {
 	// output kml format
-	$cmd = sprintf("php cli_point2kml.php %s -o %d",($bound)?" -b $bound_cmd" : "",$owner);
-	if (!isset($_REQUEST['debug'])) {
-		header('Content-type: application/vnd.google-earth.kml+xml');
-		header('Cache-Control: ');  //leave blank to avoid IE errors
-		header('Pragma: ');  //leave blank to avoid IE errors
-		header('Content-Disposition: attachment; filename="twmap_export.kml"');
-		header('Content-Transfer-Encoding: binary');
-	}
-	system($cmd);
-	if (isset($_REQUEST['debug'])){
-		printf( "/* %s \n*/\n",$cmd);
+	$outfile=tempnam("/tmp", "exportkml_");
+	$cmd = sprintf("php cli_point2kml.php %s -o %d > %s",($bound)?" -b $bound_cmd" : "",$owner,$outfile);
+	exec($cmd);
+	switch ($_REQUEST['kml']) {
+		case 1:
+			if (!isset($_REQUEST['debug'])) {
+				header('Content-type: application/vnd.google-earth.kml+xml');
+				header('Cache-Control: ');  //leave blank to avoid IE errors
+				header('Pragma: ');  //leave blank to avoid IE errors
+				header('Content-Disposition: attachment; filename="twmap_export.kml"');
+				header('Content-Transfer-Encoding: binary');
+			}
+			// system($cmd);
+			readfile($outfile);
+			unlink($outfile);
+			if (isset($_REQUEST['debug'])){
+				printf( "/* %s \n*/\n",$cmd);
+			}
+		break;
+		case 2:
+			// output GPX
+			$outfile_gpx = $outfile . ".gpx";
+			gpsbabel_convert($outfile,"kml",$outfile_gpx,"gpx");
+			header('Content-Type: application/gpx+xml;');
+			header('Cache-Control: ');  //leave blank to avoid IE errors
+			header('Pragma: ');  //leave blank to avoid IE errors
+			header('Content-Disposition: attachment; filename="twmap_export.gpx"');
+			header('Content-Transfer-Encoding: binary');
+			readfile($outfile_gpx);
+			unlink($outfile);
+			unlink($outfile_gpx);
 	}
 	//echo $cmd;
 } else {
@@ -51,10 +71,11 @@ if (isset($_REQUEST['kml']) && $_REQUEST['kml'] == 1) {
 	<h2>下載圖資</h2>
 	<p>地圖產生器的興趣點圖資是由小花 2010 年整裡的日治時代原點為基礎, 持續更新點位狀態及新增登山的各類興趣點, 期望提供讓山域活動者有更多有用資訊。
 	<ul>
-	<li><a href="?kml=1" target='kml'>下載所有點位資料</a>
+	<li>下載所有點位資料 <a href="?kml=1" target='kml'>kml 格式</a>、<a href="?kml=2" target='kml'>gpx 格式</a>
 	<?php
 	if ($bound){
-		printf("<li><a href='?kml=1&bound=%s' target=kml>下載範圍內的點位資料</a>",$_REQUEST['bound']);	
+		printf("<li>下載範圍內的點位資料 <a href='?kml=1&bound=%s' target=kml>kml</a>、<a href='?kml=2&bound=%s' target=kml>gpx</a>",
+			$_REQUEST['bound'],$_REQUEST['bound']);	
 		// printf("  (%s)",$bound_str);
 		printf("<li><b>Bound(taiwan-topo)</b>: %s\n",$bound_str2);
 		printf("<li><b>Bound(tilestache-clean)</b>: %s\n",$bound_str);
