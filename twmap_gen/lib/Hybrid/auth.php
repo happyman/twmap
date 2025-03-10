@@ -42,11 +42,15 @@ if ( isset($_REQUEST['action']) && $_REQUEST['action'] == 'logout' ) {
 // return Hybrid_User_Profile object intance
 $user_profile = $adapter->getUserProfile();
 
+//error_log(print_r( $user_profile, true ));
 if (isset($user_profile->email) && !empty($user_profile->email) && isset($user_profile->displayName)) {
 	$mylogin['email'] = $user_profile->email;
 	$mylogin['type'] = $provider;
-	$mylogin['nick'] = $user_profile->displayName;
-
+	if (strlen($user_profile->displayName) < 2) {
+		$mylogin['nick'] = substr($user_profile->email, 0, strrpos($user_profile->email, '@'));
+	} else {
+		$mylogin['nick'] = $user_profile->displayName;
+	}
 } else {
 	$adapter->disconnect();
 	out_err("沒有 email 資訊, 登入失敗 " . print_r($user_profile, true));
