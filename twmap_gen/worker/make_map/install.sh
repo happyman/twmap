@@ -18,4 +18,5 @@ echo "ln -s make_map.php make_map02.php"
 
 echo "cd "$out
 echo "cp config.inc.sample.php config.ini"
+echo "# and modify config params"
 echo "./checkmakemap.sh"

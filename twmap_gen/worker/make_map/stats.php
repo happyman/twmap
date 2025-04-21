@@ -42,7 +42,7 @@ function stats($debug=0) {
 			$j = $client->statsJob($i++);
 			if (!is_null($j)){
 				$jb = $client->peek($j['id']);
-				printf("未完成(%d): %s %s\n",$j['age'],$j['id'],$jb['payload']);
+				printf("未完成(%d): %s %s\n",$j['age'],$j['id'],decode_job($jb['payload']));
 				if ($debug)
 					print_r($j);
 				$count++;
@@ -56,3 +56,9 @@ function stats($debug=0) {
 $opt=getopt("d");
 // main
 stats(isset($opt['d']));
+function decode_job($str){
+		// "O:r:v:t:i:p:g:Ges:dSl:c3m:a:D:",array("agent:","logurl_prefix:","logfile:","getopt","check")
+	$opt = parseCliString($str,"O:r:v:t:i:p:g:Ges:dSl:c3m:a:D:",array("agent:","logurl_prefix:","logfile:","getopt","check"));
+	return sprintf("r: %s t: %s", $opt['r'],mb_decode_mimeheader($opt['t']));
+}
+

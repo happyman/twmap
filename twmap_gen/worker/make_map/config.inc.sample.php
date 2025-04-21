@@ -16,3 +16,34 @@ $CONFIG['logurl_prefix'] = 'ws://twmap:9002/twmap_';
 $CONFIG['docker_ver'] = 'latest';
 $CONFIG['agent'] = 'nuk';
 
+function parseCliString($input, $shortOpts = [], $longOpts = []) {
+    $tokens = preg_split('/\s+/', $input);
+    $result = [];
+    $lastOpt = null;
+
+    foreach ($tokens as $token) {
+        if (preg_match('/^--([^=]+)=(.*)$/', $token, $matches)) {
+            // Long option with value: --option=value
+            $result[$matches[1]] = $matches[2];
+        } elseif (preg_match('/^--(.+)$/', $token, $matches)) {
+            // Long option without value
+            $result[$matches[1]] = true;
+            $lastOpt = $matches[1];
+        } elseif (preg_match('/^-([a-zA-Z])$/', $token, $matches)) {
+            // Short option without value: -a
+            $result[$matches[1]] = true;
+            $lastOpt = $matches[1];
+        } elseif (preg_match('/^-([a-zA-Z])(.+)$/', $token, $matches)) {
+            // Short option with value glued: -bvalue
+            $result[$matches[1]] = $matches[2];
+        } else {
+            // If previous token was an option, treat this as its value
+            if ($lastOpt !== null && $result[$lastOpt] === true) {
+                $result[$lastOpt] = $token;
+                $lastOpt = null;
+            }
+        }
+    }
+
+    return $result;
+}
