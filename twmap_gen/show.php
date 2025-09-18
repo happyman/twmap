@@ -206,6 +206,14 @@ default:
 	if (map_file_exists($map['filename'], 'pdf')) {
 		$links['pdf'] = $links['fullmap_path'] . "/". basename(map_file_name($map['filename'], 'pdf'));
 	}
+	if (!map_file_exists($map['filename'], 'tiff')) {
+		// 產生一個
+		$tparams = ['startx'=> $map['locX']/1000, 'starty'=> $map['locY']/1000, 'shiftx'=> $map['shiftX'], 'shifty'=> $map['shiftY'], 
+		'ph'=> $map['ph'], 'datum'=>$map['datum']];
+		$tiff = new Happyman\Twmap\Export\Geotiff($tparams);
+		$tiff->out(map_file_name($map['filename'], 'image'));
+	}
+	$links['tiff'] = $links['fullmap_path'] . "/". basename(map_file_name($map['filename'], 'tiff'));
 	if (map_file_exists($map['filename'], 'txt')){
 		$json = json_decode(file_get_contents(map_file_name($map['filename'], 'txt')),true);
 		if ($json !== null){

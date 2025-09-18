@@ -65,7 +65,11 @@ done
 				</ul>
 				{/if}
 
-				<li><a href="browseImage.php?mid={$map.mid}" id="fullmaplink" target=_blank class='showtip pirobox_gall2'   rel="iframe-full-full" title='若A4不是您適合的列印尺寸,請下載本圖裁切輸出' ><img src='imgs/icon-map.png' border=0 />大圖連結</a> [<a href="{$links.fullmap}" target=_blank>直接下載</a>]
+				<li><a href="browseImage.php?mid={$map.mid}" id="fullmaplink" target=_blank class='showtip pirobox_gall2'   rel="iframe-full-full" title='若A4不是您適合的列印尺寸,請下載本圖裁切輸出' ><img src='imgs/icon-map.png' border=0 />大圖連結</a> 
+					[<a href="{$links.fullmap}" target=_blank>直接下載</a>]
+					{if !empty($links.tiff)}
+					或 <a href="{$links.tiff}" target=_blank>Geotiff 格式下載</a>
+					{/if}
 				<ul>
 					<li><span class="copy">{$links.fullmap}</span>
 				</ul>
@@ -91,10 +95,17 @@ done
 		$(document).ready(function() {
 
 			// proj 出座標
+			{if $map.datum == 'TWD97'}
+			var tl = twd972lonlat( {$map.locX}, {$map.locY} , {$map.ph} );
+			var tr = twd972lonlat( {$map.locX} + {$map.shiftX} * 1000 , {$map.locY} , {$map.ph} );
+			var br = twd972lonlat( {$map.locX} + {$map.shiftX} * 1000 , {$map.locY} - {$map.shiftY} *1000 , {$map.ph} );
+			var bl = twd972lonlat( {$map.locX} , {$map.locY} - {$map.shiftY} *1000 , {$map.ph} );
+			{else}
 			var tl = twd672lonlat( {$map.locX}, {$map.locY} , {$map.ph} );
 			var tr = twd672lonlat( {$map.locX} + {$map.shiftX} * 1000 , {$map.locY} , {$map.ph} );
 			var br = twd672lonlat( {$map.locX} + {$map.shiftX} * 1000 , {$map.locY} - {$map.shiftY} *1000 , {$map.ph} );
 			var bl = twd672lonlat( {$map.locX} , {$map.locY} - {$map.shiftY} *1000 , {$map.ph} );
+			{/if}
 			$("#calc").html( "四邊經緯度 TL:TR:BL:BR: <span class='copy'> "+tl.x.toFixed(6) + "," + tl.y.toFixed(6) + ":" +
 			tr.x.toFixed(6) + "," + tr.y.toFixed(6) + ":" + bl.x.toFixed(6) + "," + bl.y.toFixed(6) + ":" 
 			+ br.x.toFixed(6) + "," + br.y.toFixed(6) + '</span>');

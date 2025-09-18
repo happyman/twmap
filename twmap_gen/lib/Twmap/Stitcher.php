@@ -77,10 +77,9 @@ Class Stitcher {
 			$this->tmpdir = $options['tmpdir'];
 		}
 		if (isset($options['debug']))
-			$this->debug = $options['debug'];
+			$this->debug = $options['debug'];	
 		return TRUE;
 	}
-
 	function is_taiwan() {
 		$minx = $this->startx;
 		$maxx = $this->startx + $this->shiftx;

@@ -11,6 +11,7 @@ require_once(__ROOT__."lib/geoPHP/geoPHP.inc");
 require_once(__ROOT__."lib/Twmap/Svg/Gpx2Svg.php");
 require_once(__ROOT__."lib/Twmap/Export/GarminKmz.php");
 require_once(__ROOT__."lib/Twmap/Export/Pdf.php");
+require_once(__ROOT__."lib/Twmap/Export/Geotiff.php");
 require_once(__ROOT__."lib/slog/load.php");
 $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 
@@ -335,6 +336,9 @@ if ($stage >= $jump ) {
 	// 加上 tag
 	cli_msglog("add tag to image...");
 	$g->im_tagimage($outimage,$startx,$starty);
+	cli_msglog("write geotiff...");
+	$tif = new Happyman\Twmap\Export\Geotiff($gparams+array("logger"=>$logger));
+	$tif->out($outimage);
 }
 cli_msglog("ps%50");
 $stage = 2;

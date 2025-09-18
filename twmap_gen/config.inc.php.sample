@@ -7,6 +7,7 @@ define('__ROOT__', dirname(__FILE__). "/");
 require_once(__ROOT__."vendor/autoload.php");
 require_once(__ROOT__. "lib/rangelib.php");
 require_once(__ROOT__."lib/geoPHP/geoPHP.inc");
+require_once(__ROOT__."lib/Twmap/Export/Geotiff.php");
 require_once(__ROOT__."lib/Twmap/Proj.php");
 require_once(__ROOT__."lib/Twmap/Svg/Gpx2Svg.php");
 require_once(__ROOT__."lib/phpwee-php-minifier/phpwee.php");

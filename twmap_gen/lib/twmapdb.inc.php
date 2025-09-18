@@ -360,6 +360,9 @@ function map_file_name($outimage, $ftype) {
 		case 'gpx':
 			$fname = str_replace(".tag.png",".gpx",$outimage);
 			break;
+		case 'tiff':
+			$fname = str_replace(".png",".tiff",$outimage);
+			break;
 		case 'image':
 			$fname = $outimage;
 			break;
