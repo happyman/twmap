@@ -53,7 +53,7 @@ class Geotiff {
     function out($input){
 		list ($tl_lon,$tl_lat,$br_lon,$br_lat)=$this->get_bound();
 		$outimg=str_replace(".png",".tiff",$input);
-		$cmd=sprintf("gdal_translate -of GTiff -a_ullr %s %s %s %s -a_srs EPSG:4326 %s %s",
+		$cmd=sprintf("gdal_translate -of GTiff -a_ullr %s %s %s %s -a_srs EPSG:4326 -co COMPRESS=LZW %s %s",
 			$tl_lon, $tl_lat, $br_lon, $br_lat, $input,$outimg );
 		if ($this->logger != null)
 			$this->logger->info($cmd);
