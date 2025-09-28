@@ -206,12 +206,22 @@ default:
 	if (map_file_exists($map['filename'], 'pdf')) {
 		$links['pdf'] = $links['fullmap_path'] . "/". basename(map_file_name($map['filename'], 'pdf'));
 	}
-	if (!map_file_exists($map['filename'], 'tiff')) {
-		// 產生一個
+	// 測試一下 geotiff 是否壓縮
+	$gen_tiff = FALSE;
+	if (map_file_exists($map['filename'], 'tiff')){
+		$cmd = sprintf("/usr/bin/file %s |grep LZW", map_file_exists($map['filename'], 'tiff'));
+		exec($cmd, $out, $ret);
+		if ($ret != 0) {
+			$gen_tiff = TRUE;
+		}
+	}
+	if ($gen_tiff || !map_file_exists($map['filename'], 'tiff')) {
+		// 產生一個, gdal_translate 不會抱怨檔案已存在
 		$tparams = ['startx'=> $map['locX']/1000, 'starty'=> $map['locY']/1000, 'shiftx'=> $map['shiftX'], 'shifty'=> $map['shiftY'], 
 		'ph'=> $map['ph'], 'datum'=>$map['datum']];
 		$tiff = new Happyman\Twmap\Export\Geotiff($tparams);
 		$tiff->out(map_file_name($map['filename'], 'image'));
+		error_log(sprintf("%s regen=%s", map_file_exists($map['filename'], 'tiff'), $gen_tiff));
 	}
 	$links['tiff'] = $links['fullmap_path'] . "/". basename(map_file_name($map['filename'], 'tiff'));
 	if (map_file_exists($map['filename'], 'txt')){
