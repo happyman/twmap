@@ -191,6 +191,7 @@ printf("var shorten_url = '%s';",$CONFIG['shorten_url']);
 					<option value="moi_osm">&#xf164; &nbsp;魯地圖</option>
 					<option value="tw25k_v3">&#xf279; &nbsp;經建三</option>
 					<option value="tw25k_v1">&#xf279; &nbsp;經建一</option>
+					<option value="nlsc_emap">&#xf279; &nbsp;EMAP5</option>
 				</select>
 			</div>
 			 <div id='CGNAME'>

@@ -588,7 +588,8 @@ var copyrights = {
 var logos = {
 	'tw25k_v1': "- 經1版",
 	'tw25k_v3': "- 經3版",
-	'moi_osm': '- MOI_OSM'
+	'moi_osm': '- MOI_OSM',
+	'nlsc_emap': '- NLSC EMAP5',
 };
 
 function CopyrightChange() {
@@ -2573,11 +2574,15 @@ function initialize() {
 			BackgroundMapType = TaiwanMapV1MapType;
 			BackgroundMapOptions = TaiwanMapV1Options;
 			BackgroundMap = 'tw25k_v1';
-		} else {
+		} else if (newMap == 'nlsc_emap') {
+			BackgroundMapType = Taiwan_General_EMAP_MapType;
+			BackgroundMapOptions = Taiwan_General_EMAP_MapOptions;
+			BackgroundMap = 'nlsc_emap';
+		}else {
 			BackgroundMapType = MOI_OSM_TWMAP_MapType;
 			BackgroundMapOptions = MOI_OSM_TWMAP_Options;
 			BackgroundMap = 'moi_osm';
-		}
+		} 
 		if (curMapType == BackgroundMapType) {
 			console.log('skip change');
 			return true;
