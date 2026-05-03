@@ -480,6 +480,46 @@ var HL20240403_Options = {
         name: "2024花蓮地震災害新形成崩壁",
         alt: "農村水保署"
 };
+// From: https://gissrv4.sinica.edu.tw/gis/js/gm.js
+function padLeft(str,lenght){
+    if(str.length >= lenght)
+        return str;
+    else
+        return padLeft("0" +str,lenght);
+}
+/* 新港郡
+ * https://gis.sinica.edu.tw/taitung/map_TFB3_0603/Layers/_alllayers/L14/R00001bd2/C0000358d.png
+ * 台東郡
+ * https://gis.sinica.edu.tw/taitung/map_TFB3_0601/Layers/_alllayers/L14/R00001bd1/C00003589.png
+ * 關山郡
+ * https://gis.sinica.edu.tw/taitung/map_TFB3_0602/Layers/_alllayers/L15/R000037a0/C00006b09.png
+ * tileLayers[1] = new google.maps.ImageMapType({
+        getTileUrl: function (tile, zoom) {
+            return url + "/L" + padLeft(zoom.toString(10), 2) + '/R' + padLeft(tile.y.toString(16), 8) + '/C' + padLeft(tile.x.toString(16), 8) + "." + ext;
+        },
+	*/
+
+var TTFB3_0603_Options={
+	getTileUrl: function (tile, zoom) {
+        return "//gis.sinica.edu.tw/taitung/map_TFB3_0603/Layers/_alllayers" + "/L" + padLeft(zoom.toString(10), 2) + '/R' + padLeft(tile.y.toString(16), 8) + '/C' + padLeft(tile.x.toString(16), 8) + ".png"; },
+        tileSize: new google.maps.Size(256, 256),
+        maxZoom: 19,
+        name: "臺東廳新港郡國有林野圖",
+};
+var TTFB3_0602_Options={
+	getTileUrl: function (tile, zoom) {
+        return "//gis.sinica.edu.tw/taitung/map_TFB3_0602/Layers/_alllayers" + "/L" + padLeft(zoom.toString(10), 2) + '/R' + padLeft(tile.y.toString(16), 8) + '/C' + padLeft(tile.x.toString(16), 8) + ".png"; },
+        tileSize: new google.maps.Size(256, 256),
+        maxZoom: 19,
+        name: "臺東廳關山郡國有林野圖",
+};
+var TTFB3_0601_Options={
+	getTileUrl: function (tile, zoom) {
+        return "//gis.sinica.edu.tw/taitung/map_TFB3_0601/Layers/_alllayers" + "/L" + padLeft(zoom.toString(10), 2) + '/R' + padLeft(tile.y.toString(16), 8) + '/C' + padLeft(tile.x.toString(16), 8) + ".png"; },
+        tileSize: new google.maps.Size(256, 256),
+        maxZoom: 19,
+        name: "臺東廳台東郡國有林野圖",
+};
 // 前景
 var TaiwanMapV1MapType = new google.maps.ImageMapType(TaiwanMapV1Options);
 var TaiwanMapType = new google.maps.ImageMapType(TaiwanMapOptions);
@@ -504,6 +544,9 @@ var Geo2016_MapType = new google.maps.ImageMapType(Geo2016_Options);
 var DebugTile_MapType = new google.maps.ImageMapType(DebugTile_Options);
 var Tri1999_MapType = new google.maps.ImageMapType(Tri1999_Options);
 var HL20240403_MapType = new google.maps.ImageMapType(HL20240403_Options);
+var TTFB3_0603_MapType = new google.maps.ImageMapType(TTFB3_0603_Options);
+var TTFB3_0602_MapType = new google.maps.ImageMapType(TTFB3_0602_Options);
+var TTFB3_0601_MapType = new google.maps.ImageMapType(TTFB3_0601_Options);
 
 // 前景路圖
 var GoogleNameMapType = new google.maps.ImageMapType(GoogleNameOptions);
@@ -2296,6 +2339,9 @@ function initialize() {
 		map.mapTypes.set('theme', Darker_MapType);
 	else
 		map.mapTypes.set('theme', GreenstyledMap);
+	map.mapTypes.set('ttfb3_0603',TTFB3_0603_MapType);
+	map.mapTypes.set('ttfb3_0602',TTFB3_0602_MapType);
+	map.mapTypes.set('ttfb3_0601',TTFB3_0601_MapType);
 
 	// 前景免設
 	// MOI_OSM_GPX as default
