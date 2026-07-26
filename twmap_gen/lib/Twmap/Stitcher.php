@@ -92,6 +92,13 @@ Class Stitcher {
 		}else{
 			if ($minx >= 150 && $maxx <= 355 && $miny >= 2420 && $maxy <= 2800 )
 			return true; 
+			// 北方三島
+			// 彭佳嶼 3x2
+			if ($minx >= 356 && $maxx <= 359 && $miny >= 2835 && $maxy <= 2837)
+    			return true;
+			// 棉花嶼 2x2
+			if ($minx >= 359 && $maxx <= 361 && $miny >= 2819 && $maxy <= 2821)
+            		return true;
 		}
 		return false;
 	}

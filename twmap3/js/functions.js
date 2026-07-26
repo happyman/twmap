@@ -280,7 +280,7 @@ function is_taiwan(lat, lon) {
 	return 3; // 金門
     if (lon > 119.5 && lon < 120.55 && lat < 26.4 && lat > 25.9 )
 	return 4; // 馬祖
-    if (lon < 119.31 || lon > 124.56 || lat < 21.88 || lat > 25.31) {
+    if (lon < 119.31 || lon > 124.56 || lat < 21.88 || lat > 25.64) {
        	return 0; // 其他
     } else if (lon > 119.72) {
         return 1; // 台灣

@@ -4,6 +4,7 @@
 //
 require_once("adodb5/adodb.inc.php");
 require_once("azimuth.php");
+require_once("proj_lib.php");
 
 function get_conn() {
 	//global $db_host, $db_conn,$db_user, $db_pass, $db_name, $db_port;
