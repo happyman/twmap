@@ -12,7 +12,7 @@
   "author": "happyman",
   "license": "GPL",
   "devDependencies": {
-    "grunt": "*",
+    "grunt": "1.6.1",
     "grunt-contrib-compass": "*",
     "grunt-contrib-concat": "*",
     "grunt-contrib-copy": "*",
