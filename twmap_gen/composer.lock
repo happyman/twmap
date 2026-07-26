@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "hybridauth/hybridauth",
-            "version": "v3.10.0",
+            "version": "v3.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hybridauth/hybridauth.git",
-                "reference": "9b5e8a7782b630d5b1151003999d6db91a863ffe"
+                "reference": "5f799ed5fd35e21f06cf42310f9f6ed3f7bbe7df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hybridauth/hybridauth/zipball/9b5e8a7782b630d5b1151003999d6db91a863ffe",
-                "reference": "9b5e8a7782b630d5b1151003999d6db91a863ffe",
+                "url": "https://api.github.com/repos/hybridauth/hybridauth/zipball/5f799ed5fd35e21f06cf42310f9f6ed3f7bbe7df",
+                "reference": "5f799ed5fd35e21f06cf42310f9f6ed3f7bbe7df",
                 "shasum": ""
             },
             "require": {
@@ -25,7 +25,7 @@
             },
             "require-dev": {
                 "ext-curl": "*",
-                "phpunit/phpunit": "^4.8.35 || ^6.5 || ^8.0"
+                "phpunit/phpunit": "^4.8.35 || ^6.5 || ^8.0 || ^12.0"
             },
             "suggest": {
                 "firebase/php-jwt": "Needed to support Apple provider",
@@ -64,9 +64,9 @@
             "support": {
                 "gitter": "https://gitter.im/hybridauth/hybridauth",
                 "issues": "https://github.com/hybridauth/hybridauth/issues",
-                "source": "https://github.com/hybridauth/hybridauth/tree/v3.10.0"
+                "source": "https://github.com/hybridauth/hybridauth/tree/v3.13.0"
             },
-            "time": "2023-07-25T15:02:07+00:00"
+            "time": "2026-04-02T19:11:26+00:00"
         },
         {
             "name": "smarty/smarty",
