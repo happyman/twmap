@@ -5,7 +5,7 @@
     "license": "MIT",
     "require" : {
         "hybridauth/hybridauth" : "~3.0",
-    "smarty/smarty": "v5.3.1",
+    "smarty/smarty": "v5.8.4",
         "xobotyi/beansclient": "dev-master"
     },
     "require-dev": {
