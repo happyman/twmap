@@ -1,6 +1,6 @@
 <?php
 // v8
-// observation
+// 改為氣象署 cwb -> cwa
 // https://www.cwb.gov.tw/V8/C/P/Rainfall/Rainfall_QZJ.html
 // 昨日: https://www.cwb.gov.tw/Data/rainfall/2020-04-02_0000.QZJ8.jpg (今日凌晨)
 // 前日: https://www.cwb.gov.tw/Data/rainfall/2020-04-01_0000.QZJ8.jpg
@@ -33,8 +33,6 @@ echo "\n";
 }
 function outkml($name,$url,$type='forecast',$opacity=0.5) {
 kmlhead();
-if ($type  == 'observation')
-	//show_obs();
 ?>
 <GroundOverlay>
         <name><?php echo $name; ?></name>
@@ -47,12 +45,12 @@ if ($type  == 'observation')
 <?php 
 if ($type=='forecast') {
 ?>
-	<LatLonBox>
-		<north>25.77516359334955</north>
-		<south>21.81582388299667</south>
-		<east>122.3146176402033</east>
-		<west>118.839658837004</west>
-	</LatLonBox>
+<LatLonBox>
+	<north>25.8697383</north>
+	<south>21.6837340</south>
+	<east>122.3905090</east>
+	<west>118.9466449</west>
+</LatLonBox>
 <?php
 } else {
 ?>
@@ -75,49 +73,38 @@ kmlfoot();
 function kmlfoot() {
 echo "</kml>";
 }
-function show_obs(){
-	$random = date("YmdHi");
-	$url = "http://www.cwb.gov.tw/wwwgis/kml/newcwbobs_gmap.kml";
-	$kml = file_get_contents($url . "?".$random);
-	// dirty hack
-	$kml = str_replace("<scale>3</scale>","<scale>1</scale>",$kml);
-	$kml = str_replace("<a href=/V7/observe/real/NewObs.htm","<a href=data/obstation.php",$kml);
-	$mat = preg_split("/<Document>/",str_replace("</Document>","<Document>",$kml));
-	echo "<!-- from  $url -->\n";
-	echo $mat[1];
-	echo "\n";
-}
+
 
 $opacity=0.5;
 $term=$_GET['term'];
 switch($term) {
 		case 'f12h':
 			$name = '定量降水預報1';
-			$url =  'https://www.cwb.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_12.png';
+			$url =  'https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_12.png';
 			$type = 'forecast';
 		break;
 		case 'f24h':
 			$name = '定量降水預報2';
-			$url =  'https://www.cwb.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_24.png';
+			$url =  'https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_24.png';
 			$type = 'forecast';
 			//$type = 'observation';
 		break;
 		case 'o2d':
 			$name = '前日雨量';
 			//$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s000.jpg', date("d",strtotime("-1 day")));
-			$url=sprintf("https://www.cwb.gov.tw/Data/rainfall/%s_0000.QZJ8.jpg",date("Y-m-d",strtotime("-1 day")));
+			$url=sprintf("https://www.cwa.gov.tw/Data/rainfall/%s_0000.QZJ8.jpg",date("Y-m-d",strtotime("-1 day")));
 			$type = 'observation';
 		break;
 		case 'o1d':
 			$name = '昨日雨量';
 			//$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s000.jpg', date("d",strtotime("today")));
-			$url=sprintf("https://www.cwb.gov.tw/Data/rainfall/%s_0000.QZJ8.jpg",date("Y-m-d",strtotime("today")));
+			$url=sprintf("https://www.cwa.gov.tw/Data/rainfall/%s_0000.QZJ8.jpg",date("Y-m-d",strtotime("today")));
 			$type = 'observation';
 		break;
 		case 'now':
 			$name = '今日累積雨量';
 			$half = (date("i")<30)? 0 : 3;
-			$url=sprintf("https://www.cwb.gov.tw/Data/rainfall/%s_%d%d0.QZJ8.jpg",date("Y-m-d",strtotime("today")),date("H"),$half);
+			$url=sprintf("https://www.cwa.gov.tw/Data/rainfall/%s_%02d%d0.QZJ8.jpg",date("Y-m-d",strtotime("today")),date("H"),$half);
 			//$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s%d.jpg', date("dG"), $half);
 			$type = 'observation';
 		break;
