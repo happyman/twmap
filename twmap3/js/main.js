@@ -42,6 +42,23 @@ var theme = "default";
 var show_kml_layer = 1;
 var show_delaunay = 0;
 var drag_gpx_as_shape = 0; // drag GPX and load as polyline shape
+// loadgpx.js 改為需要時才載入（GPXParser 定義於其中）
+var _loadgpxCbs = null;
+function withGPXParser(cb) {
+	if (typeof GPXParser !== 'undefined') return cb();
+	if (_loadgpxCbs) { _loadgpxCbs.push(cb); return; }
+	_loadgpxCbs = [cb];
+	$.getScript("js/loadgpx.js")
+		.done(function() {
+			var q = _loadgpxCbs;
+			_loadgpxCbs = null;
+			for (var i = 0; i < q.length; i++) q[i]();
+		})
+		.fail(function() {
+			_loadgpxCbs = null;
+			console.error("loadgpx.js 載入失敗");
+		});
+}
 var GPSLayer; // external kml layer
 // 以下為底圖
 
@@ -870,8 +887,9 @@ function showmapgpx(mid, marker_desc, additional_marker_desc, zoom, need_center_
                         layout: 'top'
                 });
 
-	$.ajax({ url: getkml_url + "?mid=" + mid + "&type=gpx", 
+	$.ajax({ url: getkml_url + "?mid=" + mid + "&type=gpx",
 		dataType: "xml", success: function(data) {
+		withGPXParser(function() {
 		sgpx = new GPXParser(data, map);
 		sgpx.loading = 1;
 		  sgpx.SetTrackColour("#fffe00");     // Set the track line colour
@@ -884,6 +902,7 @@ function showmapgpx(mid, marker_desc, additional_marker_desc, zoom, need_center_
 	  topnoty.close();
 		sgpx.loading = 0;
 	  sgpx.loading = 0;
+		});
 	}
 	});
 
@@ -2452,6 +2471,9 @@ function initialize() {
 
 		});
 	google.maps.event.addListener(map, "rightclick", function (event) {
+		if (typeof shapesMap !== "undefined" && shapesMap && shapesMap.isDrawingMode && shapesMap.isDrawingMode()) {
+			return;
+		}
 		map.set('disableDoubleClickZoom', true);
 		var newpos = event.latLng;
 		locInfo_name = "我的位置";
@@ -2480,6 +2502,9 @@ function initialize() {
 			dblclicked = 0;
 			var u = setTimeout(function () {
 					if (dblclicked === 0) {
+						if (typeof shapesMap !== "undefined" && shapesMap && shapesMap.isDrawingMode && shapesMap.isDrawingMode()) {
+							return;
+						}
 						console.log("left click fired");
 						shapesMap.selectionClear();
 						var newpos = event.latLng;
@@ -2492,6 +2517,9 @@ function initialize() {
 
 		google.maps.event.addListener(map, 'dblclick', function (event) {
 			dblclicked = 1;
+			if (typeof shapesMap !== "undefined" && shapesMap && shapesMap.isDrawingMode && shapesMap.isDrawingMode()) {
+				return;
+			}
 			// double click to draw a line (for azimuth)
 			// if marker is there, means I can have 2nd point
 			smarker_end(event.latLng.lng(), event.latLng.lat());
@@ -2977,18 +3005,19 @@ function handleDrop(e) {
 }
 function loadGpx(xml) {
 	var data = $.parseXML(xml);
-	var parser = new GPXParser(data, map);
-	parser.SetTrackColour("#ff0000"); // Set the track line colour
-	parser.SetTrackWidth(3); // Set the track line width
-	//parser.SetMinTrackPointDelta(0.001); // Set the minimum distance between track points
-	parser.CenterAndZoom(data);
-	parser.AddTrackpointsToMap(); // Add the trackpoints
-	// parser.AddRoutepointsToMap(); // Add the routepoints
-	parser.AddWaypointsToMap(); // Add the waypoints
-	// happyman
-	if (drag_gpx_as_shape == 1 )
-		parser.showShapes();
-
+	withGPXParser(function() {
+		var parser = new GPXParser(data, map);
+		parser.SetTrackColour("#ff0000"); // Set the track line colour
+		parser.SetTrackWidth(3); // Set the track line width
+		//parser.SetMinTrackPointDelta(0.001); // Set the minimum distance between track points
+		parser.CenterAndZoom(data);
+		parser.AddTrackpointsToMap(); // Add the trackpoints
+		// parser.AddRoutepointsToMap(); // Add the routepoints
+		parser.AddWaypointsToMap(); // Add the waypoints
+		// happyman
+		if (drag_gpx_as_shape == 1 )
+			parser.showShapes();
+	});
 }
 
 function resizeMap() {

@@ -57,14 +57,16 @@ list ($st, $info) = login_info();
 <html>
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="mobile-web-app-capable" content="yes" />
 	<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=0">
 
 	<title>地圖瀏覽器 v<?=$ver?></title>
-	<script src="//maps.googleapis.com/maps/api/js?v=3&key=<?php echo $CONFIG['gmap_api_key']; ?>&libraries=geometry,drawing&callback=Function.prototype"></script>
-	<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/redmond/jquery-ui.css">
+	<script src="//maps.googleapis.com/maps/api/js?v=3&key=<?php echo $CONFIG['gmap_api_key']; ?>&libraries=geometry,marker&callback=Function.prototype"></script>
+	<script src="https://unpkg.com/terra-draw@1.32.3/dist/terra-draw.umd.js"></script>
+	<script src="https://unpkg.com/terra-draw-google-maps-adapter@1.6.1/dist/terra-draw-google-maps-adapter.umd.js"></script>
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.13.3/themes/redmond/jquery-ui.css">
 	<!--
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
@@ -91,11 +93,8 @@ list ($st, $info) = login_info();
 	<script  src="js/ProjectedOverlay.js"></script>
 	<script  src="js/geoxml3.js"></script>
 	<script  src="js/functions.js"></script>
-	<script  src="js/javascript.util.min.js"></script>
-	<script  src="js/jsts.min.js"></script>
 	<script  src="js/jquery.noty.js"></script>
-	<script  src="js/shapedraw.js"></script>
-	<script  src="js/loadgpx.js"></script>
+	<script  src="js/shadowdraw.js"></script>
 <!-- endbuild -->
 <!-- build:css css/twmap3.css -->
 	<link rel="stylesheet" type="text/css" href="css/twmap3_main.css" />

@@ -1,6 +1,9 @@
 var polygon;
 var polygon2; // for twd97
 function addremove_polygon(event) {
+    if (typeof shapesMap !== "undefined" && shapesMap && shapesMap.isDrawingMode && shapesMap.isDrawingMode()) {
+        return;
+    }
     var point = event.latLng;
     var cc = is_taiwan(point.lat(), point.lng());
     // 不在台澎範圍
