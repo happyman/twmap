@@ -356,17 +356,47 @@ function coverage_overlay(op) {
 "cht3G": [{'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_li.png', 'bound': {'east': 120.763994047616, 'south': 25.922017661905, 'west': 119.659921690727, 'north': 26.4100005}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_tw_n1.png', 'bound': {'east': 122.139512678125, 'south': 24.846948982184, 'west': 120.843456, 'north': 25.424753231083}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_wq.png', 'bound': {'east': 119.707845581582, 'south': 24.8779004, 'west': 119.204270560542, 'north': 25.10267}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_km.png', 'bound': {'east': 118.555444334865, 'south': 24.347554730357, 'west': 118.09259560669, 'north': 24.5550429375}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_ds.png', 'bound': {'east': 116.997188826726, 'south': 20.584006689101, 'west': 116.465473963936, 'north': 20.8289364}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_pg.png', 'bound': {'east': 122.284720952388, 'south': 25.541325529312, 'west': 121.879743863379, 'north': 25.7211324}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_tw_s1.png', 'bound': {'east': 121.67365254401, 'south': 22.516009945082, 'west': 119.83757225, 'north': 23.348726804538}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_tw_s2.png', 'bound': {'east': 121.668689570833, 'south': 22.134668001923, 'west': 119.940614, 'north': 22.920724071999}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_tw_n3.png', 'bound': {'east': 122.071155517187, 'south': 23.799878395958, 'west': 120.1270705, 'north': 24.672860789672}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_tw_n2.png', 'bound': {'east': 122.051303624479, 'south': 24.347852672414, 'west': 120.5392375, 'north': 25.024419141045}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_tw_c1.png', 'bound': {'east': 121.874885517188, 'south': 23.34868555455, 'west': 119.9308005, 'north': 24.224725399103}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_tw_c2.png', 'bound': {'east': 121.776750517188, 'south': 22.897519218623, 'west': 119.8326655, 'north': 23.776562560086}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_tw_s3.png', 'bound': {'east': 121.746972678125, 'south': 21.782414891844, 'west': 120.450916, 'north': 22.373857904126}}, {'img': 'https://coverage.cht.com.tw/coverage/images/mobile/3G_ph.png', 'bound': {'east': 120.283777836993, 'south': 23.147611236, 'west': 118.758385484617, 'north': 23.83653006}}],
 
 // 20211214 twn view-source:https://www.taiwanmobile.com/mobile/calculate/cover_map.html
-"twn":[
-{"bound":{"east":122.2208310271,"west":119.1323329729,"south":21.840354632856,"north":25.348821027144},"img":"https://www.taiwanmobile.com/mobile/calculate/maps/4G/TW.png?r=20211105"},
-{"bound":{"east":118.699254155749,"west":118.014474244251,"south":24.163333296853,"north":24.711072163147},"img":"https://www.taiwanmobile.com/mobile/calculate/maps/4G/KM.png?r=20211105"},
-{"bound":{"east":119.993870332648,"west":119.169872067352,"south":23.160202295306,"north":23.824717904694},"img":"https://www.taiwanmobile.com/mobile/calculate/maps/4G/PF.png?r=20211105"},
-{"bound":{"east":120.575646422936,"west":119.824042177064,"south":25.857306809423,"north":26.450044270577},"img":"https://www.taiwanmobile.com/mobile/calculate/maps/4G/KM.png?r=20211105"}
+
+"twn": [
+  {
+    "bound": {
+      "east": 122.248449008024,
+      "west": 119.834104991976,
+      "south": 21.73053598103,
+      "north": 25.49458277897
+    },
+    "img": "https://www.taiwanmobile.com/mobile/calculate/maps/4G/Taiwan.png?r=20260818"
+  },
+  {
+    "bound": {
+      "east": 118.699254155749,
+      "west": 118.014474244251,
+      "south": 24.163333296853,
+      "north": 24.711072163147
+    },
+    "img": "https://www.taiwanmobile.com/mobile/calculate/maps/4G/KM.png?r=20260818"
+  },
+  {
+    "bound": {
+      "east": 119.923261747476,
+      "west": 119.224642052524,
+      "south": 23.106697637927,
+      "north": 23.883389062073
+    },
+    "img": "https://www.taiwanmobile.com/mobile/calculate/maps/4G/PF.png?r=20260818"
+  },
+  {
+    "bound": {
+      "east": 120.575646422936,
+      "west": 119.824042177064,
+      "south": 25.857306809423,
+      "north": 26.450044270577
+    },
+    "img": "https://www.taiwanmobile.com/mobile/calculate/maps/4G/MZ.png?r=20260818"
+  }
 ],
-"twn3G":[
-{"bound":{"east":122.265347983825,"west":119.245613928019,"south":21.775633165002,"north":25.438287869254},"img":"https://www.taiwanmobile.com/mobile/calculate/maps/3G/TW.png?r=20190429"},
-{"bound":{"east":118.599352022609,"west":118.11837140405,"south":24.311316073198,"north":25.438287869254},"img":"https://www.taiwanmobile.com/mobile/calculate/maps/3G/KM.png?r=20190429"},
-{"bound":{"east":120.753968968233,"west": 119.722191686725,"south":25.89546361944,"north":26.442732518554},"img":"https://www.taiwanmobile.com/mobile/calculate/maps/3G/MZ.png?r=20190429"}
-],
+
+
 /* 20211214  
          {
                 "southwest": "21.813526812557,117.496893247948",
