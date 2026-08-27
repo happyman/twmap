@@ -37,6 +37,12 @@ module.exports = function(grunt) {
 					src: ['twmap_gen','twmap3'], 
 					dest: 'dist/'
 				}
+			},
+			twmap4: {
+				options: {
+					src: ['twmap4'],
+					dest: 'dist/'
+				}
 			}
 		},
 		filerev: {
@@ -94,7 +100,7 @@ module.exports = function(grunt) {
 			options: {
 				swapPath: '/tmp'
 			},
-			all: [ 'twmap3/**/*.php', 'twmap_gen/**/*.php' ]
+			all: [ 'twmap3/**/*.php', 'twmap_gen/**/*.php', 'twmap4/**/*.php' ]
 		}
 	});
 
@@ -113,14 +119,18 @@ module.exports = function(grunt) {
 		'clean',
 		'jshint',
 		'phplint',
-		// 'copy:generated',
 		'rsync:generated',
+		'rsync:twmap4',
 		'useminPrepare',
 		'concat',
 		'uglify',
 		'cssmin',
 		'filerev',
 		'usemin',
+	]);
+
+	grunt.registerTask('twmap4-dist', [
+		'rsync:twmap4'
 	]);
 };
 

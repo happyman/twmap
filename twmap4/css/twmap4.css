@@ -1,0 +1,58 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: Arial, "Microsoft JhengHei", sans-serif;
+  background: #f3f3f3;
+}
+
+#app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #1f2937;
+  border-bottom: 1px solid #334155;
+  box-sizing: border-box;
+}
+
+#search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+#search-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+button,
+select {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #94a3b8;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+#map {
+  flex: 1;
+  min-height: 400px;
+  width: 100%;
+}
+
+.ol-control {
+  margin: 10px;
+}
