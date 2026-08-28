@@ -16,6 +16,10 @@ function createMapApi(adapter) {
       return adapter.addTileLayer(layer);
     },
 
+    setTileLayerSource(layerId, layerConfig) {
+      return adapter.setTileLayerSource(layerId, layerConfig);
+    },
+
     addVectorLayer(layer) {
       return adapter.addVectorLayer(layer);
     },

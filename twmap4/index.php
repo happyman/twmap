@@ -18,10 +18,12 @@ require_once __DIR__ . "/config.inc.php";
         <button id="search-btn" type="button">到</button>
       </div>
 
-      <select id="basemap-select" aria-label="底圖切換">
-        <option value="osm">OpenStreetMap</option>
-        <option value="nlsc">NLSC</option>
-        <option value="rudy">Rudy</option>
+      <label for="bottom-layer-1-select">第一層</label>
+      <select id="bottom-layer-1-select" aria-label="第一層圖資">
+      </select>
+
+      <label for="bottom-layer-2-select">第二層</label>
+      <select id="bottom-layer-2-select" aria-label="第二層圖資">
       </select>
 
       <button id="select-area-btn" type="button">選區</button>
@@ -37,6 +39,7 @@ require_once __DIR__ . "/config.inc.php";
   <script src="https://cdn.jsdelivr.net/npm/ol@10.3.1/dist/ol.js"></script>
   <script src="js/mapApi.js"></script>
   <script src="js/olAdapter.js"></script>
+  <script src="js/layers.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

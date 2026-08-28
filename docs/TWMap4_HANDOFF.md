@@ -1,3 +1,19 @@
+### 最近完成：底層圖資獨立選擇
+
+- `twmap4/js/layers.js`
+  - 集中管理 OSM、NLSC、Rudy、經建圖與主要歷史圖資的 XYZ URL。
+  - NLSC WMTS 的 `{z}/{y}/{x}` 順序已在 URL 中處理。
+
+- `addDrawSelection()` 已改為重用 `selection` vector layer 的 source，並移除前一個 Draw interaction。
+- `onMoveEnd()` 已改用 map `moveend` event。
+- `addPolygon()` 已確保 ring 首尾閉合。
+- `setView()` 與初始化 view 已使用明確的 undefined 判斷，zoom 0 不會被忽略。
+
+已執行：
+
+```bash
+grunt twmap4-dist
+```
 # TWMap4 Agent Handoff
 
 更新日期：2026-08-28
@@ -25,12 +41,20 @@
 - `twmap4/js/olAdapter.js`
   - 以 OpenLayers 實作 map API。
   - 支援 XYZ tile layer、vector layer、marker、polygon、polyline、點擊事件、Polygon draw。
+  - 支援以 layer id 交換兩個圖層的 z-index。
 - `twmap4/js/app.js`
   - 建立地圖。
   - 目前加入 OSM、NLSC、Rudy 三個示範底圖。
   - 加入示範 markers、座標搜尋、geocoder fetch、選區繪製。
 - `twmap4/css/twmap4.css`
   - 最小版 toolbar/map layout。
+
+### 最近完成：底層圖資獨立選擇
+
+- `twmap4/app.js` 建立固定的 `bottom-1` 與 `bottom-2` layer slots。
+- 第一層與第二層各有一個選單，共用 `mapSources` 圖資清單，可自由選擇相同或不同圖資。
+- 兩個插槽的 z-index 固定，選單切換只替換該插槽的 tile source，不交換 layer 物件。
+- `mapApi.setTileLayerSource()` 與 `olAdapter.setTileLayerSource()` 負責動態替換圖資。
 
 ### Grunt
 

@@ -5,36 +5,12 @@ const map = mapApi.init({
   zoom: window.appConfig.default_zoom
 });
 
-const baseLayers = {
-  osm: {
-    id: 'osm',
-    name: 'OSM',
-    type: 'tile',
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    visible: true
-  },
-  nlsc: {
-    id: 'nlsc',
-    name: 'NLSC',
-    type: 'tile',
-    url: 'https://wmts.nlsc.gov.tw/wmts/EMAP5/default/EPSG:3857/{z}/{y}/{x}',
-    visible: false
-  },
-  rudy: {
-    id: 'rudy',
-    name: 'Rudy',
-    type: 'tile',
-    url: 'https://tile.happyman.idv.tw/map/rudy/{z}/{x}/{y}.png',
-    visible: false
-  }
-};
-
 const markerLayerId = 'markers';
 const selectionLayerId = 'selection';
 
-for (const key of Object.keys(baseLayers)) {
-  mapApi.addTileLayer(baseLayers[key]);
-}
+mapApi.addTileLayer({ id: 'bottom-1', ...mapSources.osm, visible: true, zIndex: 0 });
+mapApi.addTileLayer({ id: 'bottom-2', ...mapSources.nlsc_emap, visible: true, opacity: 0.7, zIndex: 1 });
+mapApi.addTileLayer({ id: 'overlay-1', ...mapSources.rudy, visible: false, zIndex: 10 });
 
 mapApi.addVectorLayer({ id: markerLayerId, visible: true });
 mapApi.addVectorLayer({ id: selectionLayerId, visible: true });
@@ -53,18 +29,27 @@ mapApi.onClick(function ({ lon, lat }) {
   console.log('map click:', lon, lat);
 });
 
-const basemapSelect = document.getElementById('basemap-select');
-basemapSelect.addEventListener('change', function () {
-  const selected = this.value;
-  const layers = map.getLayers();
+function bindBottomLayerSelect(selectId, layerId) {
+  const select = document.getElementById(selectId);
+  for (const source of Object.values(mapSources)) {
+    const option = document.createElement('option');
+    option.value = source.sourceId;
+    option.textContent = source.label;
+    select.appendChild(option);
+  }
 
-  layers.forEach(function (layer) {
-    const id = layer.get('id');
-    if (id && typeof baseLayers[id] !== 'undefined') {
-      layer.setVisible(id === selected);
+  select.addEventListener('change', function () {
+    const source = mapSources[this.value];
+    if (source) {
+      mapApi.setTileLayerSource(layerId, source);
     }
   });
-});
+}
+
+bindBottomLayerSelect('bottom-layer-1-select', 'bottom-1');
+bindBottomLayerSelect('bottom-layer-2-select', 'bottom-2');
+document.getElementById('bottom-layer-1-select').value = 'osm';
+document.getElementById('bottom-layer-2-select').value = 'nlsc_emap';
 
 const gotoBtn = document.getElementById('search-btn');
 gotoBtn.addEventListener('click', function () {
@@ -95,12 +80,7 @@ gotoBtn.addEventListener('click', function () {
 
 const selectAreaBtn = document.getElementById('select-area-btn');
 selectAreaBtn.addEventListener('click', function () {
-  mapApi.addDrawSelection(function (coords) {
-    mapApi.addPolygon(selectionLayerId, coords.map(([lon, lat]) => [lon, lat]), {
-      strokeColor: '#00ff88',
-      fillColor: 'rgba(0, 255, 136, 0.18)'
-    });
-  });
+  mapApi.addDrawSelection();
 });
 
 mapApi.setView(window.appConfig.default_center, window.appConfig.default_zoom);

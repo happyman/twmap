@@ -9,7 +9,7 @@ const olMapApiAdapter = {
       layers: [],
       view: new ol.View({
         center: ol.proj.fromLonLat(options.center || [121.5654, 25.0330]),
-        zoom: options.zoom || 8
+        zoom: options.zoom === undefined ? 8 : options.zoom
       })
     });
 
@@ -26,7 +26,7 @@ const olMapApiAdapter = {
     const view = this.map.getView();
     view.animate({
       center: ol.proj.fromLonLat(center),
-      zoom: zoom || view.getZoom(),
+      zoom: zoom === undefined ? view.getZoom() : zoom,
       duration: 300
     });
   },
@@ -40,20 +40,37 @@ const olMapApiAdapter = {
   },
 
   addTileLayer(layerConfig) {
-    const source = new ol.source.XYZ({
-      url: layerConfig.url,
-      attributions: layerConfig.attribution || ''
-    });
+    const source = this.createTileSource(layerConfig);
 
     const mapLayer = new ol.layer.Tile({
       source,
-      visible: layerConfig.visible !== false
+      visible: layerConfig.visible !== false,
+      opacity: layerConfig.opacity === undefined ? 1 : layerConfig.opacity,
+      zIndex: layerConfig.zIndex
     });
 
     mapLayer.set('id', layerConfig.id);
     this.map.addLayer(mapLayer);
     this.layers.set(layerConfig.id, mapLayer);
     return mapLayer;
+  },
+
+  createTileSource(layerConfig) {
+    return new ol.source.XYZ({
+      url: layerConfig.url,
+      attributions: layerConfig.attribution || ''
+    });
+  },
+
+  setTileLayerSource(layerId, layerConfig) {
+    const layer = this.layers.get(layerId);
+    if (!layer) {
+      return false;
+    }
+
+    layer.setSource(this.createTileSource(layerConfig));
+    layer.set('sourceId', layerConfig.sourceId || layerId);
+    return true;
   },
 
   addVectorLayer(layerConfig) {
@@ -98,6 +115,11 @@ const olMapApiAdapter = {
 
   addPolygon(layerId, coordinates, options = {}) {
     const ring = coordinates.map(([lon, lat]) => ol.proj.fromLonLat([lon, lat]));
+    if (ring.length > 0 &&
+      (ring[0][0] !== ring[ring.length - 1][0] ||
+        ring[0][1] !== ring[ring.length - 1][1])) {
+      ring.push(ring[0]);
+    }
     const feature = new ol.Feature({
       geometry: new ol.geom.Polygon([ring])
     });
@@ -141,24 +163,31 @@ const olMapApiAdapter = {
   },
 
   onMoveEnd(handler) {
-    this.map.getView().on('change:resolution', function () {
-      handler();
-    });
+    this.map.on('moveend', handler);
   },
 
   addDrawSelection(handler) {
+    if (this.selectionDraw) {
+      this.map.removeInteraction(this.selectionDraw);
+    }
+
+    const selectionLayer = this.layers.get('selection');
+    const source = selectionLayer ? selectionLayer.getSource() : new ol.source.Vector();
     const draw = new ol.interaction.Draw({
       type: 'Polygon',
-      source: new ol.source.Vector()
+      source
     });
 
     this.map.addInteraction(draw);
     draw.on('drawend', function (event) {
       const coords = event.feature.getGeometry().getCoordinates()[0];
       const ring = coords.map(([x, y]) => ol.proj.toLonLat([x, y]));
-      handler(ring);
+      if (handler) {
+        handler(ring);
+      }
     });
 
+    this.selectionDraw = draw;
     return draw;
   }
 };
