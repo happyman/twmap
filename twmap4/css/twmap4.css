@@ -47,6 +47,16 @@ select {
   font-size: 14px;
 }
 
+select {
+  font-family: FontAwesome, "Microsoft JhengHei", sans-serif;
+  font-weight: 900;
+}
+
+input[type="range"] {
+  width: 90px;
+  accent-color: #f59e0b;
+}
+
 #map {
   flex: 1;
   min-height: 400px;
@@ -55,4 +65,19 @@ select {
 
 .ol-control {
   margin: 10px;
+}
+
+@media (max-width: 760px) {
+  #toolbar {
+    flex-wrap: wrap;
+  }
+
+  #search-box {
+    flex-basis: 100%;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    min-width: 70px;
+  }
 }

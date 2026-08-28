@@ -7,10 +7,31 @@ const map = mapApi.init({
 
 const markerLayerId = 'markers';
 const selectionLayerId = 'selection';
+const roadLayerId = 'road';
 
-mapApi.addTileLayer({ id: 'bottom-1', ...mapSources.osm, visible: true, zIndex: 0 });
+const baseMapSources = Object.fromEntries(
+  Object.entries(mapSources).filter(function ([sourceId]) {
+    return mapSources[sourceId].category !== 'road';
+  }).sort(function ([, sourceA], [, sourceB]) {
+    return sourceA.order - sourceB.order;
+  })
+);
+const roadSources = Object.fromEntries(
+  Object.entries(mapSources).filter(function ([sourceId]) {
+    return mapSources[sourceId].category === 'road';
+  }).sort(function ([, sourceA], [, sourceB]) {
+    return sourceA.order - sourceB.order;
+  })
+);
+
+mapApi.addTileLayer({ id: 'bottom-1', ...baseMapSources.osm, visible: true, zIndex: 0 });
 mapApi.addTileLayer({ id: 'bottom-2', ...mapSources.nlsc_emap, visible: true, opacity: 0.7, zIndex: 1 });
-mapApi.addTileLayer({ id: 'overlay-1', ...mapSources.rudy, visible: false, zIndex: 10 });
+mapApi.addTileLayer({
+  id: roadLayerId,
+  ...mapSources.nlsc_names,
+  visible: true,
+  zIndex: 20
+});
 
 mapApi.addVectorLayer({ id: markerLayerId, visible: true });
 mapApi.addVectorLayer({ id: selectionLayerId, visible: true });
@@ -31,10 +52,10 @@ mapApi.onClick(function ({ lon, lat }) {
 
 function bindBottomLayerSelect(selectId, layerId) {
   const select = document.getElementById(selectId);
-  for (const source of Object.values(mapSources)) {
+  for (const source of Object.values(baseMapSources)) {
     const option = document.createElement('option');
     option.value = source.sourceId;
-    option.textContent = source.label;
+    option.textContent = source.icon + '  ' + source.label;
     select.appendChild(option);
   }
 
@@ -50,6 +71,37 @@ bindBottomLayerSelect('bottom-layer-1-select', 'bottom-1');
 bindBottomLayerSelect('bottom-layer-2-select', 'bottom-2');
 document.getElementById('bottom-layer-1-select').value = 'osm';
 document.getElementById('bottom-layer-2-select').value = 'nlsc_emap';
+
+const roadSelect = document.getElementById('road-layer-select');
+for (const source of Object.values(roadSources)) {
+  const option = document.createElement('option');
+  option.value = source.sourceId;
+  option.textContent = source.icon + '  ' + source.label;
+  roadSelect.appendChild(option);
+}
+const noRoadOption = document.createElement('option');
+noRoadOption.value = 'none';
+noRoadOption.textContent = '無道路';
+roadSelect.appendChild(noRoadOption);
+
+roadSelect.addEventListener('change', function () {
+  const source = roadSources[this.value];
+  if (source) {
+    mapApi.setTileLayerSource(roadLayerId, source);
+  }
+  mapApi.setLayerVisible(roadLayerId, this.value !== 'none');
+});
+
+roadSelect.value = 'nlsc_names';
+
+function bindLayerOpacity(inputId, layerId) {
+  const input = document.getElementById(inputId);
+  input.addEventListener('input', function () {
+    mapApi.setLayerOpacity(layerId, parseFloat(this.value));
+  });
+}
+
+bindLayerOpacity('bottom-layer-2-opacity', 'bottom-2');
 
 const gotoBtn = document.getElementById('search-btn');
 gotoBtn.addEventListener('click', function () {

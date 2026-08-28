@@ -56,10 +56,17 @@ const olMapApiAdapter = {
   },
 
   createTileSource(layerConfig) {
-    return new ol.source.XYZ({
-      url: layerConfig.url,
-      attributions: layerConfig.attribution || ''
-    });
+    const sourceOptions = {
+      attributions: layerConfig.attribution || '',
+      minZoom: layerConfig.minZoom,
+      maxZoom: layerConfig.maxZoom
+    };
+    if (layerConfig.tileUrlFunction) {
+      sourceOptions.tileUrlFunction = layerConfig.tileUrlFunction;
+    } else {
+      sourceOptions.url = layerConfig.url;
+    }
+    return new ol.source.XYZ(sourceOptions);
   },
 
   setTileLayerSource(layerId, layerConfig) {
@@ -70,6 +77,26 @@ const olMapApiAdapter = {
 
     layer.setSource(this.createTileSource(layerConfig));
     layer.set('sourceId', layerConfig.sourceId || layerId);
+    return true;
+  },
+
+  setLayerOpacity(layerId, opacity) {
+    const layer = this.layers.get(layerId);
+    if (!layer || typeof layer.setOpacity !== 'function') {
+      return false;
+    }
+
+    layer.setOpacity(Math.max(0, Math.min(1, opacity)));
+    return true;
+  },
+
+  setLayerVisible(layerId, visible) {
+    const layer = this.layers.get(layerId);
+    if (!layer || typeof layer.setVisible !== 'function') {
+      return false;
+    }
+
+    layer.setVisible(visible);
     return true;
   },
 

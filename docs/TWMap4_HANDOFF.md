@@ -3,6 +3,16 @@
 - `twmap4/js/layers.js`
   - 集中管理 OSM、NLSC、Rudy、經建圖與主要歷史圖資的 XYZ URL。
   - NLSC WMTS 的 `{z}/{y}/{x}` 順序已在 URL 中處理。
+  - 已補入 twmap3 中除 Google 相關外的圖資，包括歷史圖、航跡、林班、陰影、等高線、地質、災害與臺東林野圖。
+  - `nlsc_names` 標記為道路圖層來源，不會出現在第一、第二層選單。
+
+### 最近完成：第三層道路圖
+
+- `twmap4/js/app.js` 建立固定的 `road` 第三層，預設顯示 NLSC 地名圖。
+- 道路選單提供原 twmap3 `changegname` 中所有非 Google 圖資：NLSC 地名、花蓮崩壁、Rudy BN/DN、Happyman、林班界與 2005/2015 等高線，另提供無道路。
+- 第一層與第二層只使用非道路圖資，第二層透明度控制維持原有行為。
+- 第一層與第二層已移除 Carto 深色，並依 twmap3 主圖選單的年代/類別順序顯示，選項前保留 Font Awesome 類別圖示。
+- 山區陰影已補上類別圖示；Rudy TN 與 GPX 航跡已歸入第三層道路/前景圖資，不會出現在第一、第二層選單。
 
 - `addDrawSelection()` 已改為重用 `selection` vector layer 的 source，並移除前一個 Draw interaction。
 - `onMoveEnd()` 已改用 map `moveend` event。

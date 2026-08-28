@@ -20,6 +20,14 @@ function createMapApi(adapter) {
       return adapter.setTileLayerSource(layerId, layerConfig);
     },
 
+    setLayerOpacity(layerId, opacity) {
+      return adapter.setLayerOpacity(layerId, opacity);
+    },
+
+    setLayerVisible(layerId, visible) {
+      return adapter.setLayerVisible(layerId, visible);
+    },
+
     addVectorLayer(layer) {
       return adapter.addVectorLayer(layer);
     },
