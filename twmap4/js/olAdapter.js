@@ -383,6 +383,30 @@ const olMapApiAdapter = {
     this.map.on('moveend', handler);
   },
 
+  onFeatureClick(layerId, handler) {
+    const layer = this.layers.get(layerId);
+    if (!layer) {
+      return false;
+    }
+
+    this.map.on('click', (event) => {
+      const feature = this.map.forEachFeatureAtPixel(event.pixel, function (candidate) {
+        return candidate;
+      }, {
+        layerFilter: function (candidateLayer) {
+          return candidateLayer === layer;
+        },
+        hitTolerance: 6
+      });
+
+      if (feature && typeof handler === 'function') {
+        handler(feature, event);
+      }
+    });
+
+    return true;
+  },
+
   addDrawSelection(handler) {
     if (this.selectionDraw) {
       this.map.removeInteraction(this.selectionDraw);
