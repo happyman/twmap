@@ -8,6 +8,7 @@ const map = mapApi.init({
 const markerLayerId = 'markers';
 const selectionLayerId = 'selection';
 const roadLayerId = 'road';
+const pointPopup = document.getElementById('point-popup');
 
 const baseMapSources = Object.fromEntries(
   Object.entries(mapSources).filter(function ([sourceId]) {
@@ -46,8 +47,164 @@ for (const [lon, lat, color] of initialMarkers) {
   mapApi.addMarker(markerLayerId, lon, lat, { color });
 }
 
+const typeToIconMap = {
+  '一等點': 'peak_1st',
+  '二等點': 'peak_2nd',
+  '三等點': 'peak_3rd',
+  '森林點': 'forest_point',
+  '未知森林點': 'forest_unknown',
+  '巨木': 'giant_tree',
+  '獨立峰': 'independent_peak',
+  '無基石山頭': 'nameless_peak',
+  '山屋': 'mountain_hut',
+  '工寮': 'shelter',
+  '水源': 'water_source',
+  '溫泉': 'hot_spring',
+  '瀑布': 'waterfall',
+  '溪流': 'stream',
+  '湖泊': 'lake',
+  '岩石': 'rock'
+};
+
+function getIconName(point) {
+  if (point.type && typeToIconMap[point.type]) {
+    return typeToIconMap[point.type];
+  }
+  if (point.class === '1' || point.class === 1) {
+    return 'peak_1st';
+  }
+  if (point.class === '2' || point.class === 2) {
+    return 'peak_2nd';
+  }
+  if (point.class === '3' || point.class === 3) {
+    return 'peak_3rd';
+  }
+  return 'point';
+}
+
+function pointColor(point) {
+  if (point.class === '1' || point.class === 1) {
+    return '#d32f2f';
+  }
+  if (point.class === '2' || point.class === 2) {
+    return '#f57c00';
+  }
+  if (point.class === '3' || point.class === 3) {
+    return '#1976d2';
+  }
+  return '#455a64';
+}
+
+function loadPointData() {
+  const url = window.appConfig.pointdata_url + '?id=ALL';
+  fetch(url, { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('pointdata request failed');
+      }
+      return response.json();
+    })
+    .then(function (points) {
+      if (!Array.isArray(points)) {
+        throw new Error('pointdata response is not an array');
+      }
+      for (const point of points) {
+        const lon = Number(point.x);
+        const lat = Number(point.y);
+        if (!Number.isFinite(lon) || !Number.isFinite(lat)) {
+          continue;
+        }
+        mapApi.addMarker(markerLayerId, lon, lat, {
+          color: pointColor(point),
+          title: point.name || '',
+          pointId: point.id,
+          iconName: getIconName(point),
+          pointType: point.type || '',
+          pointClass: point.class || ''
+        });
+      }
+      console.log('loaded point data:', points.length);
+    })
+    .catch(function (error) {
+      console.warn('pointdata unavailable:', error.message);
+    });
+}
+
+loadPointData();
+
+function showPointPopup(point, lon, lat) {
+  if (!pointPopup) {
+    return;
+  }
+
+  const title = point.name || '未命名點位';
+  const summary = point.story || '<br>未提供詳細資料';
+  const pointMeta = [
+    '經度: ' + Number(lon).toFixed(5),
+    '緯度: ' + Number(lat).toFixed(5),
+    point.type ? '類型: ' + point.type : '',
+    point.class ? '類別: ' + point.class : ''
+  ].filter(Boolean).join(' · ');
+
+  pointPopup.innerHTML = [
+    '<div class="popup-header">' + title + '</div>',
+    '<div class="popup-meta">' + pointMeta + '</div>',
+    summary
+  ].join('');
+  pointPopup.classList.remove('hidden');
+}
+
+function closePointPopup() {
+  if (pointPopup) {
+    pointPopup.classList.add('hidden');
+    pointPopup.innerHTML = '';
+  }
+}
+
+function loadPointDetails(pointId, lon, lat) {
+  const url = window.appConfig.pointdata_url + '?id=' + encodeURIComponent(pointId);
+  fetch(url, { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('point detail request failed');
+      }
+      return response.json();
+    })
+    .then(function (points) {
+      const point = Array.isArray(points) && points.length ? points[0] : null;
+      if (!point) {
+        return;
+      }
+      showPointPopup(point, lon, lat);
+    })
+    .catch(function (error) {
+      console.warn('point detail unavailable:', error.message);
+      showPointPopup({
+        name: '點位資訊',
+        story: '<br>無法載入詳細資料。'
+      }, lon, lat);
+    });
+}
+
+mapApi.onFeatureClick(markerLayerId, function (feature, event) {
+  const pointId = feature.get('pointId');
+  if (!pointId) {
+    return;
+  }
+
+  const coordinate = ol.proj.toLonLat(feature.getGeometry().getCoordinates());
+  loadPointDetails(pointId, coordinate[0], coordinate[1]);
+});
+
 mapApi.onClick(function ({ lon, lat }) {
   console.log('map click:', lon, lat);
+  if (!pointPopup) {
+    return;
+  }
+  const markerHit = document.getElementById('point-popup');
+  if (markerHit && !markerHit.classList.contains('hidden')) {
+    closePointPopup();
+  }
 });
 
 function bindBottomLayerSelect(selectId, layerId) {

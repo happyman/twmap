@@ -37,7 +37,10 @@ require_once __DIR__ . "/config.inc.php";
       <button id="select-area-btn" type="button">選區</button>
     </div>
 
-    <div id="map" aria-label="地圖"></div>
+    <div id="map-wrap">
+      <div id="map" aria-label="地圖"></div>
+      <div id="point-popup" class="hidden" aria-live="polite"></div>
+    </div>
   </div>
 
   <script>

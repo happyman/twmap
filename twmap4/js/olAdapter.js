@@ -126,18 +126,208 @@ const olMapApiAdapter = {
     const feature = new ol.Feature({
       geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat]))
     });
-
-    const style = new ol.style.Style({
-      image: new ol.style.Circle({
-        radius: options.radius || 6,
-        fill: new ol.style.Fill({ color: options.color || '#ff0000' }),
-        stroke: new ol.style.Stroke({ color: '#ffffff', width: 2 })
-      })
+    feature.setProperties({
+      title: options.title || '',
+      pointId: options.pointId,
+      iconName: options.iconName || 'point',
+      pointType: options.pointType || '',
+      pointClass: options.pointClass || ''
     });
 
+    const style = this.createMarkerStyle(options);
     feature.setStyle(style);
     this.addFeature(layerId, feature);
     return feature;
+  },
+
+  createMarkerStyle(options) {
+    const color = options.color || '#888888';
+    const iconName = options.iconName || 'point';
+    const radius = options.radius || 10;
+
+    const iconStyle = this.getIconStyle(iconName, color, radius);
+    if (iconStyle) {
+      return iconStyle;
+    }
+
+    return new ol.style.Style({
+      image: new ol.style.Circle({
+        radius,
+        fill: new ol.style.Fill({ color }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 2 })
+      })
+    });
+  },
+
+  getIconStyle(iconName, color, radius) {
+    const size = radius * 2;
+    const canvas = this.getIconCanvas(iconName, color, size);
+    if (!canvas) {
+      return null;
+    }
+
+    return new ol.style.Style({
+      image: new ol.style.Icon({
+        img: canvas,
+        scale: 1,
+        anchor: [0.5, 1]
+      })
+    });
+  },
+
+  getIconCanvas(iconName, color, size) {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      switch (iconName) {
+        case 'peak_1st':
+          this.drawPeakIcon(ctx, size, color, 'I');
+          break;
+        case 'peak_2nd':
+          this.drawPeakIcon(ctx, size, color, 'II');
+          break;
+        case 'peak_3rd':
+          this.drawPeakIcon(ctx, size, color, 'III');
+          break;
+        case 'forest_point':
+          this.drawForestIcon(ctx, size, color);
+          break;
+        case 'forest_unknown':
+          this.drawForestUnknownIcon(ctx, size, color);
+          break;
+        case 'independent_peak':
+          this.drawIndependentPeakIcon(ctx, size, color);
+          break;
+        case 'mountain_hut':
+          this.drawHutIcon(ctx, size, color);
+          break;
+        case 'water_source':
+          this.drawWaterIcon(ctx, size, color);
+          break;
+        default:
+          this.drawPointIcon(ctx, size, color);
+      }
+
+      return canvas;
+    } catch (e) {
+      console.warn('Failed to create marker canvas:', e);
+      return null;
+    }
+  },
+
+  drawPeakIcon(ctx, size, color, label) {
+    const center = size / 2;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(center, center - 2, size / 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold ' + Math.floor(size * 0.4) + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, center, center - 2);
+  },
+
+  drawForestIcon(ctx, size, color) {
+    const center = size / 2;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.2);
+    ctx.lineTo(center + size * 0.25, size * 0.45);
+    ctx.lineTo(center - size * 0.25, size * 0.45);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(center, size * 0.55, size * 0.15, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  drawForestUnknownIcon(ctx, size, color) {
+    const center = size / 2;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.2);
+    ctx.lineTo(center + size * 0.2, size * 0.4);
+    ctx.lineTo(center - size * 0.2, size * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = color;
+    ctx.font = 'bold ' + Math.floor(size * 0.35) + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('?', center, size * 0.65);
+  },
+
+  drawIndependentPeakIcon(ctx, size, color) {
+    const center = size / 2;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.15);
+    ctx.lineTo(center + size * 0.3, size * 0.6);
+    ctx.lineTo(center - size * 0.3, size * 0.6);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(center, size * 0.65, size * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  drawHutIcon(ctx, size, color) {
+    const center = size / 2;
+    ctx.fillStyle = color;
+    ctx.fillRect(center - size * 0.2, center - size * 0.15, size * 0.4, size * 0.25);
+
+    ctx.beginPath();
+    ctx.moveTo(center - size * 0.2, center - size * 0.15);
+    ctx.lineTo(center, center - size * 0.35);
+    ctx.lineTo(center + size * 0.2, center - size * 0.15);
+    ctx.fill();
+  },
+
+  drawWaterIcon(ctx, size, color) {
+    const center = size / 2;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.arc(center, center, size * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold ' + Math.floor(size * 0.5) + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('~', center, center);
+  },
+
+  drawPointIcon(ctx, size, color) {
+    const center = size / 2;
+    const radius = size * 0.3;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   },
 
   addPolygon(layerId, coordinates, options = {}) {

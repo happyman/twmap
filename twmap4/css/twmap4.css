@@ -57,10 +57,54 @@ input[type="range"] {
   accent-color: #f59e0b;
 }
 
-#map {
+#map-wrap {
+  position: relative;
   flex: 1;
-  min-height: 400px;
   width: 100%;
+  min-height: 400px;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+#point-popup {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  max-width: min(420px, calc(100% - 32px));
+  max-height: min(60vh, 420px);
+  overflow: auto;
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.94);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25);
+  z-index: 10;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+#point-popup.hidden {
+  display: none;
+}
+
+#point-popup a {
+  color: #7dd3fc;
+}
+
+#point-popup .popup-header {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+#point-popup .popup-meta {
+  color: #cbd5e1;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .ol-control {

@@ -52,6 +52,10 @@ function createMapApi(adapter) {
       return adapter.onClick(handler);
     },
 
+    onFeatureClick(layerId, handler) {
+      return adapter.onFeatureClick(layerId, handler);
+    },
+
     onMoveEnd(handler) {
       return adapter.onMoveEnd(handler);
     },
