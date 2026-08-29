@@ -45,6 +45,25 @@ require_once __DIR__ . "/config.inc.php";
 
   <script>
     window.appConfig = <?php echo json_encode($CONFIG, JSON_UNESCAPED_UNICODE); ?>;
+    window.twmap4IconVersions = {
+      peak_1st: <?php echo filemtime(__DIR__ . '/icons/peak_1st.png'); ?>,
+      peak_2nd: <?php echo filemtime(__DIR__ . '/icons/peak_2nd.png'); ?>,
+      peak_3rd: <?php echo filemtime(__DIR__ . '/icons/peak_3rd.png'); ?>,
+      forest_point: <?php echo filemtime(__DIR__ . '/icons/forest_point.png'); ?>,
+      forest_unknown: <?php echo filemtime(__DIR__ . '/icons/forest_unknown.png'); ?>,
+      giant_tree: <?php echo filemtime(__DIR__ . '/icons/giant_tree.png'); ?>,
+      independent_peak: <?php echo filemtime(__DIR__ . '/icons/independent_peak.png'); ?>,
+      nameless_peak: <?php echo filemtime(__DIR__ . '/icons/nameless_peak.png'); ?>,
+      mountain_hut: <?php echo filemtime(__DIR__ . '/icons/mountain_hut.png'); ?>,
+      shelter: <?php echo filemtime(__DIR__ . '/icons/shelter.png'); ?>,
+      water_source: <?php echo filemtime(__DIR__ . '/icons/water_source.png'); ?>,
+      hot_spring: <?php echo filemtime(__DIR__ . '/icons/hot_spring.png'); ?>,
+      waterfall: <?php echo filemtime(__DIR__ . '/icons/waterfall.png'); ?>,
+      stream: <?php echo filemtime(__DIR__ . '/icons/stream.png'); ?>,
+      lake: <?php echo filemtime(__DIR__ . '/icons/lake.png'); ?>,
+      rock: <?php echo filemtime(__DIR__ . '/icons/rock.png'); ?>,
+      point: <?php echo filemtime(__DIR__ . '/icons/point.png'); ?>
+    };
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/ol@10.3.1/dist/ol.js"></script>

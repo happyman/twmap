@@ -9,6 +9,13 @@ const markerLayerId = 'markers';
 const selectionLayerId = 'selection';
 const roadLayerId = 'road';
 const pointPopup = document.getElementById('point-popup');
+const pointPopupOverlay = new ol.Overlay({
+  element: pointPopup,
+  positioning: 'bottom-center',
+  offset: [0, -16],
+  stopEvent: true
+});
+map.addOverlay(pointPopupOverlay);
 
 const baseMapSources = Object.fromEntries(
   Object.entries(mapSources).filter(function ([sourceId]) {
@@ -120,7 +127,8 @@ function loadPointData() {
           pointId: point.id,
           iconName: getIconName(point),
           pointType: point.type || '',
-          pointClass: point.class || ''
+          pointClass: point.class || '',
+          radius: 12
         });
       }
       console.log('loaded point data:', points.length);
@@ -151,12 +159,15 @@ function showPointPopup(point, lon, lat) {
     '<div class="popup-meta">' + pointMeta + '</div>',
     summary
   ].join('');
+
+  pointPopupOverlay.setPosition(ol.proj.fromLonLat([lon, lat]));
   pointPopup.classList.remove('hidden');
 }
 
 function closePointPopup() {
   if (pointPopup) {
     pointPopup.classList.add('hidden');
+    pointPopupOverlay.setPosition(undefined);
     pointPopup.innerHTML = '';
   }
 }
@@ -198,13 +209,7 @@ mapApi.onFeatureClick(markerLayerId, function (feature, event) {
 
 mapApi.onClick(function ({ lon, lat }) {
   console.log('map click:', lon, lat);
-  if (!pointPopup) {
-    return;
-  }
-  const markerHit = document.getElementById('point-popup');
-  if (markerHit && !markerHit.classList.contains('hidden')) {
-    closePointPopup();
-  }
+  closePointPopup();
 });
 
 function bindBottomLayerSelect(selectId, layerId) {

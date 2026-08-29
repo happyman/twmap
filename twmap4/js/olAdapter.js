@@ -104,7 +104,9 @@ const olMapApiAdapter = {
     const vectorSource = new ol.source.Vector();
     const layer = new ol.layer.Vector({
       source: vectorSource,
-      visible: layerConfig.visible !== false
+      visible: layerConfig.visible !== false,
+      opacity: 1,
+      zIndex: 100
     });
 
     layer.set('id', layerConfig.id);
@@ -160,22 +162,54 @@ const olMapApiAdapter = {
   },
 
   getIconStyle(iconName, color, radius) {
-    const size = radius * 2;
-    const canvas = this.getIconCanvas(iconName, color, size);
-    if (!canvas) {
+    const path = this.getLegacyIconPath(iconName);
+    if (!path) {
       return null;
     }
 
     return new ol.style.Style({
       image: new ol.style.Icon({
-        img: canvas,
+        src: path,
         scale: 1,
-        anchor: [0.5, 1]
-      })
+        opacity: 1,
+        color: '#ffffff',
+        anchor: [0.5, 1],
+        anchorXUnits: 'fraction',
+        anchorYUnits: 'fraction'
+      }),
+      zIndex: 100
     });
   },
 
-  getIconCanvas(iconName, color, size) {
+  getLegacyIconPath(iconName) {
+    const fallback = {
+      peak_1st: 'icons/peak_1st.png',
+      peak_2nd: 'icons/peak_2nd.png',
+      peak_3rd: 'icons/peak_3rd.png',
+      forest_point: 'icons/forest_point.png',
+      forest_unknown: 'icons/forest_unknown.png',
+      giant_tree: 'icons/giant_tree.png',
+      independent_peak: 'icons/independent_peak.png',
+      nameless_peak: 'icons/nameless_peak.png',
+      mountain_hut: 'icons/mountain_hut.png',
+      shelter: 'icons/shelter.png',
+      water_source: 'icons/water_source.png',
+      hot_spring: 'icons/hot_spring.png',
+      waterfall: 'icons/waterfall.png',
+      stream: 'icons/stream.png',
+      lake: 'icons/lake.png',
+      rock: 'icons/rock.png',
+      point: 'icons/point.png'
+    };
+
+    const normalized = (iconName || 'point').toString().trim();
+    const iconPath = fallback[normalized] || 'icons/point.png';
+    const versions = window.twmap4IconVersions || {};
+    const version = versions[normalized] || 1;
+    return iconPath + '?v=' + version;
+  },
+
+  getIconDataUrl(iconName, color, size) {
     try {
       const canvas = document.createElement('canvas');
       canvas.width = size;
@@ -211,122 +245,256 @@ const olMapApiAdapter = {
           this.drawPointIcon(ctx, size, color);
       }
 
-      return canvas;
+      return canvas.toDataURL('image/png');
     } catch (e) {
-      console.warn('Failed to create marker canvas:', e);
+      console.warn('Failed to create marker icon:', iconName, e);
       return null;
     }
   },
 
   drawPeakIcon(ctx, size, color, label) {
     const center = size / 2;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(center, center - 2, size / 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
+    const radius = size * 0.35;
+    
+    // White background
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold ' + Math.floor(size * 0.4) + 'px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(label, center, center - 2);
-  },
-
-  drawForestIcon(ctx, size, color) {
-    const center = size / 2;
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Colored circle
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(center, size * 0.2);
-    ctx.lineTo(center + size * 0.25, size * 0.45);
-    ctx.lineTo(center - size * 0.25, size * 0.45);
-    ctx.closePath();
+    ctx.arc(center, center, radius * 0.9, 0, Math.PI * 2);
     ctx.fill();
-
+    
+    // Black outline
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, size * 0.08);
     ctx.beginPath();
-    ctx.arc(center, size * 0.55, size * 0.15, 0, Math.PI * 2);
-    ctx.fill();
-  },
-
-  drawForestUnknownIcon(ctx, size, color) {
-    const center = size / 2;
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.8;
-    ctx.beginPath();
-    ctx.moveTo(center, size * 0.2);
-    ctx.lineTo(center + size * 0.2, size * 0.4);
-    ctx.lineTo(center - size * 0.2, size * 0.4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    ctx.fillStyle = color;
-    ctx.font = 'bold ' + Math.floor(size * 0.35) + 'px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('?', center, size * 0.65);
-  },
-
-  drawIndependentPeakIcon(ctx, size, color) {
-    const center = size / 2;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(center, size * 0.15);
-    ctx.lineTo(center + size * 0.3, size * 0.6);
-    ctx.lineTo(center - size * 0.3, size * 0.6);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 1.5;
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
     ctx.stroke();
 
-    ctx.fillStyle = '#FFD700';
-    ctx.beginPath();
-    ctx.arc(center, size * 0.65, size * 0.1, 0, Math.PI * 2);
-    ctx.fill();
-  },
-
-  drawHutIcon(ctx, size, color) {
-    const center = size / 2;
-    ctx.fillStyle = color;
-    ctx.fillRect(center - size * 0.2, center - size * 0.15, size * 0.4, size * 0.25);
-
-    ctx.beginPath();
-    ctx.moveTo(center - size * 0.2, center - size * 0.15);
-    ctx.lineTo(center, center - size * 0.35);
-    ctx.lineTo(center + size * 0.2, center - size * 0.15);
-    ctx.fill();
-  },
-
-  drawWaterIcon(ctx, size, color) {
-    const center = size / 2;
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.6;
-    ctx.beginPath();
-    ctx.arc(center, center, size * 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
+    // Label
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold ' + Math.floor(size * 0.5) + 'px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.fillText(label, center, center);
+  },
+
+  drawForestIcon(ctx, size, color) {
+    const center = size / 2;
+    
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.15);
+    ctx.lineTo(center + size * 0.3, size * 0.5);
+    ctx.lineTo(center - size * 0.3, size * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(center, size * 0.55, size * 0.18, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Colored shape
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.18);
+    ctx.lineTo(center + size * 0.27, size * 0.47);
+    ctx.lineTo(center - size * 0.27, size * 0.47);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(center, size * 0.55, size * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Black outline
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, size * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.15);
+    ctx.lineTo(center + size * 0.3, size * 0.5);
+    ctx.lineTo(center - size * 0.3, size * 0.5);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(center, size * 0.55, size * 0.18, 0, Math.PI * 2);
+    ctx.stroke();
+  },
+
+  drawForestUnknownIcon(ctx, size, color) {
+    const center = size / 2;
+    
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.15);
+    ctx.lineTo(center + size * 0.27, size * 0.48);
+    ctx.lineTo(center - size * 0.27, size * 0.48);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Colored shape
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.18);
+    ctx.lineTo(center + size * 0.24, size * 0.45);
+    ctx.lineTo(center - size * 0.24, size * 0.45);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    
+    // Black outline
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, size * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.15);
+    ctx.lineTo(center + size * 0.27, size * 0.48);
+    ctx.lineTo(center - size * 0.27, size * 0.48);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Question mark label
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold ' + Math.floor(size * 0.4) + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('?', center, size * 0.55);
+  },
+
+  drawIndependentPeakIcon(ctx, size, color) {
+    const center = size / 2;
+    
+    // White background triangle
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.12);
+    ctx.lineTo(center + size * 0.32, size * 0.55);
+    ctx.lineTo(center - size * 0.32, size * 0.55);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Colored triangle
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.16);
+    ctx.lineTo(center + size * 0.29, size * 0.52);
+    ctx.lineTo(center - size * 0.29, size * 0.52);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Gold star at bottom
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(center, size * 0.6, size * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Black outline
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, size * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(center, size * 0.12);
+    ctx.lineTo(center + size * 0.32, size * 0.55);
+    ctx.lineTo(center - size * 0.32, size * 0.55);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(center, size * 0.6, size * 0.12, 0, Math.PI * 2);
+    ctx.stroke();
+  },
+
+  drawHutIcon(ctx, size, color) {
+    const center = size / 2;
+    
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(center - size * 0.28, center - size * 0.2, size * 0.56, size * 0.35);
+    ctx.beginPath();
+    ctx.moveTo(center - size * 0.28, center - size * 0.2);
+    ctx.lineTo(center, center - size * 0.38);
+    ctx.lineTo(center + size * 0.28, center - size * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Colored shape
+    ctx.fillStyle = color;
+    ctx.fillRect(center - size * 0.24, center - size * 0.16, size * 0.48, size * 0.28);
+    ctx.beginPath();
+    ctx.moveTo(center - size * 0.24, center - size * 0.16);
+    ctx.lineTo(center, center - size * 0.32);
+    ctx.lineTo(center + size * 0.24, center - size * 0.16);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Black outline
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, size * 0.08);
+    ctx.strokeRect(center - size * 0.28, center - size * 0.2, size * 0.56, size * 0.35);
+    ctx.beginPath();
+    ctx.moveTo(center - size * 0.28, center - size * 0.2);
+    ctx.lineTo(center, center - size * 0.38);
+    ctx.lineTo(center + size * 0.28, center - size * 0.2);
+    ctx.closePath();
+    ctx.stroke();
+  },
+
+  drawWaterIcon(ctx, size, color) {
+    const center = size / 2;
+    const radius = size * 0.32;
+    
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Colored water drop
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.arc(center, center, radius * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Label
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold ' + Math.floor(size * 0.6) + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillText('~', center, center);
+    
+    // Black outline
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, size * 0.1);
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.stroke();
   },
 
   drawPointIcon(ctx, size, color) {
     const center = size / 2;
-    const radius = size * 0.3;
-    ctx.fillStyle = color;
+    const radius = size * 0.32;
+    
+    // White background circle
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.arc(center, center, radius, 0, Math.PI * 2);
     ctx.fill();
+    
+    // Colored inner circle
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(center, center, radius * 0.85, 0, Math.PI * 2);
+    ctx.fill();
 
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.5;
+    // Black outline for contrast
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, size * 0.1);
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
     ctx.stroke();
   },
 
