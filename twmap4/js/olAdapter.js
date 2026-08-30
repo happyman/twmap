@@ -120,7 +120,13 @@ const olMapApiAdapter = {
     if (!layer || !layer.getSource) {
       return null;
     }
-    layer.getSource().addFeature(feature);
+
+    const source = layer.getSource();
+    if (source && typeof source.getSource === 'function' && source.getSource() instanceof ol.source.Vector) {
+      source.getSource().addFeature(feature);
+    } else if (source && typeof source.addFeature === 'function') {
+      source.addFeature(feature);
+    }
     return feature;
   },
 
@@ -130,24 +136,27 @@ const olMapApiAdapter = {
     });
     feature.setProperties({
       title: options.title || '',
+      labelText: options.labelText || options.title || '',
+      showLabel: options.showLabel !== false,
       pointId: options.pointId,
       iconName: options.iconName || 'point',
       pointType: options.pointType || '',
       pointClass: options.pointClass || ''
     });
 
-    const style = this.createMarkerStyle(options);
-    feature.setStyle(style);
+    feature.setStyle((featureInstance) => this.createMarkerStyle(featureInstance.getProperties()));
     this.addFeature(layerId, feature);
     return feature;
   },
 
-  createMarkerStyle(options) {
+  createMarkerStyle(options = {}) {
     const color = options.color || '#888888';
     const iconName = options.iconName || 'point';
     const radius = options.radius || 10;
+    const labelText = String(options.labelText || options.title || '');
+    const showLabel = options.showLabel !== false;
 
-    const iconStyle = this.getIconStyle(iconName, color, radius);
+    const iconStyle = this.getIconStyle(iconName, color, radius, labelText, showLabel);
     if (iconStyle) {
       return iconStyle;
     }
@@ -161,11 +170,21 @@ const olMapApiAdapter = {
     });
   },
 
-  getIconStyle(iconName, color, radius) {
+  getIconStyle(iconName, color, radius, labelText = '', showLabel = true) {
     const path = this.getLegacyIconPath(iconName);
     if (!path) {
       return null;
     }
+
+    const label = showLabel && labelText ? new ol.style.Text({
+      text: labelText,
+      font: '600 11px Arial, sans-serif',
+      fill: new ol.style.Fill({ color: '#0f172a' }),
+      stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+      offsetY: -Math.max(18, radius + 8),
+      textAlign: 'center',
+      textBaseline: 'bottom'
+    }) : undefined;
 
     return new ol.style.Style({
       image: new ol.style.Icon({
@@ -177,6 +196,7 @@ const olMapApiAdapter = {
         anchorXUnits: 'fraction',
         anchorYUnits: 'fraction'
       }),
+      text: label,
       zIndex: 100
     });
   },
@@ -193,6 +213,10 @@ const olMapApiAdapter = {
       nameless_peak: 'icons/nameless_peak.png',
       mountain_hut: 'icons/mountain_hut.png',
       shelter: 'icons/shelter.png',
+      station: 'icons/station.png',
+      police_box: 'icons/police_box.png',
+      watch_station: 'icons/watch_station.png',
+      tribal_station: 'icons/tribal_station.png',
       water_source: 'icons/water_source.png',
       hot_spring: 'icons/hot_spring.png',
       waterfall: 'icons/waterfall.png',
@@ -559,6 +583,10 @@ const olMapApiAdapter = {
 
     this.map.on('click', (event) => {
       const feature = this.map.forEachFeatureAtPixel(event.pixel, function (candidate) {
+        if (candidate && candidate.get('features') && candidate.get('features').length) {
+          const candidates = candidate.get('features');
+          return candidates.length === 1 ? candidates[0] : candidate;
+        }
         return candidate;
       }, {
         layerFilter: function (candidateLayer) {
@@ -568,7 +596,10 @@ const olMapApiAdapter = {
       });
 
       if (feature && typeof handler === 'function') {
-        handler(feature, event);
+        const resolvedFeature = feature.get && feature.get('features') && feature.get('features').length === 1
+          ? feature.get('features')[0]
+          : feature;
+        handler(resolvedFeature, event);
       }
     });
 

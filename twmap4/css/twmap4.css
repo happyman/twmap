@@ -71,8 +71,8 @@ input[type="range"] {
 
 #point-popup {
   position: relative;
-  max-width: 320px;
-  max-height: min(60vh, 280px);
+  max-width: 340px;
+  max-height: min(70vh, 420px);
   overflow: auto;
   padding: 12px 14px;
   background: rgba(15, 23, 42, 0.96);
@@ -117,6 +117,115 @@ input[type="range"] {
   color: #cbd5e1;
   font-size: 12px;
   margin-bottom: 8px;
+}
+
+#point-popup .popup-coord {
+  color: #a5f3fc;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#point-popup .popup-story {
+  margin: 8px 0;
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+#point-popup .popup-story br {
+  line-height: 1.8;
+}
+
+#point-popup .popup-links {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+#point-popup .popup-links a {
+  display: inline-block;
+  margin: 0 8px 4px 0;
+  color: #7dd3fc;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+#point-popup .popup-links a:hover {
+  text-decoration: underline;
+}
+
+#point-popup .popup-permalink {
+  color: #7dd3fc !important;
+  text-decoration: none;
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+#point-popup .popup-wpt {
+  color: #fde68a;
+}
+
+#meerkat-wrap {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 830px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-left: 1px solid #cbd5e1;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.25);
+  animation: meerkat-in 0.18s ease-out;
+}
+
+#meerkat-wrap.hidden {
+  display: none;
+}
+
+@keyframes meerkat-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.meerkat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #1f2937;
+  color: #f8fafc;
+  flex: 0 0 auto;
+}
+
+.meerkat-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+#meerkat-close {
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+#meerkat-close:hover {
+  color: #93c5fd;
+}
+
+#meerkatiframe {
+  flex: 1 1 auto;
+  width: 100%;
+  border: 0;
+  background: #ffffff;
 }
 
 .ol-control {
