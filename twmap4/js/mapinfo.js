@@ -82,6 +82,7 @@
     msgEl.innerHTML = '游標:' + grid + ':' + zoom + '/' + lng_text + '/' + lat_text;
   }
 
+  var lastCursor = { lon: null, lat: null };
   var pointerMoveStamp = 0;
   map.on('pointermove', function (evt) {
     if (!evt.coordinate) {
@@ -93,10 +94,23 @@
     }
     pointerMoveStamp = now;
     var lonlat = ol.proj.toLonLat(evt.coordinate);
+    lastCursor.lon = lonlat[0];
+    lastCursor.lat = lonlat[1];
     updateMsg(lonlat[0], lonlat[1]);
   });
 
+  function refreshMsg() {
+    if (lastCursor.lon !== null && lastCursor.lat !== null) {
+      updateMsg(lastCursor.lon, lastCursor.lat);
+    } else {
+      var c = ol.proj.toLonLat(map.getView().getCenter());
+      updateMsg(c[0], c[1]);
+    }
+  }
+
   map.on('moveend', updateAttribution);
+  map.on('moveend', refreshMsg);
+  map.on('change:resolution', refreshMsg);
   map.on('change:size', updateAttribution);
 
   var layer1 = document.getElementById('bottom-layer-1-select');
