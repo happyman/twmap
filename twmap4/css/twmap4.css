@@ -231,6 +231,17 @@ input[type="range"] {
   text-decoration: underline;
 }
 
+#point-popup #los_link {
+  color: #7dd3fc;
+  cursor: pointer;
+}
+
+#point-popup #los_link.los-running {
+  color: #94a3b8;
+  cursor: wait;
+  pointer-events: none;
+}
+
 #point-popup .popup-permalink {
   color: #7dd3fc !important;
   text-decoration: none;

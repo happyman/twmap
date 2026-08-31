@@ -497,6 +497,10 @@ function showPointPopup(point, lon, lat) {
 
   const adminLink = point.info ? '<br><div class="popup-meta">[已登入] <a href="#" onClick="showmeerkat(\'' + window.appConfig.pointdata_admin_url + '?x=' + Number(lon).toFixed(5) + '&y=' + Number(lat).toFixed(5) + '\',{}); return false;">新增點位</a></div>' : '';
 
+  const ele = Number(point.ele);
+  const losLink = (isFinite(ele) && ele > -1000 && typeof show_line_of_sight === 'function') ?
+    '<div class="popup-meta"><a href="#" id="los_link" onClick="show_line_of_sight(' + Number(lon).toFixed(5) + ',' + Number(lat).toFixed(5) + ',' + Math.round(ele) + '); return false;">通視模擬 (' + Math.round(ele) + 'M)</a></div>' : '';
+
   pointPopup.innerHTML = [
     '<div class="popup-header">' + title +
       ' <a class="popup-permalink" href="' + permalink(lon, lat, zoom) + '" target="_blank" title="複製此位置連結"><i class="fa fa-link"></i></a>' +
@@ -504,6 +508,7 @@ function showPointPopup(point, lon, lat) {
     pointMeta ? '<div class="popup-meta">' + pointMeta + '</div>' : '',
     coordBlock(lon, lat),
     '<div class="popup-story">' + summary + '</div>',
+    losLink,
     adminLink,
     popupLinks(lon, lat, zoom)
   ].join('');
@@ -568,10 +573,7 @@ function showLocationInfo(lon, lat) {
   const rows = [];
 
   const finish = function () {
-    fetchElevAndAdmin(lon, lat, rows).then(function (elevation) {
-      if (elevation !== null && typeof show_line_of_sight === 'function') {
-        rows.push('<div class="popup-meta"><a href="#" onClick="show_line_of_sight(' + Number(lon).toFixed(5) + ',' + Number(lat).toFixed(5) + ',' + Math.round(elevation) + '); return false;">通視模擬</a></div>');
-      }
+    fetchElevAndAdmin(lon, lat, rows).then(function () {
       renderLocationPopup(lon, lat, zoom, rows);
     });
   };
@@ -647,6 +649,12 @@ function show_line_of_sight(lon, lat, z) {
   }
   losDisplayXyz = input;
   losRunning = true;
+  const losLink = document.getElementById('los_link');
+  const origLabel = losLink ? losLink.innerHTML : '';
+  if (losLink) {
+    losLink.classList.add('los-running');
+    losLink.innerHTML = '通視模擬計算中…';
+  }
   const url = window.appConfig.viewshed_url +
     '?x=' + Number(lon).toFixed(5) + '&y=' + Number(lat).toFixed(5) + '&z=' + Math.round(z);
   fetch(url, { cache: 'no-store' })
@@ -679,6 +687,11 @@ function show_line_of_sight(lon, lat, z) {
     })
     .finally(function () {
       losRunning = false;
+      const link = document.getElementById('los_link');
+      if (link) {
+        link.classList.remove('los-running');
+        link.innerHTML = origLabel;
+      }
     });
 }
 
