@@ -1181,6 +1181,23 @@ if (restoredView) {
   gotoFeatureLocation();
 }
 
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+if (fullscreenBtn) {
+  fullscreenBtn.addEventListener('click', function () {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(function () {});
+    } else {
+      document.exitFullscreen();
+    }
+  });
+  document.addEventListener('fullscreenchange', function () {
+    var icon = fullscreenBtn.querySelector('i');
+    if (icon) {
+      icon.className = document.fullscreenElement ? 'fa fa-compress' : 'fa fa-arrows-alt';
+    }
+  });
+}
+
 const geolocateBtn = document.getElementById('geolocate-btn');
 if (geolocateBtn) {
   geolocateBtn.addEventListener('click', function () {

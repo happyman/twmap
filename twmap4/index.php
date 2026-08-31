@@ -92,6 +92,7 @@ require_once __DIR__ . "/config.inc.php";
       <div id="params" aria-label="出圖範圍"></div>
       <div id="msg" aria-live="off" hidden></div>
       <div id="map-attribution" aria-label="圖資資訊"></div>
+      <button id="fullscreen-btn" type="button" title="全螢幕" aria-label="全螢幕"><i class="fa fa-arrows-alt"></i></button>
       <button id="geolocate-btn" type="button" title="定位到我" aria-label="定位到我"><i class="fa fa-crosshairs"></i></button>
       <div id="layer-controls">
         <label for="bottom-layer-1-select">第一層</label>
