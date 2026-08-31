@@ -89,6 +89,8 @@ require_once __DIR__ . "/config.inc.php";
         <button id="shape-info-btn" type="button" title="顯示所選形狀資訊"><i class="fa fa-info"></i></button>
       </div>
       <div id="params" aria-label="出圖範圍"></div>
+      <div id="msg" aria-live="off" hidden></div>
+      <div id="map-attribution" aria-label="圖資資訊"></div>
       <div id="layer-controls">
         <label for="bottom-layer-1-select">第一層</label>
         <select id="bottom-layer-1-select" aria-label="第一層圖資">
@@ -178,6 +180,7 @@ require_once __DIR__ . "/config.inc.php";
   <script src="js/shapedraw4.js?v=<?php echo filemtime(__DIR__ . '/js/shapedraw4.js'); ?>"></script>
   <script src="js/areaselect.js?v=<?php echo filemtime(__DIR__ . '/js/areaselect.js'); ?>"></script>
   <script src="js/app.js?v=<?php echo filemtime(__DIR__ . '/js/app.js'); ?>"></script>
+  <script src="js/mapinfo.js?v=<?php echo filemtime(__DIR__ . '/js/mapinfo.js'); ?>"></script>
   <script src="js/meerkat.js?v=<?php echo filemtime(__DIR__ . '/js/meerkat.js'); ?>"></script>
   <script src="js/coverage.js?v=<?php echo filemtime(__DIR__ . '/js/coverage.js'); ?>"></script>
 </body>

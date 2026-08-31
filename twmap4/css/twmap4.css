@@ -471,6 +471,47 @@ input[type="range"] {
   margin: 10px;
 }
 
+#msg {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  font-size: 12px;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+#map-attribution {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 20;
+  max-width: 60%;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  font-size: 11px;
+  color: #0f172a;
+  line-height: 1.5;
+}
+
+#map-attribution a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+#map-attribution a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 760px) {
   #toolbar {
     flex-wrap: wrap;
