@@ -1180,3 +1180,22 @@ if (restoredView) {
 } else {
   gotoFeatureLocation();
 }
+
+const geolocateBtn = document.getElementById('geolocate-btn');
+if (geolocateBtn) {
+  geolocateBtn.addEventListener('click', function () {
+    if (!mapApi || !mapApi.setView || !navigator.geolocation) {
+      console.warn('geolocation unavailable');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        mapApi.setView([position.coords.longitude, position.coords.latitude], 14);
+      },
+      function (err) {
+        console.warn('geolocation failed:', err && err.message ? err.message : err);
+      },
+      { timeout: 8000, maximumAge: 60000 }
+    );
+  });
+}

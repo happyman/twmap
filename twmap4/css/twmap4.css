@@ -124,8 +124,8 @@ input[type="range"] {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 5px;
+  padding: 6px 8px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid #cbd5e1;
   border-radius: 10px;
@@ -138,18 +138,20 @@ input[type="range"] {
 }
 
 #layer-controls select {
-  max-width: 170px;
-  padding: 6px 8px;
+  max-width: 100px;
+  font-size: 11px;
+  padding: 4px 6px;
 }
 
 #layer-controls input[type="range"] {
-  width: 90px;
+  width: 64px;
 }
 
 #buttons {
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 15;
   display: flex;
   align-items: center;
@@ -159,6 +161,32 @@ input[type="range"] {
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+
+#geolocate-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  color: #0f172a;
+  cursor: pointer;
+}
+
+#geolocate-btn:hover {
+  background: #e2e8f0;
+}
+
+#geolocate-btn:active {
+  background: #cbd5e1;
 }
 
 #buttons.hidden {
@@ -510,6 +538,45 @@ input[type="range"] {
 
 #map-attribution a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  #layer-controls select {
+    max-width: 84px;
+  }
+
+  #buttons {
+    top: auto;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #msg {
+    bottom: 64px;
+  }
+
+  #map-attribution {
+    max-width: 22%;
+  }
+}
+
+@media (max-width: 600px) {
+  #layer-controls select {
+    max-width: 70px;
+  }
+
+  #buttons {
+    bottom: 10px;
+  }
+
+  #msg {
+    bottom: 66px;
+  }
+
+  #map-attribution {
+    max-width: 12%;
+  }
 }
 
 @media (max-width: 760px) {
