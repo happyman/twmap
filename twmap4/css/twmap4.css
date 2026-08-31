@@ -225,7 +225,8 @@ input[type="range"] {
 #buttons .draw-type-toggle {
   width: 30px;
   height: 30px;
-  font-size: 11px;
+  font-size: 13px;
+  padding: 0;
 }
 
 #buttons .draw-type-toggle.active {
@@ -568,6 +569,23 @@ input[type="range"] {
 
   #buttons {
     bottom: 10px;
+    gap: 3px;
+    padding: 6px 8px;
+  }
+
+  #buttons .draw-type {
+    gap: 2px;
+  }
+
+  #buttons .draw-type-toggle {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  #buttons .buttons-sep {
+    height: 18px;
+    margin: 0 2px;
   }
 
   #msg {
@@ -575,7 +593,7 @@ input[type="range"] {
   }
 
   #map-attribution {
-    max-width: 12%;
+    max-width: 13%;
   }
 }
 

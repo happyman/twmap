@@ -1,12 +1,12 @@
 /* Shape drawing & management module for twmap4 (OpenLayers).
  *
  * Port of twmap3's shadowdraw.js (ShapesMap): draw multiple shapes
- * (polygon / circle / line), select a shape, delete/clear/info.
+ * (polygon / rectangle / circle / line), select a shape, delete/clear/info.
  * Persisted to localStorage (key "shapes") using the same JSON schema as
  * twmap3 so the shared getelev.php infoshapes panel can consume it.
  *
- * Drawing mode is entered directly by clicking a draw-type toggle
- * (多/圓/線). It auto-exits after each shape is drawn.
+ * Drawing mode is entered directly by clicking a draw-type toggle icon.
+ * It auto-exits after each shape is drawn.
  */
 function ShapeDraw4(opts) {
   var mapApi = opts.mapApi;
@@ -318,7 +318,9 @@ function ShapeDraw4(opts) {
   drawTypeBtns.forEach(function (btn) {
     btn.addEventListener('click', function () {
       var type = btn.getAttribute('data-type');
-      if (drawing && currentMode === type) {
+      if (type === 'Select') {
+        stopDraw();
+      } else if (drawing && currentMode === type) {
         stopDraw();
       } else {
         startDraw(type);

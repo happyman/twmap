@@ -672,14 +672,26 @@ const olMapApiAdapter = {
     const selectionLayer = this.layers.get('selection');
     const source = selectionLayer ? selectionLayer.getSource() : new ol.source.Vector();
     const type = drawType || 'Polygon';
-    const draw = new ol.interaction.Draw({
-      type,
-      source,
-      style: new ol.style.Style({
-        stroke: new ol.style.Stroke({ color: '#0ea5e9', width: 2 }),
-        fill: new ol.style.Fill({ color: 'rgba(14, 165, 233, 0.15)' })
-      })
+    const drawStyle = new ol.style.Style({
+      stroke: new ol.style.Stroke({ color: '#0ea5e9', width: 2 }),
+      fill: new ol.style.Fill({ color: 'rgba(14, 165, 233, 0.15)' })
     });
+
+    let draw;
+    if (type === 'Rectangle') {
+      draw = new ol.interaction.Draw({
+        type: 'Circle',
+        geometryFunction: ol.interaction.Draw.createBox(),
+        source,
+        style: drawStyle
+      });
+    } else {
+      draw = new ol.interaction.Draw({
+        type,
+        source,
+        style: drawStyle
+      });
+    }
 
     this.map.addInteraction(draw);
     draw.on('drawend', function (event) {
