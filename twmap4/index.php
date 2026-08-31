@@ -19,45 +19,78 @@ require_once __DIR__ . "/config.inc.php";
         <button id="search-btn" type="button">到</button>
       </div>
 
-      <label for="marker-label-toggle" style="display:flex;align-items:center;gap:6px;">
-        <input id="marker-label-toggle" type="checkbox" checked />
-        <span>標籤</span>
-      </label>
+      <button id="marker-label-toggle-btn" type="button" class="active" title="三角點名稱標籤">標籤</button>
 
-      <div id="marker-filter-box" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <label><input class="marker-filter" type="checkbox" value="peak_1st" checked /> 一等</label>
-        <label><input class="marker-filter" type="checkbox" value="peak_2nd" checked /> 二等</label>
-        <label><input class="marker-filter" type="checkbox" value="peak_3rd" checked /> 三等</label>
-        <label><input class="marker-filter" type="checkbox" value="forest_point" checked /> 森林</label>
-        <label><input class="marker-filter" type="checkbox" value="mountain_hut" checked /> 山屋</label>
-        <label><input class="marker-filter" type="checkbox" value="station" checked /> 駐在所</label>
-        <label><input class="marker-filter" type="checkbox" value="police_box" checked /> 警察</label>
-        <label><input class="marker-filter" type="checkbox" value="tribal_station" checked /> 蕃務</label>
-        <label><input class="marker-filter" type="checkbox" value="water_source" checked /> 水源</label>
-        <label><input class="marker-filter" type="checkbox" value="point" checked /> 其他</label>
+      <button id="track-toggle-btn" type="button" class="active" title="山友登山軌跡 (z10-19)">行跡</button>
+
+      <div id="filter-menu-wrap">
+        <button id="filter-menu-btn" type="button" title="篩選點位類型">篩選</button>
+        <div id="filter-menu" class="hidden">
+          <button type="button" class="marker-filter-toggle active" data-values="peak_1st">一等</button>
+          <button type="button" class="marker-filter-toggle active" data-values="peak_2nd">二等</button>
+          <button type="button" class="marker-filter-toggle active" data-values="peak_3rd">三等</button>
+          <button type="button" class="marker-filter-toggle active" data-values="forest_point,forest_unknown">森林</button>
+          <button type="button" class="marker-filter-toggle active" data-values="nameless_peak">山峰</button>
+          <button type="button" class="marker-filter-toggle active" data-values="independent_peak">獨立峰</button>
+          <button type="button" class="marker-filter-toggle active" data-values="mountain_hut">山屋</button>
+          <button type="button" class="marker-filter-toggle active" data-values="station">駐在所</button>
+          <button type="button" class="marker-filter-toggle active" data-values="police_box">警察</button>
+          <button type="button" class="marker-filter-toggle active" data-values="tribal_station">蕃務</button>
+          <button type="button" class="marker-filter-toggle active" data-values="water_source">水源</button>
+          <button type="button" class="marker-filter-toggle active" data-values="hot_spring">溫泉</button>
+          <button type="button" class="marker-filter-toggle active" data-values="point,shelter,giant_tree,rock,waterfall,stream,lake,ruins,valley,camp,dry_ravine,water_pool,old_village,steps,cliff,bridge,hut,terrain_point,workstation">其他</button>
+        </div>
       </div>
 
-      <label for="bottom-layer-1-select">第一層</label>
-      <select id="bottom-layer-1-select" aria-label="第一層圖資">
-      </select>
-
-      <label for="bottom-layer-2-opacity">透明度</label>
-      <input id="bottom-layer-2-opacity" type="range" min="0" max="1" step="0.05" value="0.7" aria-label="第二層透明度" />
-
-      <label for="bottom-layer-2-select">第二層</label>
-      <select id="bottom-layer-2-select" aria-label="第二層圖資">
-      </select>
-
-      <label for="road-layer-select">道路</label>
-      <select id="road-layer-select" aria-label="道路圖層">
-      </select>
-
       <button id="select-area-btn" type="button">選區</button>
+
+      <label for="rainfall-select">雨量</label>
+      <select id="rainfall-select" aria-label="雨量疊圖">
+        <option value="none" selected>雨量圖</option>
+        <option value="o2d">前日</option>
+        <option value="o1d">昨日</option>
+        <option value="now">今日</option>
+        <option value="f12h">未來12h</option>
+        <option value="f24h">未來24h</option>
+      </select>
+
+      <label for="coverage-select">訊號</label>
+      <select id="coverage-select" aria-label="訊號涵蓋圖">
+        <option value="none" selected>訊號</option>
+        <option value="cht">cht4+5G</option>
+        <option value="twn">twn4+5G</option>
+        <option value="fet">fet4+5G</option>
+      </select>
+
+      <label for="grid-select">格線</label>
+      <select id="grid-select" aria-label="格線疊圖">
+        <option value="TWD67" selected>TWD67</option>
+        <option value="TWD67PH">TWD67澎湖</option>
+        <option value="TWD67_EXT">TWD67 EXT</option>
+        <option value="TWD97">TWD97</option>
+        <option value="TWD97PH">TWD97澎湖</option>
+        <option value="TWD97_EXT">TWD97 EXT</option>
+        <option value="WGS84">經緯度</option>
+        <option value="None">無格線</option>
+      </select>
     </div>
 
     <div id="map-wrap">
       <div id="map" aria-label="地圖"></div>
       <div id="point-popup" class="hidden" aria-live="polite"></div>
+      <div id="layer-controls">
+        <label for="bottom-layer-1-select">第一層</label>
+        <select id="bottom-layer-1-select" aria-label="第一層圖資">
+        </select>
+        <label for="bottom-layer-2-opacity">透明度</label>
+        <input id="bottom-layer-2-opacity" type="range" min="0" max="1" step="0.05" value="0.7" aria-label="第二層透明度" />
+        <label for="bottom-layer-2-select">第二層</label>
+        <select id="bottom-layer-2-select" aria-label="第二層圖資">
+        </select>
+        <label for="road-layer-select">道路</label>
+        <select id="road-layer-select" aria-label="道路圖層">
+        </select>
+      </div>
     </div>
 
     <div id="meerkat-wrap" class="hidden" aria-label="TWMap 面板">
@@ -84,13 +117,29 @@ require_once __DIR__ . "/config.inc.php";
       independent_peak: <?php echo filemtime(__DIR__ . '/icons/independent_peak.png'); ?>,
       nameless_peak: <?php echo filemtime(__DIR__ . '/icons/nameless_peak.png'); ?>,
       mountain_hut: <?php echo filemtime(__DIR__ . '/icons/mountain_hut.png'); ?>,
+      hut: <?php echo filemtime(__DIR__ . '/icons/hut.png'); ?>,
       shelter: <?php echo filemtime(__DIR__ . '/icons/shelter.png'); ?>,
+      station: <?php echo filemtime(__DIR__ . '/icons/station.png'); ?>,
+      police_box: <?php echo filemtime(__DIR__ . '/icons/police_box.png'); ?>,
+      watch_station: <?php echo filemtime(__DIR__ . '/icons/watch_station.png'); ?>,
+      tribal_station: <?php echo filemtime(__DIR__ . '/icons/tribal_station.png'); ?>,
       water_source: <?php echo filemtime(__DIR__ . '/icons/water_source.png'); ?>,
       hot_spring: <?php echo filemtime(__DIR__ . '/icons/hot_spring.png'); ?>,
       waterfall: <?php echo filemtime(__DIR__ . '/icons/waterfall.png'); ?>,
       stream: <?php echo filemtime(__DIR__ . '/icons/stream.png'); ?>,
       lake: <?php echo filemtime(__DIR__ . '/icons/lake.png'); ?>,
       rock: <?php echo filemtime(__DIR__ . '/icons/rock.png'); ?>,
+      ruins: <?php echo filemtime(__DIR__ . '/icons/ruins.png'); ?>,
+      terrain_point: <?php echo filemtime(__DIR__ . '/icons/terrain_point.png'); ?>,
+      valley: <?php echo filemtime(__DIR__ . '/icons/valley.png'); ?>,
+      camp: <?php echo filemtime(__DIR__ . '/icons/camp.png'); ?>,
+      dry_ravine: <?php echo filemtime(__DIR__ . '/icons/dry_ravine.png'); ?>,
+      water_pool: <?php echo filemtime(__DIR__ . '/icons/water_pool.png'); ?>,
+      old_village: <?php echo filemtime(__DIR__ . '/icons/old_village.png'); ?>,
+      steps: <?php echo filemtime(__DIR__ . '/icons/steps.png'); ?>,
+      cliff: <?php echo filemtime(__DIR__ . '/icons/cliff.png'); ?>,
+      bridge: <?php echo filemtime(__DIR__ . '/icons/bridge.png'); ?>,
+      workstation: <?php echo filemtime(__DIR__ . '/icons/workstation.png'); ?>,
       point: <?php echo filemtime(__DIR__ . '/icons/point.png'); ?>
     };
   </script>
@@ -101,7 +150,9 @@ require_once __DIR__ . "/config.inc.php";
   <script src="js/mapApi.js?v=<?php echo filemtime(__DIR__ . '/js/mapApi.js'); ?>"></script>
   <script src="js/olAdapter.js?v=<?php echo filemtime(__DIR__ . '/js/olAdapter.js'); ?>"></script>
   <script src="js/layers.js?v=<?php echo filemtime(__DIR__ . '/js/layers.js'); ?>"></script>
+  <script src="js/overlays.js?v=<?php echo filemtime(__DIR__ . '/js/overlays.js'); ?>"></script>
   <script src="js/app.js?v=<?php echo filemtime(__DIR__ . '/js/app.js'); ?>"></script>
   <script src="js/meerkat.js?v=<?php echo filemtime(__DIR__ . '/js/meerkat.js'); ?>"></script>
+  <script src="js/coverage.js?v=<?php echo filemtime(__DIR__ . '/js/coverage.js'); ?>"></script>
 </body>
 </html>

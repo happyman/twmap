@@ -28,6 +28,10 @@ function createMapApi(adapter) {
       return adapter.setLayerVisible(layerId, visible);
     },
 
+    addImageLayer(layer) {
+      return adapter.addImageLayer(layer);
+    },
+
     addVectorLayer(layer) {
       return adapter.addVectorLayer(layer);
     },

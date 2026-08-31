@@ -75,8 +75,18 @@ const olMapApiAdapter = {
       return false;
     }
 
-    layer.setSource(this.createTileSource(layerConfig));
-    layer.set('sourceId', layerConfig.sourceId || layerId);
+    const newLayer = new ol.layer.Tile({
+      source: this.createTileSource(layerConfig),
+      visible: layer.getVisible(),
+      opacity: layer.getOpacity(),
+      zIndex: layer.getZIndex()
+    });
+    newLayer.set('id', layerId);
+    newLayer.set('sourceId', layerConfig.sourceId || layerId);
+
+    this.map.removeLayer(layer);
+    this.map.addLayer(newLayer);
+    this.layers.set(layerId, newLayer);
     return true;
   },
 
@@ -106,7 +116,27 @@ const olMapApiAdapter = {
       source: vectorSource,
       visible: layerConfig.visible !== false,
       opacity: 1,
-      zIndex: 100
+      zIndex: layerConfig.zIndex === undefined ? 100 : layerConfig.zIndex
+    });
+
+    layer.set('id', layerConfig.id);
+    this.map.addLayer(layer);
+    this.layers.set(layerConfig.id, layer);
+    return layer;
+  },
+
+  addImageLayer(layerConfig) {
+    const fallbackSource = new ol.source.ImageStatic({
+      url: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      imageExtent: [119, 21, 124, 26],
+      projection: 'EPSG:4326'
+    });
+
+    const layer = new ol.layer.Image({
+      source: layerConfig.source || fallbackSource,
+      visible: layerConfig.visible !== false,
+      opacity: layerConfig.opacity === undefined ? 1 : layerConfig.opacity,
+      zIndex: layerConfig.zIndex
     });
 
     layer.set('id', layerConfig.id);
@@ -223,6 +253,18 @@ const olMapApiAdapter = {
       stream: 'icons/stream.png',
       lake: 'icons/lake.png',
       rock: 'icons/rock.png',
+      ruins: 'icons/ruins.png',
+      terrain_point: 'icons/terrain_point.png',
+      valley: 'icons/valley.png',
+      hut: 'icons/hut.png',
+      camp: 'icons/camp.png',
+      dry_ravine: 'icons/dry_ravine.png',
+      water_pool: 'icons/water_pool.png',
+      old_village: 'icons/old_village.png',
+      steps: 'icons/steps.png',
+      cliff: 'icons/cliff.png',
+      bridge: 'icons/bridge.png',
+      workstation: 'icons/workstation.png',
       point: 'icons/point.png'
     };
 

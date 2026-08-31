@@ -170,7 +170,9 @@ const mapSources = {
     category: 'road',
     sourceId: 'gpx_track',
     label: 'GPX 航跡圖層',
-    url: 'https://tile.happyman.idv.tw/map/gpxtrack/{z}/{x}/{y}.png'
+    url: 'https://tile.happyman.idv.tw/map/gpxtrack/{z}/{x}/{y}.png',
+    minZoom: 10,
+    maxZoom: 19
   },
   happyman: {
     category: 'road',

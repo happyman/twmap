@@ -45,6 +45,11 @@ const pointPopupOverlay = new ol.Overlay({
 });
 map.addOverlay(pointPopupOverlay);
 
+const layerControlsEl = document.getElementById('layer-controls');
+if (layerControlsEl) {
+  map.addControl(new ol.control.Control({ element: layerControlsEl }));
+}
+
 let markerLabelsEnabled = true;
 const markerFilterState = new Set([
   'peak_1st',
@@ -67,7 +72,19 @@ const markerFilterState = new Set([
   'stream',
   'lake',
   'rock',
-  'point'
+  'point',
+  'ruins',
+  'terrain_point',
+  'valley',
+  'hut',
+  'camp',
+  'dry_ravine',
+  'water_pool',
+  'old_village',
+  'steps',
+  'cliff',
+  'bridge',
+  'workstation'
 ]);
 const allMarkerFeatures = [];
 
@@ -93,6 +110,13 @@ mapApi.addTileLayer({
   ...mapSources.nlsc_names,
   visible: true,
   zIndex: 20
+});
+
+mapApi.addTileLayer({
+  id: 'tracks',
+  ...mapSources.gpx_track,
+  visible: true,
+  zIndex: 18
 });
 
 mapApi.addVectorLayer({ id: markerLayerId, visible: true });
@@ -293,7 +317,21 @@ const typeToIconMap = {
   '瀑布': 'waterfall',
   '溪流': 'stream',
   '湖泊': 'lake',
-  '岩石': 'rock'
+  '岩石': 'rock',
+  '遺跡': 'ruins',
+  '補點': 'terrain_point',
+  '圖根點': 'terrain_point',
+  '谷地': 'valley',
+  '獵寮': 'hut',
+  '營地': 'camp',
+  '乾溝': 'dry_ravine',
+  '黑水池': 'water_pool',
+  '積水池': 'water_pool',
+  '舊部落': 'old_village',
+  '階梯': 'steps',
+  '崩壁': 'cliff',
+  '吊橋': 'bridge',
+  '工作站': 'workstation'
 };
 
 function getIconName(point) {
@@ -617,11 +655,24 @@ function syncMarkerLabelState() {
   });
 }
 
-const labelToggle = document.getElementById('marker-label-toggle');
-if (labelToggle) {
-  labelToggle.addEventListener('change', function () {
-    markerLabelsEnabled = this.checked;
+const labelToggleBtn = document.getElementById('marker-label-toggle-btn');
+if (labelToggleBtn) {
+  labelToggleBtn.addEventListener('click', function () {
+    markerLabelsEnabled = !this.classList.contains('active');
+    this.classList.toggle('active');
+    this.classList.toggle('disable');
     syncMarkerLabelState();
+  });
+}
+
+const trackToggleBtn = document.getElementById('track-toggle-btn');
+if (trackToggleBtn) {
+  trackToggleBtn.addEventListener('click', function () {
+    const visible = mapApi.setLayerVisible('tracks', !this.classList.contains('active'));
+    if (visible) {
+      this.classList.toggle('active');
+      this.classList.toggle('disable');
+    }
   });
 }
 
@@ -629,14 +680,38 @@ map.getView().on('change:resolution', function () {
   syncMarkerLabelState();
 });
 
-const markerFilterControls = document.querySelectorAll('.marker-filter');
-markerFilterControls.forEach(function (input) {
-  input.addEventListener('change', function () {
-    const value = this.value;
-    if (this.checked) {
-      markerFilterState.add(value);
+const filterMenuBtn = document.getElementById('filter-menu-btn');
+const filterMenu = document.getElementById('filter-menu');
+if (filterMenuBtn && filterMenu) {
+  filterMenuBtn.addEventListener('click', function () {
+    filterMenu.classList.toggle('hidden');
+  });
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest || !event.target.closest('#filter-menu-wrap')) {
+      filterMenu.classList.add('hidden');
+    }
+  });
+}
+
+const markerFilterToggleBtns = document.querySelectorAll('.marker-filter-toggle');
+markerFilterToggleBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    const values = (this.dataset.values || this.dataset.value || '').split(',');
+    if (!values.length) {
+      return;
+    }
+    if (this.classList.contains('active')) {
+      values.forEach(function (value) {
+        markerFilterState.delete(value);
+      });
+      this.classList.remove('active');
+      this.classList.add('disable');
     } else {
-      markerFilterState.delete(value);
+      values.forEach(function (value) {
+        markerFilterState.add(value);
+      });
+      this.classList.add('active');
+      this.classList.remove('disable');
     }
     refreshMarkerFilterState();
   });
@@ -734,5 +809,31 @@ const selectAreaBtn = document.getElementById('select-area-btn');
 selectAreaBtn.addEventListener('click', function () {
   mapApi.addDrawSelection();
 });
+
+const gridSelect = document.getElementById('grid-select');
+if (gridSelect) {
+  const redrawGrid = function () {
+    showGrid(gridSelect.value);
+  };
+  gridSelect.addEventListener('change', redrawGrid);
+  map.on('moveend', redrawGrid);
+  map.on('change:size', redrawGrid);
+  setTimeout(redrawGrid, 0);
+}
+
+const rainfallSelect = document.getElementById('rainfall-select');
+if (rainfallSelect) {
+  rainfallSelect.addEventListener('change', function () {
+    showCWBRainfall(this.value);
+  });
+  showCWBRainfall(rainfallSelect.value);
+}
+
+const coverageSelect = document.getElementById('coverage-select');
+if (coverageSelect) {
+  coverageSelect.addEventListener('change', function () {
+    coverage_overlay(this.value);
+  });
+}
 
 mapApi.setView(window.appConfig.default_center, window.appConfig.default_zoom);

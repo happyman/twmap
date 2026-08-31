@@ -15,6 +15,7 @@ $CONFIG['getkml_url'] = $site_twmap_html_root . "api/getkml.php";
 $CONFIG['get_waypoints_url'] = $site_twmap_html_root . "api/waypoints.php";
 $CONFIG['get_elev_url'] = $site_twmap_html_root . "api/getelev.php";
 $CONFIG['pointdata_url'] = $site_twmap_html_root . "api/pointdata.php";
+$CONFIG['rainkml_url'] = $site_html_root . "data/rainkml.php";
 $CONFIG['viewshed_url'] = $site_twmap_html_root . "api/get_line_of_sight.php";
 $CONFIG['pointdata_admin_url'] = $site_twmap_html_root . "admin/index.php";
 $CONFIG['promlist_url'] = $site_twmap_html_root . "admin/promlist.php";

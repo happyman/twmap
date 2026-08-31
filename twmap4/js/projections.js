@@ -1,11 +1,11 @@
 const twProjections = (function () {
   const proj4 = window.proj4;
   let registered = false;
-  let EPSG_TW67 = 'EPSG:3828';
-  let EPSG_PH67 = 'EPSG:3827';
-  let EPSG_TW97 = 'EPSG:3826';
-  let EPSG_PH97 = 'EPSG:3825';
-  let EPSG_WGS84 = 'WGS84';
+  const EPSG_TW67 = 'EPSG:3828';
+  const EPSG_PH67 = 'EPSG:3827';
+  const EPSG_TW97 = 'EPSG:3826';
+  const EPSG_PH97 = 'EPSG:3825';
+  const EPSG_WGS84 = 'WGS84';
 
   function ensureDefs() {
     if (registered || !proj4) {
@@ -38,98 +38,118 @@ const twProjections = (function () {
     return { x: d[0], y: d[1] };
   }
 
-  return {
+  function isTaiwan(lat, lon) {
+    if (lon > 118.1 && lon < 118.52 && lat < 24.55 && lat > 24.35) {
+      return 3;
+    }
+    if (lon > 119.5 && lon < 120.55 && lat < 26.4 && lat > 25.9) {
+      return 4;
+    }
+    if (lon < 119.31 || lon > 124.56 || lat < 21.88 || lat > 25.64) {
+      return 0;
+    } else if (lon > 119.72) {
+      return 1;
+    }
+    return 2;
+  }
+
+  function lonlat2twd67(lon, lat, ph) {
+    return toTwd(ph === 1 ? EPSG_PH67 : EPSG_TW67, lon, lat);
+  }
+
+  function lonlat2twd97(lon, lat, ph) {
+    return toTwd(ph === 1 ? EPSG_PH97 : EPSG_TW97, lon, lat);
+  }
+
+  function twd672lonlat(x, y, ph) {
+    return toWgs(ph === 1 ? EPSG_PH67 : EPSG_TW67, x, y);
+  }
+
+  function twd972lonlat(x, y, ph) {
+    return toWgs(ph === 1 ? EPSG_PH97 : EPSG_TW97, x, y);
+  }
+
+  function cad2twd67(Xcad, Ycad, unit) {
+    unit = typeof unit !== 'undefined' ? unit : 'm';
+    if (unit === 'm') {
+      Xcad *= 0.55;
+      Ycad *= 0.55;
+    }
+    const XCtm69 = 227361.634;
+    const YCtm69 = 2632574.582;
+    const XCcad = 5750;
+    const YCcad = -21300;
+    const A = 1.8182516286522;
+    const B = -0.004167109289753;
+    const Xtmtrn = A * (Xcad - XCcad) - B * (Ycad - YCcad) + XCtm69;
+    const Ytmtrn = B * (Xcad - XCcad) + A * (Ycad - YCcad) + YCtm69;
+    return [Xtmtrn, Ytmtrn];
+  }
+
+  function twd672cad(x, y, unit) {
+    const XCtm69 = 227361.634;
+    const YCtm69 = 2632574.582;
+    const XCcad = 5750;
+    const YCcad = -21300;
+    const A = 1.8182516286522;
+    const B = -0.004167109289753;
+    let Xcad = (B * y - B * YCtm69 + B * B * XCcad + A * x - A * XCtm69 + A * A * XCcad) / (A * A + B * B);
+    let Ycad = (A * y - A * YCtm69 + A * A * YCcad + B * B * YCcad - B * x + B * XCtm69) / (B * B + A * A);
+    unit = typeof unit !== 'undefined' ? unit : 'm';
+    if (unit === 'm') {
+      Xcad /= 0.55;
+      Ycad /= 0.55;
+    }
+    return { x: Xcad, y: Ycad };
+  }
+
+  function lonlat2cad(lon, lat, unit) {
+    const p = lonlat2twd67(lon, lat, 0);
+    return twd672cad(p.x, p.y, unit);
+  }
+
+  function lonlat_getblock(lon, lat, ph, unit) {
+    unit = typeof unit !== 'undefined' ? unit : 1000;
+    const p = lonlat2twd67(lon, lat, ph);
+    const tl = { x: Math.floor(p.x / unit) * unit, y: Math.ceil(p.y / unit) * unit };
+    const br = { x: Math.ceil(p.x / unit) * unit, y: Math.floor(p.y / unit) * unit };
+    const p1 = twd672lonlat(tl.x, tl.y, ph);
+    const p2 = twd672lonlat(br.x, br.y, ph);
+    return [p1, p2, tl, br];
+  }
+
+  function lonlat_getblock97(lon, lat, ph, unit) {
+    unit = typeof unit !== 'undefined' ? unit : 1000;
+    const p = lonlat2twd97(lon, lat, ph);
+    const tl = { x: Math.floor(p.x / unit) * unit, y: Math.ceil(p.y / unit) * unit };
+    const br = { x: Math.ceil(p.x / unit) * unit, y: Math.floor(p.y / unit) * unit };
+    const p1 = twd972lonlat(tl.x, tl.y, ph);
+    const p2 = twd972lonlat(br.x, br.y, ph);
+    return [p1, p2, tl, br];
+  }
+
+  function ConvertDDToDMS(D) {
+    return [0 | D, 'd', 0 | (D < 0 ? D = -D : D) % 1 * 60, "'", 0 | D * 60 % 1 * 60, '"'].join('');
+  }
+
+  const api = {
     available() {
       return !!proj4;
     },
-    isTaiwan(lat, lon) {
-      if (lon > 118.1 && lon < 118.52 && lat < 24.55 && lat > 24.35) {
-        return 3;
-      }
-      if (lon > 119.5 && lon < 120.55 && lat < 26.4 && lat > 25.9) {
-        return 4;
-      }
-      if (lon < 119.31 || lon > 124.56 || lat < 21.88 || lat > 25.64) {
-        return 0;
-      } else if (lon > 119.72) {
-        return 1;
-      }
-      return 2;
-    },
-    lonlat2twd67(lon, lat, ph) {
-      ensureDefs();
-      return toTwd(ph === 1 ? EPSG_PH67 : EPSG_TW67, lon, lat);
-    },
-    lonlat2twd97(lon, lat, ph) {
-      ensureDefs();
-      return toTwd(ph === 1 ? EPSG_PH97 : EPSG_TW97, lon, lat);
-    },
-    twd672lonlat(x, y, ph) {
-      ensureDefs();
-      return toWgs(ph === 1 ? EPSG_PH67 : EPSG_TW67, x, y);
-    },
-    twd972lonlat(x, y, ph) {
-      ensureDefs();
-      return toWgs(ph === 1 ? EPSG_PH97 : EPSG_TW97, x, y);
-    },
-    cad2twd67(Xcad, Ycad, unit) {
-      unit = typeof unit !== 'undefined' ? unit : 'm';
-      if (unit === 'm') {
-        Xcad *= 0.55;
-        Ycad *= 0.55;
-      }
-      const XCtm69 = 227361.634;
-      const YCtm69 = 2632574.582;
-      const XCcad = 5750;
-      const YCcad = -21300;
-      const A = 1.8182516286522;
-      const B = -0.004167109289753;
-      const Xtmtrn = A * (Xcad - XCcad) - B * (Ycad - YCcad) + XCtm69;
-      const Ytmtrn = B * (Xcad - XCcad) + A * (Ycad - YCcad) + YCtm69;
-      return [Xtmtrn, Ytmtrn];
-    },
-    twd672cad(x, y, unit) {
-      const XCtm69 = 227361.634;
-      const YCtm69 = 2632574.582;
-      const XCcad = 5750;
-      const YCcad = -21300;
-      const A = 1.8182516286522;
-      const B = -0.004167109289753;
-      let Xcad = (B * y - B * YCtm69 + B * B * XCcad + A * x - A * XCtm69 + A * A * XCcad) / (A * A + B * B);
-      let Ycad = (A * y - A * YCtm69 + A * A * YCcad + B * B * YCcad - B * x + B * XCtm69) / (B * B + A * A);
-      unit = typeof unit !== 'undefined' ? unit : 'm';
-      if (unit === 'm') {
-        Xcad /= 0.55;
-        Ycad /= 0.55;
-      }
-      return { x: Xcad, y: Ycad };
-    },
-    lonlat2cad(lon, lat, unit) {
-      const p = this.lonlat2twd67(lon, lat, 0);
-      return this.twd672cad(p.x, p.y, unit);
-    },
-    lonlat_getblock(lon, lat, ph, unit) {
-      unit = typeof unit !== 'undefined' ? unit : 1000;
-      const p = this.lonlat2twd67(lon, lat, ph);
-      const tl = { x: Math.floor(p.x / unit) * unit, y: Math.ceil(p.y / unit) * unit };
-      const br = { x: Math.ceil(p.x / unit) * unit, y: Math.floor(p.y / unit) * unit };
-      const p1 = this.twd672lonlat(tl.x, tl.y, ph);
-      const p2 = this.twd672lonlat(br.x, br.y, ph);
-      return [p1, p2, tl, br];
-    },
-    lonlat_getblock97(lon, lat, ph, unit) {
-      unit = typeof unit !== 'undefined' ? unit : 1000;
-      const p = this.lonlat2twd97(lon, lat, ph);
-      const tl = { x: Math.floor(p.x / unit) * unit, y: Math.ceil(p.y / unit) * unit };
-      const br = { x: Math.ceil(p.x / unit) * unit, y: Math.floor(p.y / unit) * unit };
-      const p1 = this.twd972lonlat(tl.x, tl.y, ph);
-      const p2 = this.twd972lonlat(br.x, br.y, ph);
-      return [p1, p2, tl, br];
-    },
-    ConvertDDToDMS(D) {
-      return [0 | D, 'd', 0 | (D < 0 ? D = -D : D) % 1 * 60, "'", 0 | D * 60 % 1 * 60, '"'].join('');
-    }
+    isTaiwan,
+    lonlat2twd67,
+    lonlat2twd97,
+    twd672lonlat,
+    twd972lonlat,
+    cad2twd67,
+    twd672cad,
+    lonlat2cad,
+    lonlat_getblock,
+    lonlat_getblock97,
+    ConvertDDToDMS
   };
+
+  return api;
 })();
 
 if (typeof globalThis !== 'undefined') {
