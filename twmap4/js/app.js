@@ -573,7 +573,10 @@ function showLocationInfo(lon, lat) {
   const rows = [];
 
   const finish = function () {
-    fetchElevAndAdmin(lon, lat, rows).then(function () {
+    fetchElevAndAdmin(lon, lat, rows).then(function (elevation) {
+      if (elevation !== null && typeof show_line_of_sight === 'function') {
+        rows.push('<div class="popup-meta"><a href="#" id="los_link" onClick="show_line_of_sight(' + Number(lon).toFixed(5) + ',' + Number(lat).toFixed(5) + ',' + Math.round(elevation) + '); return false;">通視模擬 (' + Math.round(elevation) + 'M)</a></div>');
+      }
       renderLocationPopup(lon, lat, zoom, rows);
     });
   };
