@@ -79,7 +79,6 @@ require_once __DIR__ . "/config.inc.php";
       <div id="point-popup" class="hidden" aria-live="polite"></div>
       <div id="buttons" aria-label="繪圖工具">
         <div id="draw-type" class="draw-type">
-          <button type="button" class="draw-type-toggle active" data-type="Select" title="選擇/移動形狀"><i class="fa fa-mouse-pointer"></i></button>
           <button type="button" class="draw-type-toggle" data-type="Polygon" title="畫多邊形"><i class="fa fa-object-group"></i></button>
           <button type="button" class="draw-type-toggle" data-type="Rectangle" title="畫矩形"><i class="fa fa-square-o"></i></button>
           <button type="button" class="draw-type-toggle" data-type="Circle" title="畫圓形"><i class="fa fa-circle-o"></i></button>

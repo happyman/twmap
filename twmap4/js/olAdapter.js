@@ -731,5 +731,34 @@ const olMapApiAdapter = {
       this.map.removeInteraction(this.selectionDraw);
       this.selectionDraw = null;
     }
+  },
+
+  enableMoveSelection(layerId, onMoveEnd) {
+    this.disableMoveSelection();
+    const layer = this.layers.get(layerId);
+    if (!layer) {
+      return null;
+    }
+    const translate = new ol.interaction.Translate({
+      layers: [layer]
+    });
+    if (typeof onMoveEnd === 'function') {
+      translate.on('translateend', function (event) {
+        const feature = event.features && event.features.length ? event.features[0] : null;
+        if (feature) {
+          onMoveEnd(feature, event);
+        }
+      });
+    }
+    this.map.addInteraction(translate);
+    this.selectionMove = translate;
+    return translate;
+  },
+
+  disableMoveSelection() {
+    if (this.selectionMove) {
+      this.map.removeInteraction(this.selectionMove);
+      this.selectionMove = null;
+    }
   }
 };

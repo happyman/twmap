@@ -76,6 +76,14 @@ function createMapApi(adapter) {
       return adapter.stopDrawSelection();
     },
 
+    enableMoveSelection(layerId, onMoveEnd) {
+      return adapter.enableMoveSelection(layerId, onMoveEnd);
+    },
+
+    disableMoveSelection() {
+      return adapter.disableMoveSelection();
+    },
+
     getMapInstance() {
       return adapter.getMapInstance();
     }

@@ -98,6 +98,9 @@ function ShapeDraw4(opts) {
       setDrawingActive(false);
     }
     setMode('select');
+    if (typeof mapApi.enableMoveSelection === 'function') {
+      mapApi.enableMoveSelection(selectionLayerId, onShapeMoved);
+    }
     refreshButtons();
   }
 
@@ -108,12 +111,19 @@ function ShapeDraw4(opts) {
     if (typeof mapApi.addDrawSelection !== 'function') {
       return;
     }
+    if (typeof mapApi.disableMoveSelection === 'function') {
+      mapApi.disableMoveSelection();
+    }
     mapApi.addDrawSelection(onShapeDrawn, type);
     setDrawingActive(true);
     currentMode = type;
     drawTypeBtns.forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-type') === type);
     });
+  }
+
+  function onShapeMoved(/* feature */) {
+    save();
   }
 
   function selectShape(feature) {
@@ -336,6 +346,10 @@ function ShapeDraw4(opts) {
   }
   if (infoBtn) {
     infoBtn.addEventListener('click', showInfo);
+  }
+
+  if (typeof mapApi.enableMoveSelection === 'function') {
+    mapApi.enableMoveSelection(selectionLayerId, onShapeMoved);
   }
 
   refreshButtons();
