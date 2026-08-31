@@ -156,11 +156,7 @@ input[type="range"] {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  padding: 2px;
 }
 
 #fullscreen-btn {
@@ -249,8 +245,8 @@ input[type="range"] {
 }
 
 #buttons .draw-type-toggle {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   font-size: 13px;
   padding: 0;
 }
@@ -596,16 +592,20 @@ input[type="range"] {
   #buttons {
     bottom: 10px;
     gap: 3px;
-    padding: 6px 8px;
+    padding: 2px;
   }
 
   #buttons .draw-type {
     gap: 2px;
   }
 
+  #buttons .draw-type-toggle,
+  #buttons button {
+    width: 30px;
+    height: 30px;
+  }
+
   #buttons .draw-type-toggle {
-    width: 26px;
-    height: 26px;
     font-size: 12px;
   }
 
