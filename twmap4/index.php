@@ -1,12 +1,13 @@
 <?php
 require_once __DIR__ . "/config.inc.php";
+$ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TWMap4</title>
+  <title>TWMap4 地圖瀏覽器 v<?=$ver?></title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.3.1/ol.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <link rel="stylesheet" href="css/twmap4.css?v=<?php echo filemtime(__DIR__ . '/css/twmap4.css'); ?>" />
@@ -42,6 +43,7 @@ require_once __DIR__ . "/config.inc.php";
           <button type="button" class="marker-filter-toggle active" data-values="point,shelter,giant_tree,rock,waterfall,stream,lake,ruins,valley,camp,dry_ravine,water_pool,old_village,steps,cliff,bridge,hut,terrain_point,workstation">其他</button>
         </div>
       </div>
+      <button id="about-btn" type="button" title="關於">地圖瀏覽器 v<?=$ver?></button>
 
       <label for="rainfall-select">雨量</label>
       <select id="rainfall-select" aria-label="雨量疊圖">

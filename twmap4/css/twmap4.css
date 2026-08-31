@@ -25,12 +25,13 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 1;
+  flex: 0 1 auto;
 }
 
 #search-input {
-  flex: 1;
-  min-width: 180px;
+  width: 320px;
+  flex: 0 0 320px;
+  min-width: initial;
   padding: 8px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
@@ -637,3 +638,4 @@ input[type="range"] {
     min-width: 70px;
   }
 }
+#marker-label-toggle-btn { margin-left: auto; }
