@@ -15,7 +15,8 @@ require_once __DIR__ . "/config.inc.php";
   <div id="app-shell">
     <div id="toolbar">
       <div id="search-box">
-        <input id="search-input" type="text" placeholder="搜尋山頭、地標或座標" />
+        <input id="search-input" type="text" placeholder="搜尋山頭、地標或座標" list="search-datalist" autocomplete="off" />
+        <datalist id="search-datalist"></datalist>
         <button id="search-btn" type="button">到</button>
       </div>
 

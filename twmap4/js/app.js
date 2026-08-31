@@ -87,6 +87,7 @@ const markerFilterState = new Set([
   'workstation'
 ]);
 const allMarkerFeatures = [];
+const poiIndex = [];
 
 const baseMapSources = Object.fromEntries(
   Object.entries(mapSources).filter(function ([sourceId]) {
@@ -103,8 +104,8 @@ const roadSources = Object.fromEntries(
   })
 );
 
-mapApi.addTileLayer({ id: 'bottom-1', ...baseMapSources.osm, visible: true, zIndex: 0 });
-mapApi.addTileLayer({ id: 'bottom-2', ...mapSources.nlsc_emap, visible: true, opacity: 0.7, zIndex: 1 });
+mapApi.addTileLayer({ id: 'bottom-1', ...mapSources.atis, visible: true, zIndex: 0 });
+mapApi.addTileLayer({ id: 'bottom-2', ...mapSources.moi_osm_twmap, visible: true, opacity: 0.7, zIndex: 1 });
 mapApi.addTileLayer({
   id: roadLayerId,
   ...mapSources.nlsc_names,
@@ -396,7 +397,18 @@ function loadPointData() {
         if (feature) {
           allMarkerFeatures.push(feature);
         }
+        if (point.name) {
+          poiIndex.push({
+            name: point.name,
+            alias: point.alias || '',
+            lon: lon,
+            lat: lat,
+            id: point.id,
+            type: point.type || ''
+          });
+        }
       }
+      populateSearchDatalist();
       rebuildVisibleMarkerFeatures();
       syncMarkerLabelState();
       console.log('loaded point data:', points.length);
@@ -574,6 +586,11 @@ function showLocationInfo(lon, lat) {
             return '<span class="popup-wpt">' + n + '</span>';
           });
           rows.push('<div class="popup-meta">附近航點 (半徑 ' + radius + 'M): ' + extras.join('、') + '</div>');
+          if (typeof showmeerkat === 'function' && window.appConfig.get_waypoints_url) {
+            const extraUrl = window.appConfig.get_waypoints_url +
+              '?x=' + Number(lon).toFixed(5) + '&y=' + Number(lat).toFixed(5) + '&r=' + radius + '&detail=1';
+            showmeerkat(extraUrl, { width: 600 });
+          }
         }
         renderLocationPopup(lon, lat, zoom, rows);
       })
@@ -744,8 +761,8 @@ function bindBottomLayerSelect(selectId, layerId) {
 
 bindBottomLayerSelect('bottom-layer-1-select', 'bottom-1');
 bindBottomLayerSelect('bottom-layer-2-select', 'bottom-2');
-document.getElementById('bottom-layer-1-select').value = 'osm';
-document.getElementById('bottom-layer-2-select').value = 'nlsc_emap';
+document.getElementById('bottom-layer-1-select').value = 'atis';
+document.getElementById('bottom-layer-2-select').value = 'moi_osm_twmap';
 
 const roadSelect = document.getElementById('road-layer-select');
 for (const source of Object.values(roadSources)) {
@@ -778,31 +795,108 @@ function bindLayerOpacity(inputId, layerId) {
 
 bindLayerOpacity('bottom-layer-2-opacity', 'bottom-2');
 
+function populateSearchDatalist() {
+  const datalist = document.getElementById('search-datalist');
+  if (!datalist) {
+    return;
+  }
+  datalist.textContent = '';
+  const seen = new Set();
+  for (const poi of poiIndex) {
+    if (seen.has(poi.name)) {
+      continue;
+    }
+    seen.add(poi.name);
+    const option = document.createElement('option');
+    option.value = poi.name;
+    datalist.appendChild(option);
+  }
+}
+
+function resolvePoi(query) {
+  const q = String(query || '').trim();
+  if (!q) {
+    return null;
+  }
+  for (const poi of poiIndex) {
+    if (poi.name === q || poi.alias === q) {
+      return poi;
+    }
+  }
+  const lower = q.toLowerCase();
+  for (const poi of poiIndex) {
+    if (poi.name && poi.name.toLowerCase() === lower) {
+      return poi;
+    }
+    if (poi.alias && poi.alias.toLowerCase() === lower) {
+      return poi;
+    }
+  }
+  return null;
+}
+
 const gotoBtn = document.getElementById('search-btn');
+
+function parseCoordinateInput(query) {
+  // cadastral meter / jia
+  const cm = query.match(/^cm:\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d+)$/i);
+  const cj = query.match(/^cj:\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d+)$/i);
+
+  // TWD97 TM2 with slash: X/Y
+  const postw97 = query.match(/^([-\d]+)\s*\/\s*([-\d]+)$/);
+  // WGS84 lat,lon with decimals: lat,lon or lat lon
+  const posxy = query.match(/^(-?\d+\.?\d*)\s*[, ]\s*(-?\d+\.\d+)$/);
+  // TWD67 TM2 integers only with comma/space: X,Y
+  const postw67 = query.match(/^(-?\d+)\s*[, ]\s*(-?\d+)$/);
+
+  if (cm) {
+    return twProjections.twd672lonlat(twProjections.cad2twd67(cm[1], cm[2], 'm')[0], twProjections.cad2twd67(cm[1], cm[2], 'm')[1], 0);
+  }
+  if (cj) {
+    return twProjections.twd672lonlat(twProjections.cad2twd67(cj[1], cj[2], 'j')[0], twProjections.cad2twd67(cj[1], cj[2], 'j')[1], 0);
+  }
+  if (postw97) {
+    return twProjections.twd972lonlat(postw97[1], postw97[2], 0);
+  }
+  if (posxy) {
+    // lat,lon order
+    return { x: parseFloat(posxy[2]), y: parseFloat(posxy[1]) };
+  }
+  if (postw67) {
+    return twProjections.twd672lonlat(postw67[1], postw67[2], 0);
+  }
+  return null;
+}
+
 gotoBtn.addEventListener('click', function () {
   const query = document.getElementById('search-input').value.trim();
   if (!query) {
     return;
   }
 
-  const byCoord = query.match(/^([-+]?\d+(?:\.\d+)?)\s*,\s*([-+]?\d+(?:\.\d+)?)$/);
-  if (byCoord) {
-    const lon = parseFloat(byCoord[1]);
-    const lat = parseFloat(byCoord[2]);
-    mapApi.setView([lon, lat], 14);
+  const coord = parseCoordinateInput(query);
+  if (coord) {
+    const p = twProjections.isTaiwan(coord.y, coord.x);
+    if (p === 0) {
+      console.warn('not in Taiwan/Penghu range');
+    } else {
+      mapApi.setView([coord.x, coord.y], 14);
+    }
     return;
   }
 
-  fetch(window.appConfig.geocodercache_url + '?q=' + encodeURIComponent(query))
-    .then(function (response) { return response.json(); })
-    .then(function (data) {
-      if (data && data.lat && data.lon) {
-        mapApi.setView([data.lon, data.lat], 14);
-      }
-    })
-    .catch(function () {
-      console.warn('search fallback: no geocoder result');
-    });
+  const poi = resolvePoi(query);
+  if (poi) {
+    mapApi.setView([poi.lon, poi.lat], 14);
+    if (poi.id && typeof loadPointDetails === 'function') {
+      loadPointDetails(poi.id, poi.lon, poi.lat);
+    }
+    return;
+  }
+
+  if (typeof showmeerkat === 'function' && window.appConfig.poisearch_url) {
+    showmeerkat(window.appConfig.poisearch_url + '?name=' + encodeURIComponent(query), { width: 600 });
+  }
 });
 
 const selectAreaBtn = document.getElementById('select-area-btn');
@@ -836,4 +930,39 @@ if (coverageSelect) {
   });
 }
 
-mapApi.setView(window.appConfig.default_center, window.appConfig.default_zoom);
+const VIEW_STORAGE_KEY = 'twmap4_view';
+
+function saveCurrentView() {
+  try {
+    const center = ol.proj.toLonLat(map.getView().getCenter());
+    const zoom = map.getView().getZoom();
+    localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify({
+      lon: center[0],
+      lat: center[1],
+      zoom: zoom
+    }));
+  } catch (e) {
+    // localStorage unavailable
+  }
+}
+
+map.on('moveend', saveCurrentView);
+
+let restoredView = null;
+try {
+  const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+  if (saved) {
+    const data = JSON.parse(saved);
+    if (data && Number.isFinite(data.lon) && Number.isFinite(data.lat) && Number.isFinite(data.zoom)) {
+      restoredView = data;
+    }
+  }
+} catch (e) {
+  restoredView = null;
+}
+
+if (restoredView) {
+  mapApi.setView([restoredView.lon, restoredView.lat], restoredView.zoom);
+} else {
+  mapApi.setView(window.appConfig.default_center, window.appConfig.default_zoom);
+}
