@@ -36,6 +36,8 @@ const map = mapApi.init({
 const markerLayerId = 'markers';
 const selectionLayerId = 'selection';
 const roadLayerId = 'road';
+const losLayerId = 'line_of_sight';
+const losLayer = mapApi.addVectorLayer({ id: losLayerId, zIndex: 35 });
 const pointPopup = document.getElementById('point-popup');
 const pointPopupOverlay = new ol.Overlay({
   element: pointPopup,
@@ -521,10 +523,12 @@ function fetchElevAndAdmin(lon, lat, rows) {
       return response.json();
     })
     .then(function (data) {
+      let elevation = null;
       if (data && data.ok === true && data.rsp) {
         const lines = [];
         if (typeof data.rsp.elevation === 'number' && data.rsp.elevation > -1000) {
           lines.push('高度: ' + Math.round(data.rsp.elevation) + 'M');
+          elevation = data.rsp.elevation;
         }
         if (data.rsp.admin) {
           lines.push(data.rsp.admin);
@@ -536,9 +540,11 @@ function fetchElevAndAdmin(lon, lat, rows) {
           rows.push('<div class="popup-meta">' + lines.join('<br>') + '</div>');
         }
       }
+      return elevation;
     })
     .catch(function (error) {
       console.warn('elev unavailable:', error.message);
+      return null;
     });
 }
 
@@ -560,6 +566,15 @@ function showLocationInfo(lon, lat) {
   const zoom = Math.round(map.getView().getZoom()) || 0;
   const radius = (20 - zoom) * 10 - 10;
   const rows = [];
+
+  const finish = function () {
+    fetchElevAndAdmin(lon, lat, rows).then(function (elevation) {
+      if (elevation !== null && typeof show_line_of_sight === 'function') {
+        rows.push('<div class="popup-meta"><a href="#" onClick="show_line_of_sight(' + Number(lon).toFixed(5) + ',' + Number(lat).toFixed(5) + ',' + Math.round(elevation) + '); return false;">通視模擬</a></div>');
+      }
+      renderLocationPopup(lon, lat, zoom, rows);
+    });
+  };
 
   if (radius > 0 && radius <= 100) {
     const url = window.appConfig.get_waypoints_url +
@@ -592,18 +607,14 @@ function showLocationInfo(lon, lat) {
             showmeerkat(extraUrl, { width: 600 });
           }
         }
-        renderLocationPopup(lon, lat, zoom, rows);
+        finish();
       })
       .catch(function (error) {
         console.warn('waypoints unavailable:', error.message);
-        fetchElevAndAdmin(lon, lat, rows).then(function () {
-          renderLocationPopup(lon, lat, zoom, rows);
-        });
+        finish();
       });
   } else {
-    fetchElevAndAdmin(lon, lat, rows).then(function () {
-      renderLocationPopup(lon, lat, zoom, rows);
-    });
+    finish();
   }
 }
 
@@ -614,6 +625,63 @@ function closePointPopup() {
     pointPopup.innerHTML = '';
   }
 }
+
+let losRunning = false;
+let losDisplayXyz = '';
+
+function clearLosLines() {
+  if (losLayer && losLayer.getSource && typeof losLayer.getSource().clear === 'function') {
+    losLayer.getSource().clear();
+  }
+}
+
+function show_line_of_sight(lon, lat, z) {
+  if (losRunning) {
+    return;
+  }
+  const input = lon + '_' + lat + '_' + z;
+  if (losDisplayXyz === input) {
+    clearLosLines();
+    losDisplayXyz = '';
+    return;
+  }
+  losDisplayXyz = input;
+  losRunning = true;
+  const url = window.appConfig.viewshed_url +
+    '?x=' + Number(lon).toFixed(5) + '&y=' + Number(lat).toFixed(5) + '&z=' + Math.round(z);
+  fetch(url, { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('line of sight request failed');
+      }
+      return response.json();
+    })
+    .then(function (data) {
+      if (data.ok !== true || !Array.isArray(data.rsp)) {
+        console.warn('show_line_of_sight bad response', data);
+        return;
+      }
+      clearLosLines();
+      data.rsp.forEach(function (d) {
+        const visible = d[0] === true;
+        const end = d[1];
+        if (!Array.isArray(end) || end.length < 2) {
+          return;
+        }
+        mapApi.addPolyline(losLayerId, [
+          [lon, lat],
+          [Number(end[0]), Number(end[1])]
+        ], { color: visible ? '#FF0000' : '#FF00FF', width: visible ? 2 : 1 });
+      });
+    })
+    .catch(function (error) {
+      console.warn('line of sight unavailable:', error.message);
+    })
+    .finally(function () {
+      losRunning = false;
+    });
+}
+
 
 function loadPointDetails(pointId, lon, lat) {
   const url = window.appConfig.pointdata_url + '?id=' + encodeURIComponent(pointId);
