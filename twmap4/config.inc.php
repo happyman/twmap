@@ -22,6 +22,7 @@ $CONFIG['promlist_url'] = $site_twmap_html_root . "admin/promlist.php";
 $CONFIG['exportkml_url'] = $site_twmap_html_root . "api/exportkml.php";
 $CONFIG['poisearch_url'] = $site_twmap_html_root . "api/poi_search.php";
 $CONFIG['shorten_url'] = $site_twmap_html_root . "api/shorten.php";
+$CONFIG['callmake_url'] = $site_twmap_html_root . "main.php?tab=0&";
 
 $CONFIG['default_center'] = [121.5654, 25.0330];
 $CONFIG['default_zoom'] = 8;

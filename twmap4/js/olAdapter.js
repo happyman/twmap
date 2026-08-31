@@ -617,6 +617,22 @@ const olMapApiAdapter = {
     this.map.on('moveend', handler);
   },
 
+  onContextMenu(handler) {
+    const viewport = this.map.getViewport();
+    if (!viewport) {
+      return;
+    }
+    viewport.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      const pixel = this.map.getEventPixel(event);
+      const coordinate = this.map.getCoordinateFromPixel(pixel);
+      if (coordinate) {
+        const ll = ol.proj.toLonLat(coordinate);
+        handler({ lon: ll[0], lat: ll[1], event });
+      }
+    });
+  },
+
   onFeatureClick(layerId, handler) {
     const layer = this.layers.get(layerId);
     if (!layer) {
@@ -648,28 +664,60 @@ const olMapApiAdapter = {
     return true;
   },
 
-  addDrawSelection(handler) {
+  addDrawSelection(handler, drawType) {
     if (this.selectionDraw) {
       this.map.removeInteraction(this.selectionDraw);
     }
 
     const selectionLayer = this.layers.get('selection');
     const source = selectionLayer ? selectionLayer.getSource() : new ol.source.Vector();
+    const type = drawType || 'Polygon';
     const draw = new ol.interaction.Draw({
-      type: 'Polygon',
-      source
+      type,
+      source,
+      style: new ol.style.Style({
+        stroke: new ol.style.Stroke({ color: '#0ea5e9', width: 2 }),
+        fill: new ol.style.Fill({ color: 'rgba(14, 165, 233, 0.15)' })
+      })
     });
 
     this.map.addInteraction(draw);
     draw.on('drawend', function (event) {
-      const coords = event.feature.getGeometry().getCoordinates()[0];
-      const ring = coords.map(([x, y]) => ol.proj.toLonLat([x, y]));
+      const geometry = event.feature.getGeometry();
+      let ring = [];
+      try {
+        if (geometry.getType() === 'LineString') {
+          ring = geometry.getCoordinates().map(function (c) {
+            return ol.proj.toLonLat(c);
+          });
+        } else if (geometry.getType() === 'Circle') {
+          const center = ol.proj.toLonLat(geometry.getCenter());
+          const radius = geometry.getRadius();
+          ring = [center];
+          if (typeof radius === 'number' && isFinite(radius)) {
+            ring.push(center.slice()); // radius stored separately
+          }
+        } else {
+          ring = geometry.getCoordinates()[0].map(function (c) {
+            return ol.proj.toLonLat(c);
+          });
+        }
+      } catch (e) {
+        ring = [];
+      }
       if (handler) {
-        handler(ring);
+        handler(ring, event.feature);
       }
     });
 
     this.selectionDraw = draw;
     return draw;
+  },
+
+  stopDrawSelection() {
+    if (this.selectionDraw) {
+      this.map.removeInteraction(this.selectionDraw);
+      this.selectionDraw = null;
+    }
   }
 };

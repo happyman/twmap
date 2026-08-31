@@ -43,8 +43,6 @@ require_once __DIR__ . "/config.inc.php";
         </div>
       </div>
 
-      <button id="select-area-btn" type="button">選區</button>
-
       <label for="rainfall-select">雨量</label>
       <select id="rainfall-select" aria-label="雨量疊圖">
         <option value="none" selected>雨量圖</option>
@@ -79,6 +77,18 @@ require_once __DIR__ . "/config.inc.php";
     <div id="map-wrap">
       <div id="map" aria-label="地圖"></div>
       <div id="point-popup" class="hidden" aria-live="polite"></div>
+      <div id="buttons" aria-label="繪圖工具">
+        <div id="draw-type" class="draw-type">
+          <button type="button" class="draw-type-toggle" data-type="Polygon" title="多邊形">多</button>
+          <button type="button" class="draw-type-toggle" data-type="Circle" title="圓形">圓</button>
+          <button type="button" class="draw-type-toggle" data-type="LineString" title="線條">線</button>
+        </div>
+        <span class="buttons-sep"></span>
+        <button id="shape-delete-btn" type="button" title="刪除所選形狀"><i class="fa fa-times"></i></button>
+        <button id="shape-clear-btn" type="button" title="刪除全部形狀"><i class="fa fa-times-circle"></i></button>
+        <button id="shape-info-btn" type="button" title="顯示所選形狀資訊"><i class="fa fa-info"></i></button>
+      </div>
+      <div id="params" aria-label="出圖範圍"></div>
       <div id="layer-controls">
         <label for="bottom-layer-1-select">第一層</label>
         <select id="bottom-layer-1-select" aria-label="第一層圖資">
@@ -104,6 +114,19 @@ require_once __DIR__ . "/config.inc.php";
 
     <input type="hidden" id="tags" />
     <button id="goto" type="button" hidden></button>
+
+    <div id="areaselect-modal-overlay" class="hidden"></div>
+    <div id="inputtitleform" class="hidden">
+      <br>請輸入地圖標題: <br><br><input id="inputtitle" type="text" size="20" />
+      <br>
+      <select id="datum">
+        <option value="TWD67">TWD67 紅色框</option>
+        <option value="TWD97" selected>TWD97 綠色框</option>
+      </select>
+      <br>
+      <input type="button" id="inputtitlebtn" value="送出" />
+      <input type="button" id="inputtitlebtn2" value="取消" />
+    </div>
   </div>
 
   <script>
@@ -152,6 +175,8 @@ require_once __DIR__ . "/config.inc.php";
   <script src="js/olAdapter.js?v=<?php echo filemtime(__DIR__ . '/js/olAdapter.js'); ?>"></script>
   <script src="js/layers.js?v=<?php echo filemtime(__DIR__ . '/js/layers.js'); ?>"></script>
   <script src="js/overlays.js?v=<?php echo filemtime(__DIR__ . '/js/overlays.js'); ?>"></script>
+  <script src="js/shapedraw4.js?v=<?php echo filemtime(__DIR__ . '/js/shapedraw4.js'); ?>"></script>
+  <script src="js/areaselect.js?v=<?php echo filemtime(__DIR__ . '/js/areaselect.js'); ?>"></script>
   <script src="js/app.js?v=<?php echo filemtime(__DIR__ . '/js/app.js'); ?>"></script>
   <script src="js/meerkat.js?v=<?php echo filemtime(__DIR__ . '/js/meerkat.js'); ?>"></script>
   <script src="js/coverage.js?v=<?php echo filemtime(__DIR__ . '/js/coverage.js'); ?>"></script>

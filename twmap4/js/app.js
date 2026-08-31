@@ -123,7 +123,9 @@ mapApi.addTileLayer({
 });
 
 mapApi.addVectorLayer({ id: markerLayerId, visible: true });
-mapApi.addVectorLayer({ id: selectionLayerId, visible: true });
+const selectionLayer = mapApi.addVectorLayer({ id: selectionLayerId, visible: true });
+const areaselectLayerId = 'areaselect';
+const areaselectLayer = mapApi.addVectorLayer({ id: areaselectLayerId, visible: true, zIndex: 30 });
 
 const markerLayer = map.getLayers().getArray().find(function (layer) {
   return layer && layer.get('id') === markerLayerId;
@@ -818,10 +820,63 @@ markerFilterToggleBtns.forEach(function (btn) {
   });
 });
 
-mapApi.onClick(function ({ lon, lat }) {
+let areaselectInstance = null;
+
+function clickedOnShape(pixel) {
+  const target = map.getLayers().getArray().find(function (layer) {
+    return layer && layer.get('id') === selectionLayerId;
+  });
+  if (!target) {
+    return false;
+  }
+  const hit = map.forEachFeatureAtPixel(pixel, function (candidate) {
+    return candidate;
+  }, {
+    layerFilter: function (candidateLayer) {
+      return candidateLayer === target;
+    },
+    hitTolerance: 6
+  });
+  return !!hit;
+}
+
+mapApi.onClick(function ({ lon, lat, event }) {
   closePointPopup();
+  if (mapApi.shapeDrawActive) {
+    return;
+  }
   if (Date.now() - lastFeatureClickTime < 500) {
     return;
+  }
+  if (event && event.pixel && clickedOnShape(event.pixel)) {
+    return;
+  }
+  if (areaselectInstance && typeof areaselectInstance.handleClick === 'function') {
+    areaselectInstance.handleClick(lon, lat);
+  }
+});
+
+mapApi.onContextMenu(function ({ lon, lat, event }) {
+  closePointPopup();
+  if (event) {
+    const pixel = map.getEventPixel(event);
+    const target = map.getLayers().getArray().find(function (layer) {
+      return layer && layer.get('id') === areaselectLayerId;
+    });
+    if (target) {
+      const hit = map.forEachFeatureAtPixel(pixel, function (candidate) {
+        return candidate;
+      }, {
+        layerFilter: function (candidateLayer) {
+          return candidateLayer === target;
+        },
+        hitTolerance: 6
+      });
+      if (hit && areaselectInstance && typeof areaselectInstance.exportPoints === 'function') {
+        areaselectInstance.exportPoints();
+        return;
+      }
+    }
   }
   showLocationInfo(lon, lat);
 });
@@ -983,9 +1038,32 @@ gotoBtn.addEventListener('click', function () {
   }
 });
 
-const selectAreaBtn = document.getElementById('select-area-btn');
-selectAreaBtn.addEventListener('click', function () {
-  mapApi.addDrawSelection();
+new ShapeDraw4({
+  mapApi: mapApi,
+  selectionLayer: selectionLayer,
+  selectionLayerId: selectionLayerId,
+  drawTypeBtns: document.querySelectorAll('#draw-type .draw-type-toggle'),
+  deleteBtn: document.getElementById('shape-delete-btn'),
+  clearBtn: document.getElementById('shape-clear-btn'),
+  infoBtn: document.getElementById('shape-info-btn')
+});
+
+areaselectInstance = new AreaSelect({
+  mapApi: mapApi,
+  layer: areaselectLayer,
+  paramsEl: document.getElementById('params'),
+  getGate: function () {
+    if (mapApi.shapeDrawActive) {
+      return true;
+    }
+    if (mapApi.lastShapeDrawnTime && Date.now() - mapApi.lastShapeDrawnTime < 500) {
+      return true;
+    }
+    if (Date.now() - lastFeatureClickTime < 500) {
+      return true;
+    }
+    return false;
+  }
 });
 
 const gridSelect = document.getElementById('grid-select');

@@ -64,8 +64,16 @@ function createMapApi(adapter) {
       return adapter.onMoveEnd(handler);
     },
 
-    addDrawSelection(handler) {
-      return adapter.addDrawSelection(handler);
+    onContextMenu(handler) {
+      return adapter.onContextMenu(handler);
+    },
+
+    addDrawSelection(handler, drawType) {
+      return adapter.addDrawSelection(handler, drawType);
+    },
+
+    stopDrawSelection() {
+      return adapter.stopDrawSelection();
     },
 
     getMapInstance() {
