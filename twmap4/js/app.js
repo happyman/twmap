@@ -90,6 +90,7 @@ const markerFilterState = new Set([
 ]);
 const allMarkerFeatures = [];
 const poiIndex = [];
+let poiDataReady = false;
 
 const baseMapSources = Object.fromEntries(
   Object.entries(mapSources).filter(function ([sourceId]) {
@@ -415,9 +416,11 @@ function loadPointData() {
       populateSearchDatalist();
       rebuildVisibleMarkerFeatures();
       syncMarkerLabelState();
+      poiDataReady = true;
       console.log('loaded point data:', points.length);
     })
     .catch(function (error) {
+      poiDataReady = true;
       console.warn('pointdata unavailable:', error.message);
     });
 }
@@ -1110,6 +1113,52 @@ function saveCurrentView() {
 
 map.on('moveend', saveCurrentView);
 
+function gotoLandmark() {
+  if (!poiDataReady) {
+    setTimeout(gotoLandmark, 250);
+    return;
+  }
+  const names = (window.appConfig && window.appConfig.feature_locations) ||
+    ["三角錐山", "南二子山北峰", "敷島山", "大檜山", "武陵山", "佐久間山", "錐錐谷", "丹錐山", "霧頭山", "出雲山", "西巴杜蘭", "公山", "大分山"];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const poi = typeof resolvePoi === 'function' ? resolvePoi(name) : null;
+  if (poi && Number.isFinite(poi.lon) && Number.isFinite(poi.lat)) {
+    mapApi.setView([poi.lon, poi.lat], 14);
+    if (poi.id && typeof loadPointDetails === 'function') {
+      loadPointDetails(poi.id, poi.lon, poi.lat);
+    }
+  } else {
+    mapApi.setView(window.appConfig.default_center, window.appConfig.default_zoom);
+  }
+}
+
+function gotoFeatureLocation() {
+  if (!mapApi || !mapApi.setView || !navigator.geolocation) {
+    gotoLandmark();
+    return;
+  }
+  let got = 0;
+  const done = function () {
+    if (got) {
+      return;
+    }
+    got = 1;
+    if (!mapApi.__geoApplied) {
+      gotoLandmark();
+    }
+  };
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+      got = 1;
+      mapApi.__geoApplied = 1;
+      mapApi.setView([position.coords.longitude, position.coords.latitude], 14);
+    },
+    done,
+    { timeout: 4000, maximumAge: 60000 }
+  );
+  setTimeout(done, 5000);
+}
+
 let restoredView = null;
 try {
   const saved = localStorage.getItem(VIEW_STORAGE_KEY);
@@ -1125,6 +1174,9 @@ try {
 
 if (restoredView) {
   mapApi.setView([restoredView.lon, restoredView.lat], restoredView.zoom);
+} else if (new URLSearchParams(window.location.search).get('goto')) {
+  // explicit URL target already applied as the initial view; do not override
+  mapApi.setView(initialView.center, initialView.zoom);
 } else {
-  mapApi.setView(window.appConfig.default_center, window.appConfig.default_zoom);
+  gotoFeatureLocation();
 }

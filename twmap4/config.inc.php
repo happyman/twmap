@@ -26,3 +26,10 @@ $CONFIG['callmake_url'] = $site_twmap_html_root . "main.php?tab=0&";
 
 $CONFIG['default_center'] = [121.5654, 25.0330];
 $CONFIG['default_zoom'] = 8;
+
+// First-load fallback landmarks (used when no saved view / no ?goto and geolocation fails)
+$CONFIG['feature_locations'] = [
+    "三角錐山", "南二子山北峰", "敷島山", "大檜山", "武陵山",
+    "佐久間山", "錐錐谷", "丹錐山", "霧頭山", "出雲山",
+    "西巴杜蘭", "公山", "大分山"
+];
