@@ -12,6 +12,8 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+ce2710b Popup: hide scrollbar, add permalink with URL shortening
+a6a0fab Match layer-controls height to draw buttons; move OL zoom to bottom-right
 b325d9e Compact toolbar to 20px; move 標籤 toggle into 點位 filter menu
 8b64645 Add splash screen with twmap.png icon on initial load
 28ff7d5 Adjust point info popup: taller, close button, remove 地圖對照器, measurement, 地籍座標
@@ -29,7 +31,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit b325d9e)
+## Current State (as of commit ce2710b)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
@@ -46,7 +48,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 - **Toolbar layout**: About far left, search 320px, controls right-aligned (margin-left:auto)
 - **Responsive**: 960px/760px/600px breakpoints — buttons bottom-center, attribution narrowed
 - **GPX drag-and-drop**: Drop `.gpx` file → red tracks (width 3) + 32px waypoint icons, view fit, accumulates layers
-- **Point info popup**: Taller (560px), close button (X), 地籍座標 displayed, measurement start/end buttons, no 地圖對照器 link
+- **Point info popup**: Taller (560px), close button (X), 地籍座標 displayed, measurement start/end buttons, no 地圖對照器 link, scrollbar hidden, permalink with URL shortening
 - **Splash screen**: Full-screen dark overlay with twmap.png logo + spinner, fades out on window.load
 
 ### NOT Yet Migrated (from twmap3)
