@@ -441,9 +441,13 @@ function coordBlock(lon, lat) {
     if (ll === 1) {
       const p67 = twProjections.lonlat2twd67(wgsLon, wgsLat, 0);
       const p97 = twProjections.lonlat2twd97(wgsLon, wgsLat, 0);
+      const cadM = twProjections.lonlat2cad(wgsLon, wgsLat, 'm');
+      const cadJ = twProjections.lonlat2cad(wgsLon, wgsLat, 'j');
       rows.push(
         '台灣 TWD67 TM2: ' + Math.round(p67.x) + ',' + Math.round(p67.y),
-        '台灣 TWD97 TM2: ' + Math.round(p97.x) + '/' + Math.round(p97.y)
+        '台灣 TWD97 TM2: ' + Math.round(p97.x) + '/' + Math.round(p97.y),
+        '地籍(公尺): cm:' + cadM.x.toFixed(2) + ',' + cadM.y.toFixed(2),
+        '地籍(日制): cj:' + cadJ.x.toFixed(2) + ',' + cadJ.y.toFixed(2)
       );
     } else if (ll === 2 || ll === 3 || ll === 4) {
       const labels = { 2: '澎湖', 3: '金門', 4: '馬祖' };
@@ -474,7 +478,6 @@ function popupLinks(lon, lat, zoom) {
     return '<a href="' + href + '" target="_blank" rel="noopener" title="' + title + '"><i class="fa ' + icon + '"></i> ' + label + '</a>';
   };
   const links = [
-    link('//mc.basecamp.tw/#' + zoom + '/' + (wgsLat.toFixed(4)) + '/' + (wgsLon.toFixed(4)), 'fa-exchange', '地圖對照器', '地圖對照'),
     link('//maps.nlsc.gov.tw/go/' + (wgsLon.toFixed(5)) + '/' + (wgsLat.toFixed(5)), 'fa-globe', 'NLSC 地圖', 'NLSC'),
     link(window.appConfig.promlist_url, 'fa-star', '獨立峰排名', '獨立峰', true),
     link('//www.windy.com/' + (wgsLat.toFixed(3)) + '/' + (wgsLon.toFixed(3)) + '/meteogram?rain,' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + ',' + zoom + ',m:ejkajw7', 'fa-cloud', 'windy', 'windy'),
@@ -507,6 +510,7 @@ function showPointPopup(point, lon, lat) {
     '<div class="popup-meta"><a href="#" id="los_link" onClick="show_line_of_sight(' + Number(lon).toFixed(5) + ',' + Number(lat).toFixed(5) + ',' + Math.round(ele) + '); return false;">通視模擬 (' + Math.round(ele) + 'M)</a></div>' : '';
 
   pointPopup.innerHTML = [
+    '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
     '<div class="popup-header">' + title +
       ' <a class="popup-permalink" href="' + permalink(lon, lat, zoom) + '" target="_blank" title="複製此位置連結"><i class="fa fa-link"></i></a>' +
       '</div>',
@@ -515,6 +519,7 @@ function showPointPopup(point, lon, lat) {
     '<div class="popup-story">' + summary + '</div>',
     losLink,
     adminLink,
+    measureButtonsHtml(lon, lat),
     popupLinks(lon, lat, zoom)
   ].join('');
 
@@ -563,9 +568,11 @@ function renderLocationPopup(lon, lat, zoom, rows) {
     return;
   }
   pointPopup.innerHTML = [
+    '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
     '<div class="popup-header">位置資訊</div>',
     coordBlock(lon, lat),
     rows.join(''),
+    measureButtonsHtml(lon, lat),
     popupLinks(lon, lat, zoom)
   ].join('');
   pointPopupOverlay.setPosition(ol.proj.fromLonLat([lon, lat]));
@@ -634,6 +641,61 @@ function closePointPopup() {
     pointPopupOverlay.setPosition(undefined);
     pointPopup.innerHTML = '';
   }
+}
+
+let measureStartCoords = null;
+let measureStartOverlay = null;
+
+function measureButtonsHtml(lon, lat) {
+  const isActive = measureStartCoords !== null;
+  return '<div class="popup-measure">' +
+    '<button onclick="setMeasureStart(' + lon + ',' + lat + ')" title="設定測量起點' + (isActive ? ' (已設定)' : '') + '"' +
+    (isActive ? ' class="measure-active"' : '') + '><i class="fa fa-play"></i> 起點</button>' +
+    '<button onclick="setMeasureEnd(' + lon + ',' + lat + ')" title="設定測量終點"' +
+    (!isActive ? ' disabled style="opacity:0.4"' : '') + '><i class="fa fa-stop"></i> 終點</button>' +
+    '</div>';
+}
+
+function setMeasureStart(lon, lat) {
+  measureStartCoords = [lon, lat];
+  if (!measureStartOverlay) {
+    const el = document.createElement('div');
+    el.style.cssText = 'width:14px;height:14px;background:#fbbf24;border:2px solid #fff;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,.5);';
+    measureStartOverlay = new ol.Overlay({ element: el, positioning: 'center-center', offset: [0, 0], stopEvent: false });
+    map.addOverlay(measureStartOverlay);
+  }
+  measureStartOverlay.setPosition(ol.proj.fromLonLat([lon, lat]));
+  const zoom = Math.round(map.getView().getZoom());
+  const coord = coordBlock(lon, lat);
+  if (pointPopup) {
+    const html = pointPopup.innerHTML;
+    pointPopup.innerHTML = html.replace(
+      /(<button[^>]*measure-active[^>]*>)/,
+      '$1'
+    );
+  }
+  updateMsgBar();
+}
+
+function setMeasureEnd(lon, lat) {
+  if (!measureStartCoords) return;
+  const lon1 = measureStartCoords[0], lat1 = measureStartCoords[1];
+  const lon2 = lon, lat2 = lat;
+  const dist = ol.sphere.getDistance([lon1, lat1], [lon2, lat2]);
+  let bearing = Math.atan2(
+    Math.sin((lon2 - lon1) * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180),
+    Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+    Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos((lon2 - lon1) * Math.PI / 180)
+  ) * 180 / Math.PI;
+  if (bearing < 0) bearing += 360;
+  const dms = twProjections.ConvertDDToDMS(bearing);
+  const msg = document.getElementById('msg');
+  if (msg) {
+    msg.removeAttribute('hidden');
+    msg.innerHTML = '距離: ' + dist.toFixed(1) + 'M &nbsp; 方向角: ' + bearing.toFixed(1) + '° (' + dms + ')';
+  }
+  measureStartCoords = null;
+  if (measureStartOverlay) measureStartOverlay.setPosition(undefined);
 }
 
 let losRunning = false;

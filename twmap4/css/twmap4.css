@@ -406,7 +406,7 @@ input[type="range"] {
 #point-popup {
   position: relative;
   max-width: 340px;
-  max-height: min(70vh, 420px);
+  max-height: min(85vh, 560px);
   overflow: auto;
   padding: 12px 14px;
   background: rgba(15, 23, 42, 0.96);
@@ -445,6 +445,52 @@ input[type="range"] {
   margin: 0 0 8px;
   font-size: 18px;
   font-weight: 700;
+  padding-right: 24px;
+}
+
+#point-popup .popup-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+#point-popup .popup-close:hover {
+  color: #f8fafc;
+}
+
+#point-popup .popup-measure {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+#point-popup .popup-measure button {
+  background: none;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  color: #7dd3fc;
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-right: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#point-popup .popup-measure button:hover {
+  background: rgba(125, 211, 252, 0.15);
+  border-color: #7dd3fc;
+}
+
+#point-popup .popup-measure button.measure-active {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: #fbbf24;
+  color: #fbbf24;
 }
 
 #point-popup .popup-meta {
