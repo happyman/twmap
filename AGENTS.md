@@ -12,6 +12,7 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+69d4074 Add GPX drag-and-drop import to twmap4
 82dc3a5 Move About button to toolbar far left; right-align controls; move about handler to meerkat.js
 2b96edc Add About button & shorten search box; include version 0.1
 00879fa Refine draw control look: remove outer box, equal-size icon buttons
@@ -25,7 +26,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit 82dc3a5)
+## Current State (as of commit 69d4074)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
@@ -41,10 +42,10 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 - **About**: `#about-btn` at toolbar far left → `about.php` in meerkat panel
 - **Toolbar layout**: About far left, search 320px, controls right-aligned (margin-left:auto)
 - **Responsive**: 960px/760px/600px breakpoints — buttons bottom-center, attribution narrowed
+- **GPX drag-and-drop**: Drop `.gpx` file → red tracks (width 3) + 32px waypoint icons, view fit, accumulates layers
 
 ### NOT Yet Migrated (from twmap3)
 - KML export UI (right-click menu exists but may need refinement)
-- GPX import/export
 - Photo upload/panorama
 - Hillshade overlay
 - Line-of-sight (通視模擬) — basic hook exists, needs full UI
@@ -68,6 +69,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 | `twmap4/js/meerkat.js` | Iframe panel (showmeerkat/closeMeerkat) |
 | `twmap4/js/overlays.js` | Marker/triangle/track overlays |
 | `twmap4/js/coverage.js` | Signal coverage overlay |
+| `twmap4/js/gpxdrop.js` | GPX drag-and-drop import (FileReader + ol.format/GPX) |
 | `twmap4/about.php` | About page (reads VERSION) |
 | `twmap4/VERSION` | Version string (`0.1`) |
 | `twmap4/config.inc.php` | API URLs, default center, feature locations |
@@ -109,6 +111,7 @@ node /tmp/opencode/verify4_test.js
 - `#params`: `position:absolute; top:100px; right:10px`
 - `#msg`: cursor+zoom, `bottom:42px; left:50%; transform:translateX(-50%)`
 - `#map-attribution`: `position:absolute; bottom:0; right:0; max-width:22%` (13% at ≤600px)
+- `#drop-container`: `position:absolute; top:0; left:0; z-index:1000; display:none` → `block` on dragenter; full overlay
 
 ## User Preferences
 - **Never commit** `twmap3/js/.main.js.swp` (vim swap, untracked)
