@@ -43,6 +43,16 @@ document.addEventListener('DOMContentLoaded', function () {
     closeBtn.addEventListener('click', closeMeerkat);
   }
 
+  const aboutBtn = document.getElementById('about-btn');
+  if (aboutBtn) {
+    aboutBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (typeof showmeerkat === 'function') {
+        showmeerkat('about.php', { width: 600 });
+      }
+    });
+  }
+
   const gotoBtn = document.getElementById('goto');
   if (gotoBtn) {
     gotoBtn.addEventListener('click', function () {

@@ -15,6 +15,11 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
 <body>
   <div id="app-shell">
     <div id="toolbar">
+      <a id="about-btn" href="javascript:void(0);" title="關於" class="navbar-brand">
+        <img src="icons/twmap_icon.png" alt="TWMap" class="navbar-icon" />
+        <span class="navbar-text">地圖瀏覽器 v<?=$ver?></span>
+      </a>
+
       <div id="search-box">
         <input id="search-input" type="text" placeholder="搜尋山頭、地標或座標" list="search-datalist" autocomplete="off" />
         <datalist id="search-datalist"></datalist>
@@ -26,7 +31,7 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
       <button id="track-toggle-btn" type="button" class="active" title="山友登山軌跡 (z10-19)">行跡</button>
 
       <div id="filter-menu-wrap">
-        <button id="filter-menu-btn" type="button" title="篩選點位類型">篩選</button>
+        <button id="filter-menu-btn" type="button" title="篩選點位類型">點位</button>
         <div id="filter-menu" class="hidden">
           <button type="button" class="marker-filter-toggle active" data-values="peak_1st">一等</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_2nd">二等</button>
@@ -43,7 +48,6 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
           <button type="button" class="marker-filter-toggle active" data-values="point,shelter,giant_tree,rock,waterfall,stream,lake,ruins,valley,camp,dry_ravine,water_pool,old_village,steps,cliff,bridge,hut,terrain_point,workstation">其他</button>
         </div>
       </div>
-      <button id="about-btn" type="button" title="關於">地圖瀏覽器 v<?=$ver?></button>
 
       <label for="rainfall-select">雨量</label>
       <select id="rainfall-select" aria-label="雨量疊圖">
@@ -184,9 +188,9 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
   <script src="js/overlays.js?v=<?php echo filemtime(__DIR__ . '/js/overlays.js'); ?>"></script>
   <script src="js/shapedraw4.js?v=<?php echo filemtime(__DIR__ . '/js/shapedraw4.js'); ?>"></script>
   <script src="js/areaselect.js?v=<?php echo filemtime(__DIR__ . '/js/areaselect.js'); ?>"></script>
+  <script src="js/meerkat.js?v=<?php echo filemtime(__DIR__ . '/js/meerkat.js'); ?>"></script>
   <script src="js/app.js?v=<?php echo filemtime(__DIR__ . '/js/app.js'); ?>"></script>
   <script src="js/mapinfo.js?v=<?php echo filemtime(__DIR__ . '/js/mapinfo.js'); ?>"></script>
-  <script src="js/meerkat.js?v=<?php echo filemtime(__DIR__ . '/js/meerkat.js'); ?>"></script>
   <script src="js/coverage.js?v=<?php echo filemtime(__DIR__ . '/js/coverage.js'); ?>"></script>
 </body>
 </html>

@@ -1198,13 +1198,6 @@ if (fullscreenBtn) {
   });
 }
 
-const aboutBtn = document.getElementById('about-btn');
-if (aboutBtn && typeof showmeerkat === 'function') {
-  aboutBtn.addEventListener('click', function () {
-    showmeerkat('about.php', { width: 600 });
-  });
-}
-
 const geolocateBtn = document.getElementById('geolocate-btn');
 if (geolocateBtn) {
   geolocateBtn.addEventListener('click', function () {

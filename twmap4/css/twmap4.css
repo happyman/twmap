@@ -19,6 +19,35 @@ html, body {
   background: #1f2937;
   border-bottom: 1px solid #334155;
   box-sizing: border-box;
+  flex-wrap: wrap;
+}
+
+#about-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  margin-right: 8px;
+  order: -1;
+}
+
+#about-btn:hover {
+  opacity: 0.8;
+}
+
+.navbar-icon {
+  height: 24px;
+  width: auto;
+}
+
+.navbar-text {
+  font-size: 14px;
+  font-weight: 500;
 }
 
 #search-box {
@@ -36,6 +65,10 @@ html, body {
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-size: 14px;
+}
+
+#marker-label-toggle-btn {
+  margin-left: auto;
 }
 
 #toolbar label {
@@ -73,10 +106,10 @@ button.disable {
   top: calc(100% + 6px);
   left: 0;
   z-index: 50;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  max-width: 260px;
+  min-width: 280px;
   padding: 10px;
   background: #ffffff;
   border: 1px solid #cbd5e1;
@@ -638,4 +671,3 @@ input[type="range"] {
     min-width: 70px;
   }
 }
-#marker-label-toggle-btn { margin-left: auto; }
