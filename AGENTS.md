@@ -12,8 +12,8 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
-ce2710b Popup: hide scrollbar, add permalink with URL shortening
-a6a0fab Match layer-controls height to draw buttons; move OL zoom to bottom-right
+9793b86 Permalink dialog with URL shortening (Go/Shorten/Copy buttons)
+3f02388 Update AGENTS.md with popup scrollbar/shorten changes
 b325d9e Compact toolbar to 20px; move 標籤 toggle into 點位 filter menu
 8b64645 Add splash screen with twmap.png icon on initial load
 28ff7d5 Adjust point info popup: taller, close button, remove 地圖對照器, measurement, 地籍座標
@@ -31,7 +31,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit ce2710b)
+## Current State (as of commit 9793b86)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
