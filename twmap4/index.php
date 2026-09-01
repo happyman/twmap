@@ -82,6 +82,7 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
 
     <div id="map-wrap">
       <div id="map" aria-label="地圖"></div>
+      <div id="drop-container"><div id="drop-silhouette"></div></div>
       <div id="point-popup" class="hidden" aria-live="polite"></div>
       <div id="buttons" aria-label="繪圖工具">
         <div id="draw-type" class="draw-type">
@@ -192,5 +193,6 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
   <script src="js/app.js?v=<?php echo filemtime(__DIR__ . '/js/app.js'); ?>"></script>
   <script src="js/mapinfo.js?v=<?php echo filemtime(__DIR__ . '/js/mapinfo.js'); ?>"></script>
   <script src="js/coverage.js?v=<?php echo filemtime(__DIR__ . '/js/coverage.js'); ?>"></script>
+  <script src="js/gpxdrop.js?v=<?php echo filemtime(__DIR__ . '/js/gpxdrop.js'); ?>"></script>
 </body>
 </html>
