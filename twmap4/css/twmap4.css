@@ -235,11 +235,27 @@ input[type="range"] {
 #layer-controls select {
   max-width: 100px;
   font-size: 11px;
-  padding: 4px 6px;
+  padding: 6px 6px;
+  height: 34px;
+  box-sizing: border-box;
 }
 
 #layer-controls input[type="range"] {
   width: 64px;
+}
+
+.ol-zoom {
+  top: auto;
+  right: 10px;
+  bottom: 10px;
+  left: auto;
+}
+
+.ol-zoom .ol-zoom-in,
+.ol-zoom .ol-zoom-out {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
 }
 
 #buttons {
