@@ -490,6 +490,26 @@ function permalink(lon, lat, zoom) {
   return window.location.origin + window.location.pathname + '?goto=' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '&zoom=' + zoom;
 }
 
+function copyShortLink(fullUrl, e) {
+  e.preventDefault();
+  var shortenApi = window.appConfig.shorten_url;
+  if (!shortenApi) { window.open(fullUrl, '_blank'); return; }
+  fetch(shortenApi + '?url=' + encodeURIComponent(fullUrl))
+    .then(function (r) { return r.text(); })
+    .then(function (shortUrl) {
+      navigator.clipboard.writeText(shortUrl).then(function () {
+        var anchor = e.target.closest('.popup-permalink');
+        if (!anchor) return;
+        var tip = document.createElement('span');
+        tip.className = 'shorten-tip';
+        tip.textContent = ' 已複製!';
+        anchor.appendChild(tip);
+        setTimeout(function () { tip.remove(); }, 1500);
+      });
+    })
+    .catch(function () { window.open(fullUrl, '_blank'); });
+}
+
 function showPointPopup(point, lon, lat) {
   if (!pointPopup) {
     return;
@@ -509,10 +529,11 @@ function showPointPopup(point, lon, lat) {
   const losLink = (isFinite(ele) && ele > -1000 && typeof show_line_of_sight === 'function') ?
     '<div class="popup-meta"><a href="#" id="los_link" onClick="show_line_of_sight(' + Number(lon).toFixed(5) + ',' + Number(lat).toFixed(5) + ',' + Math.round(ele) + '); return false;">通視模擬 (' + Math.round(ele) + 'M)</a></div>' : '';
 
+  var plUrl = permalink(lon, lat, zoom);
   pointPopup.innerHTML = [
     '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
     '<div class="popup-header">' + title +
-      ' <a class="popup-permalink" href="' + permalink(lon, lat, zoom) + '" target="_blank" title="複製此位置連結"><i class="fa fa-link"></i></a>' +
+      ' <a class="popup-permalink" href="' + plUrl + '" onclick="copyShortLink(\'' + plUrl + '\', event)" title="複製縮網址"><i class="fa fa-link"></i></a>' +
       '</div>',
     pointMeta ? '<div class="popup-meta">' + pointMeta + '</div>' : '',
     coordBlock(lon, lat),
@@ -567,9 +588,12 @@ function renderLocationPopup(lon, lat, zoom, rows) {
   if (!pointPopup) {
     return;
   }
+  var plUrl = permalink(lon, lat, zoom);
   pointPopup.innerHTML = [
     '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
-    '<div class="popup-header">位置資訊</div>',
+    '<div class="popup-header">位置資訊' +
+      ' <a class="popup-permalink" href="' + plUrl + '" onclick="copyShortLink(\'' + plUrl + '\', event)" title="複製縮網址"><i class="fa fa-link"></i></a>' +
+      '</div>',
     coordBlock(lon, lat),
     rows.join(''),
     measureButtonsHtml(lon, lat),

@@ -464,6 +464,7 @@ input[type="range"] {
   max-width: 340px;
   max-height: min(85vh, 560px);
   overflow: auto;
+  scrollbar-width: none;
   padding: 12px 14px;
   background: rgba(15, 23, 42, 0.96);
   color: #f8fafc;
@@ -474,6 +475,10 @@ input[type="range"] {
   line-height: 1.6;
   font-size: 14px;
   pointer-events: auto;
+}
+
+#point-popup::-webkit-scrollbar {
+  display: none;
 }
 
 #point-popup::after {
@@ -606,6 +611,20 @@ input[type="range"] {
   text-decoration: none;
   font-size: 14px;
   margin-left: 4px;
+  cursor: pointer;
+}
+
+#point-popup .shorten-tip {
+  color: #fbbf24;
+  font-size: 12px;
+  margin-left: 4px;
+  animation: shorten-fade 1.5s ease-out forwards;
+}
+
+@keyframes shorten-fade {
+  0%   { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 #point-popup .popup-wpt {
