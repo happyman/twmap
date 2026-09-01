@@ -12,8 +12,8 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+bc6c5db Toolbar 32px white theme; selects right-aligned; popup light theme
 9793b86 Permalink dialog with URL shortening (Go/Shorten/Copy buttons)
-3f02388 Update AGENTS.md with popup scrollbar/shorten changes
 b325d9e Compact toolbar to 20px; move 標籤 toggle into 點位 filter menu
 8b64645 Add splash screen with twmap.png icon on initial load
 28ff7d5 Adjust point info popup: taller, close button, remove 地圖對照器, measurement, 地籍座標
@@ -31,7 +31,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit 9793b86)
+## Current State (as of commit bc6c5db)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
@@ -108,11 +108,8 @@ node /tmp/opencode/verify4_test.js
 | `showmeerkat()` | `showmeerkat()` (same API) | iframe panel |
 
 ### CSS Layout Notes
-- `#toolbar`: `display:flex; flex-wrap:wrap; gap:3px; height:20px; padding:0 6px`
-- `#about-btn`: first child, anchor with icon, far left
-- `#search-box`: `flex:0 1 auto; width:220px` input, full row at ≤760px
-- `#marker-label-toggle-btn`: inside `#filter-menu` dropdown (moved from toolbar)
-- `#buttons`: draw controls, no outer box, 34px icons (30px at ≤600px)
+- `#toolbar`: `display:flex; flex-wrap:wrap; gap:5px; height:32px; padding:0 8px; background:#fff`
+- `#toolbar-right`: `margin-left:auto` — wraps rainfall/coverage/grid selects (right-aligned)
 - `#fullscreen-btn`: `position:absolute; top:10px; right:10px`
 - `#geolocate-btn`: `position:absolute; top:54px; right:10px`
 - `#params`: `position:absolute; top:100px; right:10px`
