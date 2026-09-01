@@ -52,26 +52,27 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
         </div>
       </div>
 
-      <label for="rainfall-select">雨量</label>
-      <select id="rainfall-select" aria-label="雨量疊圖">
-        <option value="none" selected>雨量圖</option>
-        <option value="o2d">前日</option>
-        <option value="o1d">昨日</option>
-        <option value="now">今日</option>
-        <option value="f12h">未來12h</option>
-        <option value="f24h">未來24h</option>
-      </select>
+      <div id="toolbar-right">
+        <label for="rainfall-select">雨量</label>
+        <select id="rainfall-select" aria-label="雨量疊圖">
+          <option value="none" selected>雨量圖</option>
+          <option value="o2d">前日</option>
+          <option value="o1d">昨日</option>
+          <option value="now">今日</option>
+          <option value="f12h">未來12h</option>
+          <option value="f24h">未來24h</option>
+        </select>
 
-      <label for="coverage-select">訊號</label>
-      <select id="coverage-select" aria-label="訊號涵蓋圖">
-        <option value="none" selected>訊號</option>
-        <option value="cht">cht4+5G</option>
-        <option value="twn">twn4+5G</option>
-        <option value="fet">fet4+5G</option>
-      </select>
+        <label for="coverage-select">訊號</label>
+        <select id="coverage-select" aria-label="訊號涵蓋圖">
+          <option value="none" selected>訊號</option>
+          <option value="cht">cht4+5G</option>
+          <option value="twn">twn4+5G</option>
+          <option value="fet">fet4+5G</option>
+        </select>
 
-      <label for="grid-select">格線</label>
-      <select id="grid-select" aria-label="格線疊圖">
+        <label for="grid-select">格線</label>
+        <select id="grid-select" aria-label="格線疊圖">
         <option value="TWD67" selected>TWD67</option>
         <option value="TWD67PH">TWD67澎湖</option>
         <option value="TWD67_EXT">TWD67 EXT</option>
@@ -81,6 +82,7 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
         <option value="WGS84">經緯度</option>
         <option value="None">無格線</option>
       </select>
+      </div>
     </div>
 
     <div id="map-wrap">
