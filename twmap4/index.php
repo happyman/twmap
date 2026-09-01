@@ -30,13 +30,12 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
         <button id="search-btn" type="button">到</button>
       </div>
 
-      <button id="marker-label-toggle-btn" type="button" class="active" title="三角點名稱標籤">標籤</button>
-
       <button id="track-toggle-btn" type="button" class="active" title="山友登山軌跡 (z10-19)">行跡</button>
 
       <div id="filter-menu-wrap">
         <button id="filter-menu-btn" type="button" title="篩選點位類型">點位</button>
         <div id="filter-menu" class="hidden">
+          <button id="marker-label-toggle-btn" type="button" class="active" title="三角點名稱標籤">標籤</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_1st">一等</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_2nd">二等</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_3rd">三等</button>
