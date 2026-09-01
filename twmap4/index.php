@@ -87,6 +87,18 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
       <div id="map" aria-label="地圖"></div>
       <div id="drop-container"><div id="drop-silhouette"></div></div>
       <div id="point-popup" class="hidden" aria-live="polite"></div>
+      <div id="permalink-dialog" class="hidden">
+        <div class="permalink-dialog-backdrop" onclick="closePermalinkDialog()"></div>
+        <div class="permalink-dialog-box">
+          <div class="permalink-dialog-title">複製連結 <button class="permalink-dialog-close" onclick="closePermalinkDialog()">&times;</button></div>
+          <input id="permalink-dialog-url" type="text" readonly />
+          <div class="permalink-dialog-actions">
+            <button onclick="permalinkDialogGo()">Go</button>
+            <button onclick="permalinkDialogShorten()">Shorten</button>
+            <button onclick="permalinkDialogCopy()">Copy</button>
+          </div>
+        </div>
+      </div>
       <div id="buttons" aria-label="繪圖工具">
         <div id="draw-type" class="draw-type">
           <button type="button" class="draw-type-toggle" data-type="Polygon" title="畫多邊形"><i class="fa fa-object-group"></i></button>

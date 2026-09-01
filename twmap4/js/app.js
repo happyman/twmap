@@ -490,24 +490,38 @@ function permalink(lon, lat, zoom) {
   return window.location.origin + window.location.pathname + '?goto=' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '&zoom=' + zoom;
 }
 
-function copyShortLink(fullUrl, e) {
-  e.preventDefault();
+function showPermalinkDialog(fullUrl) {
+  var dlg = document.getElementById('permalink-dialog');
+  var input = document.getElementById('permalink-dialog-url');
+  if (!dlg || !input) return;
+  input.value = fullUrl;
+  dlg.classList.remove('hidden');
+  input.select();
+}
+
+function closePermalinkDialog() {
+  var dlg = document.getElementById('permalink-dialog');
+  if (dlg) dlg.classList.add('hidden');
+}
+
+function permalinkDialogGo() {
+  var url = document.getElementById('permalink-dialog-url').value;
+  if (url) window.open(url, '_blank');
+}
+
+function permalinkDialogShorten() {
+  var input = document.getElementById('permalink-dialog-url');
   var shortenApi = window.appConfig.shorten_url;
-  if (!shortenApi) { window.open(fullUrl, '_blank'); return; }
-  fetch(shortenApi + '?url=' + encodeURIComponent(fullUrl))
+  if (!shortenApi || !input) return;
+  fetch(shortenApi + '?url=' + encodeURIComponent(input.value))
     .then(function (r) { return r.text(); })
-    .then(function (shortUrl) {
-      navigator.clipboard.writeText(shortUrl).then(function () {
-        var anchor = e.target.closest('.popup-permalink');
-        if (!anchor) return;
-        var tip = document.createElement('span');
-        tip.className = 'shorten-tip';
-        tip.textContent = ' 已複製!';
-        anchor.appendChild(tip);
-        setTimeout(function () { tip.remove(); }, 1500);
-      });
-    })
-    .catch(function () { window.open(fullUrl, '_blank'); });
+    .then(function (shortUrl) { input.value = shortUrl; input.select(); });
+}
+
+function permalinkDialogCopy() {
+  var input = document.getElementById('permalink-dialog-url');
+  if (!input) return;
+  navigator.clipboard.writeText(input.value);
 }
 
 function showPointPopup(point, lon, lat) {
@@ -533,7 +547,7 @@ function showPointPopup(point, lon, lat) {
   pointPopup.innerHTML = [
     '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
     '<div class="popup-header">' + title +
-      ' <a class="popup-permalink" href="' + plUrl + '" onclick="copyShortLink(\'' + plUrl + '\', event)" title="複製縮網址"><i class="fa fa-link"></i></a>' +
+      ' <a class="popup-permalink" href="#" onclick="showPermalinkDialog(\'' + plUrl + '\'); return false;" title="複製縮網址"><i class="fa fa-link"></i></a>' +
       '</div>',
     pointMeta ? '<div class="popup-meta">' + pointMeta + '</div>' : '',
     coordBlock(lon, lat),
@@ -592,7 +606,7 @@ function renderLocationPopup(lon, lat, zoom, rows) {
   pointPopup.innerHTML = [
     '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
     '<div class="popup-header">位置資訊' +
-      ' <a class="popup-permalink" href="' + plUrl + '" onclick="copyShortLink(\'' + plUrl + '\', event)" title="複製縮網址"><i class="fa fa-link"></i></a>' +
+      ' <a class="popup-permalink" href="#" onclick="showPermalinkDialog(\'' + plUrl + '\'); return false;" title="複製縮網址"><i class="fa fa-link"></i></a>' +
       '</div>',
     coordBlock(lon, lat),
     rows.join(''),
