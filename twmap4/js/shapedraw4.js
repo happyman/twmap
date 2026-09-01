@@ -352,6 +352,20 @@ function ShapeDraw4(opts) {
     mapApi.enableMoveSelection(selectionLayerId, onShapeMoved);
   }
 
+  function addMeasurementFeature(feature) {
+    if (!feature) return;
+    feature.set('shapeId', 'measure_' + Date.now());
+    feature.set('mode', 'LineString');
+    feature.set('color', '#ff0000');
+    feature.set('appId', nextAppId);
+    nextAppId++;
+    feature.setStyle(styleFor(feature));
+    features.push(feature);
+    selected = feature;
+    restyle();
+    save();
+  }
+
   refreshButtons();
   load();
 
@@ -359,6 +373,7 @@ function ShapeDraw4(opts) {
     selectShape: selectShape,
     removeSelectedShape: removeSelectedShape,
     clearShapes: clearShapes,
-    stopDraw: stopDraw
+    stopDraw: stopDraw,
+    addMeasurementFeature: addMeasurementFeature
   };
 }

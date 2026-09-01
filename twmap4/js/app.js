@@ -688,12 +688,29 @@ function setMeasureEnd(lon, lat) {
     Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos((lon2 - lon1) * Math.PI / 180)
   ) * 180 / Math.PI;
   if (bearing < 0) bearing += 360;
-  const dms = twProjections.ConvertDDToDMS(bearing);
-  const msg = document.getElementById('msg');
-  if (msg) {
-    msg.removeAttribute('hidden');
-    msg.innerHTML = '距離: ' + dist.toFixed(1) + 'M &nbsp; 方向角: ' + bearing.toFixed(1) + '° (' + dms + ')';
+
+  // Add measurement line to selection layer (like draw tool polyline)
+  var coords = [
+    ol.proj.fromLonLat([lon1, lat1]),
+    ol.proj.fromLonLat([lon2, lat2])
+  ];
+  var feature = new ol.Feature({
+    geometry: new ol.geom.LineString(coords)
+  });
+  feature.set('color', '#ff0000');
+  feature.set('distance', dist);
+  feature.set('bearing', bearing);
+
+  if (shapeDrawInstance && typeof shapeDrawInstance.addMeasurementFeature === 'function') {
+    shapeDrawInstance.addMeasurementFeature(feature);
   }
+
+  // Trigger info button click to open meerkat panel with this shape
+  var infoBtn = document.getElementById('shape-info-btn');
+  if (infoBtn) {
+    infoBtn.click();
+  }
+
   measureStartCoords = null;
   if (measureStartOverlay) measureStartOverlay.setPosition(undefined);
 }
@@ -1103,7 +1120,7 @@ gotoBtn.addEventListener('click', function () {
   }
 });
 
-new ShapeDraw4({
+var shapeDrawInstance = new ShapeDraw4({
   mapApi: mapApi,
   selectionLayer: selectionLayer,
   selectionLayerId: selectionLayerId,
