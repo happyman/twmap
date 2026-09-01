@@ -12,6 +12,7 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+28ff7d5 Adjust point info popup: taller, close button, remove 地圖對照器, measurement, 地籍座標
 69d4074 Add GPX drag-and-drop import to twmap4
 82dc3a5 Move About button to toolbar far left; right-align controls; move about handler to meerkat.js
 2b96edc Add About button & shorten search box; include version 0.1
@@ -26,7 +27,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit 69d4074)
+## Current State (as of commit 28ff7d5)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
@@ -43,6 +44,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 - **Toolbar layout**: About far left, search 320px, controls right-aligned (margin-left:auto)
 - **Responsive**: 960px/760px/600px breakpoints — buttons bottom-center, attribution narrowed
 - **GPX drag-and-drop**: Drop `.gpx` file → red tracks (width 3) + 32px waypoint icons, view fit, accumulates layers
+- **Point info popup**: Taller (560px), close button (X), 地籍座標 displayed, measurement start/end buttons, no 地圖對照器 link
 
 ### NOT Yet Migrated (from twmap3)
 - KML export UI (right-click menu exists but may need refinement)
