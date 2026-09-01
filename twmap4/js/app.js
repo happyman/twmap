@@ -1295,3 +1295,11 @@ if (geolocateBtn) {
     );
   });
 }
+
+window.addEventListener('load', function () {
+  var splash = document.getElementById('splash-screen');
+  if (splash) {
+    splash.classList.add('fade-out');
+    setTimeout(function () { splash.remove(); }, 700);
+  }
+});

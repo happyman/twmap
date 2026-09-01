@@ -13,6 +13,10 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
   <link rel="stylesheet" href="css/twmap4.css?v=<?php echo filemtime(__DIR__ . '/css/twmap4.css'); ?>" />
 </head>
 <body>
+  <div id="splash-screen">
+    <img src="icons/twmap.png" alt="TWMap" />
+    <div class="splash-spinner"></div>
+  </div>
   <div id="app-shell">
     <div id="toolbar">
       <a id="about-btn" href="javascript:void(0);" title="關於" class="navbar-brand">
