@@ -12,6 +12,7 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+b325d9e Compact toolbar to 20px; move 標籤 toggle into 點位 filter menu
 8b64645 Add splash screen with twmap.png icon on initial load
 28ff7d5 Adjust point info popup: taller, close button, remove 地圖對照器, measurement, 地籍座標
 69d4074 Add GPX drag-and-drop import to twmap4
@@ -28,14 +29,14 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit 8b64645)
+## Current State (as of commit b325d9e)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
 - **View persistence**: Saved to localStorage (`twmap4_view`), restored on load
 - **FeatureLocation**: Random landmark fallback, `?goto` URL param
 - **Mapinfo**: Cursor coords + zoom level (`#msg`), copyright + edit link (`#map-attribution`)
-- **Layer controls**: Triangle marker label toggle, track toggle, type filter (13 categories)
+- **Layer controls**: Triangle marker label toggle (moved into 點位 filter menu), track toggle, type filter (13 categories)
 - **Draw tools**: 4 icon buttons (Polygon, Rectangle, Circle, LineString) with FA icons
 - **Shape persistence**: Shapes saved to localStorage (`shapes`), WGS84 coords
 - **Drag-to-move**: `ol.interaction.Translate` for moving drawn shapes
@@ -105,10 +106,10 @@ node /tmp/opencode/verify4_test.js
 | `showmeerkat()` | `showmeerkat()` (same API) | iframe panel |
 
 ### CSS Layout Notes
-- `#toolbar`: `display:flex; flex-wrap:wrap; gap:8px; padding:10px 12px`
+- `#toolbar`: `display:flex; flex-wrap:wrap; gap:3px; height:20px; padding:0 6px`
 - `#about-btn`: first child, anchor with icon, far left
-- `#search-box`: `flex:0 1 auto; width:320px` input, full row at ≤760px
-- `#marker-label-toggle-btn`: `margin-left:auto` pushes controls right
+- `#search-box`: `flex:0 1 auto; width:220px` input, full row at ≤760px
+- `#marker-label-toggle-btn`: inside `#filter-menu` dropdown (moved from toolbar)
 - `#buttons`: draw controls, no outer box, 34px icons (30px at ≤600px)
 - `#fullscreen-btn`: `position:absolute; top:10px; right:10px`
 - `#geolocate-btn`: `position:absolute; top:54px; right:10px`
