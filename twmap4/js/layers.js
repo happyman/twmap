@@ -5,8 +5,31 @@ function createTaitungForestTileUrl(baseUrl, tileCoord) {
 
   const zoom = String(tileCoord[0]).padStart(2, '0');
   const x = tileCoord[1].toString(16).padStart(8, '0');
-  const y = (-tileCoord[2] - 1).toString(16).padStart(8, '0');
+  const y = tileCoord[2].toString(16).padStart(8, '0');
   return baseUrl + '/L' + zoom + '/R' + y + '/C' + x + '.png';
+}
+
+var LY_Bounds = {
+  south: 21.937729, west: 121.482901,
+  north: 22.100785, east: 121.627586
+};
+
+function createHistoricalTileUrl(baseUrl, lanyuPath, tileCoord) {
+  if (!tileCoord) {
+    return undefined;
+  }
+  var z = tileCoord[0], x = tileCoord[1], y = tileCoord[2];
+  var n = Math.pow(2, z);
+  var lon_min = (x / n) * 360 - 180;
+  var lon_max = ((x + 1) / n) * 360 - 180;
+  var lat_max = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 1) / n))) * 180 / Math.PI;
+  var lat_min = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI;
+  if (lon_min <= LY_Bounds.east && lon_max >= LY_Bounds.west &&
+      lat_min <= LY_Bounds.north && lat_max >= LY_Bounds.south) {
+    var y_tms = n - y - 1;
+    return '//tile.happyman.idv.tw/map/' + lanyuPath + '/' + z + '/' + x + '/' + y_tms + '.png';
+  }
+  return baseUrl + '-' + z + '-' + x + '-' + y;
 }
 
 const mapSources = {
@@ -107,12 +130,20 @@ const mapSources = {
   historical_1921: {
     sourceId: 'historical_1921',
     label: '日治臺灣堡圖 1921',
-    url: 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1921-jpg-{z}-{x}-{y}'
+    tileUrlFunction: function (tileCoord) {
+      return createHistoricalTileUrl(
+        'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1921-jpg',
+        'lanyu1921', tileCoord);
+    }
   },
   historical_1904: {
     sourceId: 'historical_1904',
     label: '日治臺灣堡圖 1904',
-    url: 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904-jpg-{z}-{x}-{y}'
+    tileUrlFunction: function (tileCoord) {
+      return createHistoricalTileUrl(
+        'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904-jpg',
+        'lanyu1904', tileCoord);
+    }
   },
   historical_1904_triangulation: {
     sourceId: 'historical_1904_triangulation',

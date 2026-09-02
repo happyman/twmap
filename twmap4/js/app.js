@@ -966,6 +966,7 @@ markerFilterToggleBtns.forEach(function (btn) {
       this.classList.remove('disable');
     }
     refreshMarkerFilterState();
+    saveCurrentView();
   });
 });
 
@@ -1257,7 +1258,17 @@ function saveCurrentView() {
     localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify({
       lon: center[0],
       lat: center[1],
-      zoom: zoom
+      zoom: zoom,
+      m1: document.getElementById('bottom-layer-1-select').value,
+      m2: document.getElementById('bottom-layer-2-select').value,
+      opacity: document.getElementById('bottom-layer-2-opacity').value,
+      m3: document.getElementById('road-layer-select').value,
+      track: document.getElementById('track-toggle-btn').classList.contains('active') ? '1' : '0',
+      label: document.getElementById('marker-label-toggle-btn').classList.contains('active') ? '1' : '0',
+      rain: document.getElementById('rainfall-select').value,
+      mcover: document.getElementById('coverage-select').value,
+      grid: document.getElementById('grid-select').value,
+      poifilter: Array.from(markerFilterState).join(',')
     }));
   } catch (e) {
     // localStorage unavailable
@@ -1265,6 +1276,22 @@ function saveCurrentView() {
 }
 
 map.on('moveend', saveCurrentView);
+
+// Save UI state on control changes
+var _saveTimer = null;
+function debouncedSave() {
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveCurrentView, 300);
+}
+['bottom-layer-1-select', 'bottom-layer-2-select', 'bottom-layer-2-opacity',
+ 'road-layer-select', 'rainfall-select', 'coverage-select', 'grid-select'
+].forEach(function (id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('change', debouncedSave);
+});
+document.getElementById('bottom-layer-2-opacity').addEventListener('input', debouncedSave);
+document.getElementById('track-toggle-btn').addEventListener('click', debouncedSave);
+document.getElementById('marker-label-toggle-btn').addEventListener('click', debouncedSave);
 
 function gotoLandmark() {
   if (!poiDataReady) {
@@ -1340,29 +1367,31 @@ if (restoredView) {
   gotoFeatureLocation();
 }
 
-// Restore UI state from URL params
+// Restore UI state from URL params or localStorage
 (function restoreURLState() {
+  var src = (initialView.m1 || initialView.m2 || initialView.rain || initialView.poifilter) ? initialView : restoredView;
+  if (!src) return;
   var s;
   s = document.getElementById('bottom-layer-1-select');
-  if (initialView.m1 && s) { s.value = initialView.m1; s.dispatchEvent(new Event('change')); }
+  if (src.m1 && s) { s.value = src.m1; s.dispatchEvent(new Event('change')); }
   s = document.getElementById('bottom-layer-2-select');
-  if (initialView.m2 && s) { s.value = initialView.m2; s.dispatchEvent(new Event('change')); }
+  if (src.m2 && s) { s.value = src.m2; s.dispatchEvent(new Event('change')); }
   s = document.getElementById('bottom-layer-2-opacity');
-  if (initialView.opacity && s) { s.value = initialView.opacity; s.dispatchEvent(new Event('input')); }
+  if (src.opacity && s) { s.value = src.opacity; s.dispatchEvent(new Event('input')); }
   s = document.getElementById('road-layer-select');
-  if (initialView.m3 && s) { s.value = initialView.m3; s.dispatchEvent(new Event('change')); }
+  if (src.m3 && s) { s.value = src.m3; s.dispatchEvent(new Event('change')); }
   s = document.getElementById('track-toggle-btn');
-  if (initialView.track !== null && s) { if (s.classList.contains('active') !== (initialView.track === '1')) s.click(); }
+  if (src.track !== null && src.track !== undefined && s) { if (s.classList.contains('active') !== (src.track === '1')) s.click(); }
   s = document.getElementById('marker-label-toggle-btn');
-  if (initialView.label !== null && s) { if (s.classList.contains('active') !== (initialView.label === '1')) s.click(); }
+  if (src.label !== null && src.label !== undefined && s) { if (s.classList.contains('active') !== (src.label === '1')) s.click(); }
   s = document.getElementById('rainfall-select');
-  if (initialView.rain && s) { s.value = initialView.rain; s.dispatchEvent(new Event('change')); }
+  if (src.rain && s) { s.value = src.rain; s.dispatchEvent(new Event('change')); }
   s = document.getElementById('coverage-select');
-  if (initialView.mcover && s) { s.value = initialView.mcover; s.dispatchEvent(new Event('change')); }
+  if (src.mcover && s) { s.value = src.mcover; s.dispatchEvent(new Event('change')); }
   s = document.getElementById('grid-select');
-  if (initialView.grid && s) { s.value = initialView.grid; s.dispatchEvent(new Event('change')); }
-  if (initialView.poifilter) {
-    var types = initialView.poifilter.split(',');
+  if (src.grid && s) { s.value = src.grid; s.dispatchEvent(new Event('change')); }
+  if (src.poifilter) {
+    var types = src.poifilter.split(',');
     markerFilterState.clear();
     types.forEach(function (t) { markerFilterState.add(t); });
     document.querySelectorAll('.marker-filter-toggle').forEach(function (btn) {
