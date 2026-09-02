@@ -24,6 +24,9 @@ $CONFIG['poisearch_url'] = $site_twmap_html_root . "api/poi_search.php";
 $CONFIG['shorten_url'] = $site_twmap_html_root . "api/shorten.php";
 $CONFIG['callmake_url'] = $site_twmap_html_root . "main.php?tab=0&";
 
+// admin user UIDs (from twmap_gen login)
+$CONFIG['admin'] = [1, 3, 67441];
+
 $CONFIG['default_center'] = [121.5654, 25.0330];
 $CONFIG['default_zoom'] = 8;
 

@@ -1340,6 +1340,28 @@ if (geolocateBtn) {
   });
 }
 
+var login_role = 0;
+function toggle_user_role(cur_role) {
+  login_role = cur_role || 0;
+  var aboutBtn = document.getElementById('about-btn');
+  if (!aboutBtn) return;
+  var icon = aboutBtn.querySelector('.navbar-icon');
+  var text = aboutBtn.querySelector('.navbar-text');
+  if (!icon || !text) return;
+  if (login_role == 1) {
+    if (!aboutBtn.querySelector('.user-icon')) {
+      var img = document.createElement('img');
+      img.src = '/gen/imgs/icon_user.png';
+      img.className = 'user-icon';
+      img.style.cssText = 'height:16px;vertical-align:middle;margin-right:3px;';
+      aboutBtn.insertBefore(img, icon);
+    }
+  } else {
+    var existing = aboutBtn.querySelector('.user-icon');
+    if (existing) existing.remove();
+  }
+}
+
 window.addEventListener('load', function () {
   var splash = document.getElementById('splash-screen');
   if (splash) {
