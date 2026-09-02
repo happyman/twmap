@@ -12,8 +12,8 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+fda4364 Add login flow to about.php (port from twmap3)
 bd3bcf4 Port showmapgpx: meerkat track display on map
-bc6c5db Toolbar 32px white theme; selects right-aligned; popup light theme
 9793b86 Permalink dialog with URL shortening (Go/Shorten/Copy buttons)
 b325d9e Compact toolbar to 20px; move 標籤 toggle into 點位 filter menu
 8b64645 Add splash screen with twmap.png icon on initial load
@@ -32,7 +32,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit bd3bcf4)
+## Current State (as of commit fda4364)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
@@ -50,6 +50,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 - **Responsive**: 960px/760px/600px breakpoints — buttons bottom-center, attribution narrowed
 - **GPX drag-and-drop**: Drop `.gpx` file → red tracks (width 3) + 32px waypoint icons, view fit, accumulates layers
 - **showmapgpx**: Meerkat iframe calls `parent.showmapgpx()` → yellow track (width 3) on map, toggle/replace, zoom-to-fit
+- **Login flow**: OAuth via twmap_gen, session shared; about.php shows login/logout, user icon on about button, upload link when logged in
 - **Point info popup**: Taller (560px), close button (X), 地籍座標 displayed, measurement start/end buttons, no 地圖對照器 link, scrollbar hidden, permalink with URL shortening, light theme
 - **Splash screen**: Full-screen dark overlay with twmap.png logo + spinner, fades out on window.load
 
