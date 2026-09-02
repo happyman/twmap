@@ -538,7 +538,8 @@ function showPointPopup(point, lon, lat) {
     point.class ? '類別: ' + point.class : ''
   ].filter(Boolean).join(' · ');
 
-  const adminLink = point.info ? '<br><div class="popup-meta">[已登入] <a href="#" onClick="showmeerkat(\'' + window.appConfig.pointdata_admin_url + '?x=' + Number(lon).toFixed(5) + '&y=' + Number(lat).toFixed(5) + '\',{}); return false;">新增點位</a></div>' : '';
+  const adminLink = (typeof login_role !== 'undefined' && login_role == 1) ?
+    '<div class="popup-meta"><a href="#" onclick="showmeerkat(\'' + window.appConfig.pointdata_admin_url + '?x=' + Number(lon).toFixed(5) + '&y=' + Number(lat).toFixed(5) + '\',{}); return false;">編輯本點</a></div>' : '';
 
   const ele = Number(point.ele);
   const losLink = (isFinite(ele) && ele > -1000 && typeof show_line_of_sight === 'function') ?
@@ -604,6 +605,9 @@ function renderLocationPopup(lon, lat, zoom, rows) {
     return;
   }
   var plUrl = permalink(lon, lat, zoom);
+  if (typeof login_role !== 'undefined' && login_role == 1) {
+    rows.push('<div class="popup-meta"><a href="#" onclick="showmeerkat(\'' + window.appConfig.pointdata_admin_url + '?x=' + Number(lon).toFixed(5) + '&y=' + Number(lat).toFixed(5) + '\',{}); return false;">新增點位</a></div>');
+  }
   pointPopup.innerHTML = [
     '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
     '<div class="popup-header">位置資訊' +
@@ -1361,6 +1365,19 @@ function toggle_user_role(cur_role) {
     if (existing) existing.remove();
   }
 }
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    if (pointPopup && !pointPopup.classList.contains('hidden')) {
+      closePointPopup();
+    } else if (typeof closeMeerkat === 'function') {
+      var meerkatWrap = document.getElementById('meerkat-wrap');
+      if (meerkatWrap && !meerkatWrap.classList.contains('hidden')) {
+        closeMeerkat();
+      }
+    }
+  }
+});
 
 window.addEventListener('load', function () {
   var splash = document.getElementById('splash-screen');
