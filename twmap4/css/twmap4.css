@@ -568,7 +568,7 @@ input[type="range"] {
 }
 
 #point-popup .popup-coord {
-  color: #a5f3fc;
+  color: #0e7490;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 11px;
   line-height: 1.5;
@@ -576,7 +576,7 @@ input[type="range"] {
 
 #point-popup .popup-story {
   margin: 8px 0;
-  color: #f8fafc;
+  color: #1e293b;
   font-size: 13px;
 }
 
