@@ -360,6 +360,10 @@ function ShapeDraw4(opts) {
     feature.set('appId', nextAppId);
     nextAppId++;
     feature.setStyle(styleFor(feature));
+    var s = getSource();
+    if (s && typeof s.addFeature === 'function') {
+      s.addFeature(feature);
+    }
     features.push(feature);
     selected = feature;
     restyle();
