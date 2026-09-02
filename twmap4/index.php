@@ -211,5 +211,6 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
   <script src="js/mapinfo.js?v=<?php echo filemtime(__DIR__ . '/js/mapinfo.js'); ?>"></script>
   <script src="js/coverage.js?v=<?php echo filemtime(__DIR__ . '/js/coverage.js'); ?>"></script>
   <script src="js/gpxdrop.js?v=<?php echo filemtime(__DIR__ . '/js/gpxdrop.js'); ?>"></script>
+  <script src="js/showmapgpx.js?v=<?php echo filemtime(__DIR__ . '/js/showmapgpx.js'); ?>"></script>
 </body>
 </html>
