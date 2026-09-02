@@ -1,10 +1,21 @@
 function initialViewFromURL() {
   const params = new URLSearchParams(window.location.search);
+  const goto = params.get('goto') || '';
   const view = {
     center: window.appConfig.default_center,
-    zoom: window.appConfig.default_zoom
+    zoom: window.appConfig.default_zoom,
+    goto: goto,
+    m1: params.get('m1'),
+    m2: params.get('m2'),
+    opacity: params.get('opacity'),
+    m3: params.get('m3'),
+    track: params.get('track'),
+    label: params.get('label'),
+    rain: params.get('rain'),
+    mcover: params.get('mcover'),
+    grid: params.get('grid'),
+    poifilter: params.get('poifilter')
   };
-  const goto = params.get('goto');
   if (goto) {
     const parts = goto.split(',');
     if (parts.length === 2) {
@@ -291,6 +302,7 @@ function markerReloadSingle(opt) {
     });
 }
 
+/* no need initial markers
 const initialMarkers = [
   [121.5654, 25.0330, '#ff0000'],
   [121.5390, 25.0474, '#00aa00'],
@@ -303,6 +315,7 @@ for (const [lon, lat, color] of initialMarkers) {
     allMarkerFeatures.push(feature);
   }
 }
+*/
 
 const typeToIconMap = {
   '一等點': 'peak_1st',
@@ -488,7 +501,20 @@ function popupLinks(lon, lat, zoom) {
 }
 
 function permalink(lon, lat, zoom) {
-  return window.location.origin + window.location.pathname + '?goto=' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '&zoom=' + zoom;
+  const p = new URLSearchParams();
+  p.set('goto', Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5));
+  p.set('zoom', zoom);
+  p.set('m1', document.getElementById('bottom-layer-1-select').value);
+  p.set('m2', document.getElementById('bottom-layer-2-select').value);
+  p.set('opacity', document.getElementById('bottom-layer-2-opacity').value);
+  p.set('m3', document.getElementById('road-layer-select').value);
+  p.set('track', document.getElementById('track-toggle-btn').classList.contains('active') ? '1' : '0');
+  p.set('label', document.getElementById('marker-label-toggle-btn').classList.contains('active') ? '1' : '0');
+  p.set('rain', document.getElementById('rainfall-select').value);
+  p.set('mcover', document.getElementById('coverage-select').value);
+  p.set('grid', document.getElementById('grid-select').value);
+  p.set('poifilter', Array.from(markerFilterState).join(','));
+  return window.location.origin + window.location.pathname + '?' + p.toString();
 }
 
 function showPermalinkDialog(fullUrl) {
@@ -1301,12 +1327,54 @@ try {
 
 if (restoredView) {
   mapApi.setView([restoredView.lon, restoredView.lat], restoredView.zoom);
-} else if (new URLSearchParams(window.location.search).get('goto')) {
-  // explicit URL target already applied as the initial view; do not override
-  mapApi.setView(initialView.center, initialView.zoom);
+} else if (initialView.goto) {
+  const isCoord = initialView.goto.match(/^[-\d.]+[,\s]\s*[-\d.]+$/);
+  if (isCoord) {
+    mapApi.setView(initialView.center, initialView.zoom);
+  } else {
+    mapApi.setView(initialView.center, initialView.zoom);
+    document.getElementById('search-input').value = initialView.goto;
+    setTimeout(function () { gotoBtn.click(); }, 500);
+  }
 } else {
   gotoFeatureLocation();
 }
+
+// Restore UI state from URL params
+(function restoreURLState() {
+  var s;
+  s = document.getElementById('bottom-layer-1-select');
+  if (initialView.m1 && s) { s.value = initialView.m1; s.dispatchEvent(new Event('change')); }
+  s = document.getElementById('bottom-layer-2-select');
+  if (initialView.m2 && s) { s.value = initialView.m2; s.dispatchEvent(new Event('change')); }
+  s = document.getElementById('bottom-layer-2-opacity');
+  if (initialView.opacity && s) { s.value = initialView.opacity; s.dispatchEvent(new Event('input')); }
+  s = document.getElementById('road-layer-select');
+  if (initialView.m3 && s) { s.value = initialView.m3; s.dispatchEvent(new Event('change')); }
+  s = document.getElementById('track-toggle-btn');
+  if (initialView.track !== null && s) { if (s.classList.contains('active') !== (initialView.track === '1')) s.click(); }
+  s = document.getElementById('marker-label-toggle-btn');
+  if (initialView.label !== null && s) { if (s.classList.contains('active') !== (initialView.label === '1')) s.click(); }
+  s = document.getElementById('rainfall-select');
+  if (initialView.rain && s) { s.value = initialView.rain; s.dispatchEvent(new Event('change')); }
+  s = document.getElementById('coverage-select');
+  if (initialView.mcover && s) { s.value = initialView.mcover; s.dispatchEvent(new Event('change')); }
+  s = document.getElementById('grid-select');
+  if (initialView.grid && s) { s.value = initialView.grid; s.dispatchEvent(new Event('change')); }
+  if (initialView.poifilter) {
+    var types = initialView.poifilter.split(',');
+    markerFilterState.clear();
+    types.forEach(function (t) { markerFilterState.add(t); });
+    document.querySelectorAll('.marker-filter-toggle').forEach(function (btn) {
+      var vals = (btn.dataset.values || '').split(',');
+      var active = vals.some(function (v) { return markerFilterState.has(v); });
+      btn.classList.toggle('active', active);
+      btn.classList.toggle('disable', !active);
+    });
+    if (typeof refreshMarkerFilterState === 'function') refreshMarkerFilterState();
+    if (typeof syncMarkerLabelState === 'function') syncMarkerLabelState();
+  }
+})();
 
 const fullscreenBtn = document.getElementById('fullscreen-btn');
 if (fullscreenBtn) {
