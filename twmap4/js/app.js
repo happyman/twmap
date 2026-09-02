@@ -1157,6 +1157,13 @@ gotoBtn.addEventListener('click', function () {
   }
 });
 
+document.getElementById('search-input').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && this.value.trim()) {
+    e.preventDefault();
+    gotoBtn.click();
+  }
+});
+
 var shapeDrawInstance = new ShapeDraw4({
   mapApi: mapApi,
   selectionLayer: selectionLayer,
