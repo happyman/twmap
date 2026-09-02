@@ -713,7 +713,6 @@ function setMeasureStart(lon, lat) {
       '$1'
     );
   }
-  updateMsgBar();
 }
 
 function setMeasureEnd(lon, lat) {
@@ -751,7 +750,6 @@ function setMeasureEnd(lon, lat) {
   }
 
   measureStartCoords = null;
-  if (measureStartOverlay) measureStartOverlay.setPosition(undefined);
 }
 
 let losRunning = false;
