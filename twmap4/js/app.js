@@ -1354,11 +1354,10 @@ function toggle_user_role(cur_role) {
   if (!icon || !text) return;
   if (login_role == 1) {
     if (!aboutBtn.querySelector('.user-icon')) {
-      var img = document.createElement('img');
-      img.src = '/gen/imgs/icon_user.png';
-      img.className = 'user-icon';
-      img.style.cssText = 'height:16px;vertical-align:middle;margin-right:3px;';
-      aboutBtn.insertBefore(img, icon);
+      var i = document.createElement('i');
+      i.className = 'fa fa-user user-icon';
+      i.style.cssText = 'font-size:14px;margin-right:3px;color:#0ea5e9;';
+      aboutBtn.insertBefore(i, icon);
     }
   } else {
     var existing = aboutBtn.querySelector('.user-icon');
