@@ -1367,9 +1367,12 @@ if (restoredView) {
   gotoFeatureLocation();
 }
 
-// Restore UI state from URL params or localStorage
-(function restoreURLState() {
-  var src = (initialView.m1 || initialView.m2 || initialView.rain || initialView.poifilter) ? initialView : restoredView;
+// Restore UI state from URL params or localStorage (deferred until all scripts loaded)
+window.addEventListener('load', function restoreURLState() {
+  var hasURLParams = initialView.m1 || initialView.m2 || initialView.m3 || initialView.opacity ||
+    initialView.track || initialView.label || initialView.rain || initialView.mcover ||
+    initialView.grid || initialView.poifilter;
+  var src = hasURLParams ? initialView : restoredView;
   if (!src) return;
   var s;
   s = document.getElementById('bottom-layer-1-select');
@@ -1385,9 +1388,9 @@ if (restoredView) {
   s = document.getElementById('marker-label-toggle-btn');
   if (src.label !== null && src.label !== undefined && s) { if (s.classList.contains('active') !== (src.label === '1')) s.click(); }
   s = document.getElementById('rainfall-select');
-  if (src.rain && s) { s.value = src.rain; s.dispatchEvent(new Event('change')); }
+  if (src.rain && s) { s.value = src.rain; if (typeof showCWBRainfall === 'function') showCWBRainfall(src.rain); }
   s = document.getElementById('coverage-select');
-  if (src.mcover && s) { s.value = src.mcover; s.dispatchEvent(new Event('change')); }
+  if (src.mcover && s) { s.value = src.mcover; if (typeof coverage_overlay === 'function') coverage_overlay(src.mcover); }
   s = document.getElementById('grid-select');
   if (src.grid && s) { s.value = src.grid; s.dispatchEvent(new Event('change')); }
   if (src.poifilter) {
@@ -1403,7 +1406,7 @@ if (restoredView) {
     if (typeof refreshMarkerFilterState === 'function') refreshMarkerFilterState();
     if (typeof syncMarkerLabelState === 'function') syncMarkerLabelState();
   }
-})();
+});
 
 const fullscreenBtn = document.getElementById('fullscreen-btn');
 if (fullscreenBtn) {
