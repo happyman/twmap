@@ -1511,47 +1511,40 @@ var compassEl = document.createElement('div');
 compassEl.id = 'compass-btn';
 compassEl.title = '回到北方';
 var compassCanvas = document.createElement('canvas');
-compassCanvas.width = compassCanvas.height = 40;
+compassCanvas.width = compassCanvas.height = 32;
 compassEl.appendChild(compassCanvas);
 var compassCtx = compassCanvas.getContext('2d');
-var compassR = 20;
+var compassR = 16;
 
 function drawCompass(rot) {
-  compassCtx.clearRect(0, 0, 30, 30);
+  compassCtx.clearRect(0, 0, 32, 32);
   compassCtx.save();
   compassCtx.translate(compassR, compassR);
   compassCtx.rotate(rot);
   // North needle (red)
   compassCtx.fillStyle = '#dc2626';
   compassCtx.beginPath();
-  compassCtx.moveTo(0, -compassR + 4);
-  compassCtx.lineTo(-5, 0);
-  compassCtx.lineTo(5, 0);
+  compassCtx.moveTo(0, -compassR + 3);
+  compassCtx.lineTo(-4, 0);
+  compassCtx.lineTo(4, 0);
   compassCtx.closePath();
   compassCtx.fill();
   // South needle (gray)
   compassCtx.fillStyle = '#94a3b8';
   compassCtx.beginPath();
-  compassCtx.moveTo(0, compassR - 4);
-  compassCtx.lineTo(-5, 0);
-  compassCtx.lineTo(5, 0);
+  compassCtx.moveTo(0, compassR - 3);
+  compassCtx.lineTo(-4, 0);
+  compassCtx.lineTo(4, 0);
   compassCtx.closePath();
   compassCtx.fill();
   // Center dot
   compassCtx.fillStyle = '#fff';
   compassCtx.beginPath();
-  compassCtx.arc(0, 0, 3, 0, Math.PI * 2);
+  compassCtx.arc(0, 0, 2.5, 0, Math.PI * 2);
   compassCtx.fill();
   compassCtx.strokeStyle = '#334155';
   compassCtx.lineWidth = 1;
   compassCtx.stroke();
-  // N label (stays upright)
-  compassCtx.rotate(-rot);
-  compassCtx.fillStyle = '#dc2626';
-  compassCtx.font = 'bold 9px sans-serif';
-  compassCtx.textAlign = 'center';
-  compassCtx.textBaseline = 'top';
-  compassCtx.fillText('N', 0, -compassR + 1);
   compassCtx.restore();
 }
 
@@ -1581,6 +1574,62 @@ if (geolocateBtn) {
       { timeout: 8000, maximumAge: 60000 }
     );
   });
+}
+
+// Cesium 3D toggle — lazy load CesiumJS + ol-cesium on first click
+var ol3d = null;
+var cesiumLoading = false;
+var cesiumToggleBtn = document.getElementById('cesium-toggle-btn');
+
+function loadScript(url) {
+  return new Promise(function (resolve, reject) {
+    var s = document.createElement('script');
+    s.src = url;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function loadCss(url) {
+  var l = document.createElement('link');
+  l.rel = 'stylesheet';
+  l.href = url;
+  document.head.appendChild(l);
+}
+
+function initCesium3D() {
+  if (ol3d) {
+    var enabled = ol3d.getEnabled();
+    ol3d.setEnabled(!enabled);
+    cesiumToggleBtn.classList.toggle('active', !enabled);
+    return;
+  }
+  if (cesiumLoading) return;
+  cesiumLoading = true;
+  cesiumToggleBtn.title = '載入中…';
+
+  loadCss('https://cdn.jsdelivr.net/npm/cesium@1.117.0/Build/Cesium/Widgets/widgets.css');
+  loadScript('https://cdn.jsdelivr.net/npm/cesium@1.117.0/Build/Cesium/Cesium.js')
+    .then(function () {
+      return loadScript('https://cdn.jsdelivr.net/npm/ol-cesium@2.17.0/dist/olcesium.umd.js');
+    })
+    .then(function () {
+      ol3d = new olcs.OLCesium({ map: map });
+      ol3d.setEnabled(true);
+      cesiumToggleBtn.classList.add('active');
+      cesiumToggleBtn.title = '3D 檢視';
+      cesiumLoading = false;
+    })
+    .catch(function (err) {
+      console.warn('Cesium load failed:', err);
+      cesiumToggleBtn.title = '3D 檢視';
+      cesiumLoading = false;
+    });
+}
+
+if (cesiumToggleBtn) {
+  cesiumToggleBtn.addEventListener('click', initCesium3D);
 }
 
 var login_role = 0;

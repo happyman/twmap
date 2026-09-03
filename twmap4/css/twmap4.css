@@ -250,7 +250,7 @@ input[type="range"] {
 
 #layer-controls select {
   max-width: 115px;
-  font-size: 10px;
+  font-size: 11px;
   padding: 2px 3px;
   height: 30px;
   box-sizing: border-box;
@@ -294,8 +294,8 @@ input[type="range"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -366,6 +366,38 @@ input[type="range"] {
 
 #geolocate-btn:active {
   background: #cbd5e1;
+}
+
+#cesium-toggle-btn {
+  position: absolute;
+  top: 142px;
+  right: 10px;
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  color: #0f172a;
+  cursor: pointer;
+}
+
+#cesium-toggle-btn:hover {
+  background: #e2e8f0;
+}
+
+#cesium-toggle-btn:active {
+  background: #cbd5e1;
+}
+
+#cesium-toggle-btn.active {
+  background: #0ea5e9;
+  color: #fff;
+  border-color: #0284c7;
 }
 
 #buttons.hidden {

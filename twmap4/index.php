@@ -119,6 +119,7 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
       <div id="map-attribution" aria-label="圖資資訊"></div>
       <button id="fullscreen-btn" type="button" title="全螢幕" aria-label="全螢幕"><i class="fa fa-arrows-alt"></i></button>
       <button id="geolocate-btn" type="button" title="定位到我" aria-label="定位到我"><i class="fa fa-crosshairs"></i></button>
+      <button id="cesium-toggle-btn" type="button" title="3D 檢視" aria-label="3D 檢視"><i class="fa fa-cube"></i></button>
       <div id="layer-controls">
         <label for="bottom-layer-1-select">第一層</label>
         <select id="bottom-layer-1-select" aria-label="第一層圖資">
