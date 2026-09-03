@@ -12,6 +12,7 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+0cfec01 Fix ol-cesium 3D: bundle olcs locally, lazy-load from dist
 2296dfd Shrink compass to 32px, remove N label; add ol-cesium 3D toggle (lazy load)
 2195d8a Add select all/none toggle to marker filter menu
 c3c7b8d Add center pin overlay; animate map to POI on click
