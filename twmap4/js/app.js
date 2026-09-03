@@ -1612,7 +1612,7 @@ function initCesium3D() {
   loadCss('https://cdn.jsdelivr.net/npm/cesium@1.117.0/Build/Cesium/Widgets/widgets.css');
   loadScript('https://cdn.jsdelivr.net/npm/cesium@1.117.0/Build/Cesium/Cesium.js')
     .then(function () {
-      return loadScript('https://cdn.jsdelivr.net/npm/ol-cesium@2.17.0/dist/olcesium.umd.js');
+      return loadScript('js/olcs-bundle.js');
     })
     .then(function () {
       ol3d = new olcs.OLCesium({ map: map });
