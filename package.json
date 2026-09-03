@@ -26,7 +26,12 @@
     "matchdep": "*"
   },
   "dependencies": {
+    "@google/gemini-cli": "^0.57.0",
     "grunt-contrib-clean": "*",
     "grunt-rsync": "*"
+  },
+  "allowScripts": {
+    "@github/keytar@7.10.6": true,
+    "node-pty@1.0.0": true
   }
 }

@@ -138,8 +138,8 @@ select {
 }
 
 button.active {
-  background: #f59e0b;
-  border-color: #d97706;
+  background: #89c1da;
+  border-color: #0234c0;
   color: #0f172a;
   cursor: pointer;
 }
@@ -186,8 +186,8 @@ select {
 }
 
 input[type="range"] {
-  width: 90px;
-  accent-color: #f59e0b;
+  width: 100px;
+  accent-color: #0ea5e9;
 }
 
 #map-wrap {
@@ -240,10 +240,10 @@ input[type="range"] {
 }
 
 #layer-controls select {
-  max-width: 100px;
-  font-size: 11px;
-  padding: 6px 6px;
-  height: 34px;
+  max-width: 115px;
+  font-size: 10px;
+  padding: 2px 3px;
+  height: 30px;
   box-sizing: border-box;
 }
 
@@ -260,8 +260,8 @@ input[type="range"] {
 
 .ol-zoom .ol-zoom-in,
 .ol-zoom .ol-zoom-out {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   font-size: 18px;
 }
 
@@ -273,7 +273,7 @@ input[type="range"] {
   z-index: 15;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 1px;
   padding: 2px;
 }
 
@@ -285,8 +285,8 @@ input[type="range"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -311,8 +311,8 @@ input[type="range"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -337,8 +337,8 @@ input[type="range"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   background: #f1f5f9;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -359,12 +359,12 @@ input[type="range"] {
 #buttons .draw-type {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 #buttons .draw-type-toggle {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   font-size: 13px;
   padding: 0;
 }
@@ -743,7 +743,7 @@ input[type="range"] {
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  height: 32px;
+  height: 30px;
   background: #ffffff;
   color: #0f172a;
   border-bottom: 1px solid #e2e8f0;

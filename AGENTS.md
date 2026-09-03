@@ -12,8 +12,12 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+8050886 Move showLocationInfo to left-click: POI → track → areaselect
+cd7d2c6 Fix coverage/rainfall restore: use window.load, call functions directly
+7f5c35d Fix Taitung forest tiles, add 蘭嶼 堡圖 replacement, save/restore full UI state
+eee3aa8 Full state permalink: encode/restore layers, toggles, overlays, filters in URL
+7c497a3 Popup admin edit hook (login_role); ESC closes popup/meerkat
 fda4364 Add login flow to about.php (port from twmap3)
-bd3bcf4 Port showmapgpx: meerkat track display on map
 9793b86 Permalink dialog with URL shortening (Go/Shorten/Copy buttons)
 b325d9e Compact toolbar to 20px; move 標籤 toggle into 點位 filter menu
 8b64645 Add splash screen with twmap.png icon on initial load
@@ -32,12 +36,15 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit fda4364)
+## Current State (as of commit 8050886)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
 - **View persistence**: Saved to localStorage (`twmap4_view`), restored on load
 - **FeatureLocation**: Random landmark fallback, `?goto` URL param
+- **Full state permalink**: URL encodes all UI state (layers, toggles, overlays, filters); restores on load; `goto=任意文字` fills search box
+- **Full state persistence**: All UI state saved to localStorage (`twmap4_view`), restored on revisit
+- **Taitung forest tiles**: Fixed Y-axis for ttfb3_0601/0602/0603; 蘭嶼 堡圖 replacement for jm20k1904/jm20k1921
 - **Mapinfo**: Cursor coords + zoom level (`#msg`), copyright + edit link (`#map-attribution`)
 - **Layer controls**: Triangle marker label toggle (moved into 點位 filter menu), track toggle, type filter (13 categories)
 - **Draw tools**: 4 icon buttons (Polygon, Rectangle, Circle, LineString) with FA icons

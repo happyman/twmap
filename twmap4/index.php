@@ -35,7 +35,7 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
       <div id="filter-menu-wrap">
         <button id="filter-menu-btn" type="button" title="篩選點位類型">點位</button>
         <div id="filter-menu" class="hidden">
-          <button id="marker-label-toggle-btn" type="button" class="active" title="三角點名稱標籤">標籤</button>
+          <button id="marker-label-toggle-btn" type="button" class="active" title="名稱標籤">標籤</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_1st">一等</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_2nd">二等</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_3rd">三等</button>
@@ -66,19 +66,19 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
         <label for="coverage-select">訊號</label>
         <select id="coverage-select" aria-label="訊號涵蓋圖">
           <option value="none" selected>訊號</option>
-          <option value="cht">cht4+5G</option>
-          <option value="twn">twn4+5G</option>
-          <option value="fet">fet4+5G</option>
+          <option value="cht">中華電</option>
+          <option value="twn">台哥大</option>
+          <option value="fet">遠傳</option>
         </select>
 
         <label for="grid-select">格線</label>
         <select id="grid-select" aria-label="格線疊圖">
         <option value="TWD67" selected>TWD67</option>
-        <option value="TWD67PH">TWD67澎湖</option>
-        <option value="TWD67_EXT">TWD67 EXT</option>
+        <option value="TWD67PH">67澎湖</option>
+        <option value="TWD67_EXT">67 EXT</option>
         <option value="TWD97">TWD97</option>
-        <option value="TWD97PH">TWD97澎湖</option>
-        <option value="TWD97_EXT">TWD97 EXT</option>
+        <option value="TWD97PH">97澎湖</option>
+        <option value="TWD97_EXT">97 EXT</option>
         <option value="WGS84">經緯度</option>
         <option value="None">無格線</option>
       </select>
