@@ -12,6 +12,7 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+ae1b6a5 Revert 3D button (WIP, needs more research)
 0cfec01 Fix ol-cesium 3D: bundle olcs locally, lazy-load from dist
 2296dfd Shrink compass to 32px, remove N label; add ol-cesium 3D toggle (lazy load)
 2195d8a Add select all/none toggle to marker filter menu
@@ -67,7 +68,6 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 - **Splash screen**: Full-screen dark overlay with twmap.png logo + spinner, fades out on window.load
 - **Compass control**: Canvas-drawn compass needle (red north, gray south), rotates with map, click resets to north (animate 250ms)
 - **Center pin overlay**: Red SVG pin at POI location when popup is active; map animates to center on POI; pin follows map movement
-- **OL-Cesium 3D**: Lazy-loaded CesiumJS + ol-cesium; toggle button below geolocate; `ol3d.setEnabled()` toggles 3D globe view
 
 ### NOT Yet Migrated (from twmap3)
 - KML export UI (right-click menu exists but may need refinement)
