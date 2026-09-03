@@ -12,6 +12,8 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+c3c7b8d Add center pin overlay; animate map to POI on click
+babb65e Add compass control; fix areaselect shrink bug
 8050886 Move showLocationInfo to left-click: POI → track → areaselect
 cd7d2c6 Fix coverage/rainfall restore: use window.load, call functions directly
 7f5c35d Fix Taitung forest tiles, add 蘭嶼 堡圖 replacement, save/restore full UI state
@@ -36,7 +38,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit 8050886)
+## Current State (as of commit c3c7b8d)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
@@ -60,6 +62,8 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 - **Login flow**: OAuth via twmap_gen, session shared; about.php shows login/logout, user icon on about button, upload link when logged in
 - **Point info popup**: Taller (560px), close button (X), 地籍座標 displayed, measurement start/end buttons, no 地圖對照器 link, scrollbar hidden, permalink with URL shortening, light theme
 - **Splash screen**: Full-screen dark overlay with twmap.png logo + spinner, fades out on window.load
+- **Compass control**: Canvas-drawn compass needle (red north, gray south), rotates with map, click resets to north (animate 250ms)
+- **Center pin overlay**: Red SVG pin at POI location when popup is active; map animates to center on POI; pin follows map movement
 
 ### NOT Yet Migrated (from twmap3)
 - KML export UI (right-click menu exists but may need refinement)
@@ -120,8 +124,9 @@ node /tmp/opencode/verify4_test.js
 ### CSS Layout Notes
 - `#toolbar`: `display:flex; flex-wrap:wrap; gap:5px; height:32px; padding:0 8px; background:#fff`
 - `#toolbar-right`: `margin-left:auto` — wraps rainfall/coverage/grid selects (right-aligned)
-- `#fullscreen-btn`: `position:absolute; top:10px; right:10px`
-- `#geolocate-btn`: `position:absolute; top:54px; right:10px`
+- `#fullscreen-btn`: `position:absolute; top:54px; right:10px`
+- `#geolocate-btn`: `position:absolute; top:98px; right:10px`
+- `#compass-btn`: `position:absolute; top:10px; right:10px` — canvas-drawn compass, needle rotates with map, click resets to north
 - `#params`: `position:absolute; top:100px; right:10px`
 - `#msg`: cursor+zoom, `bottom:42px; left:50%; transform:translateX(-50%)`
 - `#map-attribution`: `position:absolute; bottom:0; right:0; max-width:22%` (13% at ≤600px)
