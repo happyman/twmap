@@ -12,6 +12,7 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+2195d8a Add select all/none toggle to marker filter menu
 c3c7b8d Add center pin overlay; animate map to POI on click
 babb65e Add compass control; fix areaselect shrink bug
 8050886 Move showLocationInfo to left-click: POI → track → areaselect
@@ -38,7 +39,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit c3c7b8d)
+## Current State (as of commit 2195d8a)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
@@ -48,7 +49,7 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 - **Full state persistence**: All UI state saved to localStorage (`twmap4_view`), restored on revisit
 - **Taitung forest tiles**: Fixed Y-axis for ttfb3_0601/0602/0603; 蘭嶼 堡圖 replacement for jm20k1904/jm20k1921
 - **Mapinfo**: Cursor coords + zoom level (`#msg`), copyright + edit link (`#map-attribution`)
-- **Layer controls**: Triangle marker label toggle (moved into 點位 filter menu), track toggle, type filter (13 categories)
+- **Layer controls**: Triangle marker label toggle (moved into 點位 filter menu), track toggle, type filter (13 categories), select all/none toggle
 - **Draw tools**: 4 icon buttons (Polygon, Rectangle, Circle, LineString) with FA icons
 - **Shape persistence**: Shapes saved to localStorage (`shapes`), WGS84 coords
 - **Drag-to-move**: `ol.interaction.Translate` for moving drawn shapes
