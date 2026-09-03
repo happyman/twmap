@@ -36,6 +36,7 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
         <button id="filter-menu-btn" type="button" title="篩選點位類型">點位</button>
         <div id="filter-menu" class="hidden">
           <button id="marker-label-toggle-btn" type="button" class="active" title="名稱標籤">標籤</button>
+          <button id="marker-filter-all-btn" type="button" title="全選/全不選">全不選</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_1st">一等</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_2nd">二等</button>
           <button type="button" class="marker-filter-toggle active" data-values="peak_3rd">三等</button>

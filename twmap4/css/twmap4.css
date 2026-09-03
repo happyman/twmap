@@ -180,6 +180,15 @@ button.disable {
   cursor: pointer;
 }
 
+#marker-label-toggle-btn,
+#marker-filter-all-btn {
+  grid-column: 1 / -1;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
 select {
   font-family: FontAwesome, "Microsoft JhengHei", sans-serif;
   font-weight: 900;

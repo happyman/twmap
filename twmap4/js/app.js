@@ -980,6 +980,33 @@ if (filterMenuBtn && filterMenu) {
 }
 
 const markerFilterToggleBtns = document.querySelectorAll('.marker-filter-toggle');
+const allIconNames = Array.from(markerFilterState);
+
+function updateFilterAllBtn() {
+  var btn = document.getElementById('marker-filter-all-btn');
+  if (!btn) return;
+  var allActive = allIconNames.every(function (v) { return markerFilterState.has(v); });
+  btn.textContent = allActive ? '全不選' : '全選';
+}
+
+document.getElementById('marker-filter-all-btn').addEventListener('click', function () {
+  var allActive = allIconNames.every(function (v) { return markerFilterState.has(v); });
+  if (allActive) {
+    markerFilterState.clear();
+  } else {
+    allIconNames.forEach(function (v) { markerFilterState.add(v); });
+  }
+  markerFilterToggleBtns.forEach(function (btn) {
+    var vals = (btn.dataset.values || '').split(',');
+    var active = vals.some(function (v) { return markerFilterState.has(v); });
+    btn.classList.toggle('active', active);
+    btn.classList.toggle('disable', !active);
+  });
+  updateFilterAllBtn();
+  refreshMarkerFilterState();
+  saveCurrentView();
+});
+
 markerFilterToggleBtns.forEach(function (btn) {
   btn.addEventListener('click', function () {
     const values = (this.dataset.values || this.dataset.value || '').split(',');
@@ -1000,6 +1027,7 @@ markerFilterToggleBtns.forEach(function (btn) {
       this.classList.remove('disable');
     }
     refreshMarkerFilterState();
+    updateFilterAllBtn();
     saveCurrentView();
   });
 });
@@ -1457,6 +1485,7 @@ window.addEventListener('load', function restoreURLState() {
     });
     if (typeof refreshMarkerFilterState === 'function') refreshMarkerFilterState();
     if (typeof syncMarkerLabelState === 'function') syncMarkerLabelState();
+    if (typeof updateFilterAllBtn === 'function') updateFilterAllBtn();
   }
 });
 
@@ -1488,7 +1517,7 @@ var compassCtx = compassCanvas.getContext('2d');
 var compassR = 20;
 
 function drawCompass(rot) {
-  compassCtx.clearRect(0, 0, 40, 40);
+  compassCtx.clearRect(0, 0, 30, 30);
   compassCtx.save();
   compassCtx.translate(compassR, compassR);
   compassCtx.rotate(rot);
