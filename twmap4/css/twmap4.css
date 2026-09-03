@@ -924,3 +924,9 @@ input[type="range"] {
     min-width: 70px;
   }
 }
+
+/* Center pin overlay */
+#center-pin {
+  visibility: hidden;
+  pointer-events: none;
+}

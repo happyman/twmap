@@ -58,6 +58,36 @@ const pointPopupOverlay = new ol.Overlay({
 });
 map.addOverlay(pointPopupOverlay);
 
+// Center pin — floating marker at map center, shown when popup is active
+var centerPinEl = document.createElement('div');
+centerPinEl.id = 'center-pin';
+centerPinEl.innerHTML = '<svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#dc2626" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="11" r="4" fill="#fff"/></svg>';
+centerPinEl.style.cssText = 'visibility:hidden;position:absolute;pointer-events:none;transform:translate(-50%,-100%);z-index:20;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));';
+centerPinEl.className = 'center-pin-hidden';
+var centerPinOverlay = new ol.Overlay({
+  element: centerPinEl,
+  positioning: 'center-center',
+  stopEvent: false
+});
+map.addOverlay(centerPinOverlay);
+
+function showCenterPin(lon, lat) {
+  centerPinOverlay.setPosition(ol.proj.fromLonLat([lon, lat]));
+  centerPinEl.style.visibility = 'visible';
+}
+
+function hideCenterPin() {
+  centerPinEl.style.visibility = 'hidden';
+  centerPinOverlay.setPosition(undefined);
+}
+
+function updateCenterPin() {
+  if (centerPinEl.style.visibility === 'hidden') return;
+  var c = ol.proj.toLonLat(map.getView().getCenter());
+  centerPinOverlay.setPosition(ol.proj.fromLonLat([c[0], c[1]]));
+}
+map.on('moveend', updateCenterPin);
+
 const layerControlsEl = document.getElementById('layer-controls');
 if (layerControlsEl) {
   map.addControl(new ol.control.Control({ element: layerControlsEl }));
@@ -588,6 +618,8 @@ function showPointPopup(point, lon, lat) {
 
   pointPopupOverlay.setPosition(ol.proj.fromLonLat([lon, lat]));
   pointPopup.classList.remove('hidden');
+  showCenterPin(lon, lat);
+  map.getView().animate({ center: ol.proj.fromLonLat([lon, lat]), duration: 300 });
 }
 
 function fetchElevAndAdmin(lon, lat, rows) {
@@ -646,6 +678,7 @@ function renderLocationPopup(lon, lat, zoom, rows) {
   ].join('');
   pointPopupOverlay.setPosition(ol.proj.fromLonLat([lon, lat]));
   pointPopup.classList.remove('hidden');
+  showCenterPin(lon, lat);
 }
 
 function showLocationInfo(lon, lat) {
@@ -710,6 +743,7 @@ function closePointPopup() {
     pointPopupOverlay.setPosition(undefined);
     pointPopup.innerHTML = '';
   }
+  hideCenterPin();
 }
 
 let measureStartCoords = null;
