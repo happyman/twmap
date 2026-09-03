@@ -996,7 +996,7 @@ function clickedOnTrack(pixel) {
   }, {
     layerFilter: function (candidateLayer) {
       var id = candidateLayer.get && candidateLayer.get('id');
-      if (id === markerLayerId || id === selectionLayerId) return false;
+      if (id === markerLayerId || id === selectionLayerId || id === areaselectLayerId) return false;
       return candidateLayer instanceof ol.layer.Vector;
     },
     hitTolerance: 6
@@ -1442,6 +1442,22 @@ if (fullscreenBtn) {
     }
   });
 }
+
+// Compass button — click to reset rotation to north
+var compassBtn = document.createElement('button');
+compassBtn.id = 'compass-btn';
+compassBtn.type = 'button';
+compassBtn.title = '回到北方';
+compassBtn.innerHTML = '<i class="fa fa-compass"></i>';
+compassBtn.addEventListener('click', function () {
+  map.getView().animate({ rotation: 0, duration: 250 });
+});
+map.getView().on('change:rotation', function () {
+  var rot = map.getView().getRotation();
+  var icon = compassBtn.querySelector('i');
+  if (icon) icon.style.transform = 'rotate(' + (-rot) + 'rad)';
+});
+document.getElementById('map').appendChild(compassBtn);
 
 const geolocateBtn = document.getElementById('geolocate-btn');
 if (geolocateBtn) {
