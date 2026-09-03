@@ -990,6 +990,20 @@ function clickedOnShape(pixel) {
   return !!hit;
 }
 
+function clickedOnTrack(pixel) {
+  const hit = map.forEachFeatureAtPixel(pixel, function (candidate) {
+    return candidate;
+  }, {
+    layerFilter: function (candidateLayer) {
+      var id = candidateLayer.get && candidateLayer.get('id');
+      if (id === markerLayerId || id === selectionLayerId) return false;
+      return candidateLayer instanceof ol.layer.Vector;
+    },
+    hitTolerance: 6
+  });
+  return !!hit;
+}
+
 mapApi.onClick(function ({ lon, lat, event }) {
   closePointPopup();
   if (mapApi.shapeDrawActive) {
@@ -999,6 +1013,10 @@ mapApi.onClick(function ({ lon, lat, event }) {
     return;
   }
   if (event && event.pixel && clickedOnShape(event.pixel)) {
+    return;
+  }
+  if (event && event.pixel && clickedOnTrack(event.pixel)) {
+    showLocationInfo(lon, lat);
     return;
   }
   if (areaselectInstance && typeof areaselectInstance.handleClick === 'function') {
