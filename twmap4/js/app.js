@@ -1443,21 +1443,63 @@ if (fullscreenBtn) {
   });
 }
 
-// Compass button — click to reset rotation to north
-var compassBtn = document.createElement('button');
-compassBtn.id = 'compass-btn';
-compassBtn.type = 'button';
-compassBtn.title = '回到北方';
-compassBtn.innerHTML = '<i class="fa fa-compass"></i>';
-compassBtn.addEventListener('click', function () {
+// Compass control — canvas-based, needle rotates with map
+var compassEl = document.createElement('div');
+compassEl.id = 'compass-btn';
+compassEl.title = '回到北方';
+var compassCanvas = document.createElement('canvas');
+compassCanvas.width = compassCanvas.height = 40;
+compassEl.appendChild(compassCanvas);
+var compassCtx = compassCanvas.getContext('2d');
+var compassR = 20;
+
+function drawCompass(rot) {
+  compassCtx.clearRect(0, 0, 40, 40);
+  compassCtx.save();
+  compassCtx.translate(compassR, compassR);
+  compassCtx.rotate(rot);
+  // North needle (red)
+  compassCtx.fillStyle = '#dc2626';
+  compassCtx.beginPath();
+  compassCtx.moveTo(0, -compassR + 4);
+  compassCtx.lineTo(-5, 0);
+  compassCtx.lineTo(5, 0);
+  compassCtx.closePath();
+  compassCtx.fill();
+  // South needle (gray)
+  compassCtx.fillStyle = '#94a3b8';
+  compassCtx.beginPath();
+  compassCtx.moveTo(0, compassR - 4);
+  compassCtx.lineTo(-5, 0);
+  compassCtx.lineTo(5, 0);
+  compassCtx.closePath();
+  compassCtx.fill();
+  // Center dot
+  compassCtx.fillStyle = '#fff';
+  compassCtx.beginPath();
+  compassCtx.arc(0, 0, 3, 0, Math.PI * 2);
+  compassCtx.fill();
+  compassCtx.strokeStyle = '#334155';
+  compassCtx.lineWidth = 1;
+  compassCtx.stroke();
+  // N label (stays upright)
+  compassCtx.rotate(-rot);
+  compassCtx.fillStyle = '#dc2626';
+  compassCtx.font = 'bold 9px sans-serif';
+  compassCtx.textAlign = 'center';
+  compassCtx.textBaseline = 'top';
+  compassCtx.fillText('N', 0, -compassR + 1);
+  compassCtx.restore();
+}
+
+drawCompass(0);
+compassEl.addEventListener('click', function () {
   map.getView().animate({ rotation: 0, duration: 250 });
 });
 map.getView().on('change:rotation', function () {
-  var rot = map.getView().getRotation();
-  var icon = compassBtn.querySelector('i');
-  if (icon) icon.style.transform = 'rotate(' + (-rot) + 'rad)';
+  drawCompass(map.getView().getRotation());
 });
-document.getElementById('map').appendChild(compassBtn);
+document.getElementById('map').appendChild(compassEl);
 
 const geolocateBtn = document.getElementById('geolocate-btn');
 if (geolocateBtn) {

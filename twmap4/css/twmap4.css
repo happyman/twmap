@@ -282,17 +282,17 @@ input[type="range"] {
   top: 10px;
   right: 10px;
   z-index: 15;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
-  color: #0f172a;
   cursor: pointer;
+  overflow: hidden;
 }
 
 #compass-btn:hover {
@@ -303,8 +303,8 @@ input[type="range"] {
   background: #cbd5e1;
 }
 
-#compass-btn i {
-  transition: transform 0.25s ease;
+#compass-btn canvas {
+  display: block;
 }
 
 #fullscreen-btn {
