@@ -1576,62 +1576,6 @@ if (geolocateBtn) {
   });
 }
 
-// Cesium 3D toggle — lazy load CesiumJS + ol-cesium on first click
-var ol3d = null;
-var cesiumLoading = false;
-var cesiumToggleBtn = document.getElementById('cesium-toggle-btn');
-
-function loadScript(url) {
-  return new Promise(function (resolve, reject) {
-    var s = document.createElement('script');
-    s.src = url;
-    s.onload = resolve;
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
-
-function loadCss(url) {
-  var l = document.createElement('link');
-  l.rel = 'stylesheet';
-  l.href = url;
-  document.head.appendChild(l);
-}
-
-function initCesium3D() {
-  if (ol3d) {
-    var enabled = ol3d.getEnabled();
-    ol3d.setEnabled(!enabled);
-    cesiumToggleBtn.classList.toggle('active', !enabled);
-    return;
-  }
-  if (cesiumLoading) return;
-  cesiumLoading = true;
-  cesiumToggleBtn.title = '載入中…';
-
-  loadCss('https://cdn.jsdelivr.net/npm/cesium@1.117.0/Build/Cesium/Widgets/widgets.css');
-  loadScript('https://cdn.jsdelivr.net/npm/cesium@1.117.0/Build/Cesium/Cesium.js')
-    .then(function () {
-      return loadScript('js/olcs-bundle.js');
-    })
-    .then(function () {
-      ol3d = new olcs.OLCesium({ map: map });
-      ol3d.setEnabled(true);
-      cesiumToggleBtn.classList.add('active');
-      cesiumToggleBtn.title = '3D 檢視';
-      cesiumLoading = false;
-    })
-    .catch(function (err) {
-      console.warn('Cesium load failed:', err);
-      cesiumToggleBtn.title = '3D 檢視';
-      cesiumLoading = false;
-    });
-}
-
-if (cesiumToggleBtn) {
-  cesiumToggleBtn.addEventListener('click', initCesium3D);
-}
-
 var login_role = 0;
 function toggle_user_role(cur_role) {
   login_role = cur_role || 0;
