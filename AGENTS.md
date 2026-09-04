@@ -1,155 +1,140 @@
-# AGENTS.md — twmap3 → twmap4 Migration Handoff
+# AGENTS.md — Python Rewrite of cmd_make2.php
 
-## Project Overview
-Migrate twmap3 (OpenLayers 2) features to twmap4 (OpenLayers 10.3.1). Dev site: `https://dev.happyman.idv.tw/map4/`
+## Goal
+Rewrite the PHP CLI map generator (`cmd_make2.php` + `lib/Twmap/*`) in Python.
+Uses `rasterio.warp.reproject()` instead of the current affine-rotation hack.
+Independent repo at `twmap_gen_py/`.
 
-## Build & Deploy
-```bash
-cd /home/happyman/projects/dev
-npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dist/
-```
-**Important**: The server serves `dist/twmap4/`, not `twmap4/` directly. You MUST run `npx grunt rsync:twmap4` after every edit or changes won't appear live.
-
-## Commit History (twmap4 migration)
-```
-7ed5437 Fix about.php login redirect to return=twmap3 (compatible with twmap_gen)
-f8a4bef Fix goto consistency: ?goto always takes priority; coord search shows popup
-ae1b6a5 Revert 3D button (WIP, needs more research)
-0cfec01 Fix ol-cesium 3D: bundle olcs locally, lazy-load from dist
-2296dfd Shrink compass to 32px, remove N label; add ol-cesium 3D toggle (lazy load)
-2195d8a Add select all/none toggle to marker filter menu
-c3c7b8d Add center pin overlay; animate map to POI on click
-babb65e Add compass control; fix areaselect shrink bug
-8050886 Move showLocationInfo to left-click: POI → track → areaselect
-cd7d2c6 Fix coverage/rainfall restore: use window.load, call functions directly
-7f5c35d Fix Taitung forest tiles, add 蘭嶼 堡圖 replacement, save/restore full UI state
-eee3aa8 Full state permalink: encode/restore layers, toggles, overlays, filters in URL
-7c497a3 Popup admin edit hook (login_role); ESC closes popup/meerkat
-fda4364 Add login flow to about.php (port from twmap3)
-9793b86 Permalink dialog with URL shortening (Go/Shorten/Copy buttons)
-b325d9e Compact toolbar to 20px; move 標籤 toggle into 點位 filter menu
-8b64645 Add splash screen with twmap.png icon on initial load
-28ff7d5 Adjust point info popup: taller, close button, remove 地圖對照器, measurement, 地籍座標
-69d4074 Add GPX drag-and-drop import to twmap4
-82dc3a5 Move About button to toolbar far left; right-align controls; move about handler to meerkat.js
-2b96edc Add About button & shorten search box; include version 0.1
-00879fa Refine draw control look: remove outer box, equal-size icon buttons
-73c190f Add fullscreen button above geolocation control
-bd2238d Add drag-to-move for shapes; drop redundant Select tool button
-547f986 Icon-style draw tools with rectangle support (port of twmap3 toolbar)
-6c187ac Compact layer controls, center draw buttons, add geolocation control
-98fb1e6 Refresh cursor coordinate+zoom display on zoom change
-0adae34 Add map attribution/edit-OSM link and cursor coordinate+zoom display
-3e5548c Port twmap3 FeatureLocation first-load fallback
-8b22b8c Extract shape drawing module and add TWD grid area-select
-```
-
-## Current State (as of commit 7ed5437)
-
-### Deployed as main
-- **`/map/`** → twmap4 (main viewer)
-- **`/map3/`** → twmap3 (legacy, still accessible)
-
-### Implemented
-- **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
-- **View persistence**: Saved to localStorage (`twmap4_view`), restored on load
-- **FeatureLocation**: Random landmark fallback, `?goto` URL param
-- **Full state permalink**: URL encodes all UI state (layers, toggles, overlays, filters); restores on load; `goto=任意文字` fills search box
-- **Full state persistence**: All UI state saved to localStorage (`twmap4_view`), restored on revisit
-- **Taitung forest tiles**: Fixed Y-axis for ttfb3_0601/0602/0603; 蘭嶼 堡圖 replacement for jm20k1904/jm20k1921
-- **Mapinfo**: Cursor coords + zoom level (`#msg`), copyright + edit link (`#map-attribution`)
-- **Layer controls**: Triangle marker label toggle (moved into 點位 filter menu), track toggle, type filter (13 categories), select all/none toggle
-- **Draw tools**: 4 icon buttons (Polygon, Rectangle, Circle, LineString) with FA icons
-- **Shape persistence**: Shapes saved to localStorage (`shapes`), WGS84 coords
-- **Drag-to-move**: `ol.interaction.Translate` for moving drawn shapes
-- **Fullscreen**: `#fullscreen-btn` (fa-arrows-alt/fa-compress toggle) via Fullscreen API
-- **Geolocation**: `#geolocate-btn` → navigator.geolocation → setView
-- **About**: `#about-btn` at toolbar far left → `about.php` in meerkat panel
-- **Toolbar layout**: About far left, search 320px, controls right-aligned (margin-left:auto)
-- **Responsive**: 960px/760px/600px breakpoints — buttons bottom-center, attribution narrowed
-- **GPX drag-and-drop**: Drop `.gpx` file → red tracks (width 3) + 32px waypoint icons, view fit, accumulates layers
-- **showmapgpx**: Meerkat iframe calls `parent.showmapgpx()` → yellow track (width 3) on map, toggle/replace, zoom-to-fit
-- **Login flow**: OAuth via twmap_gen, session shared; about.php shows login/logout, user icon on about button, upload link when logged in
-- **Point info popup**: Taller (560px), close button (X), 地籍座標 displayed, measurement start/end buttons, no 地圖對照器 link, scrollbar hidden, permalink with URL shortening, light theme
-- **Splash screen**: Full-screen dark overlay with twmap.png logo + spinner, fades out on window.load
-- **Compass control**: Canvas-drawn compass needle (red north, gray south), rotates with map, click resets to north (animate 250ms)
-- **Center pin overlay**: Red SVG pin at POI location when popup is active; map animates to center on POI; pin follows map movement
-
-### NOT Yet Migrated (from twmap3)
-- KML export UI (right-click menu exists but may need refinement)
-- Photo upload/panorama
-- Hillshade overlay
-- Line-of-sight (通視模擬) — basic hook exists, needs full UI
-- Measurement tools
-- Print/export
-- Mobile-specific gestures
+## Original PHP Source
+- Entry: `twmap_gen/cmd_make2.php` (~520 lines)
+- Libraries: `twmap_gen/lib/Twmap/` (Stitcher.php, Splitter.php, Proj.php, Websocat.php, Export/*, Svg/Gpx2Svg.php)
+- 7 stitcher subclasses with different tile sources and preprocessing
 
 ## Architecture
 
-### Key Files
-| File | Purpose |
-|------|---------|
-| `twmap4/index.php` | Main entry, toolbar, script loading |
-| `twmap4/css/twmap4.css` | All styles, responsive breakpoints |
-| `twmap4/js/app.js` | Main app init, fullscreen/geolocate handlers, first-load |
-| `twmap4/js/olAdapter.js` | OL10 adapter: draw, translate, click handling |
-| `twmap4/js/mapApi.js` | Public API: setView, addDrawSelection, moveSelection |
-| `twmap4/js/shapedraw4.js` | Shape drawing UI, persistence, draw-type toggles |
-| `twmap4/js/areaselect.js` | TWD grid area selection |
-| `twmap4/js/mapinfo.js` | `#msg` cursor+zoom, `#map-attribution` |
-| `twmap4/js/meerkat.js` | Iframe panel (showmeerkat/closeMeerkat) |
-| `twmap4/js/overlays.js` | Marker/triangle/track overlays |
-| `twmap4/js/coverage.js` | Signal coverage overlay |
-| `twmap4/js/gpxdrop.js` | GPX drag-and-drop import (FileReader + ol.format/GPX) |
-| `twmap4/about.php` | About page (reads VERSION) |
-| `twmap4/VERSION` | Version string (`0.1`) |
-| `twmap4/config.inc.php` | API URLs, default center, feature locations |
+### Plugin-based MapSource Registry
+Each map source (經建三, 魯地圖, 堡圖1904, etc.) is a `MapSource` dataclass entry in `config.py`.
+Adding a new source = adding a dict entry, no subclassing needed.
 
-### Headless Testing
-```bash
-export PATH=/tmp/opencode/node-v20.18.0-linux-x64/bin:$PATH
-# Write test to file, then run with custom node
-cat > /tmp/opencode/verify4_test.js <<'EOF'
-const { chromium } = require('playwright-core');
-// ... test code
-EOF
-node /tmp/opencode/verify4_test.js
+### Composable Transform Pipeline
+Image transforms (`Equalize`, `Gamma`, `Level`, `Normalize`, `GrayscaleSimple`, `GrayscaleEnhanced`, `AdaptiveThreshold`) are composable classes.
+Each `MapSource` defines `pre_merge` and `post_merge` transform lists.
+
+### Layer Compositor
+Supports `multiply` (current behavior), `alpha` (future transparency), `overlay` modes.
+Future: GPX track layer can be alpha-blended onto base map (currently baked before grayscale).
+
+### Core: rasterio
+- `rasterio.merge.merge()` — stitch tiles into EPSG:3857 mosaic
+- `rasterio.warp.reproject()` — proper reprojection to TWD97/TWD67 (replaces 0.3° affine hack)
+- `rasterio.windows.Window` — exact crop (no 2px fudge factor)
+
+## Pipeline
 ```
-- Use `chromium.launch({args:['--no-sandbox','--disable-gpu','--headless=new','--js-flags=--max-old-space-size=512']})`
-- Drag-based OL interactions (Circle/Rectangle draw, Translate) cannot be tested via headless synthetic drags — known OL limitation
-- Click-based modes (Polygon, LineString) reproduce fine
+1. Parse CLI args → resolve TWD67/97 bounds → convert to tile XYZ (pyproj)
+2. aiohttp download tiles (semaphore-limited concurrency)
+3. Apply pre_merge transforms per tile (numpy/Pillow)
+4. rasterio.merge.merge() → EPSG:3857 mosaic
+5. Layer compositing (if multi-layer: multiply, alpha, etc.)
+6. rasterio.warp.reproject() → TWD97/TWD67 (auto-chunk if >15000px)
+7. Crop to exact TWD bounds (windowed read)
+8. Apply post_merge transforms
+9. Grayscale conversion (source-specific strategy)
+10. Grid lines, coordinate tags, logo (Pillow)
+11. Export: PDF (img2pdf+pypdf), KMZ (zipfile+KML), GeoTIFF (rasterio), PNG
+```
 
-### twmap3 → twmap4 Mapping
-| twmap3 | twmap4 | Notes |
-|--------|--------|-------|
-| `OpenLayers.Map` | `ol.Map` (v10.3.1) | Full build from CDN |
-| `OpenLayers.Layer.*` | `ol.layer.*` | XYZ tiles |
-| `OpenLayers.Feature.Vector` | `ol.Feature` + `ol.source.Vector` | |
-| `OpenLayers.Control.DrawFeature` | `ol.interaction.Draw` | |
-| `OpenLayers.Control.ModifyFeature` | `ol.interaction.Modify` | |
-| `OpenLayers.Control.DragPan` | default OL interaction | |
-| `OpenLayers.Projection` | `ol.proj` + `twProjections` | TWD97/67 support |
-| `showmeerkat()` | `showmeerkat()` (same API) | iframe panel |
+## File Structure
+```
+twmap_gen_py/
+├── pyproject.toml
+├── requirements.txt
+├── map_sources.json            # Optional: external source definitions
+├── cmd_make2.py                # Entry point
+├── mapgen/
+│   ├── __init__.py
+│   ├── cli.py                  # argparse + legacy -r/-O/-v aliases
+│   ├── config.py               # MapSource dataclass + built-in SOURCES registry
+│   ├── transforms.py           # All Transform classes
+│   ├── proj.py                 # TWD67/97 ↔ WGS84 (pyproj), tile XYZ math
+│   ├── stitcher.py             # Download → merge → reproject → crop (rasterio)
+│   ├── compositor.py           # Layer compositing (multiply, alpha, overlay)
+│   ├── splitter.py             # Image → page tiles
+│   ├── grinder.py              # Grid lines, coordinate tags, logo (Pillow)
+│   ├── export/
+│   │   ├── __init__.py
+│   │   ├── pdf.py              # img2pdf + pypdf
+│   │   ├── kmz.py              # zipfile + KML
+│   │   └── geotiff.py          # rasterio write
+│   ├── gpx2svg.py              # GPX overlay (gpxpy + cairosvg)
+│   └── notify.py               # WebSocket progress (websockets)
+└── tests/
+    ├── test_proj.py
+    ├── test_transforms.py
+    └── test_sources.py
+```
 
-### CSS Layout Notes
-- `#toolbar`: `display:flex; flex-wrap:wrap; gap:5px; height:32px; padding:0 8px; background:#fff`
-- `#toolbar-right`: `margin-left:auto` — wraps rainfall/coverage/grid selects (right-aligned)
-- `#fullscreen-btn`: `position:absolute; top:54px; right:10px`
-- `#geolocate-btn`: `position:absolute; top:98px; right:10px`
-- `#compass-btn`: `position:absolute; top:10px; right:10px` — canvas-drawn compass, needle rotates with map, click resets to north
-- `#params`: `position:absolute; top:100px; right:10px`
-- `#msg`: cursor+zoom, `bottom:42px; left:50%; transform:translateX(-50%)`
-- `#map-attribution`: `position:absolute; bottom:0; right:0; max-width:22%` (13% at ≤600px)
-- `#drop-container`: `position:absolute; top:0; left:0; z-index:1000; display:none` → `block` on dragenter; full overlay
+## CLI Interface
+```bash
+# New Pythonic
+mapgen make --region 307000,2677000,12,6 --output ./out/ --map-type rudymap
 
-## User Preferences
-- **Never commit** `twmap3/js/.main.js.swp` (vim swap, untracked)
-- Draw-type icon buttons keep light-gray background + border (not flat/borderless)
-- About button text: `地圖瀏覽器 v0.1` with icon
-- twmap4 will deploy to `/map/` path — use relative URLs
-- OL constructor names mangled in dist build — use element IDs, not `instanceof`
+# Legacy compatible
+cmd_make2.py -r 307000:2677000:12:6:TWD67 -O ./out/ -v 2016
 
-## Known Issues
-- `package.json` is modified (unrelated to twmap4 — do not commit)
-- `twmap4/index.php.bak` is untracked (backup — do not commit)
-- `.gemini/` directory untracked (ignore)
+# Testing helpers
+mapgen test-source rudymap --tile 16/23456/12345 --show-steps --output ./debug/
+mapgen compare-sources rudymap,v3 --region 307000,2677000,2,2 --output ./compare/
+mapgen list-sources
+```
+
+## Dependencies
+```
+pyproj>=3.6          # TWD67/97 ↔ WGS84
+rasterio>=1.3        # merge, reproject, crop, GeoTIFF
+aiohttp>=3.9         # Async tile download
+Pillow>=10.0         # Grid tags, logo, text rendering
+gpxpy>=1.6           # GPX parsing
+cairosvg>=2.7        # SVG → PNG (GPX overlay)
+img2pdf>=0.4         # PNG → PDF pages
+pypdf>=3.17          # PDF merge
+websockets>=12.0     # Progress notifications
+numpy>=1.24          # Transforms, adaptive threshold
+```
+
+## Key Design Decisions
+1. **rasterio.reproject** replaces the 0.3° affine rotation hack
+2. **Auto-chunking** for large regions (>15000px), whole-region by default
+3. **MapSource dataclass** — adding new sources = adding dict entry
+4. **Transform pipeline** — composable, testable, no hardcoded IM commands
+5. **Grayscale strategies** — simple, enhanced, adaptive_threshold (parameterized)
+6. **No external binaries** except optional `pngquant` + CJK font file
+
+## Map Source Config (from PHP Stitcher subclasses)
+| Source | Zoom | px/km | pre_merge | post_merge | Grayscale |
+|--------|------|-------|-----------|------------|-----------|
+| v3 經建三 | 16 | 315 | Equalize, Gamma(2.2) | — | enhanced (brightness+20, contrast+5, tint+40) |
+| v2016 魯地圖 | 16 | 315 | — | Normalize | simple |
+| nlsc | 17 | 630 | Level(0.25, 1.0, 0.1) | — | simple |
+| 1904 堡圖 | 16 | 315 | — | Normalize | adaptive_threshold |
+| 1916 蕃地 | 16 | 315 | — | Normalize | simple |
+| 1921 堡圖紅字 | 16 | 315 | Level(0.25) | — | adaptive_threshold |
+| 1924 陸測 | 16 | 315 | — | — | adaptive_threshold |
+
+## Implementation Order
+- [ ] 1. `config.py` + `transforms.py` — Source registry + transform classes
+- [ ] 2. `proj.py` — Coordinate conversion (pyproj)
+- [ ] 3. `stitcher.py` — Download + merge + reproject + crop (rasterio core)
+- [ ] 4. `compositor.py` — Layer compositing
+- [ ] 5. `grinder.py` — Grid lines, coordinate tags, logo (Pillow)
+- [ ] 6. `splitter.py` — Image → page tiles
+- [ ] 7. `export/pdf.py`, `kmz.py`, `geotiff.py` — Export formats
+- [ ] 8. `gpx2svg.py` — GPX overlay
+- [ ] 9. `notify.py` — WebSocket progress
+- [ ] 10. `cli.py` + `cmd_make2.py` — Wire everything together
+- [ ] 11. CLI helpers: `test-source`, `compare-sources`, `list-sources`
+- [ ] 12. Unit tests
+
+## Current Status
+- Planning complete, implementation not started
+- Branch: `feat/python-mapgen`
