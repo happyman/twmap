@@ -1250,6 +1250,7 @@ gotoBtn.addEventListener('click', function () {
       console.warn('not in Taiwan/Penghu range');
     } else {
       mapApi.setView([coord.x, coord.y], 14);
+      showLocationInfo(coord.x, coord.y);
     }
     return;
   }
@@ -1432,17 +1433,25 @@ try {
   restoredView = null;
 }
 
-if (restoredView) {
-  mapApi.setView([restoredView.lon, restoredView.lat], restoredView.zoom);
-} else if (initialView.goto) {
+if (initialView.goto) {
   const isCoord = initialView.goto.match(/^[-\d.]+[,\s]\s*[-\d.]+$/);
   if (isCoord) {
     mapApi.setView(initialView.center, initialView.zoom);
+    showLocationInfo(initialView.center[0], initialView.center[1]);
   } else {
     mapApi.setView(initialView.center, initialView.zoom);
     document.getElementById('search-input').value = initialView.goto;
-    setTimeout(function () { gotoBtn.click(); }, 500);
+    function runGotoWhenReady() {
+      if (poiDataReady) {
+        gotoBtn.click();
+      } else {
+        setTimeout(runGotoWhenReady, 250);
+      }
+    }
+    runGotoWhenReady();
   }
+} else if (restoredView) {
+  mapApi.setView([restoredView.lon, restoredView.lat], restoredView.zoom);
 } else {
   gotoFeatureLocation();
 }
