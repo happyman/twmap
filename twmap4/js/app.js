@@ -493,6 +493,7 @@ function coordBlock(lon, lat) {
   const wgsLon = Number(lon);
   const ll = twRange(wgsLat, wgsLon);
   const rows = ['經緯度: ' + wgsLon.toFixed(5) + ', ' + wgsLat.toFixed(5)];
+  rows.push("經緯度(dms): " + twProjections.ConvertDDToDMS(wgsLat) + ', ' + twProjections.ConvertDDToDMS(wgsLon));
 
   if (twProjections.available()) {
     if (ll === 1) {
@@ -518,8 +519,7 @@ function coordBlock(lon, lat) {
     }
   }
 
-  rows.push(twProjections.ConvertDDToDMS(wgsLat) + ', ' + twProjections.ConvertDDToDMS(wgsLon));
-
+  
   return rows.map(function (r) {
     return '<div class="popup-coord">' + r + '</div>';
   }).join('');
@@ -529,25 +529,33 @@ function popupLinks(lon, lat, zoom) {
   const wgsLat = Number(lat);
   const wgsLon = Number(lon);
   const isLoggedIn = (typeof login_role !== 'undefined' && login_role == 1);
+  const svgIcons = {
+    marker: '<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M10 2C6 2 3 5 3 8c0 4 7 10 7 10s7-6 7-10c0-3-3-6-7-6zm0 8.5c-1.4 0-2.5-1.1-2.5-2.5S8.6 5.5 10 5.5s2.5 1.1 2.5 2.5S11.4 10.5 10 10.5z"/></svg>',
+    globe: '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M2 10h16M10 2c2 3 3 5 3 8s-1 5-3 8c-2-3-3-5-3-8s1-5 3-8z" stroke-width="1.2"/></svg>',
+    cloud: '<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M10 2C5.6 2 2 5 2 8.5c0 1.5.5 2.8 1.3 4L10 18l6.7-5.5c.8-1.2 1.3-2.5 1.3-4C18 5 14.4 2 10 2z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 10c1 2 2.5 3 4 4 1.5-1 3-2 4-4-1-1.5-2.5-2.5-4-2.5S7 8.5 6 10z"/></svg>',
+    tint: '<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M10 2l1 5h5l-4 3.5 1.5 5L10 12.5 6.5 15.5 8 10.5 4 7h5z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M3 14c0 0 2-1 4-1s2 .5 3 1.5c1-1 2-1.5 3-1.5s4 1 4 1" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
+    star: '<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M10 2l2.5 5 5.5.8-4 3.9.9 5.3L10 14.5 5.1 17l.9-5.3-4-3.9 5.5-.8z"/></svg>'
+  };
   const link = function (href, icon, title, label, panel) {
+    const iconHtml = '<span class="popup-link-icon">' + (svgIcons[icon] || '') + '</span>';
     if (panel) {
       if (isLoggedIn) {
-        return '<a href="#" onClick="showmeerkat(\'' + href + '\',{}); return false;" title="' + title + '"><i class="fa ' + icon + '"></i> ' + label + '</a>';
+        return '<a href="#" onClick="showmeerkat(\'' + href + '\',{}); return false;" title="' + title + '">' + iconHtml + ' ' + label + '</a>';
       }
-      return '<a href="' + href + '" target="_top" title="' + title + '"><i class="fa ' + icon + '"></i> ' + label + '</a>';
+      return '<a href="' + href + '" target="_top" title="' + title + '">' + iconHtml + ' ' + label + '</a>';
     }
-    return '<a href="' + href + '" target="_blank" rel="noopener" title="' + title + '"><i class="fa ' + icon + '"></i> ' + label + '</a>';
+    return '<a href="' + href + '" target="_blank" rel="noopener" title="' + title + '">' + iconHtml + ' ' + label + '</a>';
   };
   const links = [
-    link('//maps.google.com/maps?q=' + wgsLat.toFixed(5) + ',' + wgsLon.toFixed(5) + '&zoom=' + zoom, 'fa-map-marker', 'Google Maps', 'Google'),
-    link('//maps.nlsc.gov.tw/go/' + (wgsLon.toFixed(5)) + '/' + (wgsLat.toFixed(5)), 'fa-globe', 'NLSC 地圖', 'NLSC'),
-    link('//www.windy.com/' + (wgsLat.toFixed(3)) + '/' + (wgsLon.toFixed(3)) + '/meteogram?rain,' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + ',' + zoom + ',m:ejkajw7', 'fa-cloud', 'windy', 'windy'),
-    link('//wiwari.github.io/accTW/?center=' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + '&zoom=' + zoom, 'fa-tint', '集水區觀察員', '集水區')
+    link('//maps.google.com/maps?q=' + wgsLat.toFixed(5) + ',' + wgsLon.toFixed(5) + '&zoom=' + zoom, 'marker', 'Google Maps', 'Google'),
+    link('//maps.nlsc.gov.tw/go/' + (wgsLon.toFixed(5)) + '/' + (wgsLat.toFixed(5)), 'globe', 'NLSC 地圖', 'NLSC'),
+    link('//www.windy.com/' + (wgsLat.toFixed(3)) + '/' + (wgsLon.toFixed(3)) + '/meteogram?rain,' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + ',' + zoom + ',m:ejkajw7', 'cloud', 'windy', 'windy'),
+    link('//wiwari.github.io/accTW/?center=' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + '&zoom=' + zoom, 'tint', '集水區觀察員', '集水區')
   ];
   if (isLoggedIn){
-      links.push(link(window.appConfig.promlist_url, 'fa-star', '獨立峰排名', '獨立峰', true));
+      links.push(link(window.appConfig.promlist_url, 'star', '獨立峰排名', '獨立峰', true));
     } else {
-      links.push(link("/gen/main.php?return=twmap3", 'fa-star', '獨立峰排名(登入後使用)', '獨立峰', true));
+      links.push(link("/gen/main.php?return=twmap3", 'star', '獨立峰排名(登入後使用)', '獨立峰', true));
     }
   return '<div class="popup-links">' + links.join('') + '</div>';
 }
@@ -627,7 +635,7 @@ function showPointPopup(point, lon, lat) {
   pointPopup.innerHTML = [
     '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
     '<div class="popup-header">' + title +
-      ' <a class="popup-permalink" href="#" onclick="showPermalinkDialog(\'' + plUrl + '\'); return false;" title="複製縮網址"><i class="fa fa-link"></i></a>' +
+      ' <a class="popup-permalink" href="#" onclick="showPermalinkDialog(\'' + plUrl + '\'); return false;" title="複製縮網址"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 4H5a1 1 0 0 0-1 1v3" stroke-linecap="round"/><path d="M12 4h3a1 1 0 0 1 1 1v3" stroke-linecap="round"/><path d="M12 16h3a1 1 0 0 0 1-1v-3" stroke-linecap="round"/><path d="M8 16H5a1 1 0 0 1-1-1v-3" stroke-linecap="round"/><rect x="7" y="7" width="6" height="6" rx="0.5"/></svg></a>' +
       '</div>',
     pointMeta ? '<div class="popup-meta">' + pointMeta + '</div>' : '',
     coordBlock(lon, lat),
@@ -691,7 +699,7 @@ function renderLocationPopup(lon, lat, zoom, rows) {
   pointPopup.innerHTML = [
     '<button class="popup-close" onclick="closePointPopup()" title="關閉">&times;</button>',
     '<div class="popup-header">位置資訊' +
-      ' <a class="popup-permalink" href="#" onclick="showPermalinkDialog(\'' + plUrl + '\'); return false;" title="複製縮網址"><i class="fa fa-link"></i></a>' +
+      ' <a class="popup-permalink" href="#" onclick="showPermalinkDialog(\'' + plUrl + '\'); return false;" title="複製縮網址"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 4H5a1 1 0 0 0-1 1v3" stroke-linecap="round"/><path d="M12 4h3a1 1 0 0 1 1 1v3" stroke-linecap="round"/><path d="M12 16h3a1 1 0 0 0 1-1v-3" stroke-linecap="round"/><path d="M8 16H5a1 1 0 0 1-1-1v-3" stroke-linecap="round"/><rect x="7" y="7" width="6" height="6" rx="0.5"/></svg></a>' +
       '</div>',
     coordBlock(lon, lat),
     rows.join(''),
@@ -711,7 +719,7 @@ function showLocationInfo(lon, lat) {
   const finish = function () {
     fetchElevAndAdmin(lon, lat, rows).then(function (elevation) {
       if (elevation !== null && typeof show_line_of_sight === 'function') {
-        rows.push('<div class="popup-meta"><a href="#" id="los_link" onClick="show_line_of_sight(' + Number(lon).toFixed(5) + ',' + Number(lat).toFixed(5) + ',' + Math.round(elevation) + '); return false;">通視模擬 (' + Math.round(elevation) + 'M)</a></div>');
+        rows.push('<div class="popup-meta"><a href="#" id="los_link" onClick="show_line_of_sight(' + Number(lon).toFixed(5) + ',' + Number(lat).toFixed(5) + ',' + Math.round(elevation) + '); return false;">通視模擬</a></div>');
       }
       renderLocationPopup(lon, lat, zoom, rows);
     });
@@ -773,11 +781,13 @@ let measureStartOverlay = null;
 
 function measureButtonsHtml(lon, lat) {
   const isActive = measureStartCoords !== null;
+  const playIcon = '<svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><polygon points="6,4 16,10 6,16"/></svg>';
+  const stopIcon = '<svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><rect x="5" y="5" width="10" height="10" rx="1"/></svg>';
   return '<div class="popup-measure">' +
     '<button onclick="setMeasureStart(' + lon + ',' + lat + ')" title="設定測量起點' + (isActive ? ' (已設定)' : '') + '"' +
-    (isActive ? ' class="measure-active"' : '') + '><i class="fa fa-play"></i> 起點</button>' +
+    (isActive ? ' class="measure-active"' : '') + '>' + playIcon + ' 起點</button>' +
     '<button onclick="setMeasureEnd(' + lon + ',' + lat + ')" title="設定測量終點"' +
-    (!isActive ? ' disabled style="opacity:0.4"' : '') + '><i class="fa fa-stop"></i> 終點</button>' +
+    (!isActive ? ' disabled style="opacity:0.4"' : '') + '>' + stopIcon + ' 終點</button>' +
     '</div>';
 }
 
@@ -1530,9 +1540,9 @@ if (fullscreenBtn) {
     }
   });
   document.addEventListener('fullscreenchange', function () {
-    var icon = fullscreenBtn.querySelector('i');
-    if (icon) {
-      icon.className = document.fullscreenElement ? 'fa fa-compress' : 'fa fa-arrows-alt';
+    var img = fullscreenBtn.querySelector('img');
+    if (img) {
+      img.src = document.fullscreenElement ? 'icon/fullscreen-exit.svg' : 'icon/fullscreen-enter.svg';
     }
   });
 }
@@ -1617,10 +1627,13 @@ function toggle_user_role(cur_role) {
   if (!icon || !text) return;
   if (login_role == 1) {
     if (!aboutBtn.querySelector('.user-icon')) {
-      var i = document.createElement('i');
-      i.className = 'fa fa-user user-icon';
-      i.style.cssText = 'font-size:14px;margin-right:3px;color:#0ea5e9;';
-      aboutBtn.insertBefore(i, icon);
+      var img = document.createElement('img');
+      img.src = 'icon/user.svg';
+      img.width = 14;
+      img.height = 14;
+      img.className = 'user-icon';
+      img.style.cssText = 'margin-right:3px;vertical-align:middle;';
+      aboutBtn.insertBefore(img, icon);
     }
   } else {
     var existing = aboutBtn.querySelector('.user-icon');

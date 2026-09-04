@@ -190,8 +190,7 @@ button.disable {
 }
 
 select {
-  font-family: FontAwesome, "Microsoft JhengHei", sans-serif;
-  font-weight: 900;
+  font-family: "Microsoft JhengHei", sans-serif;
 }
 
 input[type="range"] {

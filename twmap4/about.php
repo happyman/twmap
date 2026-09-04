@@ -18,7 +18,7 @@ if ($st === false) {
   );
   $login_link = sprintf(
     '<a href="%s" target="_top">登出</a>',
-    $CONFIG['site_twmap_html_root'] . "logout.php"
+    $CONFIG['site_twmap_html_root'] . "logout.php?return=twmap3"
   );
   if (is_admin()) {
     $role_text = sprintf("管理者 (%d) (%s)", $_SESSION['uid'], php_uname('n'));
@@ -60,8 +60,8 @@ $login_role = ($st === true) ? 1 : 0;
 </head>
 <body>
   <div class="user-bar">
-    <?= $login_link ?>
-    <?php if ($role_text): ?>
+    <?php echo $login_link;
+    if ($role_text): ?>
       <span class="role"><?= $role_text ?></span>
     <?php endif; ?>
   </div>
@@ -84,15 +84,19 @@ $login_role = ($st === true) ? 1 : 0;
       <li>測量形狀：使用繪圖工具（多邊形/圓形/線段/矩形）繪製後，可測量長度面積</li>
       <li>兩點測量：於A點位選單選取起點，再於B點位選終點，顯示距離/方向角</li>
       <li>GPX展示：可拖曳 GPX 檔案到地圖上顯示</li>
+      <?php if ($st === true): ?>
+        <li>上載行跡：<a href="<?= $CONFIG['site_twmap_html_root'] ?>api/uploadpage.php">上載 GPX</a></li>
+      <?php else: ?>
+      <li>上載行跡：需登入後方可使用</li>
+      <?php endif; ?>
     </ul>
 
-    <strong>資訊：</strong>
+    <strong>軟體資訊：</strong>
     <ul>
-      <li>使用 OpenLayers 10.3.1 + OpenStreetMap 圖層</li>
-      <li>座標參考：TWD67 / TWD97</li>
-      <li>版本：v<?= $ver ?></li>
+      <li>使用 OpenLayers 10.3.1 + OpenStreetMap 圖層+ 台灣歷史百年地圖 + NLSC 等圖層</li>
+      <li>版本：v<?= $ver ?></li>      
       <?php if ($st === true): ?>
-      <li>上載行跡：<a href="<?= $CONFIG['site_twmap_html_root'] ?>api/uploadpage.php">上載 GPX</a></li>
+        <li>使用者 ID：<?= $_SESSION['uid'] ?></li>
       <?php endif; ?>
     </ul>
   </div>

@@ -13,7 +13,6 @@ $login_role = ($st === true) ? 1 : 0;
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TWMap4 地圖瀏覽器 v<?=$ver?></title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.3.1/ol.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <link rel="stylesheet" href="css/twmap4.css?v=<?php echo filemtime(__DIR__ . '/css/twmap4.css'); ?>" />
 </head>
 <body>
@@ -108,21 +107,21 @@ $login_role = ($st === true) ? 1 : 0;
       </div>
       <div id="buttons" aria-label="繪圖工具">
         <div id="draw-type" class="draw-type">
-          <button type="button" class="draw-type-toggle" data-type="Polygon" title="畫多邊形"><i class="fa fa-object-group"></i></button>
-          <button type="button" class="draw-type-toggle" data-type="Rectangle" title="畫矩形"><i class="fa fa-square-o"></i></button>
-          <button type="button" class="draw-type-toggle" data-type="Circle" title="畫圓形"><i class="fa fa-circle-o"></i></button>
-          <button type="button" class="draw-type-toggle" data-type="LineString" title="畫線段"><i class="fa fa-pencil"></i></button>
+          <button type="button" class="draw-type-toggle" data-type="Polygon" title="畫多邊形"><img src="icon/draw-polygon.svg" width="16" height="16" alt=""></button>
+          <button type="button" class="draw-type-toggle" data-type="Rectangle" title="畫矩形"><img src="icon/draw-rectangle.svg" width="16" height="16" alt=""></button>
+          <button type="button" class="draw-type-toggle" data-type="Circle" title="畫圓形"><img src="icon/draw-circle.svg" width="16" height="16" alt=""></button>
+          <button type="button" class="draw-type-toggle" data-type="LineString" title="畫線段"><img src="icon/draw-line.svg" width="16" height="16" alt=""></button>
         </div>
         <span class="buttons-sep"></span>
-        <button id="shape-delete-btn" type="button" title="刪除所選形狀"><i class="fa fa-times"></i></button>
-        <button id="shape-clear-btn" type="button" title="刪除全部形狀"><i class="fa fa-times-circle"></i></button>
-        <button id="shape-info-btn" type="button" title="顯示所選形狀資訊"><i class="fa fa-info"></i></button>
+        <button id="shape-delete-btn" type="button" title="刪除所選形狀"><img src="icon/delete.svg" width="16" height="16" alt=""></button>
+        <button id="shape-clear-btn" type="button" title="刪除全部形狀"><img src="icon/delete-all.svg" width="16" height="16" alt=""></button>
+        <button id="shape-info-btn" type="button" title="顯示所選形狀資訊"><img src="icon/info.svg" width="16" height="16" alt=""></button>
       </div>
       <div id="params" aria-label="出圖範圍"></div>
       <div id="msg" aria-live="off" hidden></div>
       <div id="map-attribution" aria-label="圖資資訊"></div>
-      <button id="fullscreen-btn" type="button" title="全螢幕" aria-label="全螢幕"><i class="fa fa-arrows-alt"></i></button>
-      <button id="geolocate-btn" type="button" title="定位到我" aria-label="定位到我"><i class="fa fa-crosshairs"></i></button>
+      <button id="fullscreen-btn" type="button" title="全螢幕" aria-label="全螢幕"><img src="icon/fullscreen-enter.svg" width="16" height="16" alt=""></button>
+      <button id="geolocate-btn" type="button" title="定位到我" aria-label="定位到我"><img src="icon/geolocate.svg" width="16" height="16" alt=""></button>
       <div id="layer-controls">
         <label for="bottom-layer-1-select">第一層</label>
         <select id="bottom-layer-1-select" aria-label="第一層圖資">
@@ -141,7 +140,7 @@ $login_role = ($st === true) ? 1 : 0;
     <div id="meerkat-wrap" class="hidden" aria-label="TWMap 面板">
       <div class="meerkat-header">
         <span class="meerkat-title">TWMap</span>
-        <button id="meerkat-close" type="button" title="關閉面板" aria-label="關閉面板"><i class="fa fa-times"></i></button>
+        <button id="meerkat-close" type="button" title="關閉面板" aria-label="關閉面板"><img src="icon/delete.svg" width="14" height="14" alt=""></button>
       </div>
       <iframe id="meerkatiframe" title="TWMap 面板" src="about:blank"></iframe>
     </div>
