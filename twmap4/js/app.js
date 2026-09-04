@@ -541,10 +541,14 @@ function popupLinks(lon, lat, zoom) {
   const links = [
     link('//maps.google.com/maps?q=' + wgsLat.toFixed(5) + ',' + wgsLon.toFixed(5) + '&zoom=' + zoom, 'fa-map-marker', 'Google Maps', 'Google'),
     link('//maps.nlsc.gov.tw/go/' + (wgsLon.toFixed(5)) + '/' + (wgsLat.toFixed(5)), 'fa-globe', 'NLSC 地圖', 'NLSC'),
-    link(window.appConfig.promlist_url, 'fa-star', '獨立峰排名', '獨立峰', true),
     link('//www.windy.com/' + (wgsLat.toFixed(3)) + '/' + (wgsLon.toFixed(3)) + '/meteogram?rain,' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + ',' + zoom + ',m:ejkajw7', 'fa-cloud', 'windy', 'windy'),
     link('//wiwari.github.io/accTW/?center=' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + '&zoom=' + zoom, 'fa-tint', '集水區觀察員', '集水區')
   ];
+  if (isLoggedIn){
+      links.push(link(window.appConfig.promlist_url, 'fa-star', '獨立峰排名', '獨立峰', true));
+    } else {
+      links.push(link("/gen/main.php?return=twmap3", 'fa-star', '獨立峰排名(登入後使用)', '獨立峰', true));
+    }
   return '<div class="popup-links">' + links.join('') + '</div>';
 }
 
@@ -1603,7 +1607,7 @@ if (geolocateBtn) {
   });
 }
 
-var login_role = 0;
+if (typeof login_role === 'undefined') var login_role = 0;
 function toggle_user_role(cur_role) {
   login_role = cur_role || 0;
   var aboutBtn = document.getElementById('about-btn');

@@ -1,6 +1,10 @@
 <?php
+session_start(['read_and_close' => true]);
 require_once __DIR__ . "/config.inc.php";
+require_once __DIR__ . "/lib/functions.inc.php";
 $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
+list($st, $info) = login_info();
+$login_role = ($st === true) ? 1 : 0;
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -157,6 +161,7 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
   </div>
 
   <script>
+    var login_role = <?= $login_role ?>;
     window.appConfig = <?php echo json_encode($CONFIG, JSON_UNESCAPED_UNICODE); ?>;
     window.twmap4IconVersions = {
       peak_1st: <?php echo filemtime(__DIR__ . '/icons/peak_1st.png'); ?>,
