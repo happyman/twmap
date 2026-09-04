@@ -1627,6 +1627,7 @@ function toggle_user_role(cur_role) {
     if (existing) existing.remove();
   }
 }
+if (login_role == 1) toggle_user_role(login_role);
 
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
