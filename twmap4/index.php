@@ -25,9 +25,9 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
       </a>
 
       <div id="search-box">
-        <input id="search-input" type="text" placeholder="搜尋山頭、地標或座標" list="search-datalist" autocomplete="off" />
+        <input id="tags" type="text" placeholder="搜尋山頭、地標或座標" list="search-datalist" autocomplete="off" />
         <datalist id="search-datalist"></datalist>
-        <button id="search-btn" type="button">到</button>
+        <button id="goto" type="button">到</button>
       </div>
 
       <button id="track-toggle-btn" type="button" class="active" title="山友登山軌跡 (z10-19)">行跡</button>
@@ -141,9 +141,6 @@ $ver = @trim(file_get_contents(__DIR__ . '/VERSION'));
       </div>
       <iframe id="meerkatiframe" title="TWMap 面板" src="about:blank"></iframe>
     </div>
-
-    <input type="hidden" id="tags" />
-    <button id="goto" type="button" hidden></button>
 
     <div id="areaselect-modal-overlay" class="hidden"></div>
     <div id="inputtitleform" class="hidden">

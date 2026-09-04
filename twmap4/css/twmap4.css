@@ -106,7 +106,7 @@ html, body {
   flex: 0 1 auto;
 }
 
-#search-input {
+#tags {
   width: 220px;
   flex: 0 0 220px;
   min-width: initial;

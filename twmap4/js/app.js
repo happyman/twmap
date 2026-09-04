@@ -1204,7 +1204,7 @@ function resolvePoi(query) {
   return null;
 }
 
-const gotoBtn = document.getElementById('search-btn');
+const gotoBtn = document.getElementById('goto');
 
 function parseCoordinateInput(query) {
   // cadastral meter / jia
@@ -1238,7 +1238,7 @@ function parseCoordinateInput(query) {
 }
 
 gotoBtn.addEventListener('click', function () {
-  const query = document.getElementById('search-input').value.trim();
+  const query = document.getElementById('tags').value.trim();
   if (!query) {
     return;
   }
@@ -1269,7 +1269,7 @@ gotoBtn.addEventListener('click', function () {
   }
 });
 
-document.getElementById('search-input').addEventListener('keydown', function (e) {
+document.getElementById('tags').addEventListener('keydown', function (e) {
   if (e.key === 'Enter' && this.value.trim()) {
     e.preventDefault();
     gotoBtn.click();
@@ -1440,7 +1440,7 @@ if (initialView.goto) {
     showLocationInfo(initialView.center[0], initialView.center[1]);
   } else {
     mapApi.setView(initialView.center, initialView.zoom);
-    document.getElementById('search-input').value = initialView.goto;
+    document.getElementById('tags').value = initialView.goto;
     function runGotoWhenReady() {
       if (poiDataReady) {
         gotoBtn.click();
