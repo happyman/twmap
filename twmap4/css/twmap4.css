@@ -69,6 +69,14 @@ html, body {
   gap: 5px;
 }
 
+#search-icon-btn {
+  display: none;
+}
+
+#mobile-menu-btn {
+  display: none;
+}
+
 #about-btn {
   display: flex;
   align-items: center;
@@ -920,11 +928,102 @@ input[type="range"] {
 
 @media (max-width: 760px) {
   #toolbar {
-    flex-wrap: wrap;
+    height: auto;
+    min-height: 32px;
   }
 
-  #search-box {
-    flex-basis: 100%;
+  /* Search: show icon, hide input+go by default */
+  #search-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 28px;
+    background: none;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  #tags, #goto {
+    display: none;
+  }
+  #search-box.expanded {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-bottom: 1px solid #cbd5e1;
+    padding: 6px 8px;
+    gap: 4px;
+    z-index: 90;
+  }
+  #search-box.expanded #search-icon-btn {
+    display: none;
+  }
+  #search-box.expanded #tags {
+    display: block;
+    width: 100%;
+    flex: 1;
+  }
+  #search-box.expanded #goto {
+    display: inline-block;
+  }
+
+  /* Track toggle and filter menu stay visible */
+  #track-toggle-btn {
+    display: inline-flex;
+  }
+  #filter-menu-wrap {
+    display: inline-flex;
+  }
+
+  /* Hide toolbar-right inline, show as dropdown */
+  #toolbar-right {
+    position: absolute;
+    top: 32px;
+    right: 8px;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    z-index: 100;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 0;
+  }
+  #toolbar-right.open {
+    display: flex;
+  }
+  #toolbar-right label {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: -2px;
+  }
+  #toolbar-right select {
+    width: 100%;
+  }
+
+  /* Show dots button */
+  #mobile-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 28px;
+    font-size: 20px;
+    background: none;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    line-height: 1;
   }
 
   input[type="range"] {

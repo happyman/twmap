@@ -783,7 +783,7 @@ function measureButtonsHtml(lon, lat) {
   const isActive = measureStartCoords !== null;
   const playIcon = '<svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><polygon points="6,4 16,10 6,16"/></svg>';
   const stopIcon = '<svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><rect x="5" y="5" width="10" height="10" rx="1"/></svg>';
-  return '<div class="popup-measure">' +
+  return '<div class="popup-measure"> 測量兩點:' +
     '<button onclick="setMeasureStart(' + lon + ',' + lat + ')" title="設定測量起點' + (isActive ? ' (已設定)' : '') + '"' +
     (isActive ? ' class="measure-active"' : '') + '>' + playIcon + ' 起點</button>' +
     '<button onclick="setMeasureEnd(' + lon + ',' + lat + ')" title="設定測量終點"' +
@@ -1529,6 +1529,42 @@ window.addEventListener('load', function restoreURLState() {
     if (typeof updateFilterAllBtn === 'function') updateFilterAllBtn();
   }
 });
+
+// Mobile toolbar: search expand/collapse
+var searchIconBtn = document.getElementById('search-icon-btn');
+var searchBox = document.getElementById('search-box');
+if (searchIconBtn) {
+  searchIconBtn.addEventListener('click', function () {
+    searchBox.classList.toggle('expanded');
+    if (searchBox.classList.contains('expanded')) {
+      document.getElementById('tags').focus();
+    }
+  });
+}
+// Close search on ESC or click outside
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && searchBox && searchBox.classList.contains('expanded')) {
+    searchBox.classList.remove('expanded');
+  }
+});
+document.addEventListener('click', function (e) {
+  if (searchBox && searchBox.classList.contains('expanded') && !searchBox.contains(e.target)) {
+    searchBox.classList.remove('expanded');
+  }
+});
+
+// Mobile toolbar: dots menu toggle
+var mobileMenuBtn = document.getElementById('mobile-menu-btn');
+var toolbarRight = document.getElementById('toolbar-right');
+if (mobileMenuBtn) {
+  mobileMenuBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    toolbarRight.classList.toggle('open');
+  });
+  document.addEventListener('click', function () {
+    toolbarRight.classList.remove('open');
+  });
+}
 
 const fullscreenBtn = document.getElementById('fullscreen-btn');
 if (fullscreenBtn) {

@@ -11,7 +11,7 @@ $login_role = ($st === true) ? 1 : 0;
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TWMap4 地圖瀏覽器 v<?=$ver?></title>
+  <title>地圖瀏覽器 v<?=$ver?></title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.3.1/ol.css" />
   <link rel="stylesheet" href="css/twmap4.css?v=<?php echo filemtime(__DIR__ . '/css/twmap4.css'); ?>" />
 </head>
@@ -28,6 +28,7 @@ $login_role = ($st === true) ? 1 : 0;
       </a>
 
       <div id="search-box">
+        <button id="search-icon-btn" type="button" title="搜尋"><img src="icon/search.svg" width="16" height="16" alt=""></button>
         <input id="tags" type="text" placeholder="搜尋山頭、地標或座標" list="search-datalist" autocomplete="off" />
         <datalist id="search-datalist"></datalist>
         <button id="goto" type="button">到</button>
@@ -87,6 +88,7 @@ $login_role = ($st === true) ? 1 : 0;
         <option value="None">無格線</option>
       </select>
       </div>
+      <button id="mobile-menu-btn" type="button" title="更多選項">&#8942;</button>
     </div>
 
     <div id="map-wrap">
