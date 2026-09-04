@@ -12,6 +12,7 @@ npx grunt rsync:twmap4    # REQUIRED after every edit — server serves from dis
 
 ## Commit History (twmap4 migration)
 ```
+7ed5437 Fix about.php login redirect to return=twmap3 (compatible with twmap_gen)
 f8a4bef Fix goto consistency: ?goto always takes priority; coord search shows popup
 ae1b6a5 Revert 3D button (WIP, needs more research)
 0cfec01 Fix ol-cesium 3D: bundle olcs locally, lazy-load from dist
@@ -43,7 +44,11 @@ bd2238d Add drag-to-move for shapes; drop redundant Select tool button
 8b22b8c Extract shape drawing module and add TWD grid area-select
 ```
 
-## Current State (as of commit f8a4bef)
+## Current State (as of commit 7ed5437)
+
+### Deployed as main
+- **`/map/`** → twmap4 (main viewer)
+- **`/map3/`** → twmap3 (legacy, still accessible)
 
 ### Implemented
 - **Search**: Mountain/landmark/coordinate search with datalist, TWD67/97 input
