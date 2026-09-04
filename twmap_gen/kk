@@ -1,6 +1,0 @@
-<?php
-$a='2323123121x3123_vnlscp.png';
-
-if(preg_match('/v\S+p/',$a)){
-echo "ok";
-}
