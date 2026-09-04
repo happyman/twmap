@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# uv
+.venv/
+.uv/
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Build
+dist/
+build/
+
+# Output maps (generated)
+out/
+debug/
+compare/
+*.tag.png
+*.gray.png
+*.kmz
+*.pdf
+*.tiff
+*.tif

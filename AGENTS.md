@@ -122,19 +122,24 @@ numpy>=1.24          # Transforms, adaptive threshold
 | 1924 陸測 | 16 | 315 | — | — | adaptive_threshold |
 
 ## Implementation Order
-- [ ] 1. `config.py` + `transforms.py` — Source registry + transform classes
-- [ ] 2. `proj.py` — Coordinate conversion (pyproj)
-- [ ] 3. `stitcher.py` — Download + merge + reproject + crop (rasterio core)
-- [ ] 4. `compositor.py` — Layer compositing
-- [ ] 5. `grinder.py` — Grid lines, coordinate tags, logo (Pillow)
-- [ ] 6. `splitter.py` — Image → page tiles
-- [ ] 7. `export/pdf.py`, `kmz.py`, `geotiff.py` — Export formats
-- [ ] 8. `gpx2svg.py` — GPX overlay
-- [ ] 9. `notify.py` — WebSocket progress
-- [ ] 10. `cli.py` + `cmd_make2.py` — Wire everything together
-- [ ] 11. CLI helpers: `test-source`, `compare-sources`, `list-sources`
-- [ ] 12. Unit tests
+- [x] 1. `config.py` + `transforms.py` — Source registry + transform classes
+- [x] 2. `proj.py` — Coordinate conversion (pyproj)
+- [x] 3. `stitcher.py` — Download + merge + reproject + crop (rasterio core)
+- [x] 4. `compositor.py` — Layer compositing
+- [x] 5. `grinder.py` — Grid lines, coordinate tags, logo (Pillow)
+- [x] 6. `splitter.py` — Image → page tiles
+- [x] 7. `export/pdf.py`, `kmz.py`, `geotiff.py` — Export formats
+- [x] 8. `gpx2svg.py` — GPX overlay
+- [x] 9. `notify.py` — WebSocket progress
+- [x] 10. `cli.py` + `cmd_make2.py` — Wire everything together
+- [x] 11. CLI helpers: `test-source`, `compare-sources`, `list-sources`
+- [x] 12. Unit tests (39 passing)
 
 ## Current Status
-- Planning complete, implementation not started
+- Core pipeline implemented and working end-to-end (download → stitch → reproject → grid/tags/logo → grayscale → PDF/KMZ/GeoTIFF)
+- Uses `uv` as package manager (`uv sync`, `uv run`)
+- Verified working: `2016` (魯地圖), `3` (經建三) on TWD67 region
+- `nlsc` TWD render blocked only by sandbox SSL cert verification (URL/yzx order correct)
+- GPX overlay (gpx2svg) implemented but not yet wired into the `make` CLI (next stage)
 - Branch: `feat/python-mapgen`
+- Tests: `uv run python -m pytest` (39 passing)
