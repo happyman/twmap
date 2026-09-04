@@ -58,6 +58,20 @@ const pointPopupOverlay = new ol.Overlay({
 });
 map.addOverlay(pointPopupOverlay);
 
+// Delegated handler: links to /gen/ open in _top when not logged in (OAuth iframe restriction)
+if (pointPopup) {
+  pointPopup.addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    if (href.indexOf('/gen/') !== -1 && (typeof login_role === 'undefined' || login_role != 1)) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.open(href, '_top');
+    }
+  });
+}
+
 // Center pin — floating marker at map center, shown when popup is active
 var centerPinEl = document.createElement('div');
 centerPinEl.id = 'center-pin';
@@ -514,9 +528,13 @@ function coordBlock(lon, lat) {
 function popupLinks(lon, lat, zoom) {
   const wgsLat = Number(lat);
   const wgsLon = Number(lon);
+  const isLoggedIn = (typeof login_role !== 'undefined' && login_role == 1);
   const link = function (href, icon, title, label, panel) {
     if (panel) {
-      return '<a href="#" onClick="showmeerkat(\'' + href + '\',{}); return false;" title="' + title + '"><i class="fa ' + icon + '"></i> ' + label + '</a>';
+      if (isLoggedIn) {
+        return '<a href="#" onClick="showmeerkat(\'' + href + '\',{}); return false;" title="' + title + '"><i class="fa ' + icon + '"></i> ' + label + '</a>';
+      }
+      return '<a href="' + href + '" target="_top" title="' + title + '"><i class="fa ' + icon + '"></i> ' + label + '</a>';
     }
     return '<a href="' + href + '" target="_blank" rel="noopener" title="' + title + '"><i class="fa ' + icon + '"></i> ' + label + '</a>';
   };
