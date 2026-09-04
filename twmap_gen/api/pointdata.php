@@ -98,6 +98,8 @@ exit(0);
 
 function tell_story($d) {
 	global $site_html_root;
+	list($st,$info) = userid();
+	// 先判斷是否登入
 	
 	$a = "";
 	if (isset($d['ele'])) {
@@ -133,13 +135,17 @@ function tell_story($d) {
 		$a .= sprintf("%s",implode(",",$astr));
 		if ($d['prominence'] >= 100){
 			$a .= sprintf("<br>獨立度: %s M", $d['prominence'] );
-			$a .= sprintf("<a href=# onClick=\"showmeerkat('%s/admin/promlist.php?start=%d',{}); return false\"''>(%d)</a>",$site_html_root,$d['prominence_index']-1, $d['prominence_index'] );
+			if ($st === false) {
+				$a .= sprintf('<a href="/%s/main.php?return=twmap3" target="_top">(%d)</a>',$site_html_root,$d['prominence_index']-1 );
+			}else {
+				$a .= sprintf("<a href=# onClick=\"showmeerkat('%s/admin/promlist.php?start=%d',{}); return false\"''>(%d)</a>",$site_html_root,$d['prominence_index']-1, $d['prominence_index'] );
+			}
 		}
 	}
 	if (!empty($d['comment']))
 		$a .= sprintf("<br>註解: %s", $d['comment']);
 	$a .= sprintf("<br>資料: %s",($d['checked'])? "ok" : "待查");
-	list($st,$info) = userid();
+	
 	// 1. 未登入
 	if ($st === false) {
 		// do nothing

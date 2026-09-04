@@ -94,7 +94,7 @@ $login_role = ($st === true) ? 1 : 0;
     <strong>軟體資訊：</strong>
     <ul>
       <li>使用 OpenLayers 10.3.1 + OpenStreetMap 圖層+ 台灣歷史百年地圖 + NLSC 等圖層</li>
-      <li>版本：v<?= $ver ?></li>      
+      <li>版本：v<?= $ver ?></li> 從 v4.0 開始, AI 代理 kicks in.
       <?php if ($st === true): ?>
         <li>使用者 ID：<?= $_SESSION['uid'] ?></li>
       <?php endif; ?>

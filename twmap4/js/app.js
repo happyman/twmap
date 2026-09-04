@@ -1561,6 +1561,9 @@ if (mobileMenuBtn) {
     e.stopPropagation();
     toolbarRight.classList.toggle('open');
   });
+  toolbarRight.addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
   document.addEventListener('click', function () {
     toolbarRight.classList.remove('open');
   });

@@ -8,10 +8,16 @@ $_SESSION = array();
 $_SESSION['loggedin']=false;
 session_destroy();
 session_commit();
+if (isset($_GET['return']) && $_GET['return'] == 'twmap3' ) {
+		//$_SESSION['redirto'] = $TWMAP3URL;
+      $nexturl = $TWMAP3URL;
+	} else{
+      $nexturl = "login.php";
+   }
 ?>
 <html>
 <head>
-<meta http-equiv="REFRESH" content="1;url=login.php">
+<meta http-equiv="REFRESH" content="1;url=<?php echo $nexturl; ?>">
 <title>Log Out</title>
 </head>
 <body>
