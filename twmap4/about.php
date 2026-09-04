@@ -8,7 +8,7 @@ if ($st === false) {
   $greetings = "歡迎光臨";
   $login_link = sprintf(
     '<a href="%s" target="_top">登入</a>',
-    $CONFIG['site_twmap_html_root'] . "main.php?return=twmap4"
+    $CONFIG['site_twmap_html_root'] . "main.php?return=twmap3"
   );
   $role_text = "";
 } else {
