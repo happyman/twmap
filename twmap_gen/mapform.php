@@ -159,10 +159,21 @@ $('#bt1').unbind('click').click(function() {
 		$('#step_go').text("8");
 	}
 });
+// 每次送出前重新產生唯一 channel, 避免同頁多份工作共用 log_channel
+// (共用會讓 backend_make.php 覆寫 redis job-params key, 先完成的那份
+//  註冊+刪 key 後, 後完成的 callback 就會得到 "no such channel")
+function new_formid() {
+	var s = Date.now().toString(36);
+	for (var i = 0; i < 4; i++) s += Math.random().toString(36).slice(2);
+	$("#formid").val(s);
+	wsServer = 'wss://ws.happyman.idv.tw:443/twmap_' + s;
+	connect_ws();
+}
 $('#create').unbind('click').click(function() {
 	//if (!$("#mapform").valid()) return false;
 	// 不用 validate plugin 了
 	// 先 block 再 ajax
+	new_formid();
 	console.log($('#formid').val());
 	if ($("#mapform input[name=title]").val().length < 2) {
 		alert("請輸入標題喔(多一點字)");
@@ -206,6 +217,7 @@ $('#create').unbind('click').click(function() {
 });
 $('#create2').unbind('click').click(function() {
 	//$("#mapform").attr('action', "backend_make.php");
+	new_formid();
 	if (!$('input:file').val()) {
 		alert("請選擇檔案");
 		return false;
@@ -252,6 +264,7 @@ $('#create2').unbind('click').click(function() {
 });
 $('#create3').unbind('click').click(function() {
 	$("#mapform input[name=gps]").val(2);
+	new_formid();
 	if ($("#mapform input[name=title]").val().length < 2) {
 		alert("請輸入標題喔(多一點字)");
 		return false;
