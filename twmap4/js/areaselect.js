@@ -179,7 +179,7 @@ function AreaSelect(opts) {
     var target = url + callmake + '&title=' + encodeURIComponent(title) + '&datum=' + datum;
     closeModal();
     if (window.confirm('程式將會傳送參數給地圖產生器,確定嘛?')) {
-      window.location.href = target;
+      window.top.location.href = target;
     }
   }
 
