@@ -197,12 +197,19 @@ def _draw_label(draw, text, font, x, y, color, bg_color):
 
 
 def composite_logo(
-    img: np.ndarray, text: str, font_path: str | None = None, font_size: int = 26
+    img: np.ndarray,
+    text: str,
+    font_path: str | None = None,
+    font_size: int = 26,
+    line_spacing: int | None = None,
 ) -> np.ndarray:
     """Stamp a text logo in the northeast (top-right) corner.
 
     ``text`` may contain ``\\n`` to stack multiple lines (e.g. datum on the
-    first line, source label beneath it). Returns a new array.
+    first line, source label beneath it). ``line_spacing`` sets the vertical
+    gap between lines (default ~60% of the font size, wider than the old
+    ``font_size // 8`` so two-line titles like ``TWD67\\n魯地圖`` breathe).
+    Returns a new array.
     """
     out = _as_rgba_image(img)
     w, h = out.size
@@ -211,6 +218,8 @@ def composite_logo(
     else:
         font = _default_font(font_size)
     draw = ImageDraw.Draw(out)
+    if line_spacing is None:
+        line_spacing = max(6, int(font_size * 0.6))
     lines = [line for line in text.split("\n") if line]
     widths = []
     heights = []
@@ -219,8 +228,7 @@ def composite_logo(
         widths.append(bbox[2] - bbox[0])
         heights.append(bbox[3] - bbox[1])
     tw = max(widths)
-    line_gap = max(2, font_size // 8)
-    th = sum(heights) + line_gap * (len(lines) - 1)
+    th = sum(heights) + line_spacing * (len(lines) - 1)
     pad = 8
     x0 = w - tw - pad * 2
     y0 = pad
@@ -230,7 +238,7 @@ def composite_logo(
     cy = y0 + pad
     for line, lh in zip(lines, heights):
         draw.text((x0 + pad, cy), line, font=font, fill=(0, 0, 0))
-        cy += lh + line_gap
+        cy += lh + line_spacing
     return np.array(out)
 
 

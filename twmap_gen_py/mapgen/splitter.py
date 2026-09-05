@@ -188,27 +188,91 @@ def _add_borders(img: np.ndarray, grid_info) -> np.ndarray:
         grid_info.get("total_rows", 1),
     )
 
-    # Right edge: "黏貼處" vertical marker (not on last column)
+    # Right edge: "黏 貼 處" vertical marker (not on last column), vertically
+    # centered on the edge. Mirrors PHP `pango:'黏\n\n\n\n貼\n\n\n\n處'` with
+    # `-gravity East`.
     if col < total_cols - 1:
-        text = "黏\n\n\n\n貼\n\n\n\n處"
+        text = "黏\n\n\n\n\n\n貼\n\n\n\n\n\n處"
         draw.rectangle([w - 40, 40, w - 8, h - 40], fill=(255, 255, 255))
-        _draw_multiline(draw, text, font, w - 34, 60, (0, 0, 0))
+        _draw_multiline_centered(
+            draw, text, font, x_center=w - 24, y_center=h / 2, color=(0, 0, 0)
+        )
 
-    # Bottom edge: horizontal marker (not on last row)
+    # Bottom edge: horizontal marker (not on last row), horizontally centered.
+    # Mirrors PHP `pango:'黏             貼             處'` with `-gravity South`.
     if row < total_rows - 1:
-        text = "黏             貼             處"
+        text = "黏" + "\u3000" * 8 + "貼" + "\u3000" * 8 + "處"
         draw.rectangle([40, h - 40, w - 40, h - 8], fill=(255, 255, 255))
-        draw.text((60, h - 32), text, font=font, fill=(0, 0, 0))
+        _draw_text_centered(
+            draw, text, font, x_center=w / 2, y_center=h - 24, color=(0, 0, 0)
+        )
+
+    # Page-index grid in the SE corner, confined to the 32px junction where the
+    # bottom and right paste strips overlap so it never covers the map.
+    # Mirrors PHP `Splitter::imageindex` (grid of page cells, current filled).
+    if total_cols * total_rows > 1:
+        _draw_page_index(draw, row, col, total_cols, total_rows, w, h)
 
     return np.array(im)
 
 
-def _draw_multiline(draw, text: str, font, x, y, color):
-    line_h = 0
-    for line in text.split("\n"):
-        draw.text((x, y + line_h), line, font=font, fill=color)
+def _draw_multiline_centered(draw, text, font, x_center, y_center, color):
+    """Draw a multi-line string centered around (x_center, y_center)."""
+    lines = text.split("\n")
+    heights = []
+    for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
-        line_h += bbox[3] - bbox[1] + 4
+        heights.append(bbox[3] - bbox[1])
+    block_h = sum(heights) + 4 * (len(lines) - 1)
+    y = y_center - block_h / 2
+    for i, line in enumerate(lines):
+        bbox = draw.textbbox((0, 0), line, font=font)
+        tw = bbox[2] - bbox[0]
+        draw.text((x_center - tw / 2 - bbox[0], y - bbox[1]), line, font=font, fill=color)
+        y += heights[i] + 4
+
+
+def _draw_text_centered(draw, text, font, x_center, y_center, color):
+    """Draw a single-line string centered around (x_center, y_center)."""
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+    draw.text(
+        (x_center - tw / 2 - bbox[0], y_center - th / 2 - bbox[1]),
+        text, font=font, fill=color,
+    )
+
+
+def _draw_page_index(draw, row, col, total_cols, total_rows, w, h):
+    """Draw the PHP-style page-index grid diagram in the SE corner.
+
+    Confined to the 32px paste-strip junction (bottom + right strips overlap
+    at ``[w-40, w-8] x [h-40, h-8]``) so it never covers the map content.
+    Mirrors ``Splitter::imageindex()``: an white grid of page cells with the
+    current page filled black and the rest outlined.
+    """
+    x0 = w - 40
+    y0 = h - 40
+    inner = 24  # grid area inside the junction, with a small margin
+    cell_w = max(1, inner // total_cols)
+    cell_h = max(1, inner // total_rows)
+    grid_w = cell_w * total_cols
+    grid_h = cell_h * total_rows
+    gx = x0 + (32 - grid_w) // 2
+    gy = y0 + (32 - grid_h) // 2
+    draw.rectangle([gx, gy, gx + grid_w - 1, gy + grid_h - 1], fill=(255, 255, 255))
+    for j in range(total_rows):
+        for i in range(total_cols):
+            cx = gx + i * cell_w
+            cy = gy + j * cell_h
+            if j == row and i == col:
+                draw.rectangle(
+                    [cx, cy, cx + cell_w - 1, cy + cell_h - 1], fill=(0, 0, 0)
+                )
+            else:
+                draw.rectangle(
+                    [cx, cy, cx + cell_w - 1, cy + cell_h - 1], outline=(0, 0, 0)
+                )
 
 
 def _overlay_index(img: np.ndarray, index_img: np.ndarray) -> np.ndarray:

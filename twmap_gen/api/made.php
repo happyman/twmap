@@ -14,7 +14,7 @@ $param  = redis_get($log_channel);
 // error_log(print_r([$log_channel,$param],true)); 
 
 if ($param === FALSE) {
-	my_error_out("no such channel");
+	my_error_out("no such channel: " . $_GET['status']);
 }
 
 if ($_REQUEST['status'] == 'ok') {

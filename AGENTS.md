@@ -133,7 +133,7 @@ numpy>=1.24          # Transforms, adaptive threshold
 - [x] 9. `notify.py` — WebSocket progress
 - [x] 10. `cli.py` + `cmd_make2.py` — Wire everything together
 - [x] 11. CLI helpers: `test-source`, `compare-sources`, `list-sources`
-- [x] 12. Unit tests (78 passing)
+- [x] 12. Unit tests (92 passing)
 
 ## Current Status
 - Core pipeline implemented and working end-to-end (download → stitch → reproject → grid/tags/logo → grayscale → PDF/KMZ/GeoTIFF)
@@ -145,5 +145,8 @@ numpy>=1.24          # Transforms, adaptive threshold
 - **`-G` (`--include-tracks`) = PHP `include_gpx` has tile-layer variants**: each source's `MapSource.layers_gpx` mirrors `Stitcher::gettileurl()` — v3/2016 swap to the `*_nowp_nocache` source, NLSC/archival multiply the archive layer with the `happyman_nowp` overlay (`composite -compose Multiply`, via `compositor.composite_layers`). Multi-layer stitching now downloads each layer into its own `layer{i}/` subdir to avoid `{x}_{y}.png` collisions. Sources without a gpx variant fall back to normal tiles.
 - **Print/PDF output parity**: like PHP (`$outimage_gray` for split/pages/PDF vs `$outimage` for GeoTIFF/KMZ), the pages/PDF are built from the *grayscale* image and GeoTIFF/KMZ from the *color* tagged image (`-c` keeps color). Verified end-to-end: `-G -v 2016` 7x5 TWD67 PDF is 100% grayscale and the base differs from the non-`-G` render (nowp trails added).
 - **Progress notifications**: `notify.py` Notifier (background-threaded `websockets` client) pushes `step:<name>` + `ps%NN` messages to the frontend across the whole pipeline; `--ws-url/-l` arg on both `make` and `legacy`. Per-tile download progress, per-stage steps (download/base/style/gpx/grayscale/split/pdf/kmz/geotiff), and `err:<msg>` on failure. Loopback connections bypass the http(s)_proxy env so a same-host frontend isn't 403'd.
-- Branch: `feat/python-mapgen`
-- Tests: `uv run python -m pytest` (81 passing)
+- **Paste markers + page index**: `splitter._add_borders` centers the bottom 「黏 貼 處」 horizontally and the right one vertically, with widened glyph spacing (8 full-width spaces / 6 newlines). The PHP-style page-index grid (`Splitter::imageindex`) is confined to the 32px SE corner where the paste strips overlap, so it marks the paste edge without ever covering the map. Single pages stay bare (PHP early-return parity).
+- **Logo line spacing**: `composite_logo` draws `\n`-separated titles line-by-line with a default inter-line gap of 0.6× font size (up from `font_size // 8`), so two-line titles like `TWD67\n魯地圖` breathe.
+- **GeoTIFF**: always written LZW-compressed (satisfies `show.php`'s `file|grep LZW` check so it never re-generates); `tests/test_geotiff.py` asserts `Compression.lzw` + region CRS round-trip.
+- **Branch note**: the tag-position fix + AT/multiply fixes + all prior work live on **master** (`c11fbc9`). The stale `feat/python-mapgen` (at `d412f40`) was missing those commits (coordinate tags regressed); work now continues on master.
+- Tests: `uv run python -m pytest` (92 passing)

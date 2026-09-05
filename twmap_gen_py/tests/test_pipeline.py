@@ -160,3 +160,79 @@ def test_make_simage_full_page_same_scale():
     # (5*315+42)*92% = 1488 wide; 7*315*92% = 2029 tall (aspect preserved)
     assert abs((xs.max() - xs.min() + 1) - 1488) <= 3
     assert abs((ys.max() - ys.min() + 1) - 2029) <= 3
+
+
+def _dark_page_mask(out):
+    return out[..., :3].sum(axis=-1) < 400
+
+
+def test_single_page_has_no_paste_marks_or_index():
+    """A one-page map must be printed bare (no paste markers, no index),
+    mirroring PHP `make_simages` early-return for a single page."""
+    page = _rgba(7 * 315, 5 * 315 + 42, fill=255)
+    out = make_simage(page, 1492, 2110, 5, 7, 315,
+                      grid_info={"row": 0, "col": 0, "total_cols": 1, "total_rows": 1})
+    assert _dark_page_mask(out).sum() < 100
+
+
+def test_multi_page_paste_markers_centered_and_index_drawn():
+    """Multi-page maps get centered paste markers (bottom/right) plus a
+    page-grid index confined to the SE paste-strip junction; markers must not
+    appear on the last row/column, and the index must not cover the map."""
+    page = _rgba(5 * 315, 5 * 315, fill=255)
+    h, w = 2110, 1492
+
+    # First page (row=0, col=0): both markers + index.
+    out = make_simage(page, 1492, 2110, 5, 5, 315,
+                      grid_info={"row": 0, "col": 0, "total_cols": 3, "total_rows": 2})
+    dark = _dark_page_mask(out)
+    # Bottom marker: ink near the bottom edge, horizontally centered.
+    bottom = dark[h - 38:h - 10]
+    xs = np.where(bottom[:, :w - 44].any(axis=0))[0]
+    assert abs((xs.min() + xs.max()) / 2 - w / 2) <= 8
+    # Right marker: ink near the right edge, vertically centered.
+    right = dark[:, w - 44:w - 8]
+    ys = np.where(right[:h - 44].any(axis=1))[0]
+    assert abs((ys.min() + ys.max()) / 2 - h / 2) <= 8
+    # The page-grid index lives fully inside the 32px strip junction
+    # (w-40..w-8, h-40..h-8): some dark cell grid there...
+    junction = dark[h - 40:h - 8, w - 40:w - 8]
+    assert 0.03 < junction.mean() < 0.5
+    # ...and NOTHING dark between the junction and the map content edge:
+    # the 100m band just inside the strips (h-140..h-44 / w-140..w-44) stays
+    # blank on this white page.
+    assert dark[h - 140:h - 44, w - 140:w - 44].sum() < 100
+
+    # Last-row page (row=1, col=0): no bottom marker, right marker still there.
+    out = make_simage(page, 1492, 2110, 5, 5, 315,
+                      grid_info={"row": 1, "col": 0, "total_cols": 3, "total_rows": 2})
+    dark = _dark_page_mask(out)
+    xs = np.where(dark[h - 38:h - 10, :w - 44].any(axis=0))[0]
+    assert len(xs) == 0
+    ys = np.where(dark[:, w - 44:w - 8][:h - 44].any(axis=1))[0]
+    assert len(ys) > 0
+
+
+def test_composite_logo_multiline_spacing():
+    """A two-line logo must render with a wider-than-old inter-line gap."""
+    from mapgen.grinder import composite_logo
+
+    base = np.full((240, 320, 3), 200, np.uint8)
+    out = composite_logo(base, "TWD67\n魯地圖", font_size=26)
+    dark = out.sum(axis=-1) < 400
+    cols = np.where(np.any(dark, axis=0))[0]
+    band = dark[:, cols.min():cols.max() + 1]
+    hits = band.any(axis=1)
+    # Two text bands separated by a white gap of at least 8px (the old
+    # `font_size // 8` = 3px gap would fail this).
+    gaps = []
+    in_white = False
+    start = 0
+    for i, v in enumerate(hits):
+        if not v and not in_white:
+            in_white, start = True, i
+        elif v and in_white:
+            gaps.append(i - start)
+            in_white = False
+    assert len(gaps) >= 2          # top pad + inter-line gap
+    assert gaps[-2] >= 8           # the inter-line gap itself
