@@ -40,33 +40,49 @@ class Noop(Transform):
 
 
 class Equalize(Transform):
-    """Histogram equalization (per-channel), matching `-equalize`."""
+    """Histogram equalization, matching `-equalize`.
+
+    ImageMagick's `-equalize` derives a single lookup table from the image
+    histogram and applies it to every color channel, preserving the original
+    channel balance (it does not neutralize per-channel histograms). The LUT
+    here is built from the pooled RGB histogram. An alpha channel is preserved
+    untouched.
+    """
 
     def apply(self, img: np.ndarray) -> np.ndarray:
         if img.ndim == 2:
             return _equalize_channel(img)
+        rgb = img[..., :3]
+        hist = np.bincount(rgb.ravel(), minlength=256).astype(np.float64)
+        lut = _equalize_lut(hist)
         out = img.copy()
-        for c in range(img.shape[2]):
-            out[..., c] = _equalize_channel(img[..., c])
+        out[..., :3] = lut[rgb]
         return out
+
+
+def _equalize_lut(hist: np.ndarray) -> np.ndarray:
+    """Build a 256-entry equalization LUT from a channel histogram."""
+    cdf = hist.cumsum()
+    cdf_min = cdf[cdf > 0].min() if cdf.any() else 0.0
+    total = hist.sum()
+    # A constant channel has no range to stretch; leaving it untouched avoids
+    # the degenerate case where cdf_min == total (which would map it to 0).
+    if cdf_min >= total:
+        return np.arange(256, dtype=np.uint8)
+    return ((cdf - cdf_min) / (total - cdf_min) * 255).astype(np.uint8)
 
 
 def _equalize_channel(ch: np.ndarray) -> np.ndarray:
     """Equalize a single 2D channel via its histogram."""
-    hist = np.bincount(ch.ravel(), minlength=256).astype(np.float64)
-    cdf = hist.cumsum()
-    cdf_min = cdf[cdf > 0].min() if cdf.any() else 0.0
-    total = ch.size
-    # Map pixel value -> equalized value (0..255)
-    lut = ((cdf - cdf_min) / max(total - cdf_min, 1) * 255).astype(np.uint8)
-    return lut[ch]
+    return _equalize_lut(np.bincount(ch.ravel(), minlength=256).astype(np.float64))[ch]
 
 
 class Gamma(Transform):
     """Gamma correction, matching `-gamma value`.
 
     ImageMagick applies ``pixel^(1/gamma)``. A gamma of 2.2 raises midtones
-    (brightens), a gamma < 1 darkens.
+    (brightens), a gamma < 1 darkens. Applied to the RGB channels only; an
+    alpha channel is preserved untouched (ImageMagick's default channel set).
     """
 
     def __init__(self, value: float):
@@ -75,9 +91,15 @@ class Gamma(Transform):
     def apply(self, img: np.ndarray) -> np.ndarray:
         if self.value <= 0:
             raise ValueError("gamma must be > 0")
-        f = _as_float(img) / 255.0
+        if img.ndim == 2:
+            f = _as_float(img) / 255.0
+            f = np.power(f, 1.0 / self.value)
+            return (f * 255.0).clip(0, 255).astype(np.uint8)
+        f = _as_float(img[..., :3]) / 255.0
         f = np.power(f, 1.0 / self.value)
-        return (f * 255.0).clip(0, 255).astype(np.uint8)
+        out = img.copy()
+        out[..., :3] = (f * 255.0).clip(0, 255).astype(np.uint8)
+        return out
 
 
 class Contrast(Transform):

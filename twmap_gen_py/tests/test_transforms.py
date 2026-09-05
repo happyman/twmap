@@ -46,6 +46,45 @@ def test_equalize_trivial():
     assert out.dtype == np.uint8
 
 
+def test_equalize_preserves_alpha():
+    """A fully-opaque RGBA tile must stay fully opaque after equalize."""
+    img = np.full((8, 8, 4), 255, dtype=np.uint8)
+    img[..., 0] = np.tile(np.arange(8), (8, 1))  # grayscale ramp in R
+    img[..., 1] = 0
+    img[..., 2] = 0
+    out = Equalize().apply(img)
+    assert out.shape == img.shape
+    assert np.all(out[..., 3] == 255)  # alpha untouched
+    assert np.all(out[..., 0] >= 0)
+
+
+def test_equalize_constant_channel_unchanged():
+    """Equalize of a constant channel must not collapse it to zero."""
+    img = np.full((5, 5, 4), 255, dtype=np.uint8)
+    out = Equalize().apply(img)
+    assert np.all(out[..., :3] == 255)
+    assert np.all(out[..., 3] == 255)
+
+
+def test_equalize_preserves_channel_balance():
+    """Equalize must not neutralize a color cast (unlike per-channel EQ)."""
+    img = np.full((50, 50, 3), 0, dtype=np.uint8)
+    img[..., 0] = 200  # strong red cast
+    img[..., 1] = 150
+    img[..., 2] = 100
+    out = Equalize().apply(img)
+    means = [int(out[..., c].mean()) for c in range(3)]
+    assert means[0] > means[1] > means[2], f"balance lost: {means}"
+
+
+def test_gamma_preserves_alpha():
+    img = np.full((5, 5, 4), 128, dtype=np.uint8)
+    img[..., 3] = 200  # partially transparent alpha
+    out = Gamma(2.2).apply(img)
+    assert np.all(out[..., 3] == 200)
+    assert out[0, 0, 0] > 128
+
+
 def test_level_stretches():
     img = np.full((5, 5, 3), 128, dtype=np.uint8)
     # black=0.25 -> black point at 64, so 128 stretches to ~85

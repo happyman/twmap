@@ -16,7 +16,7 @@ from pathlib import Path
 
 import numpy as np
 import rasterio
-from rasterio.warp import Resampling, calculate_default_transform, reproject
+from rasterio.warp import Resampling, reproject
 
 from .config import (
     CRS_MERCATOR,
@@ -58,11 +58,16 @@ async def download_tiles(
     urls: list[tuple[str, int, int]],  # (url, x, y)
     dest: Path,
     opts: DownloadOptions | None = None,
+    on_progress=None,
 ) -> None:
     """Download tiles in parallel into ``dest`` as ``{x}_{y}.png``.
 
     ``urls`` is a list of (url, x_index, y_index). Files are written as
     ``{x}_{y}.png``. Skips already-downloaded non-empty files.
+
+    ``on_progress``, if given, is called with the fraction of tiles already
+    available (cached or freshly downloaded) as they complete, so a live
+    frontend can show per-tile download progress.
     """
     import asyncio
 
@@ -72,10 +77,22 @@ async def download_tiles(
     dest.mkdir(parents=True, exist_ok=True)
     sem = asyncio.Semaphore(opts.max_concurrent)
     headers = {"User-Agent": opts.user_agent}
+    total = len(urls)
+    done = 0
+    done_lock = asyncio.Lock()
+
+    def report() -> None:
+        nonlocal done
+        if on_progress is not None:
+            on_progress(done / total if total else 1.0)
 
     async def fetch_one(url: str, x: int, y: int) -> None:
+        nonlocal done
         fname = dest / f"{x}_{y}.png"
         if fname.exists() and fname.stat().st_size > 0:
+            async with done_lock:
+                done += 1
+            report()
             return
         for attempt in range(opts.retries):
             try:
@@ -89,6 +106,9 @@ async def download_tiles(
                 if not data:
                     raise RuntimeError("empty response")
                 fname.write_bytes(data)
+                async with done_lock:
+                    done += 1
+                report()
                 return
             except Exception as exc:  # noqa: BLE001
                 if attempt == opts.retries - 1:
@@ -111,19 +131,13 @@ def _tile_mercator_bounds(x: int, y: int, zoom: int) -> tuple[float, float, floa
     return minx, maxy - TILE_SIZE * res, minx + TILE_SIZE * res, maxy
 
 
-def _mosaic_geotransform(
-    min_tile_x: int, min_tile_y: int, zoom: int
-) -> tuple[float, float, float, float, float, float]:
-    """Build the affine geotransform for a mosaic whose origin top-left is
-    the top-left corner of tile (min_tile_x, min_tile_y).
-
-    Affine params: (x_origin, x_pixel_scale, x_rot, y_origin, y_rot, y_pixel_scale)
-    Pixel scale is positive east, negative north.
-    """
+def _mosaic_origin(min_tile_x: int, min_tile_y: int, zoom: int) -> tuple[float, float]:
+    """Top-left corner (minx, maxy) in EPSG:3857 of the mosaic, whose origin
+    is the top-left corner of tile (min_tile_x, min_tile_y)."""
     res = _pixel_size_at_zoom(zoom)
     minx = -_MERC_MAX + min_tile_x * TILE_SIZE * res
     maxy = _MERC_MAX - min_tile_y * TILE_SIZE * res
-    return (minx, res, 0.0, maxy, 0.0, -res)
+    return minx, maxy
 
 
 def _read_tile_as_array(path: Path) -> np.ndarray | None:
@@ -174,7 +188,9 @@ async def stitch_to_mosaic(
             url = _tile_url(url_tmpl, tile_order, zoom, tx, ty)
             urls.append((url, tx, ty))
 
-    await download_tiles(urls, workdir, download)
+    logger.info("Downloading %d tiles for layer %d", len(urls), layer_index)
+    await download_tiles(urls, workdir, download, on_progress=on_progress)
+    logger.info("Downloaded %d tiles for layer %d", len(urls), layer_index)
 
     # Read tiles into a full mosaic buffer (RGBA in EPSG:3857 grid)
     mosaic = np.zeros((nrows * TILE_SIZE, ncols * TILE_SIZE, 4), dtype=np.uint8)
@@ -194,7 +210,11 @@ async def stitch_to_mosaic(
             mosaic[row0 : row0 + TILE_SIZE, col0 : col0 + TILE_SIZE] = arr
 
     # Write mosaic directly to a georeferenced GeoTIFF on disk
-    geotransform = _mosaic_geotransform(min_tx, min_ty, zoom)
+    res = _pixel_size_at_zoom(zoom)
+    minx, maxy = _mosaic_origin(min_tx, min_ty, zoom)
+    # Affine(xscale, xskew, x_origin, yskew, yscale, y_origin) — NB NOT the
+    # GDAL geotransform order (x_origin, xscale, ...) that `geotransform` holds.
+    mosaic_transform = rasterio.Affine(res, 0.0, minx, 0.0, -res, maxy)
     out_path = workdir / f"mosaic_layer{layer_index}.tif"
     with rasterio.open(
         out_path,
@@ -205,14 +225,15 @@ async def stitch_to_mosaic(
         count=4,
         dtype="uint8",
         crs=CRS_MERCATOR,
-        transform=rasterio.Affine(*geotransform),
+        transform=mosaic_transform,
     ) as dst:
         # Rearrange HxWxC -> CxHxW
         for c in range(4):
             dst.write(mosaic[..., c], c + 1)
 
+    logger.info("Stitched layer %d mosaic (%dx%d)", layer_index, ncols, nrows)
     if on_progress:
-        on_progress(0.6)
+        on_progress(1.0)
     return out_path
 
 
@@ -243,6 +264,11 @@ def reproject_to_twd(
     Returns an RGBA uint8 numpy array in TWD coordinates covering exactly
     the ``region`` bounding box.
 
+    The destination transform is built directly from the region bounds in its
+    TWD CRS (``x0, y0`` top-left, positive-east / negative-north scales derived
+    from the target pixel size), so the whole output samples the mosaic tiles.
+    GDAL maps each destination pixel back into the EPSG:3857 source grid.
+
     Note on dateline/antimeridian: Taiwan is far from ±180 so a single
     transform range is fine.
     """
@@ -251,12 +277,9 @@ def reproject_to_twd(
 
     with rasterio.open(mosaic_path) as src:
         dst_height, dst_width = out_shape
-        dst_transform, sw, sh = calculate_default_transform(
-            src_crs, dst_crs, src.width, src.height,
-            left=region.x0, bottom=region.y1, right=region.x1, top=region.y0,
-            dst_width=dst_width, dst_height=dst_height,
-            resolution=None,
-        )
+        res_x = region.width_m / dst_width
+        res_y = region.height_m / dst_height
+        dst_transform = rasterio.Affine(res_x, 0, region.x0, 0, -res_y, region.y0)
 
         dst = np.zeros((dst_height, dst_width, src.count), dtype=np.uint8)
         for c in range(src.count):
@@ -340,16 +363,24 @@ async def build_base_image(
         # Rows of chunks (east-west within each row of the original region).
         nx = max(1, math.ceil(region.width_m / 1000.0 * px_per_km / MAX_CHUNK_PX))
         ny = max(1, math.ceil(region.height_m / 1000.0 * px_per_km / MAX_CHUNK_PX))
+        total = nx * ny
         rows = []
+        built = 0
         for j in range(ny):
             row_imgs = []
             for i in range(nx):
                 idx = j * nx + i
                 chunk = chunks[idx]
+
+                def scaled(frac: float, _start=built / total, _end=(built + 1) / total):
+                    if on_progress is not None:
+                        on_progress(_start + (_end - _start) * frac)
+
                 img = await _build_single(
                     chunk, source, px_per_km, workdir / f"chunk_{idx}",
-                    download, on_progress,
+                    download, scaled,
                 )
+                built += 1
                 row_imgs.append(img)
             rows.append(_stitch_chunks_horizontal(row_imgs))
         full = np.concatenate(rows, axis=0)
@@ -373,11 +404,23 @@ async def _build_single(
     from .compositor import composite_layers
     from .transforms import Pipeline
 
-    # Merge all layers into one RGBA stack, then composite
+    n_layers = len(source.layer_defs())
+
+    # Merge all layers into one RGBA stack, then composite. Each layer's
+    # stitch progress is scaled into its share of the 0..1 window.
     layer_imgs = []
-    for i in range(len(source.layer_defs())):
+    for i in range(n_layers):
+        if on_progress is not None:
+            start = i / n_layers
+            end = (i + 1) / n_layers
+
+            def scaled(frac: float, _s=start, _e=end) -> None:
+                on_progress(_s + (_e - _s) * frac)
+
+        else:
+            scaled = None
         mosaic = await stitch_to_mosaic(
-            region, source, source.zoom, workdir, download, i, on_progress
+            region, source, source.zoom, workdir, download, i, scaled
         )
         layer_rgba = _reproject_layer(mosaic, region, px_per_km)
         layer_imgs.append(layer_rgba)

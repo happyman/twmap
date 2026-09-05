@@ -197,7 +197,9 @@ def optimize_png(path: Path, pngquant: str | None = None) -> None:
     """Optimize a PNG in place using pngquant if available.
 
     ``pngquant`` is the binary path/name; if None or not found, the file is
-    left unchanged (no crash). Pillow's built-in optimization is a fallback.
+    left unchanged (no crash). Mirrors the PHP pipeline: quantize only when the
+    result still meets a quality 65-95 bar, otherwise leave the file untouched
+    (colorful maps like v3 keep full color depth; pngquant exits non-zero).
     """
     import shutil
     import subprocess
@@ -211,7 +213,7 @@ def optimize_png(path: Path, pngquant: str | None = None) -> None:
         out = Path(td) / "opt.png"
         try:
             subprocess.run(
-                [pngquant, "--force", "--output", str(out), str(path)],
+                [pngquant, "--speed", "1", "--quality", "65-95", "--output", str(out), str(path)],
                 check=True,
                 capture_output=True,
             )
@@ -220,8 +222,8 @@ def optimize_png(path: Path, pngquant: str | None = None) -> None:
 
                 os.replace(out, path)
                 logger.info("Optimized %s with pngquant", path)
-        except subprocess.CalledProcessError as exc:
-            logger.warning("pngquant failed: %s", exc.stderr.decode(errors="replace"))
+        except subprocess.CalledProcessError:
+            logger.info("pngquant skipped %s (below quality 65)", path)
 
 
 def _as_rgba_image(arr: np.ndarray) -> Image.Image:

@@ -29,7 +29,8 @@ class GpxOverlay:
     # list of (px_x, px_y, elevation) in map pixel coords
     track_segments: list[list[tuple[float, float, float]]] = field(default_factory=list)
     waypoints: list[dict] = field(default_factory=list)
-    label_trk: str = ""
+    label_trk: int = 0
+    label_trk_text: str = ""
     label_wpt: int = 0
     bbox_wgs84: tuple[float, float, float, float] | None = None
 
@@ -57,6 +58,8 @@ def parse_gpx(
     # Bounding box from all points
     lons, lats = [], []
     for trk in gpx.tracks:
+        if not ov.label_trk_text and trk.name:
+            ov.label_trk_text = trk.name
         for seg in trk.segments:
             seg_points = []
             for pt in seg.points:
@@ -183,4 +186,105 @@ def svg_to_png(svg_str: str, width_px: int, height_px: int) -> np.ndarray:
     return np.array(Image.open(BytesIO(png)).convert("RGBA"))
 
 
-__all__ = ["GpxOverlay", "parse_gpx", "render_overlay_to_svg", "svg_to_png"]
+_TRACK_WIDTH = 2
+_WPT_RADIUS = 3
+_FONT_SIZE = 14
+
+
+def render_overlay_to_image(
+    ov: GpxOverlay,
+    width_px: int,
+    height_px: int,
+    draw_labels: bool = True,
+) -> np.ndarray:
+    """Render the GPX overlay directly to a transparent RGBA numpy array.
+
+    This is the preferred path for overlay: tracks are drawn in their
+    elevation colors with alpha, so they can be alpha-composited onto the
+    (color) base image and remain colored on the printed map — decoupled from
+    any grayscale applied to the base.
+
+    Returns an RGBA uint8 array (HxWx4), transparent where there is no track.
+    """
+    from PIL import Image, ImageDraw
+
+    from .grinder import _default_font
+
+    # Transparent RGBA canvas
+    overlay = np.zeros((height_px, width_px, 4), dtype=np.uint8)
+    img = Image.fromarray(overlay, "RGBA")
+    draw = ImageDraw.Draw(img)
+
+    # Tracks with elevation color
+    if ov.track_segments:
+        all_ele = [p[2] for seg in ov.track_segments for p in seg]
+        min_ele = min(all_ele)
+        max_ele = max(all_ele)
+        for seg in ov.track_segments:
+            for i in range(len(seg) - 1):
+                x1, y1, e1 = seg[i]
+                x2, y2, e2 = seg[i + 1]
+                r, g, b = _elevation_color(e1, min_ele, max_ele)
+                draw.line(
+                    [(x1, y1), (x2, y2)],
+                    fill=(r, g, b, 230),
+                    width=_TRACK_WIDTH,
+                )
+
+    # Track name label at the first point
+    if draw_labels and ov.label_trk and ov.track_segments:
+        x, y, _ = ov.track_segments[0][0]
+        font = _default_font(_FONT_SIZE)
+        label = ov.label_trk_text or str(ov.label_trk)
+        draw.text((x + 8, y - 8), label, font=font, fill=(0, 0, 0, 255))
+
+    # Waypoints
+    font = _default_font(_FONT_SIZE)
+    for i, wpt in enumerate(ov.waypoints):
+        x, y = wpt["px"]
+        # Black filled circle with thin outline
+        draw.ellipse(
+            [(x - _WPT_RADIUS, y - _WPT_RADIUS), (x + _WPT_RADIUS, y + _WPT_RADIUS)],
+            fill=(0, 0, 0, 255),
+            outline=(255, 255, 255, 255),
+            width=1,
+        )
+        if draw_labels and ov.label_wpt and wpt.get("name"):
+            label = _wpt_label_text(ov.label_wpt, i + 1, wpt["name"])
+            draw.text((x + 8, y - 4), label, font=font, fill=(0, 0, 0, 255))
+
+    return np.array(img)
+
+
+def _wpt_label_text(mode: int, index: int, name: str) -> str:
+    """Format waypoint label per show_label_wpt mode (1=index, 2=name, 3=both)."""
+    if mode == 1:
+        return str(index)
+    if mode == 3:
+        return f"{index} {name}"
+    return name
+
+
+def apply_gpx_overlay(
+    base: np.ndarray,
+    overlay: np.ndarray,
+    opacity: float = 0.95,
+) -> np.ndarray:
+    """Alpha-composite the GPX overlay onto the base color image.
+
+    Uses source-over compositing so colored track lines/waypoints are drawn
+    on top of the map while the base map's colors are preserved underneath.
+    """
+    from .compositor import composite_layers
+
+    return composite_layers([base, overlay], mode="alpha", opacity=opacity)
+
+
+__all__ = [
+    "GpxOverlay",
+    "parse_gpx",
+    "render_overlay_to_svg",
+    "svg_to_png",
+    "render_overlay_to_image",
+    "apply_gpx_overlay",
+]

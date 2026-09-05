@@ -79,8 +79,8 @@ twmap_gen_py/
 # New Pythonic
 mapgen make --region 307000,2677000,12,6 --output ./out/ --map-type rudymap
 
-# Legacy compatible
-cmd_make2.py -r 307000:2677000:12:6:TWD67 -O ./out/ -v 2016
+# Legacy compatible (km units, matches PHP cmd_make2.php -r payload)
+cmd_make2.py -r 307:2677:12:6:TWD67 -O ./out/ -v 2016
 
 # Testing helpers
 mapgen test-source rudymap --tile 16/23456/12345 --show-steps --output ./debug/
@@ -140,6 +140,7 @@ numpy>=1.24          # Transforms, adaptive threshold
 - Uses `uv` as package manager (`uv sync`, `uv run`)
 - Verified working: `2016` (魯地圖), `3` (經建三) on TWD67 region
 - `nlsc` TWD render blocked only by sandbox SSL cert verification (URL/yzx order correct)
-- GPX overlay (gpx2svg) implemented but not yet wired into the `make` CLI (next stage)
+- **GPX overlay wired into `make`**: `--gpx file:trk_label:wpt_label` parses, renders elevation-colored tracks directly (numpy/PIL, no cairosvg dependency), and alpha-composites onto the base. Overlay is applied *after* grayscale so colored tracks stay visible on the `.gray.png`. Unit + CLI integration tests.
+- **Progress notifications**: `notify.py` Notifier (background-threaded `websockets` client) pushes `step:<name>` + `ps%NN` messages to the frontend across the whole pipeline; `--ws-url/-l` arg on both `make` and `legacy`. Per-tile download progress, per-stage steps (download/base/style/gpx/grayscale/split/pdf/kmz/geotiff), and `err:<msg>` on failure. Loopback connections bypass the http(s)_proxy env so a same-host frontend isn't 403'd.
 - Branch: `feat/python-mapgen`
-- Tests: `uv run python -m pytest` (39 passing)
+- Tests: `uv run python -m pytest` (52 passing)

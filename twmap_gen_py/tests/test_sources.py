@@ -5,7 +5,7 @@ import pytest
 from mapgen import config
 from mapgen.config import get_source, list_sources
 from mapgen.proj import Region
-from mapgen.stitcher import _mosaic_geotransform, _pixel_size_at_zoom, chunk_region
+from mapgen.stitcher import _mosaic_origin, _pixel_size_at_zoom, chunk_region
 
 
 def test_all_sources_present():
@@ -87,7 +87,7 @@ def test_pixel_size_at_zoom():
 
 
 def test_mosaic_geotransform_origin():
-    gt = _mosaic_geotransform(0, 0, 0)
+    minx, maxy = _mosaic_origin(0, 0, 0)
     # Top-left of tile (0,0) at zoom 0 is (-20037508.34, 20037508.34)
-    assert gt[0] == pytest.approx(-_pixel_size_at_zoom(0) * 128, rel=1e-3)
-    assert gt[5] < 0  # y scale negative (north-up)
+    assert minx == pytest.approx(-_pixel_size_at_zoom(0) * 128, rel=1e-3)
+    assert maxy == pytest.approx(_pixel_size_at_zoom(0) * 128, rel=1e-3)

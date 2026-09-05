@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import logging
 import sys
 import tempfile
 from pathlib import Path
+
+import numpy as np
 
 from . import __version__
 
@@ -149,10 +152,57 @@ def _add_make_args(p: argparse.ArgumentParser, legacy: bool) -> None:
         )
         p.add_argument("--debug", "-d", action="store_true", help="Debug")
 
+    # WebSocket progress reporting to the frontend.
+    p.add_argument(
+        "--ws-url",
+        "-l",
+        default=None,
+        help=(
+            "WebSocket URL for progress (ws://host:9002/twmap_<channel>), or "
+            "in legacy queue mode the bare channel name when --logurl_prefix "
+            "is given"
+        ),
+    )
+    # Legacy queue-mode args (job payload from backend_make.php + worker).
+    p.add_argument(
+        "-i",
+        "--remote-ip",
+        default=None,
+        help="Remote IP of the requester (logged; used by the PHP frontend)",
+    )
+    p.add_argument(
+        "-a",
+        "--callback",
+        default=None,
+        help="Callback URL invoked when the map is done (api/made.php)",
+    )
+    p.add_argument(
+        "--agent",
+        default=None,
+        help="Agent name reported to the frontend/callback",
+    )
+    p.add_argument(
+        "--logurl_prefix",
+        default=None,
+        help="WebSocket scheme+prefix; combined with -l channel",
+    )
+    p.add_argument(
+        "--logfile",
+        default=None,
+        help="Also write logs to this file",
+    )
+
 
 def _parse_region(spec: str) -> dict:
-    """Parse both 'x0,y0,w,h[,datum]' and legacy 'x:y:w:h:datum' formats."""
-    sep = ":" if ":" in spec else ","
+    """Parse both 'x0,y0,w,h[,datum]' and legacy 'x:y:w:h:datum' formats.
+
+    The modern comma format uses metre coordinates (``307000,2677000,12,6``).
+    The legacy colon format matches the PHP ``cmd_make2.php`` ``-r`` argument,
+    where ``startx``/``starty`` are in **kilometres** (the frontend queue
+    payload e.g. ``-r 274:2639:3:3:TWD97``), so they are scaled by 1000.
+    """
+    is_colon = ":" in spec
+    sep = ":" if is_colon else ","
     parts = [p for p in spec.split(sep) if p != ""]
     if len(parts) not in (4, 5):
         raise SystemExit(
@@ -161,6 +211,9 @@ def _parse_region(spec: str) -> dict:
         )
     x0, y0, sx, sy = (float(parts[0]), float(parts[1]), int(parts[2]), int(parts[3]))
     datum = parts[4].upper() if len(parts) == 5 else "TWD97"
+    if is_colon:
+        x0 *= 1000.0
+        y0 *= 1000.0
     return {"x0": x0, "y0": y0, "shiftx": sx, "shifty": sy, "datum": datum}
 
 
@@ -188,68 +241,281 @@ def cmd_make(args) -> None:
     source = get_source(args.map_type)
     region = _region_from_args(args)
 
-    from .grinder import composite_logo, draw_grid_lines, optimize_png, tag_coordinates
+    from .grinder import optimize_png
     from .stitcher import build_base_image
 
     logging.basicConfig(
         level=logging.DEBUG if args.debug else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    args.title = _decode_mime_title(args.title)
+    if getattr(args, "logfile", None):
+        fh = logging.FileHandler(args.logfile)
+        fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+        logger.addHandler(fh)
+    if getattr(args, "agent", None):
+        logger.info("Agent %s Roger that ^_^", args.agent.strip())
 
     outdir = Path(args.output)
     outdir.mkdir(parents=True, exist_ok=True)
     tmpdir = Path(args.tmpdir)
     tmpdir.mkdir(parents=True, exist_ok=True)
 
-    # Build the base image (download + merge + reproject)
-    logger.info("Generating %s over %s", source.name, region)
+    # Start the frontend progress notifier (best-effort).
+    notifier = _make_notifier(args)
+    notifier.start()
+    _report(notifier, "step:start")
+    _report(notifier, "ps%0")
+
     workdir = Path(tempfile.mkdtemp(dir=str(tmpdir), prefix="twmap_"))
     try:
+        logger.info("Generating %s over %s", source.name, region)
+
+        # Download + stitch + reproject: maps build progress (0..1) to 0..40%.
+        _report(notifier, "step:download")
+        if notifier.enabled:
+            def build_progress(frac: float) -> None:
+                notifier.progress(0.40 * frac)
+        else:
+            build_progress = None
+
         base = asyncio.run(
-            build_base_image(region, source, workdir=workdir)
+            build_base_image(region, source, workdir=workdir, on_progress=build_progress)
         )
+        _report(notifier, "step:base", 40)
 
-        # Apply post-reproject operations: grid, logo, tags
-        img = base
-        if args.grid_100m:
-            img = draw_grid_lines(img, source.pixel_per_km, step_m=100)
-        # 1000m grid is always drawn except v3+TWD67
-        if not (args.map_type == "3" and region.datum == "TWD67"):
-            img = draw_grid_lines(img, source.pixel_per_km, step_m=1000)
-        img = composite_logo(img, source.label)
-        img = tag_coordinates(img, region, source.pixel_per_km)
+        # Parse GPX if provided
+        gpx_param = _parse_gpx_arg(args.gpx) if args.gpx else None
 
-        if not args.keep_color:
-            img = _to_grayscale(img, source)
+        # Build color image: base + grid/logo/tags, then GPX on top so the
+        # elevation-colored tracks are not obscured by the map content.
+        _report(notifier, "step:style")
+        img_color = _apply_map_decorations(base, region, source, args)
+        if gpx_param:
+            _report(notifier, "step:gpx")
+            img_color = _apply_gpx_to_base(img_color, region, source, gpx_param)
+
+        # Grayscale version (if not keep_color). The GPX is composited *after*
+        # grayscale so the elevation-colored tracks stay visible on the gray map.
+        if args.keep_color:
+            img_gray = img_color.copy()
+        else:
+            _report(notifier, "step:grayscale")
+            gray_img = _to_grayscale(base, source)
+            img_gray = _apply_map_decorations(gray_img, region, source, args)
+            if gpx_param:
+                img_gray = _apply_gpx_to_base(
+                    img_gray, region, source, gpx_param
+                )
+        _report(notifier, "ps%60")
 
         # Output files
         prefix = _output_prefix(region, args)
         tag_png = outdir / f"{prefix}.tag.png"
         gray_png = outdir / f"{prefix}.gray.png"
+        outcmd = outdir / f"{prefix}.cmd"
+        outtext = outdir / f"{prefix}.txt"
 
-        if args.keep_color:
-            _save_png(img, tag_png)
-            _save_png(img, gray_png)
-        else:
-            _save_png(img, gray_png)
-            _save_png(img, tag_png)  # color copy (tagged)
+        _save_png(img_color, tag_png)
+        _save_png(img_gray, gray_png)
 
         optimize_png(tag_png)
         optimize_png(gray_png)
 
         logger.info("Wrote %s and %s", tag_png, gray_png)
 
-        # GPX overlay handled in a later stage (alpha compositing)
-        if args.gpx:
-            logger.info("GPX overlay requested but not yet wired (next stage)")
+        # Mirror PHP: record the full invocation into `{prefix}.cmd` for later
+        # debugging (the callback curl line is appended below).
+        outcmd.write_text(" ".join(sys.argv), encoding="utf-8")
 
-        # Split into pages + export
-        _handle_export(img, region, source, args, outdir, prefix)
+        # Split into pages + export (use the color image)
+        _report(notifier, "step:export")
+        outinfo = _handle_export(
+            img_color, region, source, args, outdir, prefix, notifier=notifier
+        )
 
+        # Clean up the temporary gray image (mirrors PHP `unlink($outimage_gray)`)
+        try:
+            gray_png.unlink()
+        except OSError:
+            pass
+
+        # Mirror PHP: save the split dim/paper/count metadata to `{prefix}.txt`.
+        outtext.write_text(
+            json.dumps(outinfo, ensure_ascii=False), encoding="utf-8"
+        )
+        logger.info("%s wrote to %s", json.dumps(outinfo), outtext)
+
+        # Mirror PHP: register the map with the frontend (api/made.php) before
+        # declaring 100% done. On failure notifier.error() runs + nonzero exit,
+        # so the queue worker releases the job for a retry.
+        _handle_callback(args, outcmd=outcmd)
+        _report(notifier, "ps%100")
+
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Fatal: %s", exc, exc_info=True)
+        notifier.error(str(exc))
+        raise
     finally:
         import shutil
 
         shutil.rmtree(workdir, ignore_errors=True)
+        notifier.stop()
+
+
+def _make_notifier(args) -> object:
+    from .notify import Notifier
+
+    return Notifier(url=_effective_ws_url(args))
+
+
+def _effective_ws_url(args) -> str | None:
+    """Resolve the frontend websocket URL.
+
+    ``-l`` accepts a full URL (``ws://host:9002/twmap_<channel>``) or, in the
+    legacy queue payload, a bare channel name combined with the worker-supplied
+    ``--logurl_prefix`` (``ws://twmap:9002/twmap_`` + ``<channel>``).
+    """
+    value = getattr(args, "ws_url", None)
+    if not value:
+        return None
+    if value.startswith(("ws://", "wss://")):
+        return value
+    prefix = getattr(args, "logurl_prefix", None)
+    if prefix:
+        return prefix + value
+    return None
+
+
+def _extract_channel(args) -> str:
+    """Derive the log_channel from -l (bare channel or full ws URL)."""
+    value = args.ws_url
+    if not value:
+        return ""
+    if value.startswith(("ws://", "wss://")):
+        return value.rstrip("/").rpartition("/")[2]
+    return value
+
+
+def _handle_callback(args, outcmd: Path | None = None) -> None:
+    """Invoke the frontend callback (api/made.php) when the map is done.
+
+    Mirrors the PHP ``curl --fail-with-body --connect-timeout 2 --max-time 30
+    --retry 10`` call: GET ``<callback>?ch=<channel>&status=ok&params=<argv>&
+    agent=<agent>``. The equivalent curl command is appended to ``outcmd``
+    (the ``{prefix}.cmd`` file) for later debugging, exactly like PHP writes
+    it. Raises on final failure so the caller exits nonzero.
+    """
+    import shlex
+    import time
+    import urllib.parse
+    import urllib.request
+
+    callback = getattr(args, "callback", None)
+    if not callback:
+        return
+    channel = _extract_channel(args)
+    params_str = " ".join(sys.argv)
+    url = (
+        f"{callback}?ch={urllib.parse.quote(channel)}&status=ok"
+        f"&params={urllib.parse.quote(params_str)}"
+    )
+    agent = getattr(args, "agent", None)
+    if agent:
+        url += f"&agent={urllib.parse.quote(agent.strip())}"
+    logger.info("call callback: %s", url)
+
+    # Mirror the PHP file_put_contents($outcmd, "\n\n$cmd\n", FILE_APPEND)
+    if outcmd is not None:
+        curl_cmd = (
+            "curl --fail-with-body --connect-timeout 2 --max-time 30 "
+            f"--retry 10 --retry-max-time 0 {shlex.quote(url)}"
+        )
+        try:
+            with open(outcmd, "a", encoding="utf-8") as fh:
+                fh.write(f"\n\n{curl_cmd}\n")
+        except OSError as exc:
+            logger.warning("could not append callback cmd to %s: %s", outcmd, exc)
+
+    deadline = time.monotonic() + 30.0
+    last: Exception | None = None
+    while True:
+        try:
+            with urllib.request.urlopen(url, timeout=2) as resp:
+                if resp.status < 400:
+                    return
+                last = RuntimeError(f"callback HTTP {resp.status}")
+        except OSError as exc:  # noqa: PERF203
+            last = exc
+        remaining = deadline - time.monotonic()
+        if remaining <= 1:
+            break
+        time.sleep(min(2.0, remaining))
+    raise RuntimeError(f"callback failed: {url} ({last})")
+
+
+def _report(notifier, message: str, pct: int | None = None) -> None:
+    """Log a pipeline step and mirror it to the frontend.
+
+    ``message`` is either ``step:<name>`` or ``ps%NN``. When ``pct`` is given,
+    also send a ``ps%NN`` progress message, keeping the log and the websocket
+    in sync with the actual stage being executed.
+    """
+    logger.info("%s", message)
+    if notifier is None:
+        return
+    notifier.send(message)
+    if pct is not None:
+        notifier.progress(pct / 100.0)
+
+
+def _apply_map_decorations(img, region, source, args) -> np.ndarray:
+    """Apply grid lines, logo, and coordinate tags to an image in place order."""
+    from .grinder import composite_logo, draw_grid_lines, tag_coordinates
+
+    out = img
+    if args.grid_100m:
+        out = draw_grid_lines(out, source.pixel_per_km, step_m=100)
+    # 1000m grid is always drawn except v3+TWD67
+    if not (args.map_type == "3" and region.datum == "TWD67"):
+        out = draw_grid_lines(out, source.pixel_per_km, step_m=1000)
+    out = composite_logo(out, source.label)
+    out = tag_coordinates(out, region, source.pixel_per_km)
+    return out
+
+
+def _parse_gpx_arg(gpx_spec: str) -> dict:
+    """Parse the -g argument: ``file:show_label_trk:show_label_wpt``.
+
+    Returns a dict with keys path, label_trk (int), label_wpt (int).
+    """
+    parts = gpx_spec.split(":")
+    path = parts[0]
+    label_trk = int(parts[1]) if len(parts) > 1 and parts[1] else 0
+    label_wpt = int(parts[2]) if len(parts) > 2 and parts[2] else 0
+    if not Path(path).exists():
+        raise SystemExit(f"unable to read gpx file: {path}")
+    return {"path": path, "label_trk": label_trk, "label_wpt": label_wpt}
+
+
+def _apply_gpx_to_base(img, region, source, gpx_param) -> np.ndarray:
+    """Parse the GPX, render its overlay, and alpha-composite it onto the image."""
+    from .gpx2svg import apply_gpx_overlay, parse_gpx, render_overlay_to_image
+
+    width_px = img.shape[1]
+    height_px = img.shape[0]
+    ov = parse_gpx(
+        gpx_param["path"],
+        region_px=(width_px, height_px),
+        region=region,
+        label_trk=gpx_param["label_trk"],
+        label_wpt=gpx_param["label_wpt"],
+    )
+    overlay = render_overlay_to_image(ov, width_px, height_px)
+    composed = apply_gpx_overlay(img, overlay)
+    logger.info("GPX overlay applied (%d segments, %d waypoints)",
+                len(ov.track_segments), len(ov.waypoints))
+    return composed
 
 
 def _to_grayscale(img, source):
@@ -277,18 +543,44 @@ def _save_png(arr, path: Path) -> None:
     im.save(path)
 
 
+def _decode_mime_title(title: str) -> str:
+    """Decode an RFC-2047 encoded title (``=?UTF-8?B?...?=``) as produced by
+    the PHP backend's ``_mb_mime_encode()``. Plain text passes through."""
+    if not title or "=?" not in title or "?=" not in title:
+        return title
+    from email.header import decode_header
+
+    decoded = []
+    for payload, charset in decode_header(title):
+        if isinstance(payload, bytes):
+            decoded.append(payload.decode(charset or "utf-8", errors="replace"))
+        else:
+            decoded.append(payload)
+    return "".join(decoded)
+
+
 def _output_prefix(region, args) -> str:
-    # Prefix like: 307000x2677000-12x6-v2016_TWD67
+    # Prefix like: 307000x2677000-12x6-v2016_TWD67 (Penghu gets a 'p' marker,
+    # matching the PHP sprintf "-v%s%s" with ph in {"", "p"}).
     x0 = int(region.x0)
     y0 = int(region.y0)
     sx = int(region.width_m / 1000)
     sy = int(region.height_m / 1000)
     datum = region.datum
-    return f"{x0}x{y0}-{sx}x{sy}-v{args.map_type}_{datum}"
+    ph = "p" if getattr(args, "penghu", 0) else ""
+    return f"{x0}x{y0}-{sx}x{sy}-v{args.map_type}{ph}_{datum}"
 
 
-def _handle_export(img, region, source, args, outdir: Path, prefix: str) -> None:
-    """Split into pages and produce PDF/KMZ/GeoTIFF exports."""
+def _handle_export(img, region, source, args, outdir: Path, prefix: str, notifier=None) -> dict:
+    """Split into pages and produce PDF/KMZ/GeoTIFF exports.
+
+    Mirrors the PHP output layout: one ``{prefix}.pdf`` (all dimensions merged),
+    ``{prefix}.tag.kmz`` and ``{prefix}.tag.tiff``, with the temporary page
+    PNGs deleted afterwards. Returns the ``outinfo`` dict used for the
+    ``{prefix}.txt`` metadata file::
+
+        {"dim": ["5x7"], "paper": ["A4"], "count": [1]}
+    """
     from .config import PAPER_TYPES
     from .export.geotiff import write_geotiff
     from .export.kmz import write_kmz
@@ -296,6 +588,9 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str) -> None
     from .splitter import determine_type, make_simage, split_image
 
     px_per_km = source.pixel_per_km
+
+    def step(name: str) -> None:
+        _report(notifier, name)
 
     # Determine paper type
     paper = "A3" if args.a3 else "A4"
@@ -305,7 +600,9 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str) -> None
 
     paper_cfg = PAPER_TYPES[paper]
 
-    # Split image and generate PDF for each requested dimension
+    # Split image for each requested dimension; collect pages for the PDF.
+    all_page_files: list[Path] = []
+    outinfo = {"dim": [], "paper": [], "count": []}
     for dim in dims:
         if dim not in paper_cfg["dimensions"]:
             logger.warning("Unknown dimension %s for %s; skipping", dim, paper)
@@ -317,7 +614,9 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str) -> None
         )
         px_w, px_h = (pw_l, ph_l) if landscape else (pw, ph)
 
+        step(f"step:split:{dim}")
         pages = split_image(img, region, px_per_km, tiles_w, tiles_h)
+        logger.info("Split %s into %d page(s)", dim, len(pages))
 
         # Resize each page to paper px and write page PNG files
         page_files = []
@@ -335,17 +634,36 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str) -> None
             _save_png(page_img, pf)
             page_files.append(pf)
 
-        # PDF
-        pdf_path = outdir / f"{prefix}_{dim}.pdf"
-        pages_to_pdf(page_files, pdf_path, title=args.title)
+        all_page_files.extend(page_files)
+        outinfo["dim"].append(dim)
+        outinfo["paper"].append(paper)
+        outinfo["count"].append(len(pages))
+
+    # PDF: all dims merged into a single `{prefix}.pdf` (mirrors the PHP
+    # `array_merge(...$simage)` into one outfile).
+    step("step:pdf")
+    pdf_path = outdir / f"{prefix}.pdf"
+    pages_to_pdf(all_page_files, pdf_path, title=args.title)
+    logger.info("Wrote %s (%d pages)", pdf_path, len(all_page_files))
+
+    # Clean up the temporary page images (mirrors the PHP `unlink` loop).
+    for pf in all_page_files:
+        try:
+            pf.unlink()
+        except OSError:
+            pass
 
     # KMZ (3km tiles from tagged image)
-    kmz_path = outdir / f"{prefix}.kmz"
+    step("step:kmz")
+    kmz_path = outdir / f"{prefix}.tag.kmz"
     write_kmz(img, region, px_per_km, kmz_path)
 
-    # GeoTIFF
-    tiff_path = outdir / f"{prefix}.tiff"
+    # GeoTIFF (of the tagged image, like PHP `Geotiff::out($outimage)`)
+    step("step:geotiff")
+    tiff_path = outdir / f"{prefix}.tag.tiff"
     write_geotiff(img, region, px_per_km, tiff_path)
+
+    return outinfo
 
 
 def _page_cols(pages) -> int:
