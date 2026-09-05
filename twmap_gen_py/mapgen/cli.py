@@ -406,6 +406,62 @@ def _extract_channel(args) -> str:
     return value
 
 
+class _CallbackHttpError(Exception):
+    """HTTP-status failure from ``_callback_get`` (status >= 400)."""
+
+    def __init__(self, status: int, body: bytes):
+        super().__init__(f"HTTP {status}")
+        self.status = status
+        self.body = body
+
+
+def _callback_get(
+    url: str, read_timeout: float = 30.0, connect_timeout: float = 2.0
+):
+    """GET ``url`` with curl-like timeouts.
+
+    Connects within ``connect_timeout`` (fast-fail on dead hosts), then once
+    connected gives the request up to ``read_timeout`` to complete — mirrors
+    PHP's ``curl --connect-timeout 2 --max-time 30``.
+
+    Returns ``(status, body)`` for any HTTP response; raises ``OSError`` on
+    network failures and ``_CallbackHttpError`` for HTTP status >= 400.
+    """
+    import http.client
+    import ssl
+    import urllib.parse
+
+    parts = urllib.parse.urlsplit(url)
+    scheme = parts.scheme.lower()
+    if scheme not in ("http", "https"):
+        raise OSError(f"unsupported callback scheme: {scheme}")
+    host = parts.hostname or "localhost"
+    port = parts.port or (443 if scheme == "https" else 80)
+    cls = (
+        http.client.HTTPSConnection
+        if scheme == "https"
+        else http.client.HTTPConnection
+    )
+    kwargs: dict = {}
+    if scheme == "https":
+        kwargs["context"] = ssl.create_default_context()
+    conn = cls(host, port, timeout=connect_timeout, **kwargs)
+    try:
+        conn.connect()
+        conn.sock.settimeout(read_timeout)
+        path = parts.path or "/"
+        if parts.query:
+            path += "?" + parts.query
+        conn.request("GET", path)
+        resp = conn.getresponse()
+        body = resp.read()
+    finally:
+        conn.close()
+    if resp.status >= 400:
+        raise _CallbackHttpError(resp.status, body)
+    return resp.status, body
+
+
 def _handle_callback(args, outcmd: Path | None = None) -> None:
     """Invoke the frontend callback (api/made.php) when the map is done.
 
@@ -413,16 +469,20 @@ def _handle_callback(args, outcmd: Path | None = None) -> None:
     --retry 10`` call: GET ``<callback>?ch=<channel>&status=ok&params=<argv>&
     agent=<agent>``. The equivalent curl command is appended to ``outcmd``
     (the ``{prefix}.cmd`` file) for later debugging, exactly like PHP writes
-    it. Like curl ``--retry``, only transient errors (connection) and 5xx are
-    retried; a 4xx (e.g. made.php "no such channel" when the channel key was
-    already consumed) is treated as final, since retrying a dead channel can
-    never succeed. Raises on final failure so the caller exits nonzero.
+    it. Timeouts mirror curl: a 2s *connect* limit, but a connected request is
+    given the full 30s to finish, so a made.php still busy running
+    ``finish_task`` (sleep + DB + migrate) is never abandoned mid-flight.
+    Abandoning it would re-send the same ``status=ok``, which arrives only
+    *after* the first call already deleted the channel key -> made.php's
+    "no such channel: ok". Like curl ``--retry``, only transient errors
+    (connection) and 5xx are retried within the 30s deadline; a 4xx
+    (e.g. made.php "no such channel" when the channel key was already
+    consumed) is treated as final, since retrying a dead channel can never
+    succeed. Raises on final failure so the caller exits nonzero.
     """
     import shlex
     import time
-    import urllib.error
     import urllib.parse
-    import urllib.request
 
     callback = getattr(args, "callback", None)
     if not callback:
@@ -454,19 +514,22 @@ def _handle_callback(args, outcmd: Path | None = None) -> None:
     last: Exception | None = None
     while True:
         try:
-            with urllib.request.urlopen(url, timeout=2) as resp:
-                if resp.status < 400:
-                    return
-                last = RuntimeError(f"callback HTTP {resp.status}")
-        except urllib.error.HTTPError as exc:
-            if 400 <= exc.code < 500:
+            status, body = _callback_get(
+                url, read_timeout=30.0, connect_timeout=2.0
+            )
+            if status < 400:
+                logger.info("callback ok (HTTP %d: %r)", status, body[:80])
+                return
+            last = RuntimeError(f"callback HTTP {status}")
+        except _CallbackHttpError as exc:
+            if 400 <= exc.status < 500:
                 logger.warning(
                     "callback rejected with HTTP %d (%s); treating as final",
-                    exc.code,
-                    exc.read(512).decode("utf-8", "replace").strip(),
+                    exc.status,
+                    exc.body.decode("utf-8", "replace").strip(),
                 )
                 return
-            last = RuntimeError(f"callback HTTP {exc.code}")
+            last = RuntimeError(f"callback HTTP {exc.status}")
         except OSError as exc:  # noqa: PERF203
             last = exc
         remaining = deadline - time.monotonic()

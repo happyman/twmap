@@ -14,7 +14,15 @@ $param  = redis_get($log_channel);
 // error_log(print_r([$log_channel,$param],true)); 
 
 if ($param === FALSE) {
-	my_error_out("no such channel: " . $_GET['status']);
+	// at-least-once callbacks: a repeated "ok" whose channel key was already
+	// consumed by an earlier finish_task is benign (map already registered) --
+	// treat it as done instead of 400-ing. Non-ok statuses still error out.
+	if ($_REQUEST['status'] == 'ok') {
+		msglog("no such channel ($log_channel) but status ok: already done?");
+		printf("<h1>already done</h1>");
+		exit(0);
+	}
+	my_error_out("no such channel: " . $_REQUEST['status']);
 }
 
 if ($_REQUEST['status'] == 'ok') {

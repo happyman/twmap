@@ -8,6 +8,7 @@ callback, and the Penghu ``p`` filename marker.
 
 import http.server
 import threading
+import time
 
 import pytest
 
@@ -263,6 +264,53 @@ def test_handle_callback_4xx_is_final_no_retry(monkeypatch):
         assert len(_Recorder.requests) == 1  # exactly one attempt, no retry
     finally:
         _Recorder.code = None
+        srv.shutdown()
+
+
+class _SlowRecorder(http.server.BaseHTTPRequestHandler):
+    """made.php that is still busy (finish_task sleep+DB+migrate) when the
+    old 2s read timeout would have fired. Must receive exactly one GET."""
+
+    calls = 0
+    delay = 3.0
+
+    def do_GET(self):  # noqa: N802
+        time.sleep(type(self).delay)
+        type(self).calls += 1
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"<h1>done</h1>")
+
+    def log_message(self, *a):
+        pass
+
+
+def _slow_callback_http_server():
+    _SlowRecorder.calls = 0
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _SlowRecorder)
+    thread = threading.Thread(target=srv.serve_forever, daemon=True)
+    thread.start()
+    return srv
+
+
+def test_handle_callback_slow_success_is_not_resent(monkeypatch):
+    """A made.php taking longer than 2s (the old per-attempt timeout) must be
+    allowed to finish instead of being abandoned and re-sent.
+
+    The old ``urlopen(url, timeout=2)`` timed out during finish_task, retried,
+    and hit made.php after it had already deleted the channel key -> the
+    ``no such channel: ok`` error. The retry must not happen: the request is
+    given the full 30s (PHP ``--connect-timeout 2 --max-time 30`` parity).
+    """
+    for env in ("HTTPS_PROXY", "http_proxy", "HTTP_PROXY"):
+        monkeypatch.delenv(env, raising=False)
+    srv = _slow_callback_http_server()
+    try:
+        url = f"http://127.0.0.1:{srv.server_port}/twmap/api/made.php"
+        args = _callback_args(url)
+        cli._handle_callback(args)  # must not raise
+        assert _SlowRecorder.calls == 1  # exactly once, no duplicate callback
+    finally:
         srv.shutdown()
 
 
