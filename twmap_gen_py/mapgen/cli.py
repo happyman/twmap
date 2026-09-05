@@ -585,7 +585,7 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str, notifie
     from .export.geotiff import write_geotiff
     from .export.kmz import write_kmz
     from .export.pdf import pages_to_pdf
-    from .splitter import determine_type, make_simage, split_image
+    from .splitter import determine_type, make_simage, split_grid, split_image
 
     px_per_km = source.pixel_per_km
 
@@ -615,19 +615,25 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str, notifie
         px_w, px_h = (pw_l, ph_l) if landscape else (pw, ph)
 
         step(f"step:split:{dim}")
-        pages = split_image(img, region, px_per_km, tiles_w, tiles_h)
-        logger.info("Split %s into %d page(s)", dim, len(pages))
+        page_w, page_h = int(page_tw * px_per_km), int(page_th * px_per_km)
+        cols, rows = split_grid(img.shape[1], img.shape[0], page_w, page_h)
+        pages = split_image(img, region, px_per_km, page_tw, page_th)
+        logger.info(
+            "Split %s (%dx%d) into %d page(s) [%s]",
+            dim, page_tw, page_th, len(pages),
+            "landscape" if landscape else "portrait",
+        )
 
         # Resize each page to paper px and write page PNG files
         page_files = []
         for i, page in enumerate(pages):
             page_img = make_simage(
-                page, px_w, px_h,
+                page, px_w, px_h, page_tw, page_th, px_per_km,
                 grid_info={
-                    "row": i // _page_cols(pages),
-                    "col": i % _page_cols(pages),
-                    "total_cols": _page_cols(pages),
-                    "total_rows": _page_rows(pages),
+                    "row": i // cols,
+                    "col": i % cols,
+                    "total_cols": cols,
+                    "total_rows": rows,
                 },
             )
             pf = outdir / f"{prefix}_{dim}_{i + 1}.png"
@@ -664,19 +670,6 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str, notifie
     write_geotiff(img, region, px_per_km, tiff_path)
 
     return outinfo
-
-
-def _page_cols(pages) -> int:
-    # Simple heuristic: assume square-ish grid; refined by splitter in future
-    import math
-    return int(math.ceil(math.sqrt(len(pages))))
-
-
-def _page_rows(pages) -> int:
-    import math
-    n = len(pages)
-    cols = _page_cols(pages)
-    return max(1, math.ceil(n / cols))
 
 
 # --- Helper commands ---

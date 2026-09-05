@@ -5,7 +5,7 @@ import pytest
 
 from mapgen.compositor import composite_layers
 from mapgen.proj import Region
-from mapgen.splitter import _pad_to, split_image
+from mapgen.splitter import _pad_to, determine_type, make_simage, split_image
 
 
 def _rgba(h, w, fill=255):
@@ -93,3 +93,52 @@ def test_pad_to_preserves_content():
     assert np.all(padded[:10, :10, :3] == 50)
     # Padding is white (255)
     assert np.all(padded[10:, :, :3] == 255)
+
+
+def test_determine_type_picks_landscape_for_wide_region():
+    """A 7km-wide x 5km-tall region with 5x7 pages must print landscape."""
+    tw, th, landscape = determine_type(7, 5, 5, 7)
+    assert landscape is True
+    assert (tw, th) == (7, 5)  # grid rotated to fit one landscape page
+
+
+def test_determine_type_portrait_for_small_region():
+    tw, th, landscape = determine_type(3, 3, 5, 7)
+    assert landscape is False
+    assert (tw, th) == (5, 7)
+
+
+def test_make_simage_keeps_scale_for_small_map():
+    """A region smaller than a page must be centered with margins, not stretched.
+
+    A 2x2 km map (630px at 315px/km) on a 5x7 A4 page is resized by the
+    layout ratio (92%) to ~580px and centered, keeping the print scale
+    identical to full pages. It must NOT be enlarged to fill the paper.
+    """
+    px = 315
+    page = _rgba(630, 630, fill=100)  # 2x2 km map
+    out = make_simage(page, 1492, 2110, 5, 7, px)
+    assert out.shape == (2110, 1492, 4)
+    # Content is the non-white region
+    ys, xs = np.where(out[..., :3].min(axis=-1) != 255)
+    h = ys.max() - ys.min() + 1
+    w = xs.max() - xs.min() + 1
+    # 630 * 92% = 580 (aspect preserved, square)
+    assert abs(h - 580) <= 3 and abs(w - 580) <= 3
+    # Centered on the page
+    assert abs((xs.min() + xs.max()) // 2 - 1492 // 2) <= 2
+    assert abs((ys.min() + ys.max()) // 2 - 2110 // 2) <= 2
+    # Margins all around - the map does not fill the page
+    assert xs.min() > 200 and ys.min() > 300
+    assert 1492 - xs.max() - 1 > 200
+
+
+def test_make_simage_full_page_same_scale():
+    """A full 5x7 page crop must land at the same 92% layout ratio."""
+    px = 315
+    page = _rgba(7 * px, 5 * px + 42, fill=100)  # full height page + overlap
+    out = make_simage(page, 1492, 2110, 5, 7, px)
+    ys, xs = np.where(out[..., :3].min(axis=-1) != 255)
+    # (5*315+42)*92% = 1488 wide; 7*315*92% = 2029 tall (aspect preserved)
+    assert abs((xs.max() - xs.min() + 1) - 1488) <= 3
+    assert abs((ys.max() - ys.min() + 1) - 2029) <= 3

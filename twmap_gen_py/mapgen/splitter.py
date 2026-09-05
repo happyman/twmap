@@ -56,6 +56,24 @@ def determine_type(
     return tiles_w, tiles_h, False
 
 
+def split_grid(
+    img_w: int, img_h: int, page_w: int, page_h: int,
+    overlap_px: int = PAGE_OVERLAP_PX,
+) -> tuple[int, int]:
+    """Number of (cols, rows) pages covering an image at a given page size.
+
+    Page origins step by the full nominal page size; a page is emitted while
+    its origin stays within ``size - overlap`` of the image edge (matches the
+    PHP `for $i < w - fuzzy` boundary).
+    """
+    cols, rows = 0, 0
+    if img_w > overlap_px:
+        cols = max(1, ((img_w - overlap_px - 1) // page_w) + 1)
+    if img_h > overlap_px:
+        rows = max(1, ((img_h - overlap_px - 1) // page_h) + 1)
+    return cols, rows
+
+
 def split_image(
     img: np.ndarray,
     region,
@@ -74,15 +92,7 @@ def split_image(
     page_h = int(tiles_h * px_per_km)
     img_h, img_w = img.shape[:2]
 
-    # Page origins step by the full nominal page size; each page crop is
-    # page + overlap (overlap extends right/bottom for taping pages together).
-    # Loop while the origin stays within `size - overlap` of the image edge
-    # (matches the PHP `for $i < w - fuzzy` boundary).
-    cols, rows = 0, 0
-    if img_w > overlap_px:
-        cols = max(1, ((img_w - overlap_px - 1) // page_w) + 1)
-    if img_h > overlap_px:
-        rows = max(1, ((img_h - overlap_px - 1) // page_h) + 1)
+    cols, rows = split_grid(img_w, img_h, page_w, page_h, overlap_px)
 
     pages: list[np.ndarray] = []
     for r in range(rows):
@@ -122,18 +132,36 @@ def make_simage(
     page: np.ndarray,
     px_w: int,
     px_h: int,
+    tiles_w: int,
+    tiles_h: int,
+    px_per_km: float,
     grid_info=None,
     index_img: np.ndarray | None = None,
 ) -> np.ndarray:
-    """Resize a page image to exact paper dimensions and add borders/index.
+    """Fit a page image onto a paper pixel canvas at a fixed print scale.
 
-    ``px_w``/``px_h`` are the target paper pixel dimensions (e.g. A4 1492x2110).
+    Mirrors PHP ``im_simage_resize``: a single uniform ratio is derived from
+    the page layout (``tiles_w``x``tiles_h`` km) and the paper pixel size, so
+    every page of the same dimension prints at the same map scale. The page
+    image is resized by that ratio (aspect preserved, no per-axis stretch) and
+    centered on a white canvas. Regions smaller than a page are centered with
+    margins rather than enlarged to fill the paper (print scale matters).
     ``grid_info`` (when provided) adds paste-alignment marks and the page's
-    grid index in the corner. ``index_img`` is an optional small index overlay.
+    grid index in the corner. ``index_img`` is an optional small overlay.
     """
-    im = Image.fromarray(page)
-    im = im.resize((px_w, px_h), Image.LANCZOS)
-    out = np.array(im)
+    ratio_x = (px_w - PAGE_OVERLAP_PX) / (tiles_w * px_per_km)
+    ratio_y = (px_h - PAGE_OVERLAP_PX) / (tiles_h * px_per_km)
+    ratio = max(1, int(math.floor(min(ratio_x, ratio_y) * 100)))
+
+    im = Image.fromarray(page).convert("RGBA")
+    if ratio != 100:
+        nw = max(1, round(im.width * ratio / 100))
+        nh = max(1, round(im.height * ratio / 100))
+        im = im.resize((nw, nh), Image.LANCZOS)
+
+    canvas = Image.new("RGBA", (px_w, px_h), (255, 255, 255, 255))
+    canvas.paste(im, ((px_w - im.width) // 2, (px_h - im.height) // 2), im)
+    out = np.array(canvas)
 
     if grid_info is not None:
         out = _add_borders(out, grid_info)
@@ -204,6 +232,7 @@ def _overlay_index(img: np.ndarray, index_img: np.ndarray) -> np.ndarray:
 __all__ = [
     "PaperSpec",
     "determine_type",
+    "split_grid",
     "split_image",
     "make_simage",
 ]
