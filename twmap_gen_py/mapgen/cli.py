@@ -280,7 +280,13 @@ def cmd_make(args) -> None:
             build_progress = None
 
         base = asyncio.run(
-            build_base_image(region, source, workdir=workdir, on_progress=build_progress)
+            build_base_image(
+                region,
+                source,
+                workdir=workdir,
+                include_gpx=bool(getattr(args, "include_tracks", False)),
+                on_progress=build_progress,
+            )
         )
         _report(notifier, "step:base", 40)
 
@@ -328,10 +334,13 @@ def cmd_make(args) -> None:
         # debugging (the callback curl line is appended below).
         outcmd.write_text(" ".join(sys.argv), encoding="utf-8")
 
-        # Split into pages + export (use the color image)
+        # Split into pages + export. Mirrors PHP: pages/PDF come from the
+        # grayscale image ($outimage_gray), KMZ/GeoTIFF from the color tagged
+        # image ($outimage).
         _report(notifier, "step:export")
         outinfo = _handle_export(
-            img_color, region, source, args, outdir, prefix, notifier=notifier
+            img_color, img_gray, region, source, args, outdir, prefix,
+            notifier=notifier,
         )
 
         # Clean up the temporary gray image (mirrors PHP `unlink($outimage_gray)`)
@@ -404,10 +413,14 @@ def _handle_callback(args, outcmd: Path | None = None) -> None:
     --retry 10`` call: GET ``<callback>?ch=<channel>&status=ok&params=<argv>&
     agent=<agent>``. The equivalent curl command is appended to ``outcmd``
     (the ``{prefix}.cmd`` file) for later debugging, exactly like PHP writes
-    it. Raises on final failure so the caller exits nonzero.
+    it. Like curl ``--retry``, only transient errors (connection) and 5xx are
+    retried; a 4xx (e.g. made.php "no such channel" when the channel key was
+    already consumed) is treated as final, since retrying a dead channel can
+    never succeed. Raises on final failure so the caller exits nonzero.
     """
     import shlex
     import time
+    import urllib.error
     import urllib.parse
     import urllib.request
 
@@ -445,6 +458,15 @@ def _handle_callback(args, outcmd: Path | None = None) -> None:
                 if resp.status < 400:
                     return
                 last = RuntimeError(f"callback HTTP {resp.status}")
+        except urllib.error.HTTPError as exc:
+            if 400 <= exc.code < 500:
+                logger.warning(
+                    "callback rejected with HTTP %d (%s); treating as final",
+                    exc.code,
+                    exc.read(512).decode("utf-8", "replace").strip(),
+                )
+                return
+            last = RuntimeError(f"callback HTTP {exc.code}")
         except OSError as exc:  # noqa: PERF203
             last = exc
         remaining = deadline - time.monotonic()
@@ -479,7 +501,7 @@ def _apply_map_decorations(img, region, source, args) -> np.ndarray:
     # 1000m grid is always drawn except v3+TWD67
     if not (args.map_type == "3" and region.datum == "TWD67"):
         out = draw_grid_lines(out, source.pixel_per_km, step_m=1000)
-    out = composite_logo(out, source.label)
+    out = composite_logo(out, f"{region.datum}\n{source.label}")
     out = tag_coordinates(out, region, source.pixel_per_km)
     return out
 
@@ -571,7 +593,10 @@ def _output_prefix(region, args) -> str:
     return f"{x0}x{y0}-{sx}x{sy}-v{args.map_type}{ph}_{datum}"
 
 
-def _handle_export(img, region, source, args, outdir: Path, prefix: str, notifier=None) -> dict:
+def _handle_export(
+    color_img, gray_img, region, source, args, outdir: Path, prefix: str,
+    notifier=None,
+) -> dict:
     """Split into pages and produce PDF/KMZ/GeoTIFF exports.
 
     Mirrors the PHP output layout: one ``{prefix}.pdf`` (all dimensions merged),
@@ -580,6 +605,10 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str, notifie
     ``{prefix}.txt`` metadata file::
 
         {"dim": ["5x7"], "paper": ["A4"], "count": [1]}
+
+    Like PHP, the print pages/PDF are split from the *grayscale* image
+    (``$outimage_gray``) while the GeoTIFF/KMZ are written from the color
+    tagged image (``$outimage``).
     """
     from .config import PAPER_TYPES
     from .export.geotiff import write_geotiff
@@ -616,8 +645,8 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str, notifie
 
         step(f"step:split:{dim}")
         page_w, page_h = int(page_tw * px_per_km), int(page_th * px_per_km)
-        cols, rows = split_grid(img.shape[1], img.shape[0], page_w, page_h)
-        pages = split_image(img, region, px_per_km, page_tw, page_th)
+        cols, rows = split_grid(gray_img.shape[1], gray_img.shape[0], page_w, page_h)
+        pages = split_image(gray_img, region, px_per_km, page_tw, page_th)
         logger.info(
             "Split %s (%dx%d) into %d page(s) [%s]",
             dim, page_tw, page_th, len(pages),
@@ -662,12 +691,12 @@ def _handle_export(img, region, source, args, outdir: Path, prefix: str, notifie
     # KMZ (3km tiles from tagged image)
     step("step:kmz")
     kmz_path = outdir / f"{prefix}.tag.kmz"
-    write_kmz(img, region, px_per_km, kmz_path)
+    write_kmz(color_img, region, px_per_km, kmz_path)
 
     # GeoTIFF (of the tagged image, like PHP `Geotiff::out($outimage)`)
     step("step:geotiff")
     tiff_path = outdir / f"{prefix}.tag.tiff"
-    write_geotiff(img, region, px_per_km, tiff_path)
+    write_geotiff(color_img, region, px_per_km, tiff_path)
 
     return outinfo
 

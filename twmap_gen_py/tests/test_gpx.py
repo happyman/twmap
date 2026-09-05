@@ -17,13 +17,13 @@ _GPX = """<?xml version="1.0" encoding="UTF-8"?>
   <trk>
     <name>測試路線</name>
     <trkseg>
-      <trkpt lat="24.79" lon="121.004"><ele>500</ele></trkpt>
-      <trkpt lat="24.795" lon="121.009"><ele>600</ele></trkpt>
-      <trkpt lat="24.80" lon="121.014"><ele>700</ele></trkpt>
+      <trkpt lat="24.784" lon="121.011"><ele>500</ele></trkpt>
+      <trkpt lat="24.789" lon="121.016"><ele>600</ele></trkpt>
+      <trkpt lat="24.794" lon="121.021"><ele>700</ele></trkpt>
     </trkseg>
   </trk>
-  <wpt lat="24.793" lon="121.005"><name>甲</name></wpt>
-  <wpt lat="24.797" lon="121.010"><name>乙</name></wpt>
+  <wpt lat="24.786" lon="121.012"><name>甲</name></wpt>
+  <wpt lat="24.7915" lon="121.017"><name>乙</name></wpt>
 </gpx>
 """
 

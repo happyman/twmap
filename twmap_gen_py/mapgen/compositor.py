@@ -41,9 +41,7 @@ def _from_rgba(rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
     return np.concatenate([rgb_u, alpha_u[..., None]], axis=-1)
 
 
-def _multiply(a_rgb: np.ndarray, b_rgb: np.ndarray) -> np.ndarray:
-    """ImageMagick multiply: (a*b)/255 in 0..255 space."""
-    return (a_rgb * b_rgb) / 255.0
+
 
 
 def _screen(a_rgb: np.ndarray, b_rgb: np.ndarray) -> np.ndarray:
@@ -88,8 +86,13 @@ def composite_layers(
         rgb, alpha = _rgba_float(lyr)
 
         if mode == "multiply":
-            ref_rgb = _multiply(ref_rgb, rgb)
-            ref_alpha = ref_alpha * alpha
+            # IM `composite -compose Multiply` semantics: multiply colors where
+            # the overlay is opaque, but show the base through transparent
+            # overlay pixels (transparent overlay RGB is often 0, so a raw
+            # multiply would blacken the whole image). The overlay adds no
+            # coverage, so the base alpha is kept.
+            blend = 1.0 + alpha[..., None] * (rgb / 255.0 - 1.0)
+            ref_rgb = ref_rgb * blend
         elif mode == "screen":
             ref_rgb = _screen(ref_rgb, rgb)
         elif mode == "overlay":

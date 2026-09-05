@@ -159,16 +159,20 @@ async def stitch_to_mosaic(
     workdir: Path,
     download: DownloadOptions | None = None,
     layer_index: int = 0,
+    include_gpx: bool = False,
     on_progress=None,
 ) -> Path:
     """Download tiles and stitch them into a georeferenced EPSG:3857 GeoTIFF.
 
     Returns the path to the mosaic GeoTIFF. Applies per-layer ``pre_merge``
-    transforms to each tile before writing.
+    transforms to each tile before writing. ``include_gpx`` selects the
+    PHP ``-G`` tile layers. Each layer downloads into its own subdirectory so
+    multi-layer sources don't collide on ``{x}_{y}.png`` names.
     """
     from .transforms import Pipeline
 
-    layer = source.layer_defs()[layer_index]
+    layer = source.layer_defs(include_gpx)[layer_index]
+    layer_dir = workdir / f"layer{layer_index}"
     url_tmpl = layer.url
     tile_order = layer.tile_order or source.tile_order
 
@@ -189,7 +193,7 @@ async def stitch_to_mosaic(
             urls.append((url, tx, ty))
 
     logger.info("Downloading %d tiles for layer %d", len(urls), layer_index)
-    await download_tiles(urls, workdir, download, on_progress=on_progress)
+    await download_tiles(urls, layer_dir, download, on_progress=on_progress)
     logger.info("Downloaded %d tiles for layer %d", len(urls), layer_index)
 
     # Read tiles into a full mosaic buffer (RGBA in EPSG:3857 grid)
@@ -198,7 +202,7 @@ async def stitch_to_mosaic(
 
     for ty in range(min_ty, max_ty + 1):
         for tx in range(min_tx, max_tx + 1):
-            fname = workdir / f"{tx}_{ty}.png"
+            fname = layer_dir / f"{tx}_{ty}.png"
             arr = _read_tile_as_array(fname)
             if arr is None:
                 logger.warning("Missing/empty tile %s", fname)
@@ -333,6 +337,7 @@ async def build_base_image(
     source: MapSource,
     workdir: Path | None = None,
     download: DownloadOptions | None = None,
+    include_gpx: bool = False,
     on_progress=None,
 ) -> np.ndarray:
     """Full pipeline: download + merge every layer + reproject to TWD.
@@ -341,7 +346,8 @@ async def build_base_image(
     region_width) in pixels at the source's pixel-per-km density.
 
     Auto-chunks regions larger than MAX_CHUNK_PX. Multi-layer sources are
-    composited via the compositor.
+    composited via the compositor. ``include_gpx`` selects the PHP ``-G``
+    tile layers.
     """
 
     px_per_km = source.pixel_per_km
@@ -356,7 +362,7 @@ async def build_base_image(
 
         if len(chunks) == 1:
             return await _build_single(
-                region, source, px_per_km, workdir, download, on_progress
+                region, source, px_per_km, workdir, download, include_gpx, on_progress
             )
 
         # Multi-chunk: build each chunk, then stitch the grids back together.
@@ -378,7 +384,7 @@ async def build_base_image(
 
                 img = await _build_single(
                     chunk, source, px_per_km, workdir / f"chunk_{idx}",
-                    download, scaled,
+                    download, include_gpx, scaled,
                 )
                 built += 1
                 row_imgs.append(img)
@@ -398,13 +404,14 @@ async def _build_single(
     px_per_km: int,
     workdir: Path,
     download: DownloadOptions | None,
+    include_gpx: bool = False,
     on_progress=None,
 ) -> np.ndarray:
     """Build the base image for a single (non-chunked) region."""
     from .compositor import composite_layers
     from .transforms import Pipeline
 
-    n_layers = len(source.layer_defs())
+    n_layers = len(source.layer_defs(include_gpx))
 
     # Merge all layers into one RGBA stack, then composite. Each layer's
     # stitch progress is scaled into its share of the 0..1 window.
@@ -420,7 +427,8 @@ async def _build_single(
         else:
             scaled = None
         mosaic = await stitch_to_mosaic(
-            region, source, source.zoom, workdir, download, i, scaled
+            region, source, source.zoom, workdir, download, i,
+            include_gpx=include_gpx, on_progress=scaled,
         )
         layer_rgba = _reproject_layer(mosaic, region, px_per_km)
         layer_imgs.append(layer_rgba)

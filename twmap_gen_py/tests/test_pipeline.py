@@ -32,6 +32,24 @@ def test_multiply_white_is_identity():
     assert np.all(out[..., :3] == 100)
 
 
+def test_multiply_keeps_base_through_transparent_overlay():
+    # Transparent overlay pixels often have RGB 0; a raw RGB multiply would
+    # blacken the base. IM `composite -compose Multiply` shows the base where
+    # the overlay is transparent (NLSC/archival -G layers).
+    base = _rgba(10, 10, fill=200)
+    overlay = np.zeros((10, 10, 4), dtype=np.uint8)  # fully transparent
+    out = composite_layers([base, overlay], mode="multiply")
+    assert np.all(out[..., :3] == 200)
+    assert np.all(out[..., 3] == 255)
+
+
+def test_multiply_opaque_overlay_darkens():
+    base = _rgba(10, 10, fill=200)
+    overlay = _rgba(10, 10, fill=100)
+    out = composite_layers([base, overlay], mode="multiply")
+    assert out[0, 0, 0] == pytest.approx((200 * 100) / 255, abs=1)
+
+
 def test_alpha_composite():
     base = _rgba(10, 10, fill=0)  # black base
     overlay = _rgba(10, 10, fill=255)  # white overlay, opaque

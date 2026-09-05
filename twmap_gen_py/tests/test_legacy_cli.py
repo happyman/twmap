@@ -178,13 +178,17 @@ def test_modern_region_is_meters():
 
 class _Recorder(http.server.BaseHTTPRequestHandler):
     requests = []
+    code = None
 
     def do_GET(self):  # noqa: N802
         type(self).requests.append(self.path)
-        status = 200 if getattr(type(self), "ok", True) else 500
+        if getattr(type(self), "code", None) is not None:
+            status = type(self).code
+        else:
+            status = 200 if getattr(type(self), "ok", True) else 500
         self.send_response(status)
         self.end_headers()
-        self.wfile.write(b"ok")
+        self.wfile.write(b"no such channel")
 
     def log_message(self, *a):
         pass
@@ -238,6 +242,27 @@ def test_handle_callback_fails_on_persistent_error(monkeypatch):
         with pytest.raises(RuntimeError, match="callback failed"):
             cli._handle_callback(args)
     finally:
+        srv.shutdown()
+
+
+def test_handle_callback_4xx_is_final_no_retry(monkeypatch):
+    """A 4xx (e.g. made.php "no such channel") must not be retried or raise.
+
+    Retrying a dead channel can never succeed; treating it as final avoids
+    releasing the job so the map is not regenerated (and the err spammed).
+    """
+    for env in ("HTTPS_PROXY", "http_proxy", "HTTP_PROXY"):
+        monkeypatch.delenv(env, raising=False)
+    _Recorder.code = 400
+    _Recorder.requests = []
+    srv = _callback_http_server()
+    try:
+        url = f"http://127.0.0.1:{srv.server_port}/twmap/api/made.php"
+        args = _callback_args(url)
+        cli._handle_callback(args)  # must not raise
+        assert len(_Recorder.requests) == 1  # exactly one attempt, no retry
+    finally:
+        _Recorder.code = None
         srv.shutdown()
 
 

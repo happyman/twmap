@@ -6,7 +6,7 @@ compositing. Operates on numpy RGBA/grayscale arrays.
 Coordinate tag layout (matching PHP ``im_tagimage``):
 - TWD X-coordinates along bottom (increasing left->right) and top (+1 offset)
 - TWD Y-coordinates along left (decreasing top->bottom) and right (-1 offset)
-- 60px font at zoom 17, 30px at zoom 16
+- 44px font at zoom 17, 22px at zoom 16
 """
 
 from __future__ import annotations
@@ -99,24 +99,45 @@ def tag_coordinates(
     out = _as_rgba_image(img)
     w, h = out.size
     if font_size is None:
-        font_size = 60 if px_per_km >= 630 else 30
+        font_size = 44 if px_per_km >= 630 else 22
     font = _default_font(font_size)
     draw = ImageDraw.Draw(out)
 
     step_px = px_per_km  # 1km => px_per_km pixels
 
-    def _text_size(draw, text, font):
-        bbox = draw.textbbox((0, 0), text, font=font)
-        return bbox[2] - bbox[0], bbox[3] - bbox[1]
+    def _measure(draw, text, font):
+        """Return (width, ink_top, ink_bottom) of ``text``.
+
+        The ink extents are relative to the ``y`` passed to ``_draw_label``
+        (i.e. relative to the label's top-left). FreeType renders ink a few px
+        away from ``textbbox``, so placement must probe the real ink instead of
+        trusting the metrics, or edge labels get clipped (bottom X labels
+        previously extended past the image bottom edge).
+        """
+        bb = draw.textbbox((0, 0), text, font=font)
+        pw, ph = max(1, bb[2] - bb[0]), max(1, bb[3] - bb[1])
+        probe = Image.new("L", (pw, ph), 255)
+        ImageDraw.Draw(probe).text((-bb[0], -bb[1]), text, font=font, fill=0)
+        a = np.array(probe)
+        ink = a < 128
+        rows = np.where(ink.any(axis=1))[0]
+        if not len(rows):
+            return bb[2] - bb[0], 0, max(1, ph)
+        return bb[2] - bb[0], 2 * bb[1] + int(rows.min()), 2 * bb[1] + int(rows.max())
 
     # Bottom edge: X coordinates increasing left->right
     x_km = region.x0 / 1000.0
     x_px = 0.0
     while x_px < w:
         label = f"{int(round(x_km)):d}"
-        tw, th = _text_size(draw, label, font)
-        bx = x_px - tw / 2.0
-        by = h - th - 2
+        tw, _, ink_bottom = _measure(draw, label, font)
+        # Place the label to the RIGHT of its vertical grid line so the line
+        # never runs through the text (PHP puts it at i+1).
+        bx = x_px + 2
+        # Ink bottom sits `bottom_margin` px above the image edge so the
+        # digits are fully visible (the old h - th - 2 pushed them past it).
+        bottom_margin = 4
+        by = h - bottom_margin - ink_bottom
         _draw_label(draw, label, font, bx, by, label_color, bg_color)
         x_px += step_px
         f = int(x_km) + 1
@@ -127,9 +148,9 @@ def tag_coordinates(
     x_px = step_px  # start one km over to differ from bottom column
     while x_px < w:
         label = f"{int(round(x_km)):d}"
-        tw, th = _text_size(draw, label, font)
-        bx = x_px - tw / 2.0
-        _draw_label(draw, label, font, bx, 2, label_color, bg_color)
+        tw, _, _ = _measure(draw, label, font)
+        bx = x_px + 2
+        _draw_label(draw, label, font, bx, 0, label_color, bg_color)
         x_px += step_px
         f = int(x_km) + 1
         x_km = float(f)
@@ -139,8 +160,11 @@ def tag_coordinates(
     y_px = 0.0
     while y_px < h:
         label = f"{int(round(y_km)):d}"
-        tw, th = _text_size(draw, label, font)
-        _draw_label(draw, label, font, 2, y_px - th / 2.0, label_color, bg_color)
+        tw, ink_top, ink_bottom = _measure(draw, label, font)
+        # Below the horizontal grid line (PHP places it at i+1); the label
+        # x stays at the image's left edge.
+        by = y_px + 2
+        _draw_label(draw, label, font, 2, by, label_color, bg_color)
         y_px += step_px
         f = int(y_km) - 1
         y_km = float(f)
@@ -150,8 +174,9 @@ def tag_coordinates(
     y_px = step_px
     while y_px < h:
         label = f"{int(round(y_km)):d}"
-        tw, th = _text_size(draw, label, font)
-        _draw_label(draw, label, font, w - tw - 2, y_px - th / 2.0, label_color, bg_color)
+        tw, ink_top, ink_bottom = _measure(draw, label, font)
+        by = y_px + 2
+        _draw_label(draw, label, font, w - tw - 2, by, label_color, bg_color)
         y_px += step_px
         f = int(y_km) - 1
         y_km = float(f)
@@ -172,9 +197,13 @@ def _draw_label(draw, text, font, x, y, color, bg_color):
 
 
 def composite_logo(
-    img: np.ndarray, text: str, font_path: str | None = None, font_size: int = 40
+    img: np.ndarray, text: str, font_path: str | None = None, font_size: int = 26
 ) -> np.ndarray:
-    """Stamp a text logo in the northeast (top-right) corner."""
+    """Stamp a text logo in the northeast (top-right) corner.
+
+    ``text`` may contain ``\\n`` to stack multiple lines (e.g. datum on the
+    first line, source label beneath it). Returns a new array.
+    """
     out = _as_rgba_image(img)
     w, h = out.size
     if font_path:
@@ -182,14 +211,26 @@ def composite_logo(
     else:
         font = _default_font(font_size)
     draw = ImageDraw.Draw(out)
-    bbox = draw.textbbox((0, 0), text, font=font)
-    tw = bbox[2] - bbox[0]
-    th = bbox[3] - bbox[1]
+    lines = [line for line in text.split("\n") if line]
+    widths = []
+    heights = []
+    for line in lines:
+        bbox = draw.textbbox((0, 0), line, font=font)
+        widths.append(bbox[2] - bbox[0])
+        heights.append(bbox[3] - bbox[1])
+    tw = max(widths)
+    line_gap = max(2, font_size // 8)
+    th = sum(heights) + line_gap * (len(lines) - 1)
     pad = 8
     x0 = w - tw - pad * 2
     y0 = pad
-    draw.rectangle([(x0, y0), (x0 + tw + pad * 2, y0 + th + pad * 2)], fill=(255, 255, 255))
-    draw.text((x0 + pad, y0 + pad), text, font=font, fill=(0, 0, 0))
+    draw.rectangle(
+        [(x0, y0), (x0 + tw + pad * 2, y0 + th + pad * 2)], fill=(255, 255, 255)
+    )
+    cy = y0 + pad
+    for line, lh in zip(lines, heights):
+        draw.text((x0 + pad, cy), line, font=font, fill=(0, 0, 0))
+        cy += lh + line_gap
     return np.array(out)
 
 

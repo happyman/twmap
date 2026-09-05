@@ -55,6 +55,48 @@ def test_layer_defs_single():
     assert layers[0].url == s.tile_url
 
 
+def test_layer_defs_gpx_single_source():
+    # PHP `include_gpx` (-G): v3/2016 swap to the `*_nowp_nocache` tile set.
+    s = get_source("2016")
+    layers = s.layer_defs(include_gpx=True)
+    assert len(layers) == 1
+    assert layers[0].url == (
+        "http://make.happyman.idv.tw/map/moi_happyman_nowp_nocache/{z}/{x}/{y}.png"
+    )
+    s3 = get_source("3")
+    g3 = s3.layer_defs(include_gpx=True)
+    assert g3[0].url == (
+        "http://make.happyman.idv.tw/map/twmap_happyman_nowp_nocache/{z}/{x}/{y}.png"
+    )
+    assert len(g3[0].pre_merge) == 2  # Equalize + Gamma kept from pre_merge
+
+
+def test_layer_defs_gpx_dual_layer():
+    # NLSC / archival maps multiply the archive layer with happyman_nowp.
+    for key, k0 in (
+        ("nlsc", "wmts.nlsc.gov.tw"),
+        ("1904", "JM20K_1904"),
+        ("1916", "JM50K_1916"),
+        ("1921", "JM20K_1921"),
+        ("1924", "JM50K_1924"),
+    ):
+        layers = get_source(key).layer_defs(include_gpx=True)
+        assert len(layers) == 2, key
+        assert k0 in layers[0].url, key
+        assert "happyman_nowp" in layers[1].url, key
+        assert layers[1].pre_merge in (None, [])
+    # The NLSC archive layer keeps its Level transform in gpx mode; 1921 too.
+    nlsc = get_source("nlsc").layer_defs(include_gpx=True)
+    assert len(nlsc[0].pre_merge) >= 1 and nlsc[0].tile_order == "yzx"
+
+
+def test_layer_defs_ignores_gpx_without_variant():
+    custom = config.MapSource(name="x", label="X", tile_url="http://x/{z}/{x}/{y}.png")
+    layers = custom.layer_defs(include_gpx=True)
+    assert len(layers) == 1
+    assert layers[0].url == "http://x/{z}/{x}/{y}.png"
+
+
 def test_chunk_region_single_when_small():
     r = Region(300000, 2774000, 320000, 2754000)  # 20x20km @315 = 6300px
     chunks = chunk_region(r, 315, max_px=15000)

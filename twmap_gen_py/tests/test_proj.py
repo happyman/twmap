@@ -37,6 +37,22 @@ def test_penghu_crs_differs():
     assert get_twd_crs("TWD67", penghu=True) == config.CRS_TWD67_PH
 
 
+def test_twd67_uses_hu_tzu_shan_datum():
+    """TWD67 must use Taiwan's 7-param Hu-Tzu-Shan -> WGS84 shift.
+
+    PROJ's EPSG:3828 maps to WGS84 with a *null* transform (TWD67 georeferenced
+    ~like TWD97), which moves every feature ~700 m east / 100 m south of its
+    true TWD67 position. The explicit +towgs84 (matching PHP lib/Twmap/Proj.php)
+    at (294000, 2748000) must land on (121.4436491, 24.8369669).
+    """
+    lon, lat = twd_to_wgs84(294000.0, 2748000.0, config.CRS_TWD67)
+    assert lon == pytest.approx(121.4436491, abs=1e-6)
+    assert lat == pytest.approx(24.8369669, abs=1e-6)
+    x, y = wgs84_to_twd(lon, lat, config.CRS_TWD67)
+    assert x == pytest.approx(294000.0, abs=0.05)
+    assert y == pytest.approx(2748000.0, abs=0.05)
+
+
 def test_region_properties():
     r = Region(300000, 2774000, 305000, 2769000, datum="TWD67")
     assert r.width_m == 5000

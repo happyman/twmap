@@ -254,15 +254,21 @@ class GrayscaleEnhanced(Transform):
 class AdaptiveThreshold(Transform):
     """Adaptive (local) threshold for historical scanned maps.
 
-    Port of the PHP `im_file_gray_at()` 6-step ImageMagick pipeline,
-    based on fmwconcepts local threshold method 2:
+    Port of the PHP ``im_file_gray_at()`` 6-step ImageMagick pipeline
+    (fmwconcepts local threshold method 2):
 
         1. convert to grayscale
-        2. local mean  = blur(sigma)
-        3. local variance = blur(a*a) - blur(a)^2, gamma boosted
-        4. threshold: (a - mean) - 0.03 * variance > 0 ? white : black
+        2. local mean      = blur(sigma)
+        3. local variance  = blur(a*a) - blur(a)^2, then ``v^(1/gamma)``
+           (IM ``-gamma 2`` raises to the reciprocal power, i.e. sqrt -> the
+           local standard deviation, NOT a squared variance)
+        4. IM ``-compose minus`` is ``max(0, second - first)``, so the final
+           subtraction clips at zero:
+           score = max(0, (a - mean) - k * stdev)
+           binary = score >= 2.55 ? white : black
 
-    Produces a binary (black/white) image, ideal for uneven paper scans.
+    ``2.55`` is IM ``-threshold 1`` (1% of the 0..255 range). Produces a
+    binary (black/white) image, ideal for uneven paper scans.
     """
 
     def __init__(self, sigma: float = 6.66667, k: float = 0.03, gamma: float = 2.0):
@@ -277,10 +283,11 @@ class AdaptiveThreshold(Transform):
         mean = gaussian_filter(gray, sigma=self.sigma, mode="reflect")
         mean_sq = gaussian_filter(gray * gray, sigma=self.sigma, mode="reflect")
         variance = np.clip(mean_sq - mean * mean, 0, None)
-        # gamma-boost the variance (>=1 expands, <1 compresses)
-        variance = np.power(variance, self.gamma)
-        score = (gray - mean) - self.k * variance
-        binary = np.where(score > 0, 255, 0).astype(np.uint8)
+        # IM -gamma 2 applies pixel^(1/2): variance -> standard deviation.
+        # The clipped non-negative variance avoids NaNs from negative roots.
+        stdev = np.power(variance, 1.0 / self.gamma)
+        score = np.maximum((gray - mean) - self.k * stdev, 0.0)
+        binary = np.where(score >= 2.55, 255, 0).astype(np.uint8)
         return binary
 
 

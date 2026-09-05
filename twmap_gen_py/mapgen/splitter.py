@@ -200,16 +200,6 @@ def _add_borders(img: np.ndarray, grid_info) -> np.ndarray:
         draw.rectangle([40, h - 40, w - 40, h - 8], fill=(255, 255, 255))
         draw.text((60, h - 32), text, font=font, fill=(0, 0, 0))
 
-    # Grid index in SE corner
-    idx = row * total_cols + col + 1
-    total = total_cols * total_rows
-    idx_text = f"{idx}/{total}"
-    bbox = draw.textbbox((0, 0), idx_text, font=font)
-    tw = bbox[2] - bbox[0]
-    th = bbox[3] - bbox[1]
-    draw.rectangle([w - tw - 20, h - th - 16, w - 8, h - 8], fill=(255, 255, 255))
-    draw.text((w - tw - 12, h - th - 12), idx_text, font=font, fill=(0, 0, 0))
-
     return np.array(im)
 
 

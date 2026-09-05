@@ -143,3 +143,26 @@ def test_adaptive_threshold_extracts_line():
     assert bw.dtype == np.uint8
     # The line region must be black (0)
     assert np.all(bw[41:44, :] == 0)
+
+
+def test_adaptive_threshold_twotone_not_black():
+    """A textured map-like image must yield BOTH ink and paper.
+
+    Regression: the variance was raised to ``v**gamma`` instead of
+    ``v**(1/gamma)`` (IM ``-gamma 2`` is a reciprocal power), which made the
+    ``(a - mean) - k * v**2`` score deeply negative on textured content and
+    turned every historical (1904/1921/1924) render completely black.
+    """
+    rng = np.random.default_rng(7)
+    n = 256
+    paper = rng.normal(210, 6, (n, n)).clip(0, 255).astype(np.uint8)
+    img = np.repeat(paper[:, :, None], 3, axis=2)
+    rr, cc = np.mgrid[0:n, 0:n]
+    ink = ((rr % 40) < 4) | ((cc % 33) < 3) | (rr > 220) | ((rr + cc) % 100 < 8)
+    img[ink] = rng.integers(20, 90, size=(int(ink.sum()), 3))
+
+    bw = AdaptiveThreshold().apply(img)
+    black = (bw == 0).mean()
+    white = (bw == 255).mean()
+    assert black > 0.03, f"ink should survive threshold, black={black:.0%}"
+    assert white > 0.03, f"paper should survive threshold, white={white:.0%}"

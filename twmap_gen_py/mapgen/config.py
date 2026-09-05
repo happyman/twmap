@@ -48,18 +48,25 @@ class MapSource:
     pixel_per_km: int = 315
     tile_order: str = "xyz"
     layers: Optional[list[LayerDef]] = None
+    layers_gpx: Optional[list[LayerDef]] = None
     pre_merge: list[Transform] = field(default_factory=list)
     post_merge: list[Transform] = field(default_factory=list)
     grayscale: str = "simple"
     grayscale_params: dict = field(default_factory=dict)
 
-    def layer_defs(self) -> list[LayerDef]:
+    def layer_defs(self, include_gpx: bool = False) -> list[LayerDef]:
         """Return the effective tile-layer definitions.
+
+        With ``include_gpx`` the PHP ``-G`` variant is used when available: a
+        swapped ``*_nowp_nocache`` tile source (v3/2016) or the archive layer
+        multiplied with the ``happyman_nowp`` overlay (NLSC / archival maps).
 
         If explicit layers are given, use them; otherwise synthesize a single
         layer from ``tile_url`` (with source-level pre_merge). Per-layer
         ``pre_merge`` takes precedence over the source-level one.
         """
+        if include_gpx and self.layers_gpx:
+            return self.layers_gpx
         if self.layers:
             return self.layers
         return [
@@ -72,6 +79,11 @@ class MapSource:
 
 
 # Built-in registry. Keyed by the CLI map-type/version string.
+# The `layers_gpx` variants mirror the PHP `include_gpx` (flag -G) tile URLs:
+# single swapped `*_nowp_nocache` sources for v3/2016, and the archive layer
+# multiplied with the `happyman_nowp` overlay for NLSC / archival maps.
+_NOWP_GPX = "http://make.happyman.idv.tw/map/happyman_nowp/{z}/{x}/{y}.png"
+
 SOURCES: dict[str, MapSource] = {
     "3": MapSource(
         name="3",
@@ -80,6 +92,12 @@ SOURCES: dict[str, MapSource] = {
         zoom=16,
         pixel_per_km=315,
         pre_merge=[Equalize(), Gamma(2.2)],
+        layers_gpx=[
+            LayerDef(
+                url="http://make.happyman.idv.tw/map/twmap_happyman_nowp_nocache/{z}/{x}/{y}.png",
+                pre_merge=[Equalize(), Gamma(2.2)],
+            ),
+        ],
         grayscale="enhanced",
         grayscale_params={"brightness": 20, "contrast": 5, "tint": 40},
     ),
@@ -89,6 +107,11 @@ SOURCES: dict[str, MapSource] = {
         tile_url="http://make.happyman.idv.tw/map/moi_nocache/{z}/{x}/{y}.png",
         zoom=16,
         pixel_per_km=315,
+        layers_gpx=[
+            LayerDef(
+                url="http://make.happyman.idv.tw/map/moi_happyman_nowp_nocache/{z}/{x}/{y}.png",
+            ),
+        ],
         post_merge=[Normalize()],
         grayscale="simple",
     ),
@@ -100,6 +123,14 @@ SOURCES: dict[str, MapSource] = {
         zoom=17,
         pixel_per_km=630,
         pre_merge=[Level(0.25, 1.0, 0.1)],
+        layers_gpx=[
+            LayerDef(
+                url="https://wmts.nlsc.gov.tw/wmts/EMAPX99/default/EPSG:3857/{z}/{y}/{x}",
+                tile_order="yzx",
+                pre_merge=[Level(0.25, 1.0, 0.1)],
+            ),
+            LayerDef(url=_NOWP_GPX),
+        ],
         grayscale="simple",
     ),
     "1904": MapSource(
@@ -111,6 +142,15 @@ SOURCES: dict[str, MapSource] = {
         ),
         zoom=16,
         pixel_per_km=315,
+        layers_gpx=[
+            LayerDef(
+                url=(
+                    "https://gis.sinica.edu.tw/tileserver/"
+                    "file-exists.php?img=JM20K_1904-jpg-{z}-{x}-{y}"
+                ),
+            ),
+            LayerDef(url=_NOWP_GPX),
+        ],
         post_merge=[Normalize()],
         grayscale="adaptive_threshold",
     ),
@@ -123,6 +163,15 @@ SOURCES: dict[str, MapSource] = {
         ),
         zoom=16,
         pixel_per_km=315,
+        layers_gpx=[
+            LayerDef(
+                url=(
+                    "https://gis.sinica.edu.tw/tileserver/"
+                    "file-exists.php?img=JM50K_1916-jpg-{z}-{x}-{y}"
+                ),
+            ),
+            LayerDef(url=_NOWP_GPX),
+        ],
         post_merge=[Normalize()],
         grayscale="simple",
     ),
@@ -136,6 +185,16 @@ SOURCES: dict[str, MapSource] = {
         zoom=16,
         pixel_per_km=315,
         pre_merge=[Level(0.25)],
+        layers_gpx=[
+            LayerDef(
+                url=(
+                    "https://gis.sinica.edu.tw/tileserver/"
+                    "file-exists.php?img=JM20K_1921-jpg-{z}-{x}-{y}"
+                ),
+                pre_merge=[Level(0.25)],
+            ),
+            LayerDef(url=_NOWP_GPX),
+        ],
         grayscale="adaptive_threshold",
     ),
     "1924": MapSource(
@@ -147,6 +206,15 @@ SOURCES: dict[str, MapSource] = {
         ),
         zoom=16,
         pixel_per_km=315,
+        layers_gpx=[
+            LayerDef(
+                url=(
+                    "https://gis.sinica.edu.tw/tileserver/"
+                    "file-exists.php?img=JM50K_1924_new-jpg-{z}-{x}-{y}"
+                ),
+            ),
+            LayerDef(url=_NOWP_GPX),
+        ],
         grayscale="adaptive_threshold",
     ),
 }
@@ -190,11 +258,26 @@ TAIWAN_BOUNDS = {
     "penghu": {"x": (280, 330), "y": (2500, 2630)},
 }
 
-# TWD67/97 EPSG codes (from PROJ database)
+# TWD97/67 coordinate systems.
+# TWD97 (EPSG:3826/3825) sits on GRS80, ~a few metres from WGS84, so PROJ's
+# database transforms are correct.
+# TWD67 (Hu-Tzu-Shan, ellipsoid aust_SA=GRS67) has NO real registered datum
+# shift in PROJ: EPSG:3828 maps to WGS84 with a null transform (i.e. TWD67 is
+# georeferenced almost identically to TWD97 there), which puts every feature
+# ~700 m east of its true TWD67 position. Taiwan's standard TWD67->WGS84 is
+# the 7-parameter Helmert used by the original PHP stitcher (Proj.php), so we
+# define it explicitly with +towgs84 (lon_0 = 121 mainland / 119 Penghu).
 CRS_TWD97 = "EPSG:3826"  # TWD97 / TM2 zone 121 (Taiwan mainland)
 CRS_TWD97_PH = "EPSG:3825"  # TWD97 / TM2 zone 119 (Penghu)
-CRS_TWD67 = "EPSG:3828"  # TWD67 / TM2 zone 121 (Taiwan mainland)
-CRS_TWD67_PH = "EPSG:3827"  # TWD67 / TM2 zone 119 (Penghu)
+_TWD67_TOWGS84 = "-764.558,-361.229,-178.374,-.0000011698,.0000018398,.0000009822,.00002329"
+CRS_TWD67 = (
+    "+proj=tmerc +lat_0=0 +lon_0=121 +k=0.9999 +x_0=250000 +y_0=0 "
+    f"+ellps=aust_SA +towgs84={_TWD67_TOWGS84} +units=m +no_defs"
+)  # TWD67 / TM2 zone 121 (Taiwan mainland), datum via +towgs84
+CRS_TWD67_PH = (
+    "+proj=tmerc +lat_0=0 +lon_0=119 +k=0.9999 +x_0=250000 +y_0=0 "
+    f"+ellps=aust_SA +towgs84={_TWD67_TOWGS84} +units=m +no_defs"
+)  # TWD67 / TM2 zone 119 (Penghu), datum via +towgs84
 CRS_WGS84 = "EPSG:4326"
 CRS_MERCATOR = "EPSG:3857"
 
