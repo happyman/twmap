@@ -74,21 +74,24 @@ def test_split_image_pages_cover():
     """Splitting a 2x2 km image at 315px/km into 1x1km pages yields 4 pages.
 
     Match PHP: page origins step by the full page size (315px), each crop is
-    page + overlap (42px) extending right/bottom, clamped to image extent.
-    So the 2x2 tiling is:
-        (0,0) 357x357   (1,0) 315x357
-        (0,1) 357x315   (1,1) 315x315
+    page + overlap (42px) extending right/bottom, and every page -- including
+    the partial last row/column -- is padded to the full page canvas (PHP
+    `cropimage`), so the 2x2 tiling is four 357x357 pages with the clamped
+    content kept at top-left and white elsewhere.
     """
     px = 315
     ov = 42
-    img = _rgba(px * 2, px * 2)  # 2x2 km, 630x630
+    img = _rgba(px * 2, px * 2, fill=100)  # 2x2 km, 630x630
     region = Region(300000, 2774000, 302000, 2772000)
     pages = split_image(img, region, px, tiles_w=1, tiles_h=1, overlap_px=ov)
     assert len(pages) == 4
-    expected_shapes = [(px + ov, px + ov), (px, px + ov), (px + ov, px), (px, px)]
-    for page, (ew, eh) in zip(pages, expected_shapes):
-        assert page.shape[0] == eh
-        assert page.shape[1] == ew
+    for page in pages:
+        assert page.shape == (px + ov, px + ov, 4)
+    # Partial page (1,1): 315x315 content at top-left, white pad right/bottom.
+    last = pages[-1]
+    assert np.all(last[:px, :px, :3] == 100)
+    assert np.all(last[px:, :, :3] == 255)
+    assert np.all(last[:, px:, :3] == 255)
 
 
 def test_split_image_no_overlap():
@@ -127,14 +130,15 @@ def test_determine_type_portrait_for_small_region():
 
 
 def test_make_simage_keeps_scale_for_small_map():
-    """A region smaller than a page must be centered with margins, not stretched.
+    """A region smaller than a page keeps its print scale and lands near the
+    top-left of the paper (PHP parity), never floating centered or stretched.
 
-    A 2x2 km map (630px at 315px/km) on a 5x7 A4 page is resized by the
-    layout ratio (92%) to ~580px and centered, keeping the print scale
-    identical to full pages. It must NOT be enlarged to fill the paper.
+    split_image pads the page to the full page canvas (content top-left +
+    white right/bottom); center-placing that padded page pins the 2x2 km map
+    to the paper's top-left area at the same 92% layout ratio as full pages.
     """
     px = 315
-    page = _rgba(630, 630, fill=100)  # 2x2 km map
+    page = _pad_to(_rgba(2 * px, 2 * px, fill=100), 5 * px + 42, 7 * px + 42)
     out = make_simage(page, 1492, 2110, 5, 7, px)
     assert out.shape == (2110, 1492, 4)
     # Content is the non-white region
@@ -143,12 +147,9 @@ def test_make_simage_keeps_scale_for_small_map():
     w = xs.max() - xs.min() + 1
     # 630 * 92% = 580 (aspect preserved, square)
     assert abs(h - 580) <= 3 and abs(w - 580) <= 3
-    # Centered on the page
-    assert abs((xs.min() + xs.max()) // 2 - 1492 // 2) <= 2
-    assert abs((ys.min() + ys.max()) // 2 - 2110 // 2) <= 2
-    # Margins all around - the map does not fill the page
-    assert xs.min() > 200 and ys.min() > 300
-    assert 1492 - xs.max() - 1 > 200
+    # Near the top-left corner, NOT floating on the paper center
+    assert xs.min() < 60 and ys.min() < 80
+    assert xs.max() < 1492 // 2 and ys.max() < 2110 // 2
 
 
 def test_make_simage_full_page_same_scale():
@@ -160,6 +161,28 @@ def test_make_simage_full_page_same_scale():
     # (5*315+42)*92% = 1488 wide; 7*315*92% = 2029 tall (aspect preserved)
     assert abs((xs.max() - xs.min() + 1) - 1488) <= 3
     assert abs((ys.max() - ys.min() + 1) - 2029) <= 3
+
+
+def test_make_simage_multi_page_aligns_northwest():
+    """Multi-page layouts paste each page at the top-left (PHP NorthWest).
+
+    Partial pages (a small last-column map) must start from the paper's
+    corner, so neighboring tiles paste together at the same reference corner
+    instead of each floating centered on its own page.
+    """
+    px = 315
+    page = _pad_to(_rgba(3 * px, 2 * px, fill=100), 5 * px + 42, 7 * px + 42)
+    out = make_simage(
+        page, 1492, 2110, 5, 7, px,
+        grid_info={"row": 0, "col": 1, "total_cols": 2, "total_rows": 1},
+    )
+    mask = out[..., :3].min(axis=-1) != 255
+    # Exclude the 42px paste-strip area (the SE junction index lives there)
+    ys, xs = np.where(mask[: 2110 - 42, : 1492 - 42])
+    # Top-left pinned (NW), not centered; 2x3 km content at 92% = 580x869
+    assert xs.min() <= 1 and ys.min() <= 1
+    assert abs((xs.max() - xs.min() + 1) - 580) <= 3
+    assert abs((ys.max() - ys.min() + 1) - 869) <= 3
 
 
 def _dark_page_mask(out):

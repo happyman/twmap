@@ -104,7 +104,12 @@ def split_image(
             x1 = min(x0 + page_w + overlap_px, img_w)
             y1 = min(y0 + page_h + overlap_px, img_h)
             crop = img[max(0, y0) : max(0, y1), max(0, x0) : max(0, x1)]
-            pages.append(_pad_to(crop, x1 - x0, y1 - y0))
+            # Every page is padded to the full page canvas (page + overlap),
+            # like PHP `cropimage`: a partial last row/column gets its white
+            # right/bottom fill baked in, so `make_simage` places the (padded)
+            # page and the small map lands at the top-left of the paper instead
+            # of floating centered.
+            pages.append(_pad_to(crop, page_w + overlap_px, page_h + overlap_px))
     return pages
 
 
@@ -143,9 +148,14 @@ def make_simage(
     Mirrors PHP ``im_simage_resize``: a single uniform ratio is derived from
     the page layout (``tiles_w``x``tiles_h`` km) and the paper pixel size, so
     every page of the same dimension prints at the same map scale. The page
-    image is resized by that ratio (aspect preserved, no per-axis stretch) and
-    centered on a white canvas. Regions smaller than a page are centered with
-    margins rather than enlarged to fill the paper (print scale matters).
+    image is resized by that ratio (aspect preserved, no per-axis stretch).
+
+    The resized page is placed on the white canvas like PHP ``make_simages``:
+    - multi-page layouts use the ``NorthWest`` gravity (top-left) so every
+      page shares the same reference corner and the tiles paste together;
+    - a single map (region within one page) uses ``Center``, which after
+      split_image's full-page padding still pins small maps to the top-left
+      area of the paper.
     ``grid_info`` (when provided) adds paste-alignment marks and the page's
     grid index in the corner. ``index_img`` is an optional small overlay.
     """
@@ -160,7 +170,13 @@ def make_simage(
         im = im.resize((nw, nh), Image.LANCZOS)
 
     canvas = Image.new("RGBA", (px_w, px_h), (255, 255, 255, 255))
-    canvas.paste(im, ((px_w - im.width) // 2, (px_h - im.height) // 2), im)
+    multi = grid_info is not None and (
+        grid_info.get("total_cols", 1) * grid_info.get("total_rows", 1) > 1
+    )
+    if multi:
+        canvas.paste(im, (0, 0), im)  # NorthWest: all pages share one corner
+    else:
+        canvas.paste(im, ((px_w - im.width) // 2, (px_h - im.height) // 2), im)
     out = np.array(canvas)
 
     if grid_info is not None:
