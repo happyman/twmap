@@ -209,7 +209,7 @@ default:
 	// 測試一下 geotiff 是否壓縮
 	$gen_tiff = FALSE;
 	if (map_file_exists($map['filename'], 'tiff')){
-		$cmd = sprintf("/usr/bin/file %s |grep LZW", map_file_exists($map['filename'], 'tiff'));
+		$cmd = sprintf("/usr/bin/file %s |grep LZW", map_file_name($map['filename'], 'tiff'));
 		exec($cmd, $out, $ret);
 		if ($ret != 0) {
 			$gen_tiff = TRUE;
