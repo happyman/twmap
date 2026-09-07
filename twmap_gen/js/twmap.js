@@ -182,11 +182,24 @@ function handle_message(evt) {
 	}
 }
 // ws client reconnect implementation
+var ws_conn = null;
 function connect_ws(){
-	//var first_open = 1;
-	var websocket;
 	var myws = wsServer;
-	websocket = new WebSocket(myws);
+	// 換 formid / 新連線時先關掉舊 socket, 避免殘留訂閱舊 channel
+	// (new_formid 換 ws path 時, 舊 socket 會繼續把訊息丟進 handle_message)
+	if (ws_conn) {
+		var old = ws_conn;
+		ws_conn = null;
+		old.onopen = null;
+		old.onmessage = null;
+		old.onerror = null;
+		old.onclose = null;
+		try {
+			old.close();
+		} catch (e) {}
+	}
+	var websocket = new WebSocket(myws);
+	ws_conn = websocket;
 	websocket.onopen = function (evt) {
 		console.log(wsServer + " opened ");
 		// 將目前連線 server 存起來
@@ -195,11 +208,14 @@ function connect_ws(){
 	//Monitor connection closed
 	websocket.onclose = function (evt) {
 		console.log("Disconnected");
-		if (wsServer != myws) {
+		// 只有「目前仍要連」的連線才重連;
+		// 已被新 connect_ws 取代或 wsServer 已換 channel 的舊連線直接 bye
+		if (ws_conn !== websocket || wsServer != myws) {
 			console.log("Bye");
 			return;
 		}
 
+		ws_conn = null;
 		setTimeout(function() {
 			console.log("reconnecting...");
 			connect_ws();
