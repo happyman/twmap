@@ -550,7 +550,8 @@ function popupLinks(lon, lat, zoom) {
     link('//maps.google.com/maps?q=' + wgsLat.toFixed(5) + ',' + wgsLon.toFixed(5) + '&zoom=' + zoom, 'marker', 'Google Maps', 'Google'),
     link('//maps.nlsc.gov.tw/go/' + (wgsLon.toFixed(5)) + '/' + (wgsLat.toFixed(5)), 'globe', 'NLSC 地圖', 'NLSC'),
     link('//www.windy.com/' + (wgsLat.toFixed(3)) + '/' + (wgsLon.toFixed(3)) + '/meteogram?rain,' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + ',' + zoom + ',m:ejkajw7', 'cloud', 'windy', 'windy'),
-    link('//wiwari.github.io/accTW/?center=' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + '&zoom=' + zoom, 'tint', '集水區觀察員', '集水區')
+    link('//wiwari.github.io/accTW/?center=' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + '&zoom=' + zoom, 'tint', '集水區觀察員', '集水區'),
+    link('//ranger.suann.net/?name=%E5%90%8D%E7%A8%B1&loc=' + (wgsLat.toFixed(3)) + ',' + (wgsLon.toFixed(3)) + '&zoom=' + zoom, 'marker', '巡山員地圖', '巡山員')
   ];
   if (isLoggedIn){
       links.push(link(window.appConfig.promlist_url, 'star', '獨立峰排名', '獨立峰', true));
