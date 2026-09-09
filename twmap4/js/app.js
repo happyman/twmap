@@ -36,6 +36,11 @@ function initialViewFromURL() {
   return view;
 }
 
+// Picker mode: when opened as ?mode=picker&return=<url>, the 出圖 產生 submit
+// redirects the callmake params to the `return` URL instead of the generator.
+window.__pickerMode = new URLSearchParams(window.location.search).get('mode') || '';
+window.__pickerReturn = new URLSearchParams(window.location.search).get('return') || '';
+
 const mapApi = createMapApi(olMapApiAdapter);
 const initialView = initialViewFromURL();
 const map = mapApi.init({

@@ -87,7 +87,7 @@ function AreaSelect(opts) {
     var total = Math.ceil(data.shiftx / 5) * Math.ceil(data.shifty / 7);
     var total1 = Math.ceil(data.shiftx / 7) * Math.ceil(data.shifty / 5);
     var page = (total1 < total) ? (total1 + ' 張 A4R') : (total + ' 張 A4');
-    callmake = 'x=' + data.x + '&y=' + data.y + '&shiftx=' + data.shiftx + '&shifty=' + data.shifty + '&ph=' + ph + '&version=3';
+    callmake = 'x=' + data.x + '&y=' + data.y + '&shiftx=' + data.shiftx + '&shifty=' + data.shifty + '&ph=' + ph;
     if (paramsEl) {
       paramsEl.innerHTML = 'TWD67:' + data.x + ':' + data.y + ' ' + data.shiftx + 'x' + data.shifty +
         ' km 共 ' + page +
@@ -176,7 +176,14 @@ function AreaSelect(opts) {
     var title = titleEl.value;
     var datum = datumEl ? datumEl.value : 'TWD97';
     var url = (window.appConfig && window.appConfig.callmake_url) ? window.appConfig.callmake_url : '';
-    var target = url + callmake + '&title=' + encodeURIComponent(title) + '&datum=' + datum;
+    var pickerReturn = window.__pickerReturn || '';
+    var isPicker = window.__pickerMode === 'picker' && pickerReturn;
+    var target;
+    if (isPicker) {
+      target = pickerReturn + '?title=' + encodeURIComponent(title) + '&datum=' + datum + '&' + callmake;
+    } else {
+      target = url + callmake + '&title=' + encodeURIComponent(title) + '&datum=' + datum;
+    }
     closeModal();
     if (window.confirm('程式將會傳送參數給地圖產生器,確定嘛?')) {
        // window.top.location.href = target;
