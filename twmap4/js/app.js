@@ -1000,6 +1000,8 @@ if (trackToggleBtn) {
   });
 }
 
+var areaSelectEnabled = false;
+
 const areaSelectToggleBtn = document.getElementById('area-select-toggle-btn');
 if (areaSelectToggleBtn) {
   areaSelectToggleBtn.addEventListener('click', function () {
@@ -1089,7 +1091,6 @@ markerFilterToggleBtns.forEach(function (btn) {
 });
 
 let areaselectInstance = null;
-var areaSelectEnabled = false;
 
 function disableAreaSelect() {
   areaSelectEnabled = false;

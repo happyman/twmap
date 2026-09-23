@@ -58,7 +58,7 @@ $login_role = ($st === true) ? 1 : 0;
       </div>
 
       <div id="toolbar-right">
-        <button id="area-select-toggle-btn" type="button" class="disable" title="出圖選擇 (啟用後地圖點擊直接選範圍)">出圖選擇</button>
+        <button id="area-select-toggle-btn" type="button" class="disable" title="出圖 (啟用後地圖點擊直接選範圍)">出圖</button>
         <label for="rainfall-select">雨量</label>
         <select id="rainfall-select" aria-label="雨量疊圖">
           <option value="none" selected>雨量圖</option>
