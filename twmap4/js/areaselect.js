@@ -209,12 +209,22 @@ function AreaSelect(opts) {
     }
   }
 
+  function clearSelection() {
+    miniX = 9999; miniY = 0; maxiX = 0; maxiY = 9999;
+    callmake = null;
+    clearPolygons();
+    if (paramsEl) {
+      paramsEl.innerHTML = '';
+    }
+  }
+
   initModal();
 
   return {
     handleClick: handleClick,
     generateBtnClick: generateBtnClick,
     exportPoints: exportPoints,
-    closeModal: closeModal
+    closeModal: closeModal,
+    clearSelection: clearSelection
   };
 }

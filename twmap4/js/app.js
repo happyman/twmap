@@ -1000,6 +1000,24 @@ if (trackToggleBtn) {
   });
 }
 
+const areaSelectToggleBtn = document.getElementById('area-select-toggle-btn');
+if (areaSelectToggleBtn) {
+  areaSelectToggleBtn.addEventListener('click', function () {
+    areaSelectEnabled = !this.classList.contains('active');
+    this.classList.toggle('active');
+    this.classList.toggle('disable');
+    if (!areaSelectEnabled) {
+      disableAreaSelect();
+    }
+  });
+}
+
+if (window.__pickerMode === 'picker' && areaSelectToggleBtn) {
+  areaSelectEnabled = true;
+  areaSelectToggleBtn.classList.add('active');
+  areaSelectToggleBtn.classList.remove('disable');
+}
+
 map.getView().on('change:resolution', function () {
   syncMarkerLabelState();
 });
@@ -1071,6 +1089,14 @@ markerFilterToggleBtns.forEach(function (btn) {
 });
 
 let areaselectInstance = null;
+var areaSelectEnabled = false;
+
+function disableAreaSelect() {
+  areaSelectEnabled = false;
+  if (areaselectInstance && typeof areaselectInstance.clearSelection === 'function') {
+    areaselectInstance.clearSelection();
+  }
+}
 
 function clickedOnShape(pixel) {
   const target = map.getLayers().getArray().find(function (layer) {
@@ -1336,6 +1362,9 @@ areaselectInstance = new AreaSelect({
       return true;
     }
     if (Date.now() - lastFeatureClickTime < 500) {
+      return true;
+    }
+    if (!areaSelectEnabled) {
       return true;
     }
     return false;
