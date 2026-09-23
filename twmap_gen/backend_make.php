@@ -244,7 +244,9 @@ if (isset($CONFIG['use_queue']) && $CONFIG['use_queue'] == true){
 		sleep(2);
 	}
 	
-} else {
+} 
+/* // alwways use queue
+ * else {
 	// 前端可能無法等太久
 	exec("php cmd_make2.php ".$cmd_param, $output, $ret);
 	if ($ret != 0) {
@@ -256,7 +258,7 @@ if (isset($CONFIG['use_queue']) && $CONFIG['use_queue'] == true){
 	//finish_task($add_param_str);
 	// moved to made.php
 }
-
+*/
 
 
 // function

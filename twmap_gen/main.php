@@ -56,7 +56,7 @@ $smarty->assign("user_email", $_SESSION['mylogin']['email'] );
 $smarty->assign("user_nickname", $_SESSION['mylogin']['nick'] );
 $smarty->assign("lastest_mid", $lastest_mid );
 $smarty->assign("initial_tab", $initial_tab );
-$smarty->assign("browser_url", $TWMAP3URL );
+$smarty->assign("browser_url", $PICKERURL );
 $smarty->assign("loggedin", $_SESSION['loggedin'] );
 $smarty->assign("title", "歡迎使用");
 $smarty->assign("description", "");

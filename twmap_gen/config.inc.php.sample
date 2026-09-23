@@ -27,6 +27,7 @@ $diskfullchk = "/home/happyman/map/";
 $twmap_gen_version = trim(file_get_contents(__ROOT__."VERSION"));
 $TWMAP3_html_root = "/map";
 $TWMAP3URL = "/map/index.php";
+$PICKERURL = "/map/index.php?mode=picker";
 $ERROROUT = "ajax";
 
 /* DB 設定寫在這裡 */
