@@ -1003,9 +1003,9 @@ if (trackToggleBtn) {
 const areaSelectToggleBtn = document.getElementById('area-select-toggle-btn');
 if (areaSelectToggleBtn) {
   areaSelectToggleBtn.addEventListener('click', function () {
-    areaSelectEnabled = !this.classList.contains('active');
-    this.classList.toggle('active');
-    this.classList.toggle('disable');
+    areaSelectEnabled = !areaSelectEnabled;
+    this.classList.toggle('active', areaSelectEnabled);
+    this.classList.toggle('disable', !areaSelectEnabled);
     if (!areaSelectEnabled) {
       disableAreaSelect();
     }
