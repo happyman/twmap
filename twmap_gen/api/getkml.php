@@ -64,7 +64,7 @@ function make_kml($mid) {
 	}
 		
 	// test kml happyman add test path
-	$cachefile = sprintf("/srv/www/htdocs/map/gpxtmp/test/%06d/%d/%s",$map['uid'], $map['mid'], basename(str_replace(".gpx", ".kml", $gpx)));
+	$cachefile = sprintf($tmppath ."/gpxtmp/test/%06d/%d/%s",$map['uid'], $map['mid'], basename(str_replace(".gpx", ".kml", $gpx)));
 	if (file_exists($gpx)) {
 		if (file_exists($cachefile) && filemtime($cachefile) >= filemtime($gpx)) {
 			return array(true, $cachefile);
