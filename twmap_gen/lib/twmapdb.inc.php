@@ -454,7 +454,7 @@ function gethashdir($i) {
 function map_migrate($root,$uid,$mid) {
 	if ($root === null || $root === "") $root = map_fs_root();
 	$dir = sprintf("%s/%s/%06d/%d",$root,gethashdir($uid),$uid,$mid);
-	$rel = sprintf("%s/%s/%06d/%d",gethashdir($uid),$uid,$mid);
+	$rel = sprintf("%s/%06d/%d",gethashdir($uid),$uid,$mid);
 
 	$row = map_get_single($mid);
 	if ($row == false) return false;
