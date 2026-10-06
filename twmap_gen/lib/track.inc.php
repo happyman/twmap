@@ -57,7 +57,7 @@ function track_files($tid) {
 	// 路徑
 	$data = track_get_single($tid);
 	if ($data !== NULL) {
-		$files =  glob(sprintf("%s/%d/*.*",$data['path'],$data['tid']));
+		$files =  glob(map_fs_path(sprintf("%s/%d/*.*",$data['path'],$data['tid'])));
 		return $files;
 	}
 	return null;

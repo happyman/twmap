@@ -39,7 +39,7 @@ function my_error_out($msg){
 	exit(0);
 }
 function finish_task($param) {
-	global $out_root;
+	global $fs_root;
 	//list ($uid, $limit, $recreate_flag,  $xx, $yy, $shiftx, $shifty, $datum,$version, $outx, $outy, $title,$outimage, $remote_ip,$log_channel,$paper) = json_decode($param, true);
 	extract( json_decode($param, true));
 
@@ -50,7 +50,7 @@ function finish_task($param) {
 		}
 		my_error_out("已經達到數量限制" . $limit);
 	}
-	if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
+	if (file_exists(map_fs_path(str_replace(".tag.png", ".gpx", $outimage)))) {
 		$save_gpx = 1;
 	} else {
 		$save_gpx = 0;
@@ -62,7 +62,7 @@ function finish_task($param) {
 	}
 	// 最後搬移到正確目錄
 	sleep(1);
-	$ret = map_migrate($out_root, $uid, $mid);
+	$ret = map_migrate($fs_root, $uid, $mid);
 	if ($ret == false) {
 		msglog('error migrate directory');
 	}

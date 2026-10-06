@@ -5,13 +5,14 @@ $GLOBALS['db_user'] = $db_user;
 $GLOBALS['db_pass'] = $db_pass;
 $GLOBALS['db_name'] = $db_name;
 $GLOBALS['out_root'] = $out_root;
+$GLOBALS['fs_root'] = $fs_root;
 $GLOBALS['site_url'] = $site_url;
 $GLOBALS['site_html_root'] = $site_html_root;
 
 class keepon_worker
 {
     public function run($job, &$log) {
-        global $out_root, $site_url;
+        global $fs_root, $out_root, $site_url;
 
         $workload = $job->workload();
         $todo = unserialize($workload);
@@ -51,13 +52,13 @@ class keepon_worker
             $log[] = "$keepon_id 已經產生過";
             return;
         }
-        $block_msg = map_blocked($out_root, $uid);
+        $block_msg = map_blocked($fs_root, $uid);
         if ($block_msg != null) {
             kerror_out($keepon_id, $block_msg);
             $log[] = "$keepon_id 無法 block";
             return;
         }
-        $outpath = sprintf("%s/%06d", $out_root, $uid);
+        $outpath = sprintf("%s/%06d", $fs_root, $uid);
         $outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%d%s", $outpath, $startx * 1000, $starty * 1000, $shiftx, $shifty, $version, ($ph == 1) ? 'p' : "");
         $outimage = $outfile_prefix . ".tag.png";
         $outgpx = $outfile_prefix . ".gpx";
@@ -100,7 +101,7 @@ class keepon_worker
         $type = determine_type($shiftx, $shifty);
         $outx = ceil($shiftx / $tiles[$type]['x']);
         $outy = ceil($shifty / $tiles[$type]['y']);
-        if (file_exists(str_replace(".tag.png", ".gpx", $outimage))) {
+        if (file_exists(map_fs_path(str_replace(".tag.png", ".gpx", $outimage)))) {
             $gpx = 1;
         }
 
@@ -118,7 +119,7 @@ class keepon_worker
         }
 
         // 最後搬移到正確目錄
-        map_migrate($out_root, $uid, $mid);
+        map_migrate($fs_root, $uid, $mid);
         $okmsg = kcli_msglog("done");
         $ret_url = sprintf("%s%s/show.php?mid=%d&info=%dx%d-%dx%d", $site_url, $site_html_root, $mid, $xx, $yy, $shiftx, $shifty);
         kok_out($keepon_id, "done", $ret_url);

@@ -97,7 +97,7 @@ if ($inp['gps'] == 1) {
 
 	$row = map_get_single($inp['gpxmid']);
 	if ($row['flag'] == 1 && $row['gpx'] == 1 && $row['uid'] == $MY_SESSION['uid']) {
-		$tmp_gpx = str_replace(".tag.png", ".gpx", $row['filename']);
+		$tmp_gpx = map_fs_path(str_replace(".tag.png", ".gpx", $row['filename']));
 		if (!file_exists($tmp_gpx)) error_out("gpx 檔案已經消失");
 	}
 	else {
@@ -156,7 +156,7 @@ $outfile_prefix = sprintf("%s/%dx%d-%dx%d-v%s%s_%s", $outpath, $startx * 1000, $
 $outimage = $outfile_prefix . ".tag.png";
 $outgpx = $outfile_prefix . ".gpx";
 
-$block_msg = map_blocked($out_root, $MY_SESSION['uid']);
+$block_msg = map_blocked($fs_root, $MY_SESSION['uid']);
 if ($block_msg != null) {
 	error_out($block_msg);
 }

@@ -100,7 +100,7 @@ case 'listm':
 	}
 	$data = keepon_map_exists(0, $kid);
 	// print_r($data);
-	$html_root = $out_html_root . str_replace($out_root, "", dirname($data['filename']));
+	$html_root = dirname(map_url_path($data['filename']));
 	$url =  $site_url . $html_root . "/" . basename($data['filename']);
 	if (isset($data['mid'])) {
 		printf("mid: %d\nkid: %s\nurl: %s\n",$data['mid'],$kid,$url);

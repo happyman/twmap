@@ -14,9 +14,9 @@ if ($map == null ) {
 	echo "<h1>無此 map".print_r($_GET,true)."</h1>";
 	exit(0); 
 }
-$html_root = $out_html_root . str_replace($out_root, "", dirname($map['filename']));
+$html_root = dirname(map_url_path($map['filename']));
 $full_map_link = $site_url . $html_root . "/" . basename($map['filename']);
-$size = getImageSize($map['filename']);
+$size = getImageSize(map_fs_path($map['filename']));
 $smarty->assign("img_src", $full_map_link);
 $smarty->assign("img_size", $size[3]);
 $smarty->assign("map", $map);

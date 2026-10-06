@@ -67,7 +67,7 @@ $_SESSION['uid'] = $row['uid'];
 // 看看是不是有漏搬的檔案
 $maps = map_get_ids($row['uid'],10);
 foreach($maps as $map) {
-  map_migrate($out_root, $row['uid'], $map['mid']);
+  map_migrate($fs_root, $row['uid'], $map['mid']);
 }
 
 if (isset($_SESSION['redirto']) && !empty($_SESSION['redirto'])) {

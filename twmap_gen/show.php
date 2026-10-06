@@ -64,9 +64,10 @@ if ($mid < 0 ){
 	}
 
 	$smarty->assign('map',$map);
-	$gpx_link = $site_url . str_replace($out_root,$out_html_root,sprintf("%s%d/%s_p.gpx",$map['path'],$map['tid'],$map['md5name']));
-	$fname = glob(sprintf("%s%d/%s_o.*",$map['path'],$map['tid'],$map['md5name']));
-	$orig_link = $site_url . str_replace($out_root,$out_html_root,$fname[0]);
+	$gpx_link = map_url(sprintf("%s%d/%s_p.gpx",$map['path'],$map['tid'],$map['md5name']));
+	$fname = glob(map_fs_path(sprintf("%s%d/%s_o.*",$map['path'],$map['tid'],$map['md5name'])));
+	if (!is_array($fname) || count($fname) == 0) $fname = array();
+	$orig_link = count($fname) ? map_url($fname[0]) : "";
 	$path_parts = pathinfo($map['name']);
 	$orig_download_name=$path_parts['basename'];
 	$gpx_download_name=$path_parts['filename']. "_p.gpx";
@@ -85,7 +86,7 @@ if ($mid < 0 ){
 
 // 3. 顯示地圖
 // $html_root = $out_html_root . sprintf("/%06d/%d", $map['uid'],$mid);
-$html_root = $out_html_root . str_replace($out_root, "", dirname($map['filename']));
+$html_root = dirname(map_url_path($map['filename']));
 // 產生 coord 
 if (strstr($map['filename'],'v3p') || strstr($map['filename'],'v2016p')) {
 	$ph = 1;
@@ -142,7 +143,7 @@ case 1:
 	map_accessed($mid);
 	$links['page'] = pagelink($map);
 	$links['fullmap'] = $site_url . $html_root . "/" . basename($map['filename']);
-	if (file_exists(str_replace(".tag.png",".gpx",$map['filename']))) {
+	if (map_file_exists($map['filename'],'gpx')) {
 		$links['gpx'] = str_replace(".tag.png",".gpx", $links['fullmap']);
 		$smarty->assign('gpx_link',$links['gpx']);
 	}
@@ -209,7 +210,7 @@ default:
 	// 測試一下 geotiff 是否壓縮
 	$gen_tiff = FALSE;
 	if (map_file_exists($map['filename'], 'tiff')){
-		$cmd = sprintf("/usr/bin/file %s |grep LZW", map_file_name($map['filename'], 'tiff'));
+		$cmd = sprintf("/usr/bin/file %s |grep LZW", escapeshellarg(map_file_name($map['filename'], 'tiff')));
 		exec($cmd, $out, $ret);
 		if ($ret != 0) {
 			$gen_tiff = TRUE;

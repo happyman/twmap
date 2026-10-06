@@ -322,19 +322,87 @@ function map_get_lastest_by_uid($num,$uid) {
 	return $rs;
 }
 
+// ---- 路徑轉換 helpers -------------------------------------------------
+// DB 裡的 filename / track.path 可能是絕對路徑(歷史前綴) 或相對路徑(新寫入)
+// map_rel_path  -> 統一成相對路徑, 剝不掉已知前綴回 null
+// map_fs_path   -> 給檔案系統用的絕對路徑
+// map_url_path  -> 給外部 URL 用的路徑 (不含 host)
+// map_url       -> 完整 URL
+
+function map_roots() {
+	global $out_roots;
+	return (isset($out_roots) && is_array($out_roots)) ? $out_roots : array();
+}
+
+function map_fs_root() {
+	global $fs_root, $out_root;
+	if (isset($fs_root) && $fs_root !== "") return $fs_root;
+	if (isset($out_root) && $out_root !== "") return $out_root;
+	return "";
+}
+
+function map_rel_path($p) {
+	if ($p === null || $p === "") return null;
+	$p = rtrim((string)$p, "/");
+	if ($p === "") return null;
+	// 已經是相對路徑
+	if (substr($p, 0, 1) !== "/") return $p;
+	foreach (map_roots() as $root) {
+		$root = rtrim($root, "/");
+		if ($root === "") continue;
+		if ($p === $root) return "";
+		if (strpos($p, $root . "/") === 0) return substr($p, strlen($root) + 1);
+	}
+	return null;
+}
+
+function map_fs_path($p) {
+	$rel = map_rel_path($p);
+	if ($rel === null) return $p;          // 未知前綴(tmp 等)原樣送出
+	if ($rel === "") return map_fs_root();
+	$cand = map_fs_root() . "/" . $rel;
+	if (is_file($cand)) return $cand;
+	// 搬移進行中: 新位置還沒檔案, 回到歷史目錄找 (NFS), 搬完就不再命中
+	foreach (map_roots() as $root) {
+		$root = rtrim($root, "/");
+		if ($root === "" || $root === rtrim(map_fs_root(), "/")) continue;
+		$old = $root . "/" . $rel;
+		if (is_file($old)) return $old;
+	}
+	return $cand;
+}
+
+function map_url_path($p) {
+	global $out_html_root;
+	$rel = map_rel_path($p);
+	if ($rel === null) return $p;
+	$base = isset($out_html_root) ? $out_html_root : "";
+	if ($rel === "") return $base;
+	return rtrim($base, "/") . "/" . ltrim($rel, "/");
+}
+
+function map_url($p) {
+	global $site_url;
+	// DB 路徑不會是 URL, 但呼叫端可能傳已成型的連結
+	if (is_string($p) && preg_match("#^[a-z][a-z0-9+.\-]*://#i", $p)) return $p;
+	$path = map_url_path($p);
+	if ($path === null || $path === "") return $path;
+	return (isset($site_url) ? $site_url : "") . $path;
+}
+
 // map files
 function map_files($outimage) {
 	// 可能是 -v1.tag.png or -v3.tag.png, 或者沒有
-	$out_prefix = str_replace(".tag.png","",basename($outimage));
-	if (preg_match("/^(\d+x\d+\-\d+x\d+).*/",basename($outimage), $regs)) {
-		//	$files = glob( dirname($outimage) ."/".$regs[1] . "*");
-		$glob_pattern = dirname($outimage) . "/" . $out_prefix . "*";
+	$path = map_fs_path($outimage);
+	$out_prefix = str_replace(".tag.png","",basename($path));
+	if (preg_match("/^(\d+x\d+\-\d+x\d+).*/",basename($path), $regs)) {
+		$glob_pattern = dirname($path) . "/" . $out_prefix . "*";
 		$files = glob( $glob_pattern );
-		// error_log("$glob_pattern => ".print_r($files, true));
+		if ($files === false) return array();
 		sort($files);
 		return $files;
 	}
-	return null;
+	return array();
 }
 /**
  * map_file_exists
@@ -345,27 +413,31 @@ function map_files($outimage) {
  * @return void
  */
 function map_file_exists($outimage, $ftype) {
-	return file_exists(map_file_name($outimage, $ftype));
+	$fname = map_file_name($outimage, $ftype);
+	if ($fname === null || $fname === "") return false;
+	return file_exists($fname);
 }////'''''
 function map_file_name($outimage, $ftype) {
+	$src = map_fs_path($outimage);
 	switch($ftype) {
 		case 'pdf':
-			$fname = str_replace(".tag.png",".pdf",$outimage);
+			$fname = str_replace(".tag.png",".pdf",$src);
 			break;
 		case 'kmz':
-			$fname = str_replace(".png",".kmz",$outimage);
+			$fname = str_replace(".png",".kmz",$src);
 			break;
 		case 'txt':
-			$fname = str_replace(".tag.png",".txt",$outimage);
+			$fname = str_replace(".tag.png",".txt",$src);
 			break;
 		case 'gpx':
-			$fname = str_replace(".tag.png",".gpx",$outimage);
+			$fname = str_replace(".tag.png",".gpx",$src);
 			break;
 		case 'tiff':
-			$fname = str_replace(".png",".tiff",$outimage);
+			$fname = str_replace(".png",".tiff",$src);
 			break;
 		case 'image':
-			$fname = $outimage;
+		default:
+			$fname = $src;
 			break;
 	}
 	return $fname;
@@ -378,38 +450,36 @@ function gethashdir($i) {
         return sprintf("%02s/%02s",$l1,$l2);
 }
 
-// 建立好之後,改變 structure 到 uid/mid/files
+// 建立好之後,改變 structure 到 <hash>/<uid>/<mid>/files, 並把 filename 改寫成相對路徑
 function map_migrate($root,$uid,$mid) {
-	// 0. 檢查是新的結構?
-	#$dir = sprintf("%s/%06d/%d",$root,$uid,$mid);
+	if ($root === null || $root === "") $root = map_fs_root();
 	$dir = sprintf("%s/%s/%06d/%d",$root,gethashdir($uid),$uid,$mid);
-	// if (file_exists($dir) && is_dir($dir)) return true;
+	$rel = sprintf("%s/%s/%06d/%d",gethashdir($uid),$uid,$mid);
 
 	$row = map_get_single($mid);
 	if ($row == false) return false;
-	// 檢查檔案是否在正確目錄
 
-	$newfilename = sprintf("%s/%s",$dir, basename($row['filename']));
-	if ($row['filename'] == $newfilename ) {
+	$newfilename = $rel . "/" . basename($row['filename']);
+	if (map_rel_path($row['filename']) === $newfilename && is_dir($dir)) {
 		return true;
 	}
 	// 1. 建立目錄
 	@mkdir($dir,0755,true);
 	map_block($root,$uid,1);
 	$files = map_files($row['filename']);
-	//$files = map_files(sprintf("%s/%06d/%s",$root,$uid,basename($row['filename'])));
 	// 2. 搬移檔案
 	foreach($files as $f) {
-		$cmd = "/bin/mv $f $dir";
-		exec($cmd);
-		//error_log("migrate $mid:$cmd");
+		$dest = $dir . "/" . basename($f);
+		if ($f === $dest) continue;
+		if (!@rename($f, $dest)) {
+			// 跨 filesystem 才需要 mv
+			$cmd = sprintf("/bin/mv -f %s %s", escapeshellarg($f), escapeshellarg($dir));
+			exec($cmd);
+		}
 	}
-	//$newfilename = sprintf("%s/%s",$dir, basename($row['filename']));
-	// 3. 更新資料庫
-	
+	// 3. 更新資料庫 -> 相對路徑
 	$db=get_conn();
 	$sql = sprintf("update \"map\" set \"filename\"='%s' WHERE \"mid\" = %d",pg_escape_string($newfilename),$mid);
-	//$res = mysql_query($sql);
 	$rs = $db->Execute($sql);
 	$db->close();
 	error_log("migrate $mid:$sql");
@@ -422,6 +492,7 @@ function map_migrate($root,$uid,$mid) {
 }
 // 檢查是否動作: 刪除/新增 不准做
 function map_blocked($root, $uid) {
+	if ($root === null || $root === "") $root = map_fs_root();
 	$blockfile = sprintf("%s/%s/%06d/.block",$root,gethashdir($uid),$uid);
 
 	if (file_exists($blockfile)){
@@ -430,6 +501,7 @@ function map_blocked($root, $uid) {
 	return null;
 }
 function map_block($root, $uid, $action=1) {
+	if ($root === null || $root === "") $root = map_fs_root();
 	$blockfile = sprintf("%s/%s/%06d/.block",$root,gethashdir($uid),$uid);
 	if ($action == 1 ) {
 		$ret = touch($blockfile);
@@ -795,9 +867,9 @@ function import_gpx_to_gis($mid){
 		$tid = -1 * $mid;
 		$rs = track_get_single($tid);
 		if ($rs !== null ){
-			$gpx_file_tmp = sprintf("%s/%d/%s_p.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
-			$gpx_file = sprintf("%s/%d/%s_x.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
-			$cmd = sprintf("gpsbabel -i gpx -f %s -x discard,matchcmt=base64 -o gpx -F %s",$gpx_file_tmp,$gpx_file);
+			$gpx_file_tmp = map_fs_path(sprintf("%s/%d/%s_p.gpx",$rs['path'],$rs['tid'],$rs['md5name']));
+			$gpx_file = map_fs_path(sprintf("%s/%d/%s_x.gpx",$rs['path'],$rs['tid'],$rs['md5name']));
+			$cmd = sprintf("gpsbabel -i gpx -f %s -x discard,matchcmt=base64 -o gpx -F %s",escapeshellarg($gpx_file_tmp),escapeshellarg($gpx_file));
 			echo $cmd . "\n";
 			exec($cmd,$ret,$out);
 		} else 

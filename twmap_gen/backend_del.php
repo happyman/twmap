@@ -26,7 +26,7 @@ if ($map['uid'] != $_SESSION['uid']) {
 	error_out("you are not the owner");
 }
 // 3.1 正在搬移資料結構, 或重新整理
-$block_msg  = map_blocked($out_root, $_SESSION['uid']);
+$block_msg  = map_blocked($fs_root, $_SESSION['uid']);
 if ($block_msg != null ) {
 	        error_out($block_msg);
 }

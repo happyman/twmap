@@ -15,10 +15,10 @@ if ($mid < 0 ){
 	$tid = $mid * -1;
 	$rs = track_get_single($tid);
 	if (isset($_REQUEST['type']) && $_REQUEST['type'] == 'gpx') {
-		$file = sprintf("%s/%d/%s_p.gpx",$rs['path'],$rs['tid'],$rs['md5name']);
+		$file = map_fs_path(sprintf("%s/%d/%s_p.gpx",$rs['path'],$rs['tid'],$rs['md5name']));
 		readfile($file);
 	} else {
-		$file = sprintf("%s/%d/%s_p.kml",$rs['path'],$rs['tid'],$rs['md5name']);
+		$file = map_fs_path(sprintf("%s/%d/%s_p.kml",$rs['path'],$rs['tid'],$rs['md5name']));
 	if (file_exists($file)){
         header('Content-type: application/vnd.google-earth.kml+xml');
         header('Cache-Control: ');  //leave blank to avoid IE errors

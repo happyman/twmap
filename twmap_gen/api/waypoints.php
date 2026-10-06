@@ -113,7 +113,7 @@ th {
 			
 			
 			if ($row['flag'] != 2 ) {
-				$html_root = $out_html_root . str_replace($out_root, "", dirname($row['filename']));
+				$html_root = dirname(map_url_path($row['filename']));
 				if ($mid_to_show > 0 ) {
 					// map database
 					if (file_exists(map_file_name($row['filename'],'gpx')))
@@ -122,7 +122,7 @@ th {
 						$gpx_url = sprintf("%s (<a href='getkml.php?mid=%d' download='%s.kml' class=download_track target=_blank>kml</a>)",$row['title'],$mid_to_show, $row['title']);
 				} else { 
 					// track database
-				    $gpx_link = $site_url . str_replace($out_root,$out_html_root,sprintf("%s%d/%s_p.gpx",$row['path'],-1 * $row['mid'],$row['md5name']));
+				    $gpx_link = map_url(sprintf("%s%d/%s_p.gpx",$row['path'],-1 * $row['mid'],$row['md5name']));
 				    $path_parts = pathinfo($row['title']);
 					$gpx_url = sprintf("%s(<a href='%s' download='%s_p.gpx' class=download_track target=_blank>gpx</a>) (<a href='getkml.php?mid=%d' download='%s.kml' class=download_track target=_blank>kml</a>)",
 						$row['title'],$gpx_link, $path_parts['filename'], $mid_to_show, $path_parts['filename']);
