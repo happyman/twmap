@@ -546,10 +546,8 @@ function map_expire($mid) {
 	// remove files
 	$files = map_files($row['filename']);
 	foreach($files as $f) {
-		// 不刪除 gpx 檔案
+		// gpx=1 的軌跡檔必須保留 (規則: flag=1 且 gpx=1 應有 gpx 檔案)
 		if(strstr(basename($f),'.gpx')) continue;
-		// 不刪除 cmd 跟 txt for reference
-		if(strstr(basename($f),'.txt') || strstr(basename($f),".cmd")) continue;
 		$ret = unlink($f);
 		if ($ret === false ) {
 			return false;

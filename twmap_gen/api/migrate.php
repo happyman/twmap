@@ -8,6 +8,8 @@
  *   php api/migrate.php verify   [options]  檢查 --dest 是否齊全
  *   php api/migrate.php purge    [options]  刪除無用的 map 列 (同步刪 gpx_trk/gpx_wp/map_rank)
  *   php api/migrate.php residue  [options]  列出 --dest 上沒被 DB 引用的檔案; 加 --delete 才真的刪
+ *   php api/migrate.php check    [options]  依 flag 規則檢查 DB 與檔案是否一致 (只讀, 列出違規)
+ *   php api/migrate.php fix      [options]  修復違規; 預設 dry-run, 加 --delete 才真的動
  *
  * 通用選項:
  *   --dest=DIR     目標根目錄 (預設 /home/happyman/maproot/out)
@@ -30,16 +32,35 @@
  *   --missing      只挑檔案完全不存在的列 (預設, 安全)
  *   --all          不檢查檔案, 依 --flag/--gpx 條件全刪 (需 --force)
  *   --force        搭配 --all 使用
+ *
+ * check 規則 (每項違規寫一份明細到 <state>.check):
+ *   R1.1  flag=0 但 filename 指向的檔不存在     -> 應做 delete 操作 (flag=2 + ddate)
+ *   R1.2  flag=0 但整個檔案家族都不在           -> 同上
+ *   R1.3  flag=0 卻有 ddate                     -> 應為 NULL
+ *   R1.4  flag=0 卻有 edate                     -> 應為 NULL
+ *   R2.1  flag=1 卻沒有 edate                   -> 應有 expire time
+ *   R2.2  flag=1 且 gpx=0 卻還有殘檔            -> 應清空
+ *   R2.3  flag=1 且 gpx=1 卻沒有 gpx 檔         -> INFO: 依決定保留, 不算 fail
+ *   R3.1  flag=2 卻沒有 ddate                   -> 應有 delete time
+ *   R3.2  flag=2 檔案卻還在                     -> 應清空
+ *
+ * fix 動作 (依序執行, 每列明細寫到 <state>.fix):
+ *   F1  flag=0 且 filename 不在  -> map_del($mid) (刪家族檔 + flag=2 + size=0 + ddate=NOW())
+ *   F2  flag=0 且有 ddate/edate  -> 清成 NULL (含 memcached 失效)
+ *   F3  flag=1 且 gpx=0 有殘檔   -> 只刪檔案, 列保留 (仍 flag=1 + edate)
+ *   F4  flag=2 且還有檔案        -> 只刪檔案, 列保留 (仍 flag=2 + ddate)
  */
 
 require_once(__DIR__ . "/../config.inc.php");
 
-$MODES = array("plan", "copy", "verify", "purge", "residue");
+$MODES = array("plan", "copy", "verify", "purge", "residue", "check", "fix");
 
 function usage_exit($msg = "") {
 	if ($msg !== "") fwrite(STDERR, "ERROR: $msg\n\n");
-	$lines = file(__FILE__);
-	foreach (array_slice($lines, 1, 30) as $l) fwrite(STDERR, rtrim($l, "\n") . "\n");
+	foreach (file(__FILE__) as $l) {
+		fwrite(STDERR, rtrim($l, "\n") . "\n");
+		if (strpos($l, "*/") !== false) break;
+	}
 	exit(1);
 }
 
@@ -124,7 +145,7 @@ function fetch_maps($db, $opt, $after_mid, $chunk) {
 	if ($opt["gpx"] !== null)  $w[] = "gpx  = " . intval($opt["gpx"]);
 	if ($opt["since"] !== null && $opt["since"] !== "")
 		$w[] = "cdate > '" . pg_escape_string($opt["since"]) . "'";
-	$sql = sprintf("SELECT mid, uid, filename, flag, gpx FROM \"map\" WHERE %s ORDER BY mid ASC LIMIT %d",
+	$sql = sprintf("SELECT mid, uid, filename, flag, gpx, cdate, ddate, edate, \"count\", title FROM \"map\" WHERE %s ORDER BY mid ASC LIMIT %d",
 		implode(" AND ", $w), $chunk);
 	$rs = $db->GetAll($sql);
 	return ($rs === false) ? array() : $rs;
@@ -343,6 +364,9 @@ function run_purge($db, $opt) {
 	}
 	$scanned = 0; $purged = 0; $kept = 0; $fail_cnt = 0;
 	$roots = array_merge(array($opt["src"]), map_roots(), array($out_root, map_fs_root()));
+	$listf = $opt["state"] . ".purge";
+	$lf = fopen($listf, "w");
+	fwrite($lf, "mid\tuid\tflag\tgpx\tcdate\tddate\tcount\ttitle\tfilename\n");
 
 	while (true) {
 		$rows = fetch_maps($db, $opt, $after, $opt["chunk"]);
@@ -357,6 +381,11 @@ function run_purge($db, $opt) {
 				if ($exists) { $kept++; continue; }
 			}
 			$mid = intval($row["mid"]);
+			fwrite($lf, sprintf("%d\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%s\n",
+				$row["mid"], $row["uid"], $row["flag"], $row["gpx"],
+				$row["cdate"], $row["ddate"] === null ? "" : $row["ddate"],
+				$row["count"], str_replace(array("\t", "\n"), " ", (string)$row["title"]),
+				$row["filename"]));
 			if (!$opt["dry_run"]) {
 				$db->StartTrans();
 				$db->Execute(sprintf("DELETE FROM gpx_wp  WHERE mid=%d", $mid));
@@ -373,8 +402,9 @@ function run_purge($db, $opt) {
 		if (!$opt["dry_run"]) state_save($opt["state"], array("mode" => "purge", "last_mid" => $after));
 		if (count($rows) < $opt["chunk"]) break;
 	}
-	printf("\n=== PURGE%s ===\nscanned=%d kept(files exist)=%d purged=%d failed=%d\n",
-		$opt["dry_run"] ? " (dry-run)" : "", $scanned, $kept, $purged, $fail_cnt);
+	fclose($lf);
+	printf("\n=== PURGE%s ===\nscanned=%d kept(files exist)=%d purged=%d failed=%d\nlist: %s\n",
+		$opt["dry_run"] ? " (dry-run)" : "", $scanned, $kept, $purged, $fail_cnt, $listf);
 	return ($fail_cnt === 0) ? 0 : 2;
 }
 
@@ -466,6 +496,255 @@ function run_residue($db, $opt) {
 	return ($del_fail === 0) ? 0 : 2;
 }
 
+// ---- check --------------------------------------------------------------
+// 一列的檔案家族狀態: (存在的檔, 是否有任一檔, 總位元組, 是否含 gpx/svg)
+function row_family_info($filename) {
+	$files = row_files($filename);
+	$exists = array(); $bytes = 0; $gpx_ext = false; $any = false;
+	foreach ($files as $f) {
+		if (!is_file($f)) continue;
+		$any = true;
+		$exists[] = $f;
+		$s = @filesize($f);
+		if ($s !== false) $bytes += $s;
+		if (preg_match('/\.(gpx|GPX|svg)$/', basename($f))) $gpx_ext = true;
+	}
+	return array($exists, $any, $bytes, $gpx_ext);
+}
+
+function run_check($db, $opt) {
+	$desc = array(
+		"R1.1" => "flag=0 但 filename 檔不存在",
+		"R1.2" => "flag=0 但整個檔案家族都不在",
+		"R1.3" => "flag=0 卻有 ddate",
+		"R1.4" => "flag=0 卻有 edate",
+		"R2.1" => "flag=1 卻沒有 edate",
+		"R2.2" => "flag=1 且 gpx=0 卻還有殘檔",
+		"R2.3" => "flag=1 且 gpx=1 卻沒有 gpx 檔 (INFO 保留)",
+		"R3.1" => "flag=2 卻沒有 ddate",
+		"R3.2" => "flag=2 檔案卻還在",
+	);
+	$info = array("R2.3" => true);
+	$hits = array_fill_keys(array_keys($desc), 0);
+	$scanned = 0; $after = $opt["from_mid"];
+	$listf = $opt["state"] . ".check";
+	$lf = fopen($listf, "w");
+	fwrite($lf, "rule\tmid\tflag\tgpx\tsrc_ok\tfam_ok\tgpx_ext\tbytes\tddate\tedate\ttitle\tfilename\n");
+	while (true) {
+		$rows = fetch_maps($db, $opt, $after, $opt["chunk"]);
+		if (count($rows) === 0) break;
+		foreach ($rows as $row) {
+			$after = intval($row["mid"]);
+			$scanned++;
+			$flag = intval($row["flag"]); $gpx = intval($row["gpx"]);
+			$src_ok = is_file(map_fs_path($row["filename"]));
+			list($fs, $fam_ok, $bytes, $gpx_ext) = row_family_info($row["filename"]);
+			$hit = array();
+			if ($flag === 0) {
+				if (!$src_ok) $hit[] = "R1.1";
+				if (!$fam_ok) $hit[] = "R1.2";
+				if ($row["ddate"] !== null) $hit[] = "R1.3";
+				if ($row["edate"] !== null) $hit[] = "R1.4";
+			} elseif ($flag === 1) {
+				if ($row["edate"] === null) $hit[] = "R2.1";
+				if ($gpx === 0 && $fam_ok) $hit[] = "R2.2";
+				if ($gpx === 1 && !$gpx_ext) $hit[] = "R2.3";
+			} elseif ($flag === 2) {
+				if ($row["ddate"] === null) $hit[] = "R3.1";
+				if ($fam_ok) $hit[] = "R3.2";
+			}
+			if (count($hit) === 0) continue;
+			foreach ($hit as $r) {
+				$hits[$r]++;
+				fwrite($lf, sprintf("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%s\t%s\t%s\n",
+					$r, $row["mid"], $flag, $gpx, $src_ok ? 1 : 0, $fam_ok ? 1 : 0,
+					$gpx_ext ? 1 : 0, $bytes,
+					$row["ddate"] === null ? "" : $row["ddate"],
+					$row["edate"] === null ? "" : $row["edate"],
+					str_replace(array("\t", "\n"), " ", (string)$row["title"]),
+					$row["filename"]));
+			}
+		}
+		printf("[check] scanned=%d last_mid=%d\n", $scanned, $after);
+		flush();
+		if ($opt["limit"] && $scanned >= $opt["limit"]) break;
+		if (count($rows) < $opt["chunk"]) break;
+	}
+	fclose($lf);
+	$fail = 0;
+	printf("\n=== CHECK ===\nscanned=%d\n", $scanned);
+	foreach ($desc as $r => $d) {
+		$st = isset($info[$r]) ? "INFO" : (($hits[$r] > 0) ? "FAIL" : "ok");
+		if ($st === "FAIL") $fail++;
+		printf("  %-6s %-38s %8d  %s\n", $r, $d, $hits[$r], $st);
+	}
+	printf("list: %s\n", $listf);
+	return ($fail > 0) ? 2 : 0;
+}
+
+// ---- fix ----------------------------------------------------------------
+// 允許刪檔的根目錄 (同 run_purge 的 $roots 概念)
+function fix_roots($opt) {
+	global $out_root;
+	$cand = array($opt["src"], $out_root, map_fs_root());
+	foreach (map_roots() as $r) $cand[] = $r;
+	$out = array();
+	foreach ($cand as $r) {
+		if ($r === null || $r === "") continue;
+		$r = rtrim($r, "/");
+		if ($r !== "" && !in_array($r, $out, true)) $out[] = $r;
+	}
+	return $out;
+}
+
+// 檔案必須真的落在允許的根目錄底下, 否則拒絕刪除
+function fix_path_ok($path, $roots) {
+	$rp = realpath($path);
+	if ($rp === false) return false;
+	foreach ($roots as $root) if (strpos($rp, $root . "/") === 0) return true;
+	return false;
+}
+
+function fix_rel($path) {
+	$rel = map_rel_path($path);
+	return ($rel === null) ? $path : $rel;
+}
+
+// 依 flag/gpx 分頁掃描 map 列, 逐列呼叫 $cb (row)
+function fix_each($db, $opt, $flag, $gpx, $cb) {
+	$o = $opt;
+	$o["flag"] = $flag;
+	$o["gpx"] = $gpx;
+	$o["from_mid"] = 0;
+	$o["resume"] = false;
+	$after = 0; $n = 0;
+	while (true) {
+		$rows = fetch_maps($db, $o, $after, $opt["chunk"]);
+		if (count($rows) === 0) break;
+		foreach ($rows as $row) {
+			$after = intval($row["mid"]);
+			$n++;
+			$cb($row);
+			if ($opt["limit"] && $n >= $opt["limit"]) return $n;
+		}
+		if (count($rows) < $opt["chunk"]) break;
+	}
+	return $n;
+}
+
+function fix_line($lf, $action, $row, $bytes, $path) {
+	fwrite($lf, sprintf("%s\t%d\t%d\t%d\t%d\t%s\n",
+		$action, $row["mid"], intval($row["flag"]), intval($row["gpx"]),
+		$bytes, str_replace(array("\t", "\n"), " ", (string)$path)));
+}
+
+function run_fix($db, $opt) {
+	$do = $opt["delete"] && !$opt["dry_run"];
+	if (!$do) print "*** DRY-RUN: 只列清單不動任何東西; 加 --delete 才執行 ***\n";
+	$roots = fix_roots($opt);
+	$st = array(
+		"F1" => array("rows" => 0, "done" => 0, "fail" => 0, "bytes" => 0),
+		"F2" => array("rows" => 0, "done" => 0, "fail" => 0, "bytes" => 0),
+		"F3" => array("rows" => 0, "done" => 0, "fail" => 0, "bytes" => 0),
+		"F4" => array("rows" => 0, "done" => 0, "fail" => 0, "bytes" => 0),
+	);
+	$listf = $opt["state"] . ".fix";
+	$lf = fopen($listf, "w");
+	fwrite($lf, "action\tmid\tflag\tgpx\tbytes\tpath\n");
+	$dirs = array();
+
+	// ---- F1: flag=0 但檔案不在 -> map_del (家族檔 + flag=2 + size=0 + ddate=NOW)
+	$f1 = array();
+	fix_each($db, $opt, 0, null, function ($row) use (&$f1) {
+		if (is_file(map_fs_path($row["filename"]))) return;
+		$f1[] = $row;
+	});
+	foreach ($f1 as $row) {
+		$st["F1"]["rows"]++;
+		list($fs, $fam_ok, $bytes, $gpx_ext) = row_family_info($row["filename"]);
+		$st["F1"]["bytes"] += $bytes;
+		fix_line($lf, "map_del", $row, $bytes, $row["filename"]);
+		if (!$do) continue;
+		$rs = map_del(intval($row["mid"]));   // 會 close 連線
+		if ($rs === false) $st["F1"]["fail"]++;
+		else { $st["F1"]["done"]++; memcached_delete(sprintf("map_get_single_%s", intval($row["mid"]))); }
+	}
+	if ($do && count($f1)) $db = get_conn();
+	printf("[fix] F1 flag=0 缺檔 -> delete 操作: %d 列 (%s)\n", count($f1), bytes_fmt($st["F1"]["bytes"]));
+
+	// ---- F2: flag=0 殘留 ddate/edate -> NULL
+	$f2 = $db->GetAll("SELECT mid, flag, gpx, ddate, edate, filename FROM \"map\" WHERE flag=0 AND (ddate IS NOT NULL OR edate IS NOT NULL) ORDER BY mid");
+	if ($opt["limit"]) $f2 = array_slice($f2, 0, $opt["limit"]);
+	foreach ($f2 as $row) {
+		$st["F2"]["rows"]++;
+		$mid = intval($row["mid"]);
+		fix_line($lf, "clear_ts", $row, 0, "ddate=" . ($row["ddate"] === null ? "" : $row["ddate"]) . " edate=" . ($row["edate"] === null ? "" : $row["edate"]));
+		if (!$do) continue;
+		$rs = $db->Execute(sprintf("UPDATE \"map\" SET ddate=NULL, edate=NULL WHERE mid=%d AND flag=0", $mid));
+		if ($rs === false) { $st["F2"]["fail"]++; continue; }
+		$st["F2"]["done"]++;
+		memcached_delete(sprintf("map_get_single_%s", $mid));
+	}
+	printf("[fix] F2 flag=0 清殘留 ddate/edate: %d 列\n", $st["F2"]["rows"]);
+
+	// ---- F3/F4: 只刪檔案, 列保留
+	foreach (array(array("F3", 1, 0), array("F4", 2, null)) as $act) {
+		list($tag, $flag, $gpx) = $act;
+		fix_each($db, $opt, $flag, $gpx, function ($row) use ($lf, $roots, $do, &$st, &$dirs, $tag) {
+			list($fs, $fam_ok, $bytes, $gpx_ext) = row_family_info($row["filename"]);
+			if (!$fam_ok) return;
+			$st[$tag]["rows"]++;
+			$st[$tag]["bytes"] += $bytes;
+			foreach ($fs as $f) {
+				if (!fix_path_ok($f, $roots)) {
+					fix_line($lf, "SKIP_OUTSIDE", $row, @filesize($f), $f);
+					$st[$tag]["fail"]++;
+					continue;
+				}
+				fix_line($lf, "unlink", $row, @filesize($f), fix_rel($f));
+				if (!$do) { $st[$tag]["done"]++; continue; }
+				if (@unlink($f)) {
+					$st[$tag]["done"]++;
+					$dirs[dirname($f)] = 1;
+				} else $st[$tag]["fail"]++;
+			}
+		});
+		printf("[fix] %s 殘檔: %d 列, %d 檔 (%s)\n",
+			$tag, $st[$tag]["rows"], $st[$tag]["done"] + $st[$tag]["fail"], bytes_fmt($st[$tag]["bytes"]));
+	}
+	fclose($lf);
+
+	// 清掉被清空的目錄 (同 run_residue 的做法; rmdir 只會移除空目錄)
+	$rm = 0;
+	if ($do && count($dirs)) {
+		$anc = array();
+		foreach (array_keys($dirs) as $d) {
+			$anc[$d] = 1;
+			foreach ($roots as $root) {
+				if (strpos($d, $root . "/") !== 0) continue;
+				$p = $root;
+				foreach (explode("/", substr($d, strlen($root) + 1)) as $seg) {
+					$p .= "/" . $seg;
+					$anc[$p] = 1;
+				}
+			}
+		}
+		$cand = array_keys($anc);
+		usort($cand, function ($a, $b) { return substr_count($b, "/") - substr_count($a, "/"); });
+		foreach ($cand as $p) if (is_dir($p) && @rmdir($p)) $rm++;
+	}
+
+	$fail = $st["F1"]["fail"] + $st["F2"]["fail"] + $st["F3"]["fail"] + $st["F4"]["fail"];
+	printf("\n=== FIX%s ===\n", $do ? "" : " (dry-run)");
+	printf("  F1 flag=0 缺檔 -> map_del   : rows=%d done=%d fail=%d bytes=%s\n", $st["F1"]["rows"], $st["F1"]["done"], $st["F1"]["fail"], bytes_fmt($st["F1"]["bytes"]));
+	printf("  F2 flag=0 清 ddate/edate    : rows=%d done=%d fail=%d\n", $st["F2"]["rows"], $st["F2"]["done"], $st["F2"]["fail"]);
+	printf("  F3 flag=1 gpx=0 清殘檔      : rows=%d files=%d fail=%d bytes=%s\n", $st["F3"]["rows"], $st["F3"]["done"], $st["F3"]["fail"], bytes_fmt($st["F3"]["bytes"]));
+	printf("  F4 flag=2 清殘檔             : rows=%d files=%d fail=%d bytes=%s\n", $st["F4"]["rows"], $st["F4"]["done"], $st["F4"]["fail"], bytes_fmt($st["F4"]["bytes"]));
+	if ($do) printf("  rmdir=%d\n", $rm);
+	printf("list: %s\n", $listf);
+	return ($fail === 0) ? 0 : 2;
+}
+
 // ---- main ---------------------------------------------------------------
 $state = $opt["resume"] ? state_load($opt["state"]) : array("mode" => $mode);
 $db = get_conn();
@@ -483,6 +762,12 @@ switch ($mode) {
 		break;
 	case "residue":
 		$rc = run_residue($db, $opt);
+		break;
+	case "check":
+		$rc = run_check($db, $opt);
+		break;
+	case "fix":
+		$rc = run_fix($db, $opt);
 		break;
 }
 exit($rc);
