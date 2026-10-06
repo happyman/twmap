@@ -7,7 +7,7 @@
  *   php api/migrate.php copy     [options]  一列一列複製到 --dest, 同時把 DB 改成相對路徑 (不刪除來源)
  *   php api/migrate.php verify   [options]  檢查 --dest 是否齊全
  *   php api/migrate.php purge    [options]  刪除無用的 map 列 (同步刪 gpx_trk/gpx_wp/map_rank)
- *   php api/migrate.php residue  [options]  列出 --dest 上沒被 DB 引用的檔案 (最後一次清)
+ *   php api/migrate.php residue  [options]  列出 --dest 上沒被 DB 引用的檔案; 加 --delete 才真的刪
  *
  * 通用選項:
  *   --dest=DIR     目標根目錄 (預設 /home/happyman/maproot/out)
@@ -15,12 +15,14 @@
  *   --uid=N        只處理某 uid
  *   --mid=N        只處理單一 mid
  *   --from-mid=N   從 mid > N 開始
+ *   --since=TS     只處理 cdate > TS 的 map 列 (例: "2026-10-06 14:00"); 增量同步用
  *   --limit=N      最多處理 N 列 (0 = 不限)
  *   --chunk=N      每 N 列回報一次 (預設 1000)
  *   --state=FILE   進度檔 (預設 /tmp/twmap_migrate.<mode>.state)
  *   --resume       讀進度檔, 從上次的 mid 繼續
  *   --dry-run      只計算, 不寫檔也不寫 DB
  *   --tracks       一併處理 track
+ *   --delete       residue 專用: 真的刪除殘檔 (搭配 --dry-run 可先試算)
  *
  * purge 額外選項:
  *   --flag=N       只挑 flag=N (0=ok 1=expired 2=deleted)
@@ -53,6 +55,7 @@ $opt = array(
 	"uid"      => 0,
 	"mid"      => 0,
 	"from_mid" => 0,
+	"since"    => null,
 	"limit"    => 0,
 	"chunk"    => 1000,
 	"state"    => null,
@@ -64,6 +67,7 @@ $opt = array(
 	"missing"  => false,
 	"all"      => false,
 	"force"    => false,
+	"delete"   => false,
 );
 
 foreach ($args as $a) {
@@ -78,13 +82,13 @@ foreach ($args as $a) {
 		$val = substr($kv, $eq + 1);
 	}
 	switch ($name) {
-		case "dest": case "src": case "state": $opt[$name] = $val; break;
+		case "dest": case "src": case "state": case "since": $opt[$name] = $val; break;
 		case "uid": case "mid": case "from-mid": case "limit": case "chunk":
 			$opt[str_replace("-", "_", $name)] = intval($val); break;
 		case "flag": $opt["flag"] = intval($val); break;
 		case "gpx": $opt["gpx"] = intval($val); break;
 		case "resume": case "dry-run": case "tracks": case "missing":
-		case "all": case "force":
+		case "all": case "force": case "delete":
 			$opt[str_replace("-", "_", $name)] = true; break;
 		default: usage_exit("未知選項: --$name");
 	}
@@ -118,6 +122,8 @@ function fetch_maps($db, $opt, $after_mid, $chunk) {
 	if ($opt["mid"])    $w[] = "mid = " . intval($opt["mid"]);
 	if ($opt["flag"] !== null) $w[] = "flag = " . intval($opt["flag"]);
 	if ($opt["gpx"] !== null)  $w[] = "gpx  = " . intval($opt["gpx"]);
+	if ($opt["since"] !== null && $opt["since"] !== "")
+		$w[] = "cdate > '" . pg_escape_string($opt["since"]) . "'";
 	$sql = sprintf("SELECT mid, uid, filename, flag, gpx FROM \"map\" WHERE %s ORDER BY mid ASC LIMIT %d",
 		implode(" AND ", $w), $chunk);
 	$rs = $db->GetAll($sql);
@@ -249,7 +255,7 @@ function run_transfer($mode, $db, $opt, $state) {
 
 			if ($done) break;
 		}
-		if (count($rows) < $opt["chunk"]) $done = true;
+		if (count($rows) < $opt["chunk"] && $opt["since"] === null) $done = true;
 		$elapsed = max(1, time() - $st["t0"]);
 		printf("[%s] rows=%d files=%d done=%d new=%s fail=%d last_mid=%d  %.0f rows/s %.1f MB/s\n",
 			$mode, $cnt["rows"], $cnt["files"], $cnt["already"] + $cnt["copied"],
@@ -416,6 +422,9 @@ function run_residue($db, $opt) {
 		RecursiveIteratorIterator::LEAVES_ONLY);
 
 	$seen = 0; $res = 0; $bytes = 0;
+	$del = 0; $del_fail = 0; $skip_new = 0; $dirs = array();
+	$do_del = $opt["delete"] && !$opt["dry_run"];
+	$t0 = time();
 	$out = fopen($opt["state"] . ".residue", "w");
 	foreach ($it as $file) {
 		$seen++;
@@ -433,10 +442,28 @@ function run_residue($db, $opt) {
 		$res++;
 		$bytes += $file->getSize();
 		fwrite($out, $rel . "\n");
+		if ($do_del) {
+			// 安全閘: 掃描開始後才出現的檔不動 (可能是剛生成的地圖)
+			if ($file->getMTime() >= $t0) { $skip_new++; continue; }
+			if (@unlink($file->getPathname())) { $del++; $dirs[$dir] = 1; }
+			else { $del_fail++; }
+		}
 	}
 	fclose($out);
+	if ($do_del) {
+		$anc = array();
+		foreach (array_keys($dirs) as $d) {
+			$parts = explode("/", $d);
+			for ($i = 1; $i <= count($parts); $i++) $anc[implode("/", array_slice($parts, 0, $i))] = 1;
+		}
+		$cand = array_keys($anc);
+		usort($cand, function ($a, $b) { return substr_count($b, "/") - substr_count($a, "/"); });
+		$rm = 0;
+		foreach ($cand as $p) if (is_dir("$dest/$p") && @rmdir("$dest/$p")) $rm++;
+		printf("deleted files=%d fail=%d skipped(too new)=%d rmdir=%d\n", $del, $del_fail, $skip_new, $rm);
+	}
 	printf("scanned=%d residue=%d (%s)\nlist: %s\n", $seen, $res, bytes_fmt($bytes), $opt["state"] . ".residue");
-	return 0;
+	return ($del_fail === 0) ? 0 : 2;
 }
 
 // ---- main ---------------------------------------------------------------
