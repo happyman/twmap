@@ -52,6 +52,7 @@
  */
 
 require_once(__DIR__ . "/../config.inc.php");
+require_once(__DIR__ . "/../lib/expirelib.inc.php");   // R1~R4 規則與家族掃描的單一來源
 
 $MODES = array("plan", "copy", "verify", "purge", "residue", "check", "fix");
 
@@ -498,33 +499,14 @@ function run_residue($db, $opt) {
 
 // ---- check --------------------------------------------------------------
 // 一列的檔案家族狀態: (存在的檔, 是否有任一檔, 總位元組, 是否含 gpx/svg)
+// 實作委派給 expire_row_family() (lib/expirelib.inc.php), 與根目錄 expire.php 同一套
 function row_family_info($filename) {
-	$files = row_files($filename);
-	$exists = array(); $bytes = 0; $gpx_ext = false; $any = false;
-	foreach ($files as $f) {
-		if (!is_file($f)) continue;
-		$any = true;
-		$exists[] = $f;
-		$s = @filesize($f);
-		if ($s !== false) $bytes += $s;
-		if (preg_match('/\.(gpx|GPX|svg)$/', basename($f))) $gpx_ext = true;
-	}
-	return array($exists, $any, $bytes, $gpx_ext);
+	$fam = expire_row_family($filename);
+	return array($fam["exists"], $fam["any"], $fam["bytes"], $fam["gpx_ext"]);
 }
 
 function run_check($db, $opt) {
-	$desc = array(
-		"R1.1" => "flag=0 但 filename 檔不存在",
-		"R1.2" => "flag=0 但整個檔案家族都不在",
-		"R1.3" => "flag=0 卻有 ddate",
-		"R1.4" => "flag=0 卻有 edate",
-		"R2.1" => "flag=1 卻沒有 edate",
-		"R2.2" => "flag=1 且 gpx=0 卻還有殘檔",
-		"R2.3" => "flag=1 且 gpx=1 卻沒有 gpx 檔 (INFO 保留)",
-		"R3.1" => "flag=2 卻沒有 ddate",
-		"R3.2" => "flag=2 檔案卻還在",
-	);
-	$info = array("R2.3" => true);
+	$desc = expire_rule_desc(false);           // migrate 沒撈 size 欄位, 不含 R4.1
 	$hits = array_fill_keys(array_keys($desc), 0);
 	$scanned = 0; $after = $opt["from_mid"];
 	$listf = $opt["state"] . ".check";
@@ -538,27 +520,14 @@ function run_check($db, $opt) {
 			$scanned++;
 			$flag = intval($row["flag"]); $gpx = intval($row["gpx"]);
 			$src_ok = is_file(map_fs_path($row["filename"]));
-			list($fs, $fam_ok, $bytes, $gpx_ext) = row_family_info($row["filename"]);
-			$hit = array();
-			if ($flag === 0) {
-				if (!$src_ok) $hit[] = "R1.1";
-				if (!$fam_ok) $hit[] = "R1.2";
-				if ($row["ddate"] !== null) $hit[] = "R1.3";
-				if ($row["edate"] !== null) $hit[] = "R1.4";
-			} elseif ($flag === 1) {
-				if ($row["edate"] === null) $hit[] = "R2.1";
-				if ($gpx === 0 && $fam_ok) $hit[] = "R2.2";
-				if ($gpx === 1 && !$gpx_ext) $hit[] = "R2.3";
-			} elseif ($flag === 2) {
-				if ($row["ddate"] === null) $hit[] = "R3.1";
-				if ($fam_ok) $hit[] = "R3.2";
-			}
+			$fam = expire_row_family($row["filename"]);
+			$hit = expire_eval_rules($row, $src_ok, $fam, false);
 			if (count($hit) === 0) continue;
 			foreach ($hit as $r) {
 				$hits[$r]++;
 				fwrite($lf, sprintf("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%s\t%s\t%s\n",
-					$r, $row["mid"], $flag, $gpx, $src_ok ? 1 : 0, $fam_ok ? 1 : 0,
-					$gpx_ext ? 1 : 0, $bytes,
+					$r, $row["mid"], $flag, $gpx, $src_ok ? 1 : 0, $fam["any"] ? 1 : 0,
+					$fam["gpx_ext"] ? 1 : 0, $fam["bytes"],
 					$row["ddate"] === null ? "" : $row["ddate"],
 					$row["edate"] === null ? "" : $row["edate"],
 					str_replace(array("\t", "\n"), " ", (string)$row["title"]),
@@ -574,7 +543,7 @@ function run_check($db, $opt) {
 	$fail = 0;
 	printf("\n=== CHECK ===\nscanned=%d\n", $scanned);
 	foreach ($desc as $r => $d) {
-		$st = isset($info[$r]) ? "INFO" : (($hits[$r] > 0) ? "FAIL" : "ok");
+		$st = expire_rule_is_info($r) ? "INFO" : (($hits[$r] > 0) ? "FAIL" : "ok");
 		if ($st === "FAIL") $fail++;
 		printf("  %-6s %-38s %8d  %s\n", $r, $d, $hits[$r], $st);
 	}
