@@ -68,6 +68,11 @@ const mapSources = {
     label: '魯地圖 twmap 樣式',
     url: 'https://tile.happyman.idv.tw/map/moi_osm/{z}/{x}/{y}.png'
   },
+  bochengsiong: {
+    sourceId: 'bochengsiong',
+    label: '魯地圖 bochengsiong',
+    url: 'https://tile.happyman.idv.tw/map/bochengsiong/{z}/{x}/{y}.png'
+  },
   rudy_bn: {
     category: 'road',
     sourceId: 'rudy_bn',
@@ -254,6 +259,7 @@ const layerMetadata = {
   tw5k: { order: 150, icon: '🗿' },
   tw25k: { order: 160, icon: '🗿' },
   moi_osm_twmap: { order: 170, icon: '🗺' },
+  bochengsiong: { order: 175, icon: '🗺' },
   rudy_en: { order: 180, icon: '🗺' },
   nlsc_emap: { order: 190, icon: '🌐  ' },
   atis: { order: 200, icon: '🌳' },

@@ -9,6 +9,7 @@
   var copyrights = {
     osm: '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA',
     moi_osm_twmap: '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA <a href="http://rudy.basecamp.tw/taiwan_topo.html" target="_blank">魯地圖</a>',
+    bochengsiong: '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA <a href="http://rudy.basecamp.tw/taiwan_topo.html" target="_blank">魯地圖</a>',
     rudy: '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA <a href="http://rudy.basecamp.tw/taiwan_topo.html" target="_blank">魯地圖</a>',
     rudy_en: '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA <a href="http://rudy.basecamp.tw/taiwan_topo.html" target="_blank">魯地圖</a>',
     rudy_bn: '&copy; <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA <a href="http://rudy.basecamp.tw/taiwan_topo.html" target="_blank">魯地圖</a>',
