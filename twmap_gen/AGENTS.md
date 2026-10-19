@@ -45,9 +45,11 @@ Python rewrite tracked in `/home/happyman/projects/dev/AGENTS.md` (repo root).
   bootstrap (PHPUnit loads it in function scope).
 
 ## Gotchas
-- `get_conn()` opens a **new** connection every call. `map_get_single()`'s
-  memcached-hit path never closes it — call `memcached_delete("map_get_single_<mid>")`
-  before `map_del()`/`map_expire()` so the DB path (which closes) is taken.
+- `get_conn()` opens a **new** connection every call (one per request is expected).
+  Always check memcached **before** `get_conn()` and put `get_conn()`/`$db->close()`
+  on the same path — returning early after opening one leaks the connection
+  (`map_get_single()`/`fetch_user()` used to, fixed; `get_point()` is the pattern
+  to copy). `map_del()`/`map_expire()` already invalidate their own cache key.
 - `map_expire()` keeps any file whose basename contains `.gpx` (case-sensitive: `.GPX` is deleted).
 - Check/fix runs stream rows mid-cursor (`mid > after`); don't accumulate full tables in memory.
 - `migrate.php` check has no `size` column → `expire_eval_rules(..., false)` skips R4.1.

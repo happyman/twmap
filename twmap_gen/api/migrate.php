@@ -634,9 +634,9 @@ function run_fix($db, $opt) {
 		$st["F1"]["bytes"] += $bytes;
 		fix_line($lf, "map_del", $row, $bytes, $row["filename"]);
 		if (!$do) continue;
-		$rs = map_del(intval($row["mid"]));   // 會 close 連線
+		$rs = map_del(intval($row["mid"]));   // 內部自開自關, 並自刪 memcached
 		if ($rs === false) $st["F1"]["fail"]++;
-		else { $st["F1"]["done"]++; memcached_delete(sprintf("map_get_single_%s", intval($row["mid"]))); }
+		else $st["F1"]["done"]++;
 	}
 	if ($do && count($f1)) $db = get_conn();
 	printf("[fix] F1 flag=0 缺檔 -> delete 操作: %d 列 (%s)\n", count($f1), bytes_fmt($st["F1"]["bytes"]));

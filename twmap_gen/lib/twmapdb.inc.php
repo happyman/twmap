@@ -93,13 +93,13 @@ function fetch_user($mylogin) {
 	if (empty($mylogin['email']) || empty($mylogin['type']))
 		return false;
 	$sql = sprintf("select * from \"user\" where email='%s' and type='%s'", $mylogin['email'],$mylogin['type']);
-	$db = get_conn();
 
 	$key=sprintf("fetch_user_%s_%s",$mylogin['email'],$mylogin['type']);
 	$answer = memcached_query($key);
 	if ($answer !== FALSE ) {
 		return $answer;
 	}
+	$db = get_conn();
 	$rs = $db->GetAll($sql);
 	$db->close();
 	logsql($sql,$rs);
@@ -263,12 +263,13 @@ function map_full($uid,$limit,$mapexist=0) {
 }
 // 只取一張地圖
 function map_get_single($mid){
-	$db=get_conn();
+	// memcached 命中時不能先 get_conn(), 否則回傳前沒 close() 會漏連線
 	$key=sprintf("map_get_single_%s",$mid);
 	$answer = memcached_query($key);
 	if ($answer !== FALSE ) {
 		return $answer;
 	}
+	$db=get_conn();
 	$sql = sprintf("select * from \"map\" WHERE \"mid\"=%d",$mid);
 	$res = $db->GetAll($sql);
 	$db->close();

@@ -258,12 +258,9 @@ function expire_run_fix($db, $opt, $do, $listf) {
 		$st["F1"]["bytes"] += $fam["bytes"];
 		expire_fix_line($lf, "map_del", $row, $fam["bytes"], $row["filename"]);
 		if (!$do) return;
-		// map_del() -> map_get_single() 在 memcached 命中時不會 close 連線, 先失效走 DB 路徑
-		memcached_delete(sprintf("map_get_single_%s", intval($row["mid"])));
-		$rs = map_del(intval($row["mid"]));      // 內部自開自關
+		$rs = map_del(intval($row["mid"]));      // 內部自開自關, 並自刪 memcached
 		if ($rs === false) { $st["F1"]["fail"]++; return; }
 		$st["F1"]["done"]++;
-		memcached_delete(sprintf("map_get_single_%s", intval($row["mid"])));
 		expire_cleanup_dirs($row["filename"]);
 	});
 
@@ -394,8 +391,6 @@ function expire_run_expire($db, $opt, $act, $do, $listf) {
 		// 掃描到現在可能已經被別的程式刪掉/過期, 先確認還是 flag=0
 		$row = $db->GetRow(sprintf('SELECT mid, flag FROM "map" WHERE mid=%d', $mid));
 		if (!is_array($row) || intval($row["flag"]) !== 0) { $skip++; continue; }
-		// 同 F1: 先失效 memcached, 避免 map_expire() 的命中分支漏連線
-		memcached_delete(sprintf("map_get_single_%s", $mid));
 		$db->close();
 		$rs = map_expire($mid);                 // 保留 .gpx, 設 flag=1/edate/size=0
 		$db = get_conn();
