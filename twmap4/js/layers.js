@@ -100,7 +100,8 @@ const mapSources = {
   tw25k: {
     sourceId: 'tw25k',
     label: '經建三版',
-    url: 'https://tile.happyman.idv.tw/map/tw25k2001/{z}/{x}/{y}.png'
+	  // url: 'https://tile.happyman.idv.tw/map/tw25k2001/{z}/{x}/{y}.png'
+    url: 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=TM25K_2001-jpg-{z}-{x}-{y}'
   },
   tw25k_v1: {
     sourceId: 'tw25k_v1',
