@@ -99,13 +99,13 @@ const mapSources = {
   },
   tw25k: {
     sourceId: 'tw25k',
-    label: '經建三版',
+    label: '經建三版 2001',
 	  // url: 'https://tile.happyman.idv.tw/map/tw25k2001/{z}/{x}/{y}.png'
     url: 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=TM25K_2001-jpg-{z}-{x}-{y}'
   },
   tw25k_v1: {
     sourceId: 'tw25k_v1',
-    label: '經建一版',
+    label: '經建一版 1999',
     url: 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=TM25K_1989-jpg-{z}-{x}-{y}'
   },
   historical_1924: {
@@ -153,7 +153,7 @@ const mapSources = {
   },
   historical_1904_triangulation: {
     sourceId: 'historical_1904_triangulation',
-    label: '日治三角測量圖',
+    label: '日治三角測量圖 1904',
     url: 'https://gis.sinica.edu.tw/tileserver/file-exists.php?img=JM20K_1904_triangulation-png-{z}-{x}-{y}'
   },
   tw5k: {
@@ -253,32 +253,33 @@ const layerMetadata = {
   ttfb3_0602: { order: 80, icon: '🗿' },
   ttfb3_0601: { order: 90, icon: '🗿' },
   historical_1956: { order: 100, icon: '🗿' },
-  historical_1966: { order: 110, icon: 'ℹ' },
-  geo2016: { order: 120, icon: 'ℹ' },
-  tw25k_v1: { order: 130, icon: '🗿' },
-  tri1999: { order: 140, icon: 'ℹ' },
+  historical_1966: { order: 110, icon: '🗿' },
+  tw25k_v1: { order: 120, icon: '🗿' },
+  tw25k: { order: 140, icon: '🗿' },
   tw5k: { order: 150, icon: '🗿' },
-  tw25k: { order: 160, icon: '🗿' },
-  moi_osm_twmap: { order: 170, icon: '🗺' },
-  bochengsiong: { order: 175, icon: '🗺' },
-  rudy_en: { order: 180, icon: '🗺' },
-  nlsc_emap: { order: 190, icon: '🌐  ' },
-  atis: { order: 200, icon: '🌳' },
+  rudy: { order: 160, icon: '🗺' },
+  rudy_en: { order: 170, icon: '🗺' },
+  moi_osm_twmap: { order: 180, icon: '🗺' },
+  bochengsiong: { order: 190, icon: '🗺' },
+  nlsc_emap: { order: 200, icon: '🌐  ' },
   nlsc_photo_mix: { order: 210, icon: '🌳' },
-  osm: { order: 220, icon: '🗺' },
-  nlsc_photo: { order: 230, icon: '🌐' },
-  rudy: { order: 240, icon: '🗺' },
-  hillshading: { order: 250, icon: '🌳' },
+  nlsc_photo: { order: 220, icon: '🌳' },
+  atis: { order: 230, icon: '🌳' },
+  hillshading: { order: 240, icon: 'ℹ' },
+  tri1999: { order: 245, icon: 'ℹ' },
+  geo2016: { order: 250, icon: 'ℹ' },
+  osm: { order: 260, icon: 'ℹ' },
+// 
   nlsc_names: { order: 10, icon: '🌐' },
-  hl20240403: { order: 20, icon: 'ℹ' },
+  contour_2005: { order: 20, icon: '🌐' },
+  contour_2015: { order: 25, icon: '🌐' },
   rudy_bn: { order: 30, icon: '🗺' },
   rudy_dn: { order: 40, icon: '🗺' },
   rudy_tn: { order: 50, icon: '🗺' },
   gpx_track: { order: 60, icon: '👣' },
   happyman: { order: 70, icon: '👣' },
   forest: { order: 80, icon: 'ℹ' },
-  contour_2015: { order: 90, icon: '🌐' },
-  contour_2005: { order: 100, icon: '🌐' }
+  hl20240403: { order: 85, icon: 'ℹ' }
 };
 
 for (const [sourceId, metadata] of Object.entries(layerMetadata)) {
