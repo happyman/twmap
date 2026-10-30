@@ -75,8 +75,12 @@ const olMapApiAdapter = {
       return false;
     }
 
+    const source = layerConfig.debug
+      ? new ol.source.TileDebug({ source: layer.getSource() })
+      : this.createTileSource(layerConfig);
+
     const newLayer = new ol.layer.Tile({
-      source: this.createTileSource(layerConfig),
+      source,
       visible: layer.getVisible(),
       opacity: layer.getOpacity(),
       zIndex: layer.getZIndex()

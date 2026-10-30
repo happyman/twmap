@@ -240,6 +240,12 @@ const mapSources = {
     label: '內政部等高線 2015',
     url: 'https://wmts.nlsc.gov.tw/wmts/MOI_CONTOUR_2/default/EPSG:3857/{z}/{y}/{x}'
   },
+  debug: {
+    category: 'road',
+    sourceId: 'debug',
+    label: 'Debug 圖層',
+    debug: true
+  },
 };
 
 const layerMetadata = {
@@ -279,7 +285,8 @@ const layerMetadata = {
   gpx_track: { order: 60, icon: '👣' },
   happyman: { order: 70, icon: '👣' },
   forest: { order: 80, icon: 'ℹ' },
-  hl20240403: { order: 85, icon: 'ℹ' }
+  hl20240403: { order: 85, icon: 'ℹ' },
+  debug: { order: 90, icon:'ℹ' }
 };
 
 for (const [sourceId, metadata] of Object.entries(layerMetadata)) {
