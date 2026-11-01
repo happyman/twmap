@@ -22,12 +22,11 @@ function createHistoricalTileUrl(baseUrl, lanyuPath, tileCoord) {
   var n = Math.pow(2, z);
   var lon_min = (x / n) * 360 - 180;
   var lon_max = ((x + 1) / n) * 360 - 180;
-  var lat_max = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 1) / n))) * 180 / Math.PI;
-  var lat_min = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI;
+  var lat_max = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI;
+  var lat_min = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 1) / n))) * 180 / Math.PI;
   if (lon_min <= LY_Bounds.east && lon_max >= LY_Bounds.west &&
       lat_min <= LY_Bounds.north && lat_max >= LY_Bounds.south) {
-    var y_tms = n - y - 1;
-    return '//tile.happyman.idv.tw/map/' + lanyuPath + '/' + z + '/' + x + '/' + y_tms + '.png';
+    return '//tile.happyman.idv.tw/map/' + lanyuPath + '/' + z + '/' + x + '/' + y + '.png';
   }
   return baseUrl + '-' + z + '-' + x + '-' + y;
 }
