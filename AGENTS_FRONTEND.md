@@ -112,6 +112,18 @@ HTML 介面，定義圖層控制元件：
 
 選單內容由 JS 動態填入，故新增圖層至 `mapSources` 後即可自動出現在下拉選單中。
 
+## PWA（安裝與主畫面）
+
+`twmap4/` 提供 PWA（Progressive Web App）能力：
+
+- `manifest.json`：Web App Manifest（`display: standalone`、`start_url/scope` 為相對 `./`、icon 含 192/512 `any` + 512 `maskable`）。
+- `sw.js`：Service Worker（app shell cache `twmap4-shell-v1`；navigate → network-first + cache fallback；css/js/icons/manifest/sw 同源請求 → cache-first；`/gen/` 後端一律不走 cache）。
+- `js/pwa.js`：安裝流程（`beforeinstallprompt` capture → toolbar 內 `#install-app-btn` 顯示；點擊 → `deferredInstallPrompt.prompt()`；`appinstalled` 後隱藏按鈕；無 `beforeinstallprompt`（iOS Safari）→ 開啟 `#install-help-dialog` 提示「分享 → 加入主畫面」）。
+- `index.php`：注入 `<link rel="manifest">`、`theme-color`、`mobile-web-app-capable`、`apple-mobile-web-app-capable/status-bar-style/title`、`apple-touch-icon`；toolbar `#toolbar-right` 新增 `#install-app-btn`；script include `js/pwa.js`。
+- `css/twmap4.css`：`.permalink-dialog`（原 ID 改 class 以共用安裝對話框樣式）、`.install-help-text`。
+
+安裝判定（`js/pwa.js:isStandaloneMode`）：`window.matchMedia('(display-mode: standalone)')` 或 `navigator.standalone`（iOS）→ 隱藏安裝按鈕、跳過 SW register。
+
 ## 建置（Grunt）
 
 專案使用 Grunt 進行建置與部署。相關指令在專案根目錄（`/home/happyman/projects/dev/`）執行。

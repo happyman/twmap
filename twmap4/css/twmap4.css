@@ -69,6 +69,16 @@ html, body {
   gap: 5px;
 }
 
+#install-app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#install-app-btn.hidden {
+  display: none;
+}
+
 #search-icon-btn {
   display: none;
 }
@@ -671,7 +681,7 @@ input[type="range"] {
   color: #b45309;
 }
 
-#permalink-dialog {
+.permalink-dialog {
   position: fixed;
   top: 0;
   left: 0;
@@ -683,7 +693,7 @@ input[type="range"] {
   justify-content: center;
 }
 
-#permalink-dialog.hidden {
+.permalink-dialog.hidden {
   display: none;
 }
 
@@ -710,6 +720,20 @@ input[type="range"] {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.install-help-text {
+  color: #f8fafc;
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.install-help-text p {
+  margin: 0 0 8px;
+}
+
+.install-help-text p:last-child {
+  margin-bottom: 0;
 }
 
 .permalink-dialog-close {

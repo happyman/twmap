@@ -12,6 +12,13 @@ $login_role = ($st === true) ? 1 : 0;
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>地圖瀏覽器 v<?=$ver?></title>
+  <link rel="manifest" href="manifest.json?v=<?php echo filemtime(__DIR__ . '/manifest.json'); ?>" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="TWMap" />
+  <link rel="apple-touch-icon" href="icons/twmap_apple_touch.png?v=<?php echo filemtime(__DIR__ . '/icons/twmap_apple_touch.png'); ?>" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.3.1/ol.css" />
   <link rel="stylesheet" href="css/twmap4.css?v=<?php echo filemtime(__DIR__ . '/css/twmap4.css'); ?>" />
 </head>
@@ -58,6 +65,9 @@ $login_role = ($st === true) ? 1 : 0;
       </div>
 
       <div id="toolbar-right">
+        <button id="install-app-btn" type="button" class="hidden" title="加入主畫面">
+          <img src="icon/install.svg" width="16" height="16" alt="" />
+        </button>
         <button id="area-select-toggle-btn" type="button" class="disable" title="出圖 (啟用後地圖點擊直接選範圍)">出圖</button>
         <label for="rainfall-select">雨量</label>
         <select id="rainfall-select" aria-label="雨量疊圖">
@@ -96,7 +106,7 @@ $login_role = ($st === true) ? 1 : 0;
       <div id="map" aria-label="地圖"></div>
       <div id="drop-container"><div id="drop-silhouette"></div></div>
       <div id="point-popup" class="hidden" aria-live="polite"></div>
-      <div id="permalink-dialog" class="hidden">
+      <div class="permalink-dialog hidden" id="permalink-dialog">
         <div class="permalink-dialog-backdrop" onclick="closePermalinkDialog()"></div>
         <div class="permalink-dialog-box">
           <div class="permalink-dialog-title">複製連結 <button class="permalink-dialog-close" onclick="closePermalinkDialog()">&times;</button></div>
@@ -105,6 +115,16 @@ $login_role = ($st === true) ? 1 : 0;
             <button onclick="permalinkDialogGo()">Go</button>
             <button onclick="permalinkDialogShorten()">Shorten</button>
             <button onclick="permalinkDialogCopy()">Copy</button>
+          </div>
+        </div>
+      </div>
+      <div class="permalink-dialog hidden" id="install-help-dialog">
+        <div class="permalink-dialog-backdrop" id="install-help-backdrop" onclick="closeInstallHelp()"></div>
+        <div class="permalink-dialog-box">
+          <div class="permalink-dialog-title">加入地圖瀏覽器 <button class="permalink-dialog-close" id="install-help-close" onclick="closeInstallHelp()">&times;</button></div>
+          <div class="install-help-text">
+            <p>手機：請在瀏覽器點擊「分享」→「加入主畫面」。</p>
+            <p>桌機：請點擊上方「加入主畫面」按鈕。</p>
           </div>
         </div>
       </div>
@@ -213,6 +233,7 @@ $login_role = ($st === true) ? 1 : 0;
   <script src="js/areaselect.js?v=<?php echo filemtime(__DIR__ . '/js/areaselect.js'); ?>"></script>
   <script src="js/meerkat.js?v=<?php echo filemtime(__DIR__ . '/js/meerkat.js'); ?>"></script>
   <script src="js/app.js?v=<?php echo filemtime(__DIR__ . '/js/app.js'); ?>"></script>
+  <script src="js/pwa.js?v=<?php echo filemtime(__DIR__ . '/js/pwa.js'); ?>"></script>
   <script src="js/mapinfo.js?v=<?php echo filemtime(__DIR__ . '/js/mapinfo.js'); ?>"></script>
   <script src="js/coverage.js?v=<?php echo filemtime(__DIR__ . '/js/coverage.js'); ?>"></script>
   <script src="js/gpxdrop.js?v=<?php echo filemtime(__DIR__ . '/js/gpxdrop.js'); ?>"></script>
