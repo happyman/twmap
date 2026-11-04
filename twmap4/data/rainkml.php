@@ -1,27 +1,21 @@
 <?php
 // v8
 // 改為氣象署 cwb -> cwa
-// https://www.cwb.gov.tw/V8/C/P/Rainfall/Rainfall_QZJ.html
-// 昨日: https://www.cwb.gov.tw/Data/rainfall/2020-04-02_0000.QZJ8.jpg (今日凌晨)
-// 前日: https://www.cwb.gov.tw/Data/rainfall/2020-04-01_0000.QZJ8.jpg
-// 今日: https://www.cwb.gov.tw/Data/rainfall/2020-04-02_1600.QZJ8.jpg (目前時間)
+// https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_QZJ.html
+// 昨日: https://www.cwa.gov.tw/Data/rainfall/2020-04-02_0000.QZJ8.jpg (今日凌晨)
+// 前日: https://www.cwa.gov.tw/Data/rainfall/2020-04-01_0000.QZJ8.jpg
+// 今日: https://www.cwa.gov.tw/Data/rainfall/2020-04-02_1600.QZJ8.jpg (目前時間)
 //  forecast 
-// https://www.cwb.gov.tw/V8/C/W/analysis.html
-// 12hr: https://www.cwb.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_12.png
-// 24hr: https://www.cwb.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_24.png
+// https://www.cwa.gov.tw/V8/C/W/analysis.html
+// 12hr: https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_12.png
+// 24hr: https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_24.png
+// 36hr: https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_36.png
+// 48hr: https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_48.png
 // v7
-// 產生 cwb 降雨 kml'
-//http://www.cwb.gov.tw/V7/forecast/fcst/QPF.htm
-// forecast 
-//   * http://www.cwb.gov.tw/V7/forecast/fcst/Data/QPF_ChFcstPrecip12.jpg 12hr
-//   * http://www.cwb.gov.tw/V7/forecast/fcst/Data/QPF_ChFcstPrecip24.jpg 24hr
-//   observation
-//   * http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb29000.jpg -2day (-1day) 
-//   * http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb30000.jpg -1day (today)
-//   * http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb.jpg now, 會自動 link 到相對應的時間
-//    hk 結束時間 hka13103 => 1/30 10:30 
-//   http://www.cwb.gov.tw/V7/google/46755_map.htm, embed  http://www.cwb.gov.tw/wwwgis/kml/newcwbobs_gmap.kml
+// 產生降雨 kml'
 //
+
+date_default_timezone_set('Asia/Taipei');
 
 function kmlhead() {
 header('Content-type: application/vnd.google-earth.kml+xml');
@@ -87,7 +81,16 @@ switch($term) {
 			$name = '定量降水預報2';
 			$url =  'https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_24.png';
 			$type = 'forecast';
-			//$type = 'observation';
+		break;
+		case 'f36h':
+			$name = '定量降水預報3';
+			$url =  'https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_36.png';
+			$type = 'forecast';
+		break;
+		case 'f48h':
+			$name = '定量降水預報4';
+			$url =  'https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_48.png';
+			$type = 'forecast';
 		break;
 		case 'o2d':
 			$name = '前日雨量';

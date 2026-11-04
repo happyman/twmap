@@ -77,6 +77,8 @@ $login_role = ($st === true) ? 1 : 0;
           <option value="now">今日</option>
           <option value="f12h">未來12h</option>
           <option value="f24h">未來24h</option>
+          <option value="f36h">未來36h</option>
+          <option value="f48h">未來48h</option>
         </select>
 
         <label for="coverage-select">訊號</label>
