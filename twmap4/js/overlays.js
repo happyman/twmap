@@ -304,6 +304,9 @@ function showCWBRainfall(term) {
         projection: 'EPSG:4326'
       });
       layer.setSource(source);
+      // 雷達回波 / 單雷降雨雷達 / 衛星圖 為不透明白底 -> 較高不透明度
+      const radarTerms = ['radar', 'radar_n', 'radar_c', 'radar_s', 'sat_vis', 'sat_ir'];
+      layer.setOpacity(radarTerms.indexOf(term) !== -1 ? 0.7 : 0.5);
       layer.setVisible(true);
     })
     .catch(function (error) {

@@ -70,15 +70,21 @@ $login_role = ($st === true) ? 1 : 0;
       <div id="toolbar-right">
         <button id="area-select-toggle-btn" type="button" class="disable" title="出圖 (啟用後地圖點擊直接選範圍)">出圖</button>
         <label for="rainfall-select">雨量</label>
-        <select id="rainfall-select" aria-label="雨量疊圖">
-          <option value="none" selected>雨量圖</option>
-          <option value="o2d">前日</option>
-          <option value="o1d">昨日</option>
-          <option value="now">今日</option>
-          <option value="f12h">未來12h</option>
-          <option value="f24h">未來24h</option>
-          <option value="f36h">未來36h</option>
-          <option value="f48h">未來48h</option>
+        <select id="rainfall-select" aria-label="氣象疊圖">
+          <option value="none" selected>氣象圖</option>
+          <option value="radar">雷達回波</option>
+          <option value="radar_n">降雨雷達(北)</option>
+          <option value="radar_c">降雨雷達(中)</option>
+          <option value="radar_s">降雨雷達(南)</option>
+          <option value="sat_vis">衛星圖(可見光)</option>
+          <option value="sat_ir">衛星圖(紅外線)</option>
+          <option value="o2d">累積雨量(前日)</option>
+          <option value="o1d">累積雨量(昨日)</option>
+          <option value="now">累積雨量(今日)</option>
+          <option value="f12h">降水預報(12h)</option>
+          <option value="f24h">降水預報(24h)</option>
+          <option value="f36h">降水預報(36h)</option>
+          <option value="f48h">降水預報(48h)</option>
         </select>
 
         <label for="coverage-select">訊號</label>
