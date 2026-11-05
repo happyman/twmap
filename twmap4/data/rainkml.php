@@ -439,7 +439,7 @@ switch($term) {
 		break;
 		case 'now':
 			$name = '今日累積雨量';
-			$half = (date("i")<30)? 0 : 3;
+			$half = 0; // (date("i")<30)? 0 : 3; 不知道半小時圖甚麼時候產生
 			$url=sprintf("https://www.cwa.gov.tw/Data/rainfall/%s_%02d%d0.QZJ8.jpg",date("Y-m-d",strtotime("today")),date("H"),$half);
 			//$url = sprintf('http://www.cwb.gov.tw/V7/observe/rainfall/Data/hkb%s%d.jpg', date("dG"), $half);
 			$type = 'observation';

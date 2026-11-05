@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <onlinemapsources>
-<!-- 製造日期: 2018-10-03 11:09:13 by 地圖產生器 -->
+<!-- 製造日期: 2026-11-03 01:37:41 by 地圖產生器 -->
 <onlinemapsource uid="6000">
 	<name>1899-日治臺灣全圖 (TW)</name>
 	<url>http://gis.sinica.edu.tw/tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=JM400K_1899&amp;STYLE=_null&amp;TILEMATRIXSET=GoogleMapsCompatible&amp;TILEMATRIX={$z}&amp;TILEROW={$y}&amp;TILECOL={$x}&amp;FORMAT=image/png</url>
@@ -163,7 +163,7 @@
 </onlinemapsource>
 <onlinemapsource uid="6016">
 	<name>地圖產生器魯地圖+gpx (TW)</name>
-	<url>http://rs.happyman.idv.tw/map/moi_osm_gpx/{$z}/{$x}/{$y}.png</url>
+	<url>http://tile.happyman.idv.tw/map/moi_osm_gpx/{$z}/{$x}/{$y}.png</url>
 	<minzoom>11</minzoom>
 	<maxzoom>19</maxzoom>
 	<projection>MERCATORESFERICA</projection>
@@ -172,7 +172,7 @@
 </onlinemapsource>
 <onlinemapsource uid="6017">
 	<name>地圖產生器經建三+gpx (TW)</name>
-	<url>http://rs.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png</url>
+	<url>http://tile.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png</url>
 	<minzoom>11</minzoom>
 	<maxzoom>17</maxzoom>
 	<projection>MERCATORESFERICA</projection>
@@ -181,7 +181,7 @@
 </onlinemapsource>
 <onlinemapsource uid="6018">
 	<name>地圖產生器 gpx (TW)</name>
-	<url>http://rs.happyman.idv.tw/map/gpxtrack/{$z}/{$x}/{$y}.png</url>
+	<url>http://tile.happyman.idv.tw/map/gpxtrack/{$z}/{$x}/{$y}.png</url>
 	<minzoom>11</minzoom>
 	<maxzoom>18</maxzoom>
 	<projection>MERCATORESFERICA</projection>
@@ -190,7 +190,7 @@
 </onlinemapsource>
 <onlinemapsource uid="6019">
 	<name>農航所正射影像 (TW)</name>
-	<url>http://rs.happyman.idv.tw/map/atis/{$z}/{$x}/{$y}.png</url>
+	<url>http://tile.happyman.idv.tw/map/atis/{$z}/{$x}/{$y}.png</url>
 	<website>&lt;a href="http://gissrv4.sinica.edu.tw/gis/twhgis.aspx"&gt;Academia Sinica WMTS&lt;/a&gt;</website>
 	<minzoom>5</minzoom>
 	<maxzoom>22</maxzoom>
@@ -679,7 +679,7 @@
 </onlinemapsource>
 <onlinemapsource uid="6032">
 	<name>h 地圖產生器 魯地圖 (TW)</name>
-	<url>https://rs.happyman.idv.tw/map/moi_osm/{$z}/{$x}/{$y}.png</url>
+	<url>https://tile.happyman.idv.tw/map/moi_osm/{$z}/{$x}/{$y}.png</url>
 	<website>地圖產生器 魯地圖</website>
 	<minzoom>11</minzoom>
 	<maxzoom>16</maxzoom>
@@ -689,7 +689,7 @@
 </onlinemapsource>
 <onlinemapsource uid="6033">
 	<name>h 地圖產生器經建三 (TW)</name>
-	<url>http://rs.happyman.idv.tw/map/tw25k2001/zxy/{$z}_{$x}_{$y}.png</url>
+	<url>http://tile.happyman.idv.tw/map/tw25k2001/zxy/{$z}_{$x}_{$y}.png</url>
 	<website>地圖產生器 經建三 25000:1</website>
 	<minzoom>11</minzoom>
 	<maxzoom>17</maxzoom>

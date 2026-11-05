@@ -322,7 +322,7 @@
     
     <onlinemapsource uid="195"> 
         <name>地圖產生器魯地圖+gpx (TW)</name> 
-        <url><![CDATA[http://rs.happyman.idv.tw/map/moi_osm_gpx/{$z}/{$x}/{$y}.png]]></url> 
+        <url><![CDATA[http://tile.happyman.idv.tw/map/moi_osm_gpx/{$z}/{$x}/{$y}.png]]></url> 
         <minzoom>11</minzoom> 
         <maxzoom>19</maxzoom> 
         <projection>MERCATORESFERICA</projection> 
@@ -340,7 +340,7 @@
     
     <onlinemapsource uid="196">
         <name>地圖產生器經建三+gpx (TW)</name>
-        <url><![CDATA[http://rs.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png]]></url>
+        <url><![CDATA[http://tile.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png]]></url>
         <minzoom>11</minzoom>
         <maxzoom>17</maxzoom>
         <projection>MERCATORESFERICA</projection>
@@ -358,7 +358,7 @@
 
  <onlinemapsource uid="599">
         <name>地圖產生器 gpx (TW)</name>
-        <url><![CDATA[http://rs.happyman.idv.tw/map/gpxtrack/{$z}/{$x}/{$y}.png]]></url>
+        <url><![CDATA[http://tile.happyman.idv.tw/map/gpxtrack/{$z}/{$x}/{$y}.png]]></url>
         <minzoom>11</minzoom>
         <maxzoom>18</maxzoom>
         <projection>MERCATORESFERICA</projection>
@@ -379,7 +379,7 @@
     
 	<onlinemapsource uid="308">
 		<name>農航所正射影像 (TW)</name>
-		<url><![CDATA[http://rs.happyman.idv.tw/map/atis/{$z}/{$x}/{$y}.png]]></url>
+		<url><![CDATA[http://tile.happyman.idv.tw/map/atis/{$z}/{$x}/{$y}.png]]></url>
 		<website><![CDATA[<a href="http://gissrv4.sinica.edu.tw/gis/twhgis.aspx">Academia Sinica WMTS</a>]]></website>
 		<minzoom>5</minzoom>
 		<maxzoom>22</maxzoom>
@@ -1444,7 +1444,7 @@
 	</onlinemapsource>
 	<onlinemapsource uid="206"> 
 		<name>h 地圖產生器 魯地圖 (TW)</name> 
-		<url><![CDATA[https://rs.happyman.idv.tw/map/moi_osm/{$z}/{$x}/{$y}.png]]></url> 
+		<url><![CDATA[https://tile.happyman.idv.tw/map/moi_osm/{$z}/{$x}/{$y}.png]]></url> 
 		<website>地圖產生器 魯地圖</website>
 		<minzoom>11</minzoom> 
 		<maxzoom>16</maxzoom> 
@@ -1462,7 +1462,7 @@
 	</onlinemapsource>
 	<onlinemapsource uid="207"> 
 		<name>h 地圖產生器經建三 (TW)</name> 
-		<url><![CDATA[http://rs.happyman.idv.tw/map/tw25k2001/zxy/{$z}_{$x}_{$y}.png]]></url> 
+		<url><![CDATA[http://tile.happyman.idv.tw/map/tw25k2001/zxy/{$z}_{$x}_{$y}.png]]></url> 
 		<website>地圖產生器 經建三 25000:1</website>
 		<minzoom>11</minzoom> 
 		<maxzoom>17</maxzoom> 
@@ -1480,7 +1480,7 @@
 	</onlinemapsource>
 	<onlinemapsource uid="208">
 		<name>h TWMAP_25000:1_Gpx地圖產生器 (TW)</name>
-		<url><![CDATA[http://rs.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png]]></url>
+		<url><![CDATA[http://tile.happyman.idv.tw/map/twmap_gpx/{$z}_{$x}_{$y}.png]]></url>
 		<website>地圖產生器 GPX軌跡地圖</website> 
 		<minzoom>11</minzoom>
 		<maxzoom>17</maxzoom>
