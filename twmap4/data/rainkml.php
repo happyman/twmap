@@ -1,4 +1,11 @@
 <?php
+// v15
+// 可見光去雜點: B03 夜間資料有大量鹽雜訊 (65531, 白天合法上限約 11076),
+// 逐張 min/max 拉伸會把雜點放大成滿屏雪花. 改為轉檔前先把 >20000 的像素清零
+// (gdal_calc), 再以固定 0..12000 縮放 + gamma 0.6; 夜間剩正常黑夜, 白天更清楚
+// v14
+// 兩張衛星圖 PNG 頂端加資訊列: 圖名 + 開始觀測/結束觀測 (ObsTime 起 +10 分鐘),
+// 黑底白字, 位置 左圖名/中開始/右結束 (仿官網 Himawari 雲圖版面)
 // v13
 // 紅外線改偽彩色 (取代 v12 的灰階反相+gamma): 亮度溫度以固定物理範圍
 // -80..40C 線性縮放後套官方 LCC_IR1 溫度色票 (藍->綠->黃->紅->紫->白),
@@ -222,6 +229,63 @@ function satellite_ir_colorize($png_path) {
 	}
 	return false;
 }
+
+// 在 PNG 頂端畫資訊列: 黑底白字, 左=圖名, 中=開始觀測, 右=結束觀測
+function satellite_draw_caption($png_path, $title, $start_str, $end_str) {
+	if (!function_exists('imagettftext')) {
+		return false;
+	}
+	$font = null;
+	$candidates = array(
+		'/usr/share/fonts/truetype/wqy/wqy-microhei.ttc',
+		'/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc',
+		'/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf',
+		'/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc',
+	);
+	foreach ($candidates as $f) {
+		if (is_file($f)) {
+			$font = $f;
+			break;
+		}
+	}
+	if (!$font) {
+		return false;
+	}
+	$im = @imagecreatefrompng($png_path);
+	if (!$im) {
+		return false;
+	}
+	imagepalettetotruecolor($im);
+	imagesavealpha($im, true);
+	imagealphablending($im, false);
+	$w = imagesx($im);
+	$h = imagesy($im);
+	$bar = (int)round($h * 0.028);
+	if ($bar < 36) { $bar = 36; }
+	if ($bar > 56) { $bar = 56; }
+	$black = imagecolorallocatealpha($im, 0, 0, 0, 0);
+	imagefilledrectangle($im, 0, 0, $w - 1, $bar - 1, $black);
+	$white = imagecolorallocatealpha($im, 255, 255, 255, 0);
+	$size = 26;
+	$texts = array($title, '開始觀測 ' . $start_str, '結束觀測 ' . $end_str);
+	$xs = array(16, 0, 0);
+	$b = imagettfbbox($size, 0, $font, $texts[1]);
+	$xs[1] = (int)(($w - ($b[2] - $b[0])) / 2);
+	$b = imagettfbbox($size, 0, $font, $texts[2]);
+	$xs[2] = $w - 16 - ($b[2] - $b[0]);
+	$y = $bar - 12;
+	foreach ($texts as $i => $t) {
+		imagettftext($im, $size, 0, (int)$xs[$i], $y, $white, $font, $t);
+	}
+	$tmp = $png_path . '.cap.png';
+	$ok = imagepng($im, $tmp);
+	imagedestroy($im);
+	if ($ok && is_file($tmp)) {
+		rename($tmp, $png_path);
+		return true;
+	}
+	return false;
+}
 function satellite_png($dataid, $fallback_box, $enhance = false, $term = 'sat_vis') {
 	$meta_url = 'https://cwaopendata.s3.ap-northeast-1.amazonaws.com/Observation/' . $dataid . '.json';
 	$ctx = stream_context_create(array('http' => array('timeout' => 15)));
@@ -258,7 +322,7 @@ function satellite_png($dataid, $fallback_box, $enhance = false, $term = 'sat_vi
 	}
 	$box = array('west' => (float)$m1[1], 'east' => (float)$m1[2], 'south' => (float)$m2[1], 'north' => (float)$m2[2]);
 
-	$png_name = $dataid . '_' . $version . ($enhance ? '_pc' : '') . '.png';
+	$png_name = $dataid . '_' . $version . ($enhance ? '_pc' : '_dn') . '_cap.png';
 	$png_path = $cache_dir . '/' . $png_name;
 	if (is_file($png_path) && filesize($png_path) > 0) {
 		return array('url' => satellite_cache_url($term), 'box' => $box);
@@ -303,7 +367,7 @@ function satellite_png($dataid, $fallback_box, $enhance = false, $term = 'sat_vi
 	}
 
 	if ($gtif_path && is_file($gtif_path)) {
-		// 取統計值決定縮放範圍: 可見光反照率與紅外線亮度溫度量級不同, 不能寫死
+		// 取統計值決定 dstnodata: 可見光反照率與紅外線亮度溫度量級不同
 		$info_out = array();
 		$info_code = 0;
 		exec('/usr/bin/gdalinfo -json -stats ' . escapeshellarg($gtif_path) . ' 2>&1', $info_out, $info_code);
@@ -314,27 +378,48 @@ function satellite_png($dataid, $fallback_box, $enhance = false, $term = 'sat_vi
 			$src_max = (float)$stats['STATISTICS_MAXIMUM'];
 			$warped = $tmp_dir . '/warped.tif';
 			$tmp_png = $tmp_dir . '/out.png';
+			// 可見光先去雜點: 夜間 B03 有鹽雜訊 65531 (白天合法上限約 11076),
+			// 把 >20000 的像素清零再 warp, 否則 bilinear 會把雜點擴散成雪花斑
+			$warp_src = $gtif_path;
+			if (!$enhance) {
+				$masked = $tmp_dir . '/masked.tif';
+				$cmdm = sprintf('/usr/bin/gdal_calc.py -A %s --outfile %s --calc %s --overwrite 2>&1',
+					escapeshellarg($gtif_path), escapeshellarg($masked), escapeshellarg('where(A>20000,0,A)'));
+				$outm = array(); $codem = 0;
+				exec($cmdm, $outm, $codem);
+				if ($codem === 0 && is_file($masked)) {
+					$warp_src = $masked;
+				}
+			}
 			// 資料外圍 (dstnodata) 設成縮放後會變黑的那一端, 再加 -dstalpha 變透明
 			$nodata = $src_min;
 			$cmd1 = sprintf('/usr/bin/gdalwarp -overwrite -t_srs EPSG:4326 -te %s %s %s %s -ts 2200 0 -r bilinear -dstnodata %s -dstalpha -of GTiff %s %s 2>&1',
 				escapeshellarg((string)$box['west']), escapeshellarg((string)$box['south']),
 				escapeshellarg((string)$box['east']), escapeshellarg((string)$box['north']),
 				escapeshellarg((string)$nodata),
-				escapeshellarg($gtif_path), escapeshellarg($warped));
+				escapeshellarg($warp_src), escapeshellarg($warped));
 			$out1 = array(); $code1 = 0;
 			exec($cmd1, $out1, $code1);
 			if ($code1 === 0 && is_file($warped)) {
 				// 紅外線: 固定物理範圍 -80..40C (19315..31315) 線性縮放, 之後套偽彩色票;
-				// 可見光: 依統計值自動拉伸
+				// 可見光: 固定 0..12000 縮放 + gamma 0.6 (勿用逐張 min/max, 夜間會把雜點拉滿)
 				$scale_args = $enhance
 					? '-scale 19315 31315 0 255'
-					: sprintf('-scale %s %s 0 255', escapeshellarg((string)$src_min), escapeshellarg((string)$src_max));
+					: '-scale 0 12000 0 255 -exponent 0.6';
 				$cmd2 = sprintf('/usr/bin/gdal_translate -of PNG -ot Byte %s %s %s 2>&1', $scale_args, escapeshellarg($warped), escapeshellarg($tmp_png));
 				$out2 = array(); $code2 = 0;
 				exec($cmd2, $out2, $code2);
 				if ($code2 === 0 && is_file($tmp_png) && filesize($tmp_png) > 0) {
 					if ($enhance) {
 						satellite_ir_colorize($tmp_png);
+					}
+					// 資訊列最後畫 (紅外線先上色再畫, 否則黑條白字會被吃掉)
+					$start_ts = strtotime($obs_time);
+					if ($start_ts) {
+						satellite_draw_caption($tmp_png,
+							$enhance ? '衛星圖(紅外線)' : '衛星圖(可見光)',
+							date('Y/m/d H:i', $start_ts),
+							date('Y/m/d H:i', $start_ts + 600));
 					}
 					rename($tmp_png, $png_path);
 					$ok = is_file($png_path);
