@@ -97,6 +97,8 @@ https://apis.fetnet.net/eservice/api/serviceCoverageController/getServiceCoverag
 };
 
 let coverageOverlayLayers = [];
+let coverageTerm = 'none';
+let coverageHideTimer = null;
 
 function clearCoverageOverlays() {
   for (const layer of coverageOverlayLayers) {
@@ -107,9 +109,55 @@ function clearCoverageOverlays() {
 
 function coverage_overlay(op) {
   clearCoverageOverlays();
+  coverageTerm = op;
+  if (coverageHideTimer) {
+    clearTimeout(coverageHideTimer);
+    coverageHideTimer = null;
+  }
   if (!op || op === 'none' || !mobileCoverage[op]) {
+    if (typeof setRainfallLoading === 'function') {
+      setRainfallLoading(false);
+    }
     return;
   }
+  if (typeof setRainfallLoading === 'function') {
+    setRainfallLoading(true);
+  }
+  const myOp = op;
+  // 只等「與目前視窗相交」的圖塊載入完 (離島等畫面外圖塊 OL 不會載入, 不能算)
+  let view4326 = null;
+  try {
+    const size = map.getSize();
+    if (size) {
+      view4326 = ol.proj.transformExtent(
+        map.getView().calculateExtent(size),
+        'EPSG:3857',
+        'EPSG:4326'
+      );
+    }
+  } catch (e) {
+    view4326 = null;
+  }
+  const tiles = mobileCoverage[op].filter(function (tile) {
+    if (!view4326) {
+      return true;
+    }
+    return tile.bound.east >= view4326[0] && tile.bound.west <= view4326[2] &&
+      tile.bound.north >= view4326[1] && tile.bound.south <= view4326[3];
+  });
+  let pending = tiles.length;
+  const finish = function () {
+    pending -= 1;
+    if (pending <= 0 && coverageTerm === myOp && typeof setRainfallLoading === 'function') {
+      setRainfallLoading(false);
+    }
+  };
+  // 保底: 萬一某圖塊事件沒回來, 8 秒後不要讓轉圈卡住
+  coverageHideTimer = setTimeout(function () {
+    if (coverageTerm === myOp && typeof setRainfallLoading === 'function') {
+      setRainfallLoading(false);
+    }
+  }, 8000);
   mobileCoverage[op].forEach(function (tile, i) {
     const layer = mapApi.addImageLayer({
       id: 'coverage-' + op + '-' + i,
@@ -117,13 +165,21 @@ function coverage_overlay(op) {
       opacity: 0.7,
       zIndex: 5
     });
-    layer.setSource(new ol.source.ImageStatic({
+    const source = new ol.source.ImageStatic({
       url: tile.img,
       imageExtent: [tile.bound.west, tile.bound.south, tile.bound.east, tile.bound.north],
       projection: 'EPSG:4326'
-    }));
+    });
+    layer.setSource(source);
     coverageOverlayLayers.push(layer);
+    const inView = tiles.indexOf(tile) !== -1;
+    if (inView) {
+      source.on(['imageloadend', 'imageloaderror'], finish);
+    }
   });
+  if (pending <= 0 && typeof setRainfallLoading === 'function') {
+    setRainfallLoading(false);
+  }
 }
 
 if (typeof globalThis !== 'undefined') {

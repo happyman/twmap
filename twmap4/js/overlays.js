@@ -234,6 +234,25 @@ function showGrid(grid_type) {
 
 let rainfallTerm = 'none';
 let rainfallLoading = false;
+let rainfallImgPending = false;
+
+function setRainfallLoading(show) {
+  const wrap = document.getElementById('map-wrap');
+  if (!wrap) {
+    return;
+  }
+  let el = document.getElementById('rainfall-loading');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'rainfall-loading';
+    el.className = 'hidden';
+    const spinner = document.createElement('div');
+    spinner.className = 'splash-spinner';
+    el.appendChild(spinner);
+    wrap.appendChild(el);
+  }
+  el.classList.toggle('hidden', !show);
+}
 
 function rainfallLayerRef() {
   const layers = map.getLayers().getArray();
@@ -281,11 +300,17 @@ function showCWBRainfall(term) {
 
   if (!term || term === 'none') {
     layer.setVisible(false);
+    setRainfallLoading(false);
     return;
   }
 
   const url = window.appConfig.rainkml_url + '?term=' + encodeURIComponent(term);
+  const myTerm = term;
   rainfallLoading = true;
+  rainfallImgPending = false;
+  setRainfallLoading(true);
+  let sourceSet = false;
+  let imageFinished = false;
   fetch(url, { cache: 'no-store' })
     .then(function (response) {
       if (!response.ok) {
@@ -298,12 +323,29 @@ function showCWBRainfall(term) {
       if (!info) {
         throw new Error('rainkml parse failed');
       }
+      if (myTerm !== rainfallTerm) {
+        return; // 使用者已切走, 別用過期結果覆蓋新圖層
+      }
       const source = new ol.source.ImageStatic({
         url: info.url,
         imageExtent: info.extent,
         projection: 'EPSG:4326'
       });
+      rainfallImgPending = true;
+      source.on('imageloadstart', function () {
+        if (myTerm === rainfallTerm) {
+          setRainfallLoading(true);
+        }
+      });
+      source.on(['imageloadend', 'imageloaderror'], function () {
+        rainfallImgPending = false;
+        imageFinished = true;
+        if (myTerm === rainfallTerm && !rainfallLoading) {
+          setRainfallLoading(false);
+        }
+      });
       layer.setSource(source);
+      sourceSet = true;
       // 雷達回波 / 單雷降雨雷達 / 衛星圖 為不透明白底 -> 較高不透明度
       const radarTerms = ['radar', 'radar_n', 'radar_c', 'radar_s', 'sat_vis', 'sat_ir'];
       layer.setOpacity(radarTerms.indexOf(term) !== -1 ? 0.7 : 0.5);
@@ -314,10 +356,15 @@ function showCWBRainfall(term) {
     })
     .finally(function () {
       rainfallLoading = false;
+      // KML 讀完但圖片還在載入時繼續轉, 等 imageloadend/error 再消失
+      if (myTerm === rainfallTerm && (!sourceSet || imageFinished)) {
+        setRainfallLoading(false);
+      }
     });
 }
 
 if (typeof globalThis !== 'undefined') {
   globalThis.showGrid = showGrid;
   globalThis.showCWBRainfall = showCWBRainfall;
+  globalThis.setRainfallLoading = setRainfallLoading;
 }

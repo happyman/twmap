@@ -37,6 +37,20 @@
   to { transform: rotate(360deg); }
 }
 
+/* 氣象圖層載入中提示: 地圖中央轉圈 (JS 動態建立, 載入完移除) */
+#rainfall-loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  pointer-events: none;
+}
+
+#rainfall-loading.hidden {
+  display: none;
+}
+
 html, body {
   margin: 0;
   height: 100%;
