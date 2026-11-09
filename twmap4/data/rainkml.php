@@ -1,4 +1,14 @@
 <?php
+// v18
+// 新增 衛星圖(真實色) sat_true: 直接內嵌官網 TWI_TRGB_1350 JPG (每10分鐘一張,
+// 檔名為開始觀測時間, 常延遲). 從 (now-10min) 起往回逐格 HEAD 探測最新存在者,
+// 最多回探 3 小時. LatLonBox 用 .ovis 匯出的 TIFF 實測四角:
+// W116.0046711 E126.0069384 S19.0917670 N28.3197111
+// v17
+// 降水預報 box 改採 .ovis 匯出的 GeoTIFF 實測四角 (QPF 12h, 1247x1503,
+// EPSG:4326): W118.9396955 E122.4087060 S21.6837406 N25.8649137
+// 四張預報圖 (12/24/36/48h) 版面共用, 此 box 一次適用全部
+// (v16 的 NE 海岸 ICP 值 W118.9520 E122.3870 S21.6860 N25.8608 廢止)
 // v16
 // 降水預報 geo-reference 重量測 (一次定版, 四張圖共用同一底圖):
 // 以 Natural Earth 台灣本島海岸線 (406 點) 與圖上海岸黑線做 ICP 配準
@@ -91,10 +101,10 @@ if ($box) {
 } else if ($type=='forecast') {
 ?>
 <LatLonBox>
-	<north>25.86079</north>
-	<south>21.68604</south>
-	<east>122.38698</east>
-	<west>118.95197</west>
+	<north>25.8649137</north>
+	<south>21.6837406</south>
+	<east>122.4087060</east>
+	<west>118.9396955</west>
 </LatLonBox>
 <?php
 } else if ($type=='radar') {
@@ -462,6 +472,21 @@ function satellite_cache_url($term) {
 	return 'rainkml.php' . $query;
 }
 
+// 衛星圖(真實色): TWI_TRGB_1350 每10分鐘一張, 檔名為開始觀測時間,
+// 但上架常延遲 (例 15:45 還沒有 15-20 就用 15-10). 從 now-10min 起往回探測.
+function latest_truecolor_jpg() {
+	$ctx = stream_context_create(array('http' => array('method' => 'HEAD', 'timeout' => 10, 'ignore_errors' => true)));
+	$slot = intdiv(time() - 600, 600) * 600;
+	for ($i = 0; $i < 18; $i++, $slot -= 600) {
+		$url = 'https://www.cwa.gov.tw/Data/satellite/TWI_TRGB_1350/TWI_TRGB_1350-' . date('Y-m-d-H-i', $slot) . '.jpg';
+		$headers = @get_headers($url, true, $ctx);
+		if ($headers && isset($headers[0]) && strpos($headers[0], '200') !== false) {
+			return $url;
+		}
+	}
+	return null;
+}
+
 function satellite_serve($term) {
 	$map = array(
 		'sat_vis' => array('O-B0055-001', array('north'=>48.0,'south'=>-1.0,'east'=>155.0,'west'=>102.0), false),
@@ -581,6 +606,16 @@ switch($term) {
 			$name = '衛星圖(紅外線)';
 			$url = $sat['url'];
 			$box = $sat['box'];
+			$type = 'satellite';
+			$opacity = 0.7;
+		break;
+		case 'sat_true':
+			// 衛星圖(真實色): 官網 TWI_TRGB_1350 JPG 直接內嵌, 檔名往回探測最新一張
+			// LatLonBox 用 .ovis 匯出的 TIFF 實測四角
+			$url = latest_truecolor_jpg();
+			if (!$url) { header("HTTP/1.0 503 Service Unavailable"); exit(0); }
+			$name = '衛星圖(真實色)';
+			$box = array('north'=>28.3197111,'south'=>19.0917670,'east'=>126.0069384,'west'=>116.0046711);
 			$type = 'satellite';
 			$opacity = 0.7;
 		break;

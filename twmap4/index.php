@@ -78,6 +78,7 @@ $login_role = ($st === true) ? 1 : 0;
           <option value="radar_s">降雨雷達(南)</option>
           <option value="sat_vis">衛星圖(可見光)</option>
           <option value="sat_ir">衛星圖(紅外線)</option>
+          <option value="sat_true">衛星圖(真實色)</option>
           <option value="now">累積雨量(今日)</option>
           <option value="o1d">累積雨量(昨日)</option>
           <option value="o2d">累積雨量(前日)</option>
